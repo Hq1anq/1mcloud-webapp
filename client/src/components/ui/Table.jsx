@@ -79,11 +79,14 @@ const itemContent = (index, row, context) => {
             title="Double click to copy"
           >
             {statusClass ? (
-              <span className={`rounded-full px-3 py-0.5 font-semibold ${statusClass}`}>
+              <span
+                className={`inline-flex items-center rounded-full px-3 py-1 font-semibold ${statusClass}`}
+              >
+                {statusClass && <span className="mr-2 h-2 w-2 rounded-full bg-current"></span>}
                 {cellValue}
               </span>
             ) : nationFlag ? (
-              <div className="mx-auto grid size-7 place-items-center">{nationFlag}</div>
+              <div className="mx-auto grid size-10 place-items-center">{nationFlag}</div>
             ) : (
               <span>{cellValue}</span>
             )}

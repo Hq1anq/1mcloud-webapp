@@ -5,6 +5,8 @@ import { useState } from 'react'
 export default function ProxyManager() {
   const [reinstallType, setReinstallType] = useState('HTTPS')
   const [changeIpType, setChangeIpType] = useState('HTTPS')
+
+  const [selectedRows, setSelectedRows] = useState([])
   return (
     <div>
       {/* ========== TOP CONTROLS ========== */}
@@ -282,7 +284,7 @@ export default function ProxyManager() {
         title="Proxy Manager"
         headers={[
           'sid',
-          'ip:port',
+          'ip_port',
           'country',
           'type',
           'created',
@@ -320,6 +322,7 @@ export default function ProxyManager() {
             </p>
           </div>
         }
+        onSelectionChange={setSelectedRows}
       />
     </div>
   )

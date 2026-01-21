@@ -354,10 +354,6 @@
     margin: 0px;
   }
 
-  .selected-row {
-    @apply bg-bg-selected;
-  }
-
   .social-link {
     @apply text-text-muted flex items-center;
   }

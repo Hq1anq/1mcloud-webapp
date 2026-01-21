@@ -1,6 +1,41 @@
+import { useState, useEffect } from 'react'
 import Checkbox from './Checkbox.jsx'
 
-export default function Table({ title, headers, extraBtn, emptyMessage }) {
+const DEFAULT_DATA = []
+
+export default function Table({
+  data = DEFAULT_DATA,
+  onSelectionChange,
+  title,
+  headers,
+  extraBtn,
+  emptyMessage,
+}) {
+  const [selectedIds, setSelectedIds] = useState(new Set())
+
+  function handleSelectAll(checked) {
+    if (checked) {
+      const allIds = new Set(data.map((row) => row.sid))
+      setSelectedIds(allIds)
+    } else setSelectedIds(new Set())
+  }
+
+  function handleSelectRow(sid, index, shiftKey) {
+    const newSelected = new Set(selectedIds)
+    if (newSelected.has(sid)) {
+      newSelected.delete(sid)
+    } else {
+      newSelected.add(sid)
+    }
+    setSelectedIds(newSelected)
+  }
+
+  useEffect(() => {
+    if (!onSelectionChange) return
+    const selectedRows = data.filter((r) => selectedIds.has(r.sid))
+    onSelectionChange(selectedRows)
+  }, [selectedIds, data, onSelectionChange])
+
   return (
     <div className="flex-1 overflow-hidden text-xs sm:text-sm">
       <div id="table-wrapper" className="mx-auto max-w-7xl px-4 py-3">
@@ -48,7 +83,10 @@ export default function Table({ title, headers, extraBtn, emptyMessage }) {
               <thead className="bg-thead" id="tableHeader">
                 <tr>
                   <th className="px-2 sm:px-4">
-                    <Checkbox />
+                    <Checkbox
+                      checked={selectedIds.size === data.length && data.length > 0}
+                      onChange={(e) => handleSelectAll(e.target.checked)}
+                    />
                   </th>
 
                   {headers.map((header) => (
@@ -57,23 +95,69 @@ export default function Table({ title, headers, extraBtn, emptyMessage }) {
                       className="px-2 py-3 font-medium tracking-wider uppercase sm:px-4"
                     >
                       <div
-                        className={
-                          title === 'Proxy Status'
-                            ? 'text-base sm:text-lg'
-                            : 'text-sm sm:text-base' + 'flex min-w-15 flex-col gap-1 font-bold'
-                        }
+                        className={`flex min-w-15 flex-col gap-1 font-bold ${title === 'Proxy Status' ? 'text-base sm:text-lg' : 'text-sm sm:text-base'}`}
                       >
-                        {header}
+                        <span
+                          className={
+                            ['ip_port', 'note'].includes(header) ? 'text-left' : 'text-center'
+                          }
+                        >
+                          {header}
+                        </span>
+                        <div className="relative">
+                          {/* Operator icon */}
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            data-operator="contain"
+                            viewBox="0 0 640 640"
+                            className="bg-border-input filter-operator fill-text-primary absolute top-[-2px] right-[-6px] h-4 w-4 cursor-pointer rounded-full p-0.5 hover:brightness-(--highlight-brightness)"
+                          >
+                            <path d="M136,128h216c105.9,0,192,86.1,192,192s-86.1,192-192,192H136c-22.1,0-40-17.9-40-40s17.9-40,40-40h216c61.8,0,112-50.2,112-112s-50.2-112-112-112H136c-22.1,0-40-17.9-40-40S113.9,128,136,128z" />
+                          </svg>
+                          <input
+                            type="text"
+                            placeholder="Filter"
+                            className={`filter-input bg-dropdown mt-1 px-2 py-1 text-center ${['ip_port', 'note'].includes(header) ? 'text-left' : 'text-center'}`}
+                          />
+                        </div>
                       </div>
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody id="tableBody" className="text-text-secondary"></tbody>
+              <tbody id="tableBody" className="text-text-secondary">
+                {data.map((row, index) => {
+                  const isSelected = selectedIds.has(row.sid)
+                  return (
+                    <tr
+                      key={row.sid}
+                      className={`hover:bg-bg-hover ${isSelected ? 'bg-bg-selected' : ''}`}
+                      onClick={(e) => {
+                        if (e.target.closest('input') || e.target.closest('button')) return
+                        handleSelectRow(row.sid, index, e.shiftKey)
+                      }}
+                    >
+                      <td className="border-border border-b px-2 py-2 sm:px-4">
+                        <Checkbox
+                          checked={isSelected}
+                          onChange={(e) => handleSelectRow(row.sid, index, e.shiftKey)}
+                        />
+                      </td>
+                      {headers.map((header) => (
+                        <td
+                          key={header}
+                          className={`border-border border-b px-2 py-2 whitespace-nowrap sm:px-4 ${['ip_port', 'note'].includes(header) ? 'text-left' : 'text-center'}`}
+                        >
+                          {row[header]}
+                        </td>
+                      ))}
+                    </tr>
+                  )
+                })}
+              </tbody>
             </table>
           </div>
-
-          {typeof emptyMessage !== 'undefined' ? emptyMessage : ''}
+          {data.length === 0 && emptyMessage}
         </div>
       </div>
     </div>

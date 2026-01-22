@@ -30,7 +30,12 @@ export default function DropDown({ options, value, onChange, className }) {
         onClick={() => setOpen(!open)}
       >
         <span>{value}</span>
-        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className={`ml-2 h-4 w-4 ${open ? 'rotate-180' : ''}`}>
+        <svg
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          className={`ml-2 h-4 w-4 ${open ? 'rotate-180' : ''}`}
+        >
           <path
             strokeLinecap="round"
             strokeLinejoin="round"

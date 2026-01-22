@@ -1,7 +1,30 @@
 import { useState, useEffect } from 'react'
+import { TableVirtuoso } from 'react-virtuoso'
 import Checkbox from './Checkbox.jsx'
 
 const DEFAULT_DATA = []
+
+// Custom Row Component for TableVirtuoso
+const TableRow = ({ context, ...props }) => {
+  const { data, selectedIds, handleSelectRow } = context
+  const index = props['data-index']
+  const row = data[index]
+  const isSelected = selectedIds.has(row.sid)
+
+  return (
+    <tr
+      {...props}
+      className={`hover:bg-bg-hover ${isSelected ? 'bg-bg-selected' : ''} ${props.className || ''}`}
+      onClick={(e) => {
+        // Prevent row selection if clicking/interacting with inputs/buttons/labels
+        if (e.target.closest('input') || e.target.closest('button') || e.target.closest('label'))
+          return
+        handleSelectRow(row.sid, index, e.shiftKey)
+        if (props.onClick) props.onClick(e)
+      }}
+    />
+  )
+}
 
 export default function Table({
   data = DEFAULT_DATA,
@@ -12,6 +35,8 @@ export default function Table({
   emptyMessage,
 }) {
   const [selectedIds, setSelectedIds] = useState(new Set())
+  const [lastSelectedIndex, setLastSelectedIndex] = useState(null)
+  const [lastSelectionAction, setLastSelectionAction] = useState('add') // 'add' or 'delete'
 
   function handleSelectAll(checked) {
     if (checked) {
@@ -22,11 +47,32 @@ export default function Table({
 
   function handleSelectRow(sid, index, shiftKey) {
     const newSelected = new Set(selectedIds)
-    if (newSelected.has(sid)) {
-      newSelected.delete(sid)
+
+    if (shiftKey && lastSelectedIndex !== null && index !== undefined) {
+      // Range selection
+      const start = Math.min(lastSelectedIndex, index)
+      const end = Math.max(lastSelectedIndex, index)
+
+      for (let i = start; i <= end; i++) {
+        const rowSid = data[i].sid
+        if (lastSelectionAction === 'add') {
+          newSelected.add(rowSid)
+        } else {
+          newSelected.delete(rowSid)
+        }
+      }
     } else {
-      newSelected.add(sid)
+      // Single selection / Toggle
+      if (newSelected.has(sid)) {
+        newSelected.delete(sid)
+        setLastSelectionAction('delete')
+      } else {
+        newSelected.add(sid)
+        setLastSelectionAction('add')
+      }
+      setLastSelectedIndex(index)
     }
+
     setSelectedIds(newSelected)
   }
 
@@ -79,9 +125,14 @@ export default function Table({
           </div>
           {/* Table */}
           <div className="scroll-container overflow-x-auto rounded-b-lg">
-            <table className="min-w-full table-fixed">
-              <thead className="bg-thead" id="tableHeader">
-                <tr>
+            <TableVirtuoso
+              data={data}
+              useWindowScroll
+              overscan={1000}
+              context={{ data, selectedIds, handleSelectRow }}
+              components={{ TableRow }}
+              fixedHeaderContent={() => (
+                <tr className="bg-thead">
                   <th className="px-2 sm:px-4">
                     <Checkbox
                       checked={selectedIds.size === data.length && data.length > 0}
@@ -124,38 +175,38 @@ export default function Table({
                     </th>
                   ))}
                 </tr>
-              </thead>
-              <tbody id="tableBody" className="text-text-secondary">
-                {data.map((row, index) => {
-                  const isSelected = selectedIds.has(row.sid)
-                  return (
-                    <tr
-                      key={row.sid}
-                      className={`hover:bg-bg-hover ${isSelected ? 'bg-bg-selected' : ''}`}
-                      onClick={(e) => {
-                        if (e.target.closest('input') || e.target.closest('button')) return
-                        handleSelectRow(row.sid, index, e.shiftKey)
-                      }}
-                    >
-                      <td className="border-border border-b px-2 py-2 sm:px-4">
-                        <Checkbox
-                          checked={isSelected}
-                          onChange={(e) => handleSelectRow(row.sid, index, e.shiftKey)}
-                        />
+              )}
+              itemContent={(index, row) => {
+                const isSelected = selectedIds.has(row.sid)
+
+                const handleCopy = (text) => {
+                  navigator.clipboard.writeText(text).catch((err) => {
+                    console.error('Failed to copy: ', err)
+                  })
+                }
+
+                return (
+                  <>
+                    <td className="border-border border-b px-2 py-2 sm:px-4">
+                      <Checkbox
+                        checked={isSelected}
+                        onChange={(e) => handleSelectRow(row.sid, index, e.shiftKey)}
+                      />
+                    </td>
+                    {headers.map((header) => (
+                      <td
+                        key={header}
+                        className={`border-border border-b px-2 py-2 whitespace-nowrap sm:px-4 ${['ip_port', 'note'].includes(header) ? 'text-left' : 'text-center'}`}
+                        onDoubleClick={() => handleCopy(row[header])}
+                        title="Double click to copy"
+                      >
+                        {row[header]}
                       </td>
-                      {headers.map((header) => (
-                        <td
-                          key={header}
-                          className={`border-border border-b px-2 py-2 whitespace-nowrap sm:px-4 ${['ip_port', 'note'].includes(header) ? 'text-left' : 'text-center'}`}
-                        >
-                          {row[header]}
-                        </td>
-                      ))}
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
+                    ))}
+                  </>
+                )
+              }}
+            />
           </div>
           {data.length === 0 && emptyMessage}
         </div>

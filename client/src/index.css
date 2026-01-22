@@ -263,6 +263,10 @@
   transition-duration: 0.3s;
 }
 
+.scroll-container * {
+  transition: none;
+}
+
 .theme-transitions .all-fast {
   transition-property: all;
   transition-timing-function: ease-out;

@@ -14,7 +14,7 @@ const TableRow = ({ context, ...props }) => {
   return (
     <tr
       {...props}
-      className={`hover:bg-bg-hover ${isSelected ? 'bg-bg-selected' : ''} ${props.className || ''}`}
+      className={`hover:bg-bg-hover text-text-secondary ${isSelected ? 'bg-bg-selected' : ''} ${props.className || ''}`}
       onClick={(e) => {
         // Prevent row selection if clicking/interacting with inputs/buttons/labels
         if (e.target.closest('input') || e.target.closest('button') || e.target.closest('label'))
@@ -130,7 +130,10 @@ export default function Table({
               useWindowScroll
               overscan={1000}
               context={{ data, selectedIds, handleSelectRow }}
-              components={{ TableRow }}
+              components={{
+                TableRow,
+                Table: (props) => <table {...props} className="w-full" />,
+              }}
               fixedHeaderContent={() => (
                 <tr className="bg-thead">
                   <th className="px-2 sm:px-4">
@@ -155,22 +158,24 @@ export default function Table({
                         >
                           {header}
                         </span>
-                        <div className="relative">
-                          {/* Operator icon */}
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            data-operator="contain"
-                            viewBox="0 0 640 640"
-                            className="bg-border-input filter-operator fill-text-primary absolute top-[-2px] right-[-6px] h-4 w-4 cursor-pointer rounded-full p-0.5 hover:brightness-(--highlight-brightness)"
-                          >
-                            <path d="M136,128h216c105.9,0,192,86.1,192,192s-86.1,192-192,192H136c-22.1,0-40-17.9-40-40s17.9-40,40-40h216c61.8,0,112-50.2,112-112s-50.2-112-112-112H136c-22.1,0-40-17.9-40-40S113.9,128,136,128z" />
-                          </svg>
-                          <input
-                            type="text"
-                            placeholder="Filter"
-                            className={`filter-input bg-dropdown mt-1 px-2 py-1 text-center ${['ip_port', 'note'].includes(header) ? 'text-left' : 'text-center'}`}
-                          />
-                        </div>
+                        {title === 'Proxy Manager' && (
+                          <div className="relative">
+                            {/* Operator icon */}
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              data-operator="contain"
+                              viewBox="0 0 640 640"
+                              className="bg-border-input filter-operator fill-text-primary absolute top-[-2px] right-[-6px] h-4 w-4 cursor-pointer rounded-full p-0.5 hover:brightness-(--highlight-brightness)"
+                            >
+                              <path d="M136,128h216c105.9,0,192,86.1,192,192s-86.1,192-192,192H136c-22.1,0-40-17.9-40-40s17.9-40,40-40h216c61.8,0,112-50.2,112-112s-50.2-112-112-112H136c-22.1,0-40-17.9-40-40S113.9,128,136,128z" />
+                            </svg>
+                            <input
+                              type="text"
+                              placeholder="Filter"
+                              className={`filter-input bg-dropdown mt-1 px-2 py-1 text-center ${['ip_port', 'note'].includes(header) ? 'text-left' : 'text-center'}`}
+                            />
+                          </div>
+                        )}
                       </div>
                     </th>
                   ))}
@@ -185,24 +190,55 @@ export default function Table({
                   })
                 }
 
+                const getStatusClasses = (status) => {
+                  switch (status) {
+                    case 'Running':
+                    case 'Active':
+                      return 'bg-bg-success text-text-success'
+                    case 'Off':
+                    case 'Inactive':
+                    case 'Stopped':
+                      return 'bg-bg-error text-text-error'
+                    case 'Paused':
+                      return 'bg-bg-warning text-text-warning'
+                    case 'Unknown':
+                      return 'bg-bg-unknowed text-text-unknowed'
+                    default:
+                      return ''
+                  }
+                }
+
                 return (
                   <>
-                    <td className="border-border border-b px-2 py-2 sm:px-4">
+                    <td className="border-border border-b px-2 py-2 text-center sm:px-4">
                       <Checkbox
                         checked={isSelected}
                         onChange={(e) => handleSelectRow(row.sid, index, e.shiftKey)}
                       />
                     </td>
-                    {headers.map((header) => (
-                      <td
-                        key={header}
-                        className={`border-border border-b px-2 py-2 whitespace-nowrap sm:px-4 ${['ip_port', 'note'].includes(header) ? 'text-left' : 'text-center'}`}
-                        onDoubleClick={() => handleCopy(row[header])}
-                        title="Double click to copy"
-                      >
-                        {row[header]}
-                      </td>
-                    ))}
+                    {headers.map((header) => {
+                      const cellValue = row[header]
+                      const statusClass = getStatusClasses(cellValue)
+
+                      return (
+                        <td
+                          key={header}
+                          className={`border-border border-b px-2 py-2 whitespace-nowrap sm:px-4 ${['ip_port', 'note'].includes(header) ? 'text-left' : 'text-center'}`}
+                          onDoubleClick={() => handleCopy(cellValue)}
+                          title="Double click to copy"
+                        >
+                          {statusClass ? (
+                            <span
+                              className={`rounded-full px-2 py-0.5 text-xs font-semibold ${statusClass}`}
+                            >
+                              {cellValue}
+                            </span>
+                          ) : (
+                            <span>{cellValue}</span>
+                          )}
+                        </td>
+                      )
+                    })}
                   </>
                 )
               }}

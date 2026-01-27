@@ -222,7 +222,7 @@ export default function Table({
             </div>
           </div>
           {/* Table */}
-          <div className="scroll-container overflow-x-auto rounded-b-lg">
+          <div className="scroll-container overflow-x-auto overflow-y-hidden rounded-b-lg">
             <TableVirtuoso
               data={data}
               useWindowScroll

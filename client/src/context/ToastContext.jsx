@@ -9,9 +9,6 @@ export const ToastProvider = ({ children }) => {
   const addToast = useCallback((message, type = 'info') => {
     const id = Date.now().toString() + Math.random().toString(36).substring(2, 9)
     setToasts((prevToasts) => [...prevToasts, { id, message, type }])
-
-    // Auto-remove logic is handled in the Toast component itself for animation purposes
-    // but we can also have a safety cleanup here if needed, but per plan doing it in Toast/Container
   }, [])
 
   const removeToast = useCallback((id) => {

@@ -9,8 +9,7 @@ const DEFAULT_DATA = []
 const TableRow = ({ context, ...props }) => {
   const { data, selectedIds, handleSelectRow } = context
   const index = props['data-index']
-  const row = data[index]
-  const isSelected = selectedIds.has(row.sid)
+  const isSelected = selectedIds.has(index)
 
   return (
     <tr
@@ -20,7 +19,7 @@ const TableRow = ({ context, ...props }) => {
         // Prevent row selection if clicking/interacting with inputs/buttons/labels
         if (e.target.closest('input') || e.target.closest('button') || e.target.closest('label'))
           return
-        handleSelectRow(row.sid, index, e.shiftKey)
+        handleSelectRow(index, e.shiftKey)
         if (props.onClick) props.onClick(e)
       }}
     />
@@ -36,15 +35,12 @@ const VIRTUOSO_COMPONENTS = {
 
 const itemContent = (index, row, context) => {
   const { selectedIds, handleSelectRow, headers } = context
-  const isSelected = selectedIds.has(row.sid)
+  const isSelected = selectedIds.has(index)
 
   return (
     <>
       <td className="border-border border-b px-2 py-2 text-center sm:px-4">
-        <Checkbox
-          checked={isSelected}
-          onChange={(e) => handleSelectRow(row.sid, index, e.shiftKey)}
-        />
+        <Checkbox checked={isSelected} onChange={(e) => handleSelectRow(index, e.shiftKey)} />
       </td>
       {headers.map((header) => {
         const cellValue = row[header]
@@ -87,12 +83,12 @@ export default function Table({
 
   function handleSelectAll(checked) {
     if (checked) {
-      const allIds = new Set(data.map((row) => row.sid))
+      const allIds = new Set(data.map((_, index) => index))
       setSelectedIds(allIds)
     } else setSelectedIds(new Set())
   }
 
-  function handleSelectRow(sid, index, shiftKey) {
+  function handleSelectRow(index, shiftKey) {
     const newSelected = new Set(selectedIds)
 
     if (shiftKey && lastSelectedIndex !== null && index !== undefined) {
@@ -101,20 +97,16 @@ export default function Table({
       const end = Math.max(lastSelectedIndex, index)
 
       for (let i = start; i <= end; i++) {
-        const rowSid = data[i].sid
-        if (lastSelectionAction === 'add') {
-          newSelected.add(rowSid)
-        } else {
-          newSelected.delete(rowSid)
-        }
+        if (lastSelectionAction === 'add') newSelected.add(i)
+        else newSelected.delete(i)
       }
     } else {
       // Single selection / Toggle
-      if (newSelected.has(sid)) {
-        newSelected.delete(sid)
+      if (newSelected.has(index)) {
+        newSelected.delete(index)
         setLastSelectionAction('delete')
       } else {
-        newSelected.add(sid)
+        newSelected.add(index)
         setLastSelectionAction('add')
       }
       setLastSelectedIndex(index)
@@ -133,6 +125,7 @@ export default function Table({
         <th className="px-2 sm:px-4">
           <Checkbox
             checked={selectedIds.size === data.length && data.length > 0}
+            indeterminate={selectedIds.size > 0 && selectedIds.size < data.length}
             onChange={(e) => handleSelectAll(e.target.checked)}
           />
         </th>
@@ -172,11 +165,11 @@ export default function Table({
         ))}
       </tr>
     )
-  }, [title, headers])
+  }, [title, headers, selectedIds.size, data.length])
 
   useEffect(() => {
     if (!onSelectionChange) return
-    const selectedRows = data.filter((r) => selectedIds.has(r.sid))
+    const selectedRows = data.filter((_, index) => selectedIds.has(index))
     onSelectionChange(selectedRows)
   }, [selectedIds, data, onSelectionChange])
 

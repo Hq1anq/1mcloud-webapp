@@ -7,7 +7,7 @@ const DEFAULT_DATA = []
 
 // Custom Row Component for TableVirtuoso
 const TableRow = ({ context, ...props }) => {
-  const { data, selectedIds, handleSelectRow } = context
+  const { selectedIds, handleSelectRow } = context
   const index = props['data-index']
   const isSelected = selectedIds.has(index)
 
@@ -56,7 +56,7 @@ const itemContent = (index, row, context) => {
             title="Double click to copy"
           >
             {statusClass ? (
-              <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${statusClass}`}>
+              <span className={`rounded-full px-2 py-0.5 font-semibold ${statusClass}`}>
                 {cellValue}
               </span>
             ) : (
@@ -76,6 +76,7 @@ export default function Table({
   headers,
   extraBtn,
   emptyMessage,
+  className,
 }) {
   const [selectedIds, setSelectedIds] = useState(new Set())
   const [lastSelectedIndex, setLastSelectedIndex] = useState(null)
@@ -116,8 +117,8 @@ export default function Table({
   }
 
   const virtuosoContext = useMemo(() => {
-    return { data, selectedIds, handleSelectRow, headers }
-  }, [data, selectedIds, headers])
+    return { selectedIds, handleSelectRow, headers }
+  }, [selectedIds, headers])
 
   const fixedHeader = useMemo(() => {
     return () => (
@@ -174,7 +175,7 @@ export default function Table({
   }, [selectedIds, data, onSelectionChange])
 
   return (
-    <div className="flex-1 overflow-hidden text-xs sm:text-sm">
+    <div className={`flex-1 overflow-hidden ${className}`}>
       <div id="table-wrapper" className="mx-auto max-w-7xl px-4 py-3">
         <div
           id="table-container"
@@ -201,7 +202,7 @@ export default function Table({
                 <span>{title}</span>
               </h2>
 
-              <div className="flex items-center gap-3 text-xs sm:gap-5 sm:text-base">
+              <div className="flex items-center gap-3 sm:gap-5">
                 <div className="flex flex-col gap-1 sm:flex-row sm:gap-5">
                   <span className="text-right whitespace-nowrap">
                     Selected: <span id="selectedCount">0</span> rows

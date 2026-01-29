@@ -63,7 +63,7 @@ export default function ProxyManager() {
               </div>
 
               {/* GetData & Change Note & Reinstall and Simple Action Buttons */}
-              <div className="flex-col">
+              <div className="flex-col w-full">
                 <div className="grid w-full auto-rows-auto grid-cols-[1fr_1fr_1fr] items-start gap-1 p-0">
                   {/* Get Data */}
                   <div className="col-start-1 col-end-2 row-start-1 row-end-2 m-1 space-y-1 md:row-end-3">
@@ -282,6 +282,7 @@ export default function ProxyManager() {
 
       <Table
         title="Proxy Manager"
+        className="text-xs sm:text-sm"
         headers={[
           'sid',
           'ip_port',

@@ -5,6 +5,23 @@ import Checkbox from './Checkbox.jsx'
 
 const DEFAULT_DATA = []
 
+const operatorIcons = {
+  'greater-equal': (
+    <path d="M117.9 158.4C101.1 152.8 92.1 134.6 97.7 117.9C103.3 101.2 121.4 92.1 138.1 97.6L522.1 225.6C535.2 230 544 242.2 544 256C544 269.8 535.2 282 522.1 286.4L138.1 414.4C121.3 420 103.2 410.9 97.6 394.2C92 377.5 101.1 359.3 117.8 353.7L410.8 256L117.9 158.4zM512 480C529.7 480 544 494.3 544 512C544 529.7 529.7 544 512 544L128 544C110.3 544 96 529.7 96 512C96 494.3 110.3 480 128 480L512 480z" />
+  ),
+  equal: (
+    <path d="M128 192C110.3 192 96 206.3 96 224C96 241.7 110.3 256 128 256L512 256C529.7 256 544 241.7 544 224C544 206.3 529.7 192 512 192L128 192zM128 384C110.3 384 96 398.3 96 416C96 433.7 110.3 448 128 448L512 448C529.7 448 544 433.7 544 416C544 398.3 529.7 384 512 384L128 384z" />
+  ),
+  'less-equal': (
+    <path d="M522.1 158.4C538.9 152.8 547.9 134.7 542.3 117.9C536.7 101.1 518.6 92.1 501.8 97.7L117.8 225.7C104.8 230 96 242.2 96 256C96 269.8 104.8 282 117.9 286.4L501.9 414.4C518.7 420 536.8 410.9 542.4 394.2C548 377.5 538.9 359.3 522.2 353.7L229.2 256L522.1 158.4zM128 480C110.3 480 96 494.3 96 512C96 529.7 110.3 544 128 544L512 544C529.7 544 544 529.7 544 512C544 494.3 529.7 480 512 480L128 480z" />
+  ),
+  contain: (
+    <path d="M136,128h216c105.9,0,192,86.1,192,192s-86.1,192-192,192H136c-22.1,0-40-17.9-40-40s17.9-40,40-40h216c61.8,0,112-50.2,112-112s-50.2-112-112-112H136c-22.1,0-40-17.9-40-40S113.9,128,136,128z" />
+  ),
+}
+
+const operatorCycle = ['greater-equal', 'less-equal', 'equal', 'contain']
+
 // Custom Row Component for TableVirtuoso
 const TableRow = ({ context, ...props }) => {
   const { selectedIds, handleSelectRow } = context
@@ -74,6 +91,8 @@ export default function Table({
   onSelectionChange,
   title,
   headers,
+  filter,
+  operatorConfig,
   extraBtn,
   emptyMessage,
   className,
@@ -81,10 +100,73 @@ export default function Table({
   const [selectedIds, setSelectedIds] = useState(new Set())
   const [lastSelectedIndex, setLastSelectedIndex] = useState(null)
   const [lastSelectionAction, setLastSelectionAction] = useState('add') // 'add' or 'delete'
+  const [filters, setFilters] = useState({})
+  const [filterInputs, setFilterInputs] = useState({})
+
+  // Reset selection when filters change
+  useEffect(() => {
+    setSelectedIds(new Set())
+    setLastSelectedIndex(null)
+  }, [filters])
+
+  const filteredData = useMemo(() => {
+    if (Object.keys(filters).length === 0) return data
+
+    return data.filter((row) => {
+      return Object.entries(filters).every(([key, filter]) => {
+        if (!filter.value) return true // Skip empty filters
+
+        let operator = filter.operator || 'contain'
+
+        const cellValue = row[key]
+        const filterValue = filter.value
+
+        // Check if both values are valid numbers for numeric comparison
+        const isNumeric =
+          !isNaN(parseFloat(cellValue)) &&
+          isFinite(cellValue) &&
+          !isNaN(parseFloat(filterValue)) &&
+          isFinite(filterValue)
+
+        if (isNumeric) {
+          const numCell = parseFloat(cellValue)
+          const numFilter = parseFloat(filterValue)
+
+          switch (operator) {
+            case 'greater-equal':
+              return numCell >= numFilter
+            case 'less-equal':
+              return numCell <= numFilter
+            case 'equal':
+              return numCell === numFilter
+            case 'contain':
+            default:
+              return String(cellValue).toLowerCase().includes(String(filterValue).toLowerCase())
+          }
+        } else {
+          // String comparison
+          const strCell = String(cellValue ?? '').toLowerCase()
+          const strFilter = String(filterValue).toLowerCase()
+
+          switch (operator) {
+            case 'equal':
+              return strCell === strFilter
+            case 'contain':
+            default:
+              return strCell.includes(strFilter)
+            case 'greater-equal':
+            case 'less-equal':
+              return strCell.includes(strFilter)
+          }
+        }
+      })
+    })
+  }, [data, filters, operatorConfig])
 
   function handleSelectAll(checked) {
     if (checked) {
-      const allIds = new Set(data.map((_, index) => index))
+      // Select all currently VISIBLE items
+      const allIds = new Set(filteredData.map((_, index) => index))
       setSelectedIds(allIds)
     } else setSelectedIds(new Set())
   }
@@ -116,6 +198,50 @@ export default function Table({
     setSelectedIds(newSelected)
   }
 
+  const toggleOperator = (header) => {
+    // Get the current input value, defaulting to active filter value if no input change
+    const inputValue =
+      filterInputs[header] !== undefined ? filterInputs[header] : filters[header]?.value || ''
+
+    setFilters((prev) => {
+      const current = prev[header] || { value: '', operator: 'contain' }
+
+      // Determine allowed cycle for this header
+      const cycle = operatorConfig ? operatorConfig[header] || ['contain'] : operatorCycle
+
+      if (cycle.length <= 1) return prev // No cycling if only 1 option (or empty)
+
+      let currentIndex = cycle.indexOf(current.operator)
+      // If current operator is invalid/not in cycle, reset to 0
+      if (currentIndex === -1) currentIndex = 0
+
+      const nextIndex = (currentIndex + 1) % cycle.length
+
+      return {
+        ...prev,
+        [header]: { value: inputValue, operator: cycle[nextIndex] },
+      }
+    })
+  }
+
+  const handleFilterInputChange = (header, value) => {
+    setFilterInputs((prev) => ({
+      ...prev,
+      [header]: value,
+    }))
+  }
+
+  const handleFilterKeyDown = (e, header) => {
+    if (e.key === 'Enter') {
+      const inputValue =
+        filterInputs[header] !== undefined ? filterInputs[header] : filters[header]?.value || ''
+      setFilters((prev) => ({
+        ...prev,
+        [header]: { ...(prev[header] || { operator: 'contain' }), value: inputValue },
+      }))
+    }
+  }
+
   const virtuosoContext = useMemo(() => {
     return { selectedIds, handleSelectRow, headers }
   }, [selectedIds, headers])
@@ -125,54 +251,76 @@ export default function Table({
       <tr className="bg-thead">
         <th className="px-2 sm:px-4">
           <Checkbox
-            checked={selectedIds.size === data.length && data.length > 0}
-            indeterminate={selectedIds.size > 0 && selectedIds.size < data.length}
+            checked={selectedIds.size === filteredData.length && filteredData.length > 0}
+            indeterminate={selectedIds.size > 0 && selectedIds.size < filteredData.length}
             onChange={(e) => handleSelectAll(e.target.checked)}
           />
         </th>
 
-        {headers.map((header) => (
-          <th key={header} className="px-2 py-3 font-medium tracking-wider uppercase sm:px-4">
-            <div
-              className={`flex min-w-15 flex-col gap-1 font-bold ${
-                title === 'Proxy Status' ? 'text-base sm:text-lg' : 'text-sm sm:text-base'
-              }`}
-            >
-              <span className={['ip_port', 'note'].includes(header) ? 'text-left' : 'text-center'}>
-                {header}
-              </span>
-              {title === 'Proxy Manager' && (
-                <div className="relative">
-                  {/* Operator icon */}
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    data-operator="contain"
-                    viewBox="0 0 640 640"
-                    className="bg-border-input filter-operator fill-text-primary absolute top-[-2px] right-[-6px] h-4 w-4 cursor-pointer rounded-full p-0.5 hover:brightness-(--highlight-brightness)"
-                  >
-                    <path d="M136,128h216c105.9,0,192,86.1,192,192s-86.1,192-192,192H136c-22.1,0-40-17.9-40-40s17.9-40,40-40h216c61.8,0,112-50.2,112-112s-50.2-112-112-112H136c-22.1,0-40-17.9-40-40S113.9,128,136,128z" />
-                  </svg>
-                  <input
-                    type="text"
-                    placeholder="Filter"
-                    className={`filter-input bg-dropdown mt-1 px-2 py-1 text-center ${
-                      ['ip_port', 'note'].includes(header) ? 'text-left' : 'text-center'
-                    }`}
-                  />
-                </div>
-              )}
-            </div>
-          </th>
-        ))}
+        {headers.map((header) => {
+          let currentFilter = filters[header] || { value: '', operator: 'contain' }
+
+          let operator = currentFilter.operator
+
+          const OperatorIcon = operatorIcons[operator]
+
+          const showOperator = operatorConfig ? !!operatorConfig[header] : true // Default behavior matches original (show all)
+
+          // Current input value takes precedence over active filter value
+          const inputValue =
+            filterInputs[header] !== undefined ? filterInputs[header] : currentFilter.value
+
+          return (
+            <th key={header} className="px-2 py-3 font-medium tracking-wider uppercase sm:px-4">
+              <div
+                className={`flex min-w-15 flex-col gap-1 font-bold ${
+                  title === 'Proxy Status' ? 'text-base sm:text-lg' : 'text-sm sm:text-base'
+                }`}
+              >
+                <span
+                  className={['ip_port', 'note'].includes(header) ? 'text-left' : 'text-center'}
+                >
+                  {header}
+                </span>
+                {filter && (
+                  <div className="relative">
+                    {/* Operator icon */}
+                    {showOperator && (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 640 640"
+                        className="bg-border-input filter-operator fill-text-primary absolute top-[-2px] right-[-6px] h-4 w-4 cursor-pointer rounded-full p-0.5 hover:brightness-(--highlight-brightness)"
+                        onClick={() => toggleOperator(header)}
+                        title={`Filter: ${operator}`}
+                      >
+                        {OperatorIcon}
+                      </svg>
+                    )}
+                    <input
+                      type="text"
+                      placeholder="Filter"
+                      className={`filter-input bg-dropdown mt-1 w-full px-2 py-1 text-center ${
+                        ['ip_port', 'note'].includes(header) ? 'text-left' : 'text-center'
+                      }`}
+                      value={inputValue}
+                      onChange={(e) => handleFilterInputChange(header, e.target.value)}
+                      onKeyDown={(e) => handleFilterKeyDown(e, header)}
+                    />
+                  </div>
+                )}
+              </div>
+            </th>
+          )
+        })}
       </tr>
     )
-  }, [title, headers, selectedIds.size, data.length])
+  }, [title, headers, selectedIds.size, filteredData.length, filters, filterInputs, operatorConfig])
 
   useEffect(() => {
     if (!onSelectionChange) return
-    const selectedRows = data.filter((_, index) => selectedIds.has(index))
+    const selectedRows = filteredData.filter((_, index) => selectedIds.has(index))
     onSelectionChange(selectedRows)
-  }, [selectedIds, data, onSelectionChange])
+  }, [selectedIds, filteredData, onSelectionChange])
 
   return (
     <div className={`flex-1 overflow-hidden ${className}`}>
@@ -205,10 +353,10 @@ export default function Table({
               <div className="flex items-center gap-3 sm:gap-5">
                 <div className="flex flex-col gap-1 sm:flex-row sm:gap-5">
                   <span className="text-right whitespace-nowrap">
-                    Selected: <span id="selectedCount">0</span> rows
+                    Selected: <span id="selectedCount">{selectedIds.size}</span> rows
                   </span>
                   <span className="text-right whitespace-nowrap">
-                    Total: <span id="totalCount">0</span> rows
+                    Total: <span id="totalCount">{filteredData.length}</span> rows
                   </span>
                 </div>
                 {extraBtn}
@@ -218,7 +366,7 @@ export default function Table({
           {/* Table */}
           <div className="scroll-container overflow-x-auto overflow-y-hidden rounded-b-lg">
             <TableVirtuoso
-              data={data}
+              data={filteredData}
               useWindowScroll
               overscan={1000}
               context={virtuosoContext}
@@ -227,7 +375,7 @@ export default function Table({
               itemContent={itemContent}
             />
           </div>
-          {data.length === 0 && emptyMessage}
+          {filteredData.length === 0 && emptyMessage}
         </div>
       </div>
     </div>

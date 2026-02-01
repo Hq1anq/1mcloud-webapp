@@ -2,6 +2,12 @@ import DropDown from '../components/ui/DropDown'
 import Table from '../components/ui/Table'
 import { useState } from 'react'
 
+const OPERATOR_CONFIG = {
+  sid: ['greater-equal', 'less-equal', 'equal', 'contain'],
+  created: ['greater-equal', 'less-equal', 'contain'],
+  expired: ['greater-equal', 'less-equal', 'contain'],
+}
+
 export default function ProxyManager() {
   const [reinstallType, setReinstallType] = useState('HTTPS')
   const [changeIpType, setChangeIpType] = useState('HTTPS')
@@ -63,7 +69,7 @@ export default function ProxyManager() {
               </div>
 
               {/* GetData & Change Note & Reinstall and Simple Action Buttons */}
-              <div className="flex-col w-full">
+              <div className="w-full flex-col">
                 <div className="grid w-full auto-rows-auto grid-cols-[1fr_1fr_1fr] items-start gap-1 p-0">
                   {/* Get Data */}
                   <div className="col-start-1 col-end-2 row-start-1 row-end-2 m-1 space-y-1 md:row-end-3">
@@ -294,6 +300,8 @@ export default function ProxyManager() {
           'status',
           'note',
         ]}
+        filter={true}
+        operatorConfig={OPERATOR_CONFIG}
         extraBtn={
           <button
             id="reloadBtn"

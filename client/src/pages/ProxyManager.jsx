@@ -168,7 +168,27 @@ export default function ProxyManager({ onBuySuccessRef }) {
 
       setData((prevData) => {
         // Use the helper to merge resData into the existing prevData (which keeps user_pass)
-        const mergedData = mergeResIntoData(prevData, resData)
+        let mergedData = mergeResIntoData(prevData, resData)
+
+        // Trash data cleanup: if full fetch (no IPs) and returned results are within limit,
+        // it means we got all current resources. Anything in prevData NOT in resData and NOT refunded is trash.
+        if (!parsedIps && resData.length <= (params.amount || 200)) {
+          const trashSids = prevData
+            .filter(
+              (row) =>
+                !resData.some((r) => r.sid === row.sid) &&
+                row.status?.toLowerCase() !== 'refunded'
+            )
+            .map((row) => row.sid)
+
+          if (trashSids.length > 0) {
+            axiosInstance
+              .delete('/proxy', { data: { sids: trashSids } })
+              .catch((err) => console.error('[Cleanup] Delete failed:', err.message))
+
+            mergedData = mergedData.filter((row) => !trashSids.includes(row.sid))
+          }
+        }
 
         // Find the specific rows we just fetched to use for receivedData / syncing
         const finalResData = mergedData.filter((row) => resData.some((r) => r.sid === row.sid))

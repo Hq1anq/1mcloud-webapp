@@ -167,7 +167,7 @@ export default function VpsManager({ onBuySuccessRef }) {
 
     const params = {}
     if (parsedIps) params.ips = parsedIps
-    if (amount) params.amount = +amount
+    params.amount = amount ? +amount : 200
 
     const loadingId = addToast(t('manager.fetchingData'), 'loading')
 
@@ -177,7 +177,28 @@ export default function VpsManager({ onBuySuccessRef }) {
       const resData = res.data?.data || []
 
       setData((prevData) => {
-        const mergedData = mergeResIntoData(prevData, resData)
+        let mergedData = mergeResIntoData(prevData, resData)
+
+        // Trash data cleanup: if full fetch (no IPs) and returned results are within limit,
+        // it means we got all current resources. Anything in prevData NOT in resData and NOT refunded is trash.
+        if (!parsedIps && resData.length <= params.amount) {
+          const trashSids = prevData
+            .filter(
+              (row) =>
+                !resData.some((r) => r.sid === row.sid) &&
+                row.status?.toLowerCase() !== 'refunded'
+            )
+            .map((row) => row.sid)
+
+          if (trashSids.length > 0) {
+            axiosInstance
+              .delete('/vps', { data: { sids: trashSids } })
+              .catch((err) => console.error('[Cleanup] Delete failed:', err.message))
+
+            mergedData = mergedData.filter((row) => !trashSids.includes(row.sid))
+          }
+        }
+
         const finalResData = mergedData.filter((row) => resData.some((r) => r.sid === row.sid))
 
         setReceivedData(finalResData)

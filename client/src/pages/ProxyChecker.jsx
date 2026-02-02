@@ -206,7 +206,6 @@ export default function ProxyChecker() {
         title="Proxy Status"
         className="text-base sm:text-lg"
         headers={['ip', 'port', 'username', 'password', 'type', 'status']}
-        filter={false}
         extraBtn={
           <button
             id="captureBtn"

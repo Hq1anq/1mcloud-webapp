@@ -88,10 +88,10 @@ const itemContent = (index, row, context) => {
 
 export default function Table({
   data = DEFAULT_DATA,
+  filterData,
   onSelectionChange,
   title,
   headers,
-  filter,
   operatorConfig,
   extraBtn,
   emptyMessage,
@@ -110,9 +110,11 @@ export default function Table({
   }, [filters])
 
   const filteredData = useMemo(() => {
-    if (Object.keys(filters).length === 0) return data
+    const hasActiveFilters = Object.values(filters).some((f) => f.value)
+    if (!hasActiveFilters) return data
 
-    return data.filter((row) => {
+    const sourceData = filterData || data
+    return sourceData.filter((row) => {
       return Object.entries(filters).every(([key, filter]) => {
         if (!filter.value) return true // Skip empty filters
 
@@ -161,7 +163,7 @@ export default function Table({
         }
       })
     })
-  }, [data, filters, operatorConfig])
+  }, [data, filterData, filters, operatorConfig])
 
   function handleSelectAll(checked) {
     if (checked) {
@@ -282,14 +284,14 @@ export default function Table({
                 >
                   {header}
                 </span>
-                {filter && (
+                {filterData && (
                   <div className="relative">
                     {/* Operator icon */}
                     {showOperator && (
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 640 640"
-                        className="bg-border-input filter-operator fill-text-primary absolute top-[-2px] right-[-6px] h-4 w-4 cursor-pointer rounded-full p-0.5 hover:brightness-(--highlight-brightness)"
+                        className="bg-border-input filter-operator fill-text-secondary absolute top-[-2px] right-[-6px] h-4 w-4 cursor-pointer rounded-full p-0.5 hover:brightness-(--highlight-brightness)"
                         onClick={() => toggleOperator(header)}
                         title={`Filter: ${operator}`}
                       >

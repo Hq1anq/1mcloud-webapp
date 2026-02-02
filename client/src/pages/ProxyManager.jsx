@@ -1,6 +1,9 @@
 import DropDown from '../components/ui/DropDown'
 import Table from '../components/ui/Table'
-import { useState } from 'react'
+import axiosInstance from '../lib/axios'
+import { useState, useEffect, useCallback } from 'react'
+import { useToast } from '../context/ToastContext'
+import { extractIP } from '../lib/utils'
 
 const OPERATOR_CONFIG = {
   sid: ['greater-equal', 'less-equal', 'equal', 'contain'],
@@ -8,11 +11,101 @@ const OPERATOR_CONFIG = {
   expired: ['greater-equal', 'less-equal', 'contain'],
 }
 
+const STORAGE_KEY = 'proxyManager_origin'
+
+function loadOrigin() {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    return stored ? JSON.parse(stored) : []
+  } catch {
+    return []
+  }
+}
+
+function saveOrigin(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+}
+
+/** Merge target into origin by sid, preserving user_pass from origin */
+function mergeTargetIntoOrigin(origin, target) {
+  const originMap = new Map(origin.map((row) => [row.sid, row]))
+
+  for (const targetRow of target) {
+    const existingRow = originMap.get(targetRow.sid)
+    if (existingRow) {
+      // Update all columns from target, but keep user_pass from origin
+      const userPass = existingRow.user_pass
+      Object.assign(existingRow, targetRow)
+      if (userPass !== undefined) {
+        existingRow.user_pass = userPass
+      }
+    } else {
+      // New row from target — add to origin
+      originMap.set(targetRow.sid, { ...targetRow })
+    }
+  }
+
+  return Array.from(originMap.values())
+}
+
 export default function ProxyManager() {
   const [reinstallType, setReinstallType] = useState('HTTPS')
   const [changeIpType, setChangeIpType] = useState('HTTPS')
-
   const [selectedRows, setSelectedRows] = useState([])
+  const { addToast, removeToast } = useToast()
+
+  // Controlled input state
+  const [ips, setIps] = useState('')
+  const [amount, setAmount] = useState('')
+
+  // Origin: persistent data in localStorage (includes user_pass)
+  const [origin, setOrigin] = useState(loadOrigin)
+  // TableData: what renders in the table (target after GetData, origin on first load)
+  const [tableData, setTableData] = useState(loadOrigin)
+
+  // Save origin to localStorage whenever it changes
+  useEffect(() => {
+    saveOrigin(origin)
+  }, [origin])
+
+  const handleGetData = useCallback(async () => {
+    const parsedIps = ips
+      .split('\n')
+      .map((line) => extractIP(line))
+      .filter(Boolean)
+      .join(',')
+
+    const params = {}
+    if (parsedIps) params.ips = parsedIps
+    if (amount) params.amount = +amount
+
+    const loadingId = addToast('Fetching data...', 'loading')
+
+    try {
+      const res = await axiosInstance.get('/server/list', { params })
+
+      const target = res.data?.data || []
+
+      // Render target in the table
+      setTableData(target)
+
+      // Merge target into origin and persist
+      setOrigin((prev) => {
+        const merged = mergeTargetIntoOrigin(prev, target)
+        return merged
+      })
+
+      removeToast(loadingId)
+      addToast(
+        `Loaded <span class="text-text-toast-success">${target.length}</span> rows`,
+        'success'
+      )
+    } catch (err) {
+      console.error('[GetData] Error:', err.message)
+      removeToast(loadingId)
+      addToast(`Failed to get data: ${err.message}`, 'error')
+    }
+  }, [ips, amount, addToast, removeToast])
   return (
     <div>
       {/* ========== TOP CONTROLS ========== */}
@@ -48,7 +141,7 @@ export default function ProxyManager() {
                     </label>
                   </label>
                   <button
-                    id="deleteBtn"
+                    onClick={() => setIps('')}
                     className="bg-bg-pause static right-0 bottom-[-8px] mb-2 flex items-center justify-center rounded-lg px-3 py-1 text-sm font-medium transition-colors duration-200 hover:brightness-(--highlight-brightness) md:absolute lg:static"
                   >
                     <svg
@@ -65,7 +158,9 @@ export default function ProxyManager() {
                   id="ip-list"
                   className="min-h-24 grow"
                   placeholder="192.168.1.1&#10;10.0.0.1&#10;172.16.0.1"
-                ></textarea>
+                  value={ips}
+                  onChange={(e) => setIps(e.target.value)}
+                />
               </div>
 
               {/* GetData & Change Note & Reinstall and Simple Action Buttons */}
@@ -73,11 +168,19 @@ export default function ProxyManager() {
                 <div className="grid w-full auto-rows-auto grid-cols-[1fr_1fr_1fr] items-start gap-1 p-0">
                   {/* Get Data */}
                   <div className="col-start-1 col-end-2 row-start-1 row-end-2 m-1 space-y-1 md:row-end-3">
-                    <input type="number" id="amount" placeholder="Enter amount" min="0" />
+                    <input
+                      type="number"
+                      id="amount"
+                      placeholder="Enter amount"
+                      min="1"
+                      value={amount}
+                      onChange={(e) => setAmount(e.target.value)}
+                    />
                     <div className="flex items-center">
                       <button
                         id="getDataBtn"
                         className="bg-bg-getData flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
+                        onClick={handleGetData}
                       >
                         <svg
                           aria-hidden="true"
@@ -289,6 +392,8 @@ export default function ProxyManager() {
       <Table
         title="Proxy Manager"
         className="text-xs sm:text-sm"
+        data={tableData}
+        filterData={origin}
         headers={[
           'sid',
           'ip_port',
@@ -300,7 +405,6 @@ export default function ProxyManager() {
           'status',
           'note',
         ]}
-        filter={true}
         operatorConfig={OPERATOR_CONFIG}
         extraBtn={
           <button

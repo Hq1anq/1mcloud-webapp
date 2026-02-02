@@ -9,6 +9,7 @@ export const ToastProvider = ({ children }) => {
   const addToast = useCallback((message, type = 'info') => {
     const id = Date.now().toString() + Math.random().toString(36).substring(2, 9)
     setToasts((prevToasts) => [...prevToasts, { id, message, type }])
+    return id
   }, [])
 
   const removeToast = useCallback((id) => {

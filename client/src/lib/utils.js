@@ -22,3 +22,21 @@ export const getStatusClasses = (status) => {
       return ''
   }
 }
+
+export const extractIP = (line) => {
+  // Looser regex: grab four groups of digits separated by dots
+  const ipv4Candidate = line.match(/\d+\.\d+\.\d+\.\d+/)
+  if (!ipv4Candidate) return null
+
+  const ip = ipv4Candidate[0]
+
+  // Validate each octet (0–255)
+  const parts = ip.split('.')
+  if (parts.length !== 4) return null
+  for (let part of parts) {
+    const num = Number(part)
+    if (num < 0 || num > 255) return null
+  }
+
+  return ip
+}

@@ -312,6 +312,19 @@ export default function ProxyManager() {
                 </div>
                 <div className="mt-1 flex flex-wrap">
                   <button
+                    id="getInfoBtn"
+                    className="bg-bg-getInfo m-1 flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 448 512"
+                      className="mr-1 h-5 w-5 shrink-0 fill-current sm:mr-2 sm:h-6 sm:w-6"
+                    >
+                      <path d="M384 32H64C28.654 32 0 60.652 0 96V416C0 451.344 28.654 480 64 480H384C419.346 480 448 451.344 448 416V96C448 60.652 419.346 32 384 32ZM224 128C241.674 128 256 142.326 256 160C256 177.672 241.674 192 224 192S192 177.672 192 160C192 142.326 206.326 128 224 128ZM264 384H184C170.75 384 160 373.25 160 360S170.75 336 184 336H200V272H192C178.75 272 168 261.25 168 248S178.75 224 192 224H224C237.25 224 248 234.75 248 248V336H264C277.25 336 288 346.75 288 360S277.25 384 264 384Z" />
+                    </svg>
+                    Get Info
+                  </button>
+                  <button
                     id="renewBtn"
                     className="bg-bg-renew m-1 flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
                   >
@@ -336,51 +349,6 @@ export default function ProxyManager() {
                       <path d="m 8 0 c -0.550781 0 -1 0.449219 -1 1 v 5 c 0 0.550781 0.449219 1 1 1 s 1 -0.449219 1 -1 v -5 c 0 -0.550781 -0.449219 -1 -1 -1 z m -7 1 l 2.050781 2.050781 c -2.117187 2.117188 -2.652343 5.355469 -1.332031 8.039063 c 1.324219 2.683594 4.214844 4.238281 7.179688 3.851562 c 2.96875 -0.386718 5.367187 -2.625 5.960937 -5.554687 c 0.59375 -2.933594 -0.75 -5.929688 -3.335937 -7.433594 c -0.476563 -0.28125 -1.089844 -0.117187 -1.367188 0.359375 s -0.117188 1.089844 0.359375 1.367188 c 1.851563 1.078124 2.808594 3.207031 2.382813 5.3125 c -0.421876 2.101562 -2.128907 3.691406 -4.253907 3.96875 c -2.128906 0.273437 -4.183593 -0.828126 -5.128906 -2.753907 s -0.566406 -4.226562 0.949219 -5.742187 l 1.535156 1.535156 v -4.003906 c 0 -0.519532 -0.449219 -0.996094 -1 -0.996094 z m 0 0" />
                     </svg>
                     Reboot
-                  </button>
-                  <button
-                    id="getInfoBtn"
-                    className="bg-bg-changeNote m-1 flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 448 512"
-                      className="mr-1 h-5 w-5 shrink-0 fill-current sm:mr-2 sm:h-6 sm:w-6"
-                    >
-                      <path d="M384 32H64C28.654 32 0 60.652 0 96V416C0 451.344 28.654 480 64 480H384C419.346 480 448 451.344 448 416V96C448 60.652 419.346 32 384 32ZM224 128C241.674 128 256 142.326 256 160C256 177.672 241.674 192 224 192S192 177.672 192 160C192 142.326 206.326 128 224 128ZM264 384H184C170.75 384 160 373.25 160 360S170.75 336 184 336H200V272H192C178.75 272 168 261.25 168 248S178.75 224 192 224H224C237.25 224 248 234.75 248 248V336H264C277.25 336 288 346.75 288 360S277.25 384 264 384Z" />
-                    </svg>
-                    Get Info
-                  </button>
-                </div>
-                <div className="m-1 mt-2 flex">
-                  <div className="relative flex-1">
-                    <input
-                      type="password"
-                      id="api-key"
-                      placeholder="Enter API Key"
-                      className="rounded-r-none border-r-0"
-                    />
-                    {/* Eye SVG (Show API key) */}
-                    <svg
-                      id="eyeIconAPIKey"
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 640 640"
-                      className="fill-text-muted absolute inset-y-0 right-0 my-auto mr-2 h-5 w-5 cursor-pointer hover:brightness-(--highlight-brightness) sm:h-7 sm:w-7"
-                    >
-                      <path d="M73 39.1C63.6 29.7 48.4 29.7 39.1 39.1C29.8 48.5 29.7 63.7 39 73.1L567 601.1C576.4 610.5 591.6 610.5 600.9 601.1C610.2 591.7 610.3 576.5 600.9 567.2L504.5 470.8C507.2 468.4 509.9 466 512.5 463.6C559.3 420.1 590.6 368.2 605.5 332.5C608.8 324.6 608.8 315.8 605.5 307.9C590.6 272.2 559.3 220.2 512.5 176.8C465.4 133.1 400.7 96.2 319.9 96.2C263.1 96.2 214.3 114.4 173.9 140.4L73 39.1zM236.5 202.7C260 185.9 288.9 176 320 176C399.5 176 464 240.5 464 320C464 351.1 454.1 379.9 437.3 403.5L402.6 368.8C415.3 347.4 419.6 321.1 412.7 295.1C399 243.9 346.3 213.5 295.1 227.2C286.5 229.5 278.4 232.9 271.1 237.2L236.4 202.5zM357.3 459.1C345.4 462.3 332.9 464 320 464C240.5 464 176 399.5 176 320C176 307.1 177.7 294.6 180.9 282.7L101.4 203.2C68.8 240 46.4 279 34.5 307.7C31.2 315.6 31.2 324.4 34.5 332.3C49.4 368 80.7 420 127.5 463.4C174.6 507.1 239.3 544 320.1 544C357.4 544 391.3 536.1 421.6 523.4L357.4 459.2z" />
-                    </svg>
-                  </div>
-                  <button
-                    id="getAPIKeyBtn"
-                    className="bg-bg-getAPIKey flex items-center justify-center rounded-r-lg px-3 py-2 font-medium transition-colors duration-200 hover:brightness-(--highlight-brightness)"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 640 640"
-                      className="mr-1 h-5 w-5 shrink-0 fill-current sm:mr-2 sm:h-7 sm:w-7"
-                    >
-                      <path d="M400 416C497.2 416 576 337.2 576 240C576 142.8 497.2 64 400 64C302.8 64 224 142.8 224 240C224 258.7 226.9 276.8 232.3 293.7L71 455C66.5 459.5 64 465.6 64 472L64 552C64 565.3 74.7 576 88 576L168 576C181.3 576 192 565.3 192 552L192 512L232 512C245.3 512 256 501.3 256 488L256 448L296 448C302.4 448 308.5 445.5 313 441L346.3 407.7C363.2 413.1 381.3 416 400 416zM440 160C462.1 160 480 177.9 480 200C480 222.1 462.1 240 440 240C417.9 240 400 222.1 400 200C400 177.9 417.9 160 440 160z" />
-                    </svg>
-                    Get API Key
                   </button>
                 </div>
               </div>

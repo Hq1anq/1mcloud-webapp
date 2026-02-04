@@ -228,6 +228,8 @@ const vi = {
   'buy.purchaseFailed': 'Mua thất bại',
   'buy.errorOccurred': 'Đã xảy ra lỗi',
   'buy.processing': 'Đang xử lý...',
+  'buy.invalidUsername': 'Chỉ được phép dùng kí tự thường (a-z) và số 0-9',
+  'buy.invalidPassword': 'Chữ hoa + chữ thường + số, tối thiểu 10',
 
   // Account Page
   'account.title': 'Tài khoản của tôi',

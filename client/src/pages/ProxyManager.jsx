@@ -147,28 +147,33 @@ export default function ProxyManager() {
 
       const resData = res.data?.data || []
 
-      // Render resData in the table
-      setReceivedData(resData)
+      setData((prevData) => {
+        // Use the helper to merge resData into the existing prevData (which keeps user_pass)
+        const mergedData = mergeResIntoData(prevData, resData)
 
-      // Merge resData into data and persist
-      setData((prev) => {
-        const merged = mergeResIntoData(prev, resData)
-        return merged
+        // Find the specific rows we just fetched to use for receivedData / syncing
+        const finalResData = mergedData.filter((row) => resData.some((r) => r.sid === row.sid))
+        // Render finalResData in the table
+        setReceivedData(finalResData)
+        setRenderingReceived(true)
+        setSelectedIds(new Set())
+
+        // Sync updated data to DB directly
+        syncToDb(finalResData)
+
+        removeToast(loadingId)
+        addToast(
+          <>
+            {t('manager.loadedRows')}{' '}
+            <span className="text-text-toast-success">{finalResData.length}</span>{' '}
+            {t('manager.rows')}
+          </>,
+          'success'
+        )
+
+        // Return full mergedData to persist in state and localStorage
+        return mergedData
       })
-
-      removeToast(loadingId)
-      addToast(
-        <>
-          {t('manager.loadedRows')}{' '}
-          <span className="text-text-toast-success">{resData.length}</span> {t('manager.rows')}
-        </>,
-        'success'
-      )
-      setRenderingReceived(true)
-      setSelectedIds(new Set())
-
-      // Sync MERGED (new) data to DB directly
-      syncToDb(resData)
     } catch (err) {
       console.error('[GetData] Error:', err.message)
       removeToast(loadingId)
@@ -385,6 +390,20 @@ export default function ProxyManager() {
       else if (parts.length === 2) [user, pass] = parts
       else {
         addToast(t('manager.invalidReinstall'), 'error')
+        return
+      }
+
+      // Username validation: lowercase a-z and 0-9
+      const usernameRegex = /^[a-z0-9]+$/
+      if (user && user !== '__' && !usernameRegex.test(user)) {
+        addToast(`Username ${t('buy.invalidUsername')}`, 'error')
+        return
+      }
+
+      // Password validation: at least 10 chars, uppercase, lowercase, and number
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{10,}$/
+      if (pass && pass !== '__' && !passwordRegex.test(pass)) {
+        addToast(`Password ${t('buy.invalidPassword')}`, 'error')
         return
       }
       infoTextNode = (

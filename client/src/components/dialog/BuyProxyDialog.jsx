@@ -7,7 +7,7 @@ import Checkbox from '../ui/Checkbox'
 import { useTranslation } from '../../i18n'
 
 export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
-  const { addToast } = useToast()
+  const { addToast, removeToast } = useToast()
   const t = useTranslation()
 
   const [supportData, setSupportData] = useState({
@@ -125,6 +125,21 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
   }
 
   const handlePay = async () => {
+    // Validate inputs
+    if (!randomUsername && usernameInput && !/^[a-z0-9]+$/.test(usernameInput)) {
+      addToast(t('buy.invalidUsername'), 'error')
+      return
+    }
+
+    if (
+      !randomPassword &&
+      passwordInput &&
+      !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{10,}$/.test(passwordInput)
+    ) {
+      addToast(t('buy.invalidPassword'), 'error')
+      return
+    }
+
     const proxyDataBuying = {
       plan_id: 0,
       duration: Number(selectedDuration),
@@ -166,9 +181,11 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
         if (onSuccess) onSuccess(res.data?.data)
         onClose()
       } else {
+        removeToast(loadingId)
         addToast(res.data?.message || t('buy.purchaseFailed'), 'error')
       }
     } catch (err) {
+      removeToast(loadingId)
       addToast(err.response?.data?.message || err.message || t('buy.errorOccurred'), 'error')
     }
   }
@@ -290,12 +307,22 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
                   </span>
                 </div>
                 {!randomUsername && (
-                  <input
-                    type="text"
-                    value={usernameInput}
-                    onChange={(e) => setUsernameInput(e.target.value)}
-                    placeholder={t('buy.customUsername')}
-                  />
+                  <div className="flex flex-col gap-1">
+                    <input
+                      type="text"
+                      className={`${
+                        usernameInput && !/^[a-z0-9]+$/.test(usernameInput)
+                          ? 'border-orange focus:border-orange focus:ring-orange/20'
+                          : ''
+                      }`}
+                      value={usernameInput}
+                      onChange={(e) => setUsernameInput(e.target.value)}
+                      placeholder={t('buy.customUsername')}
+                    />
+                    {usernameInput && !/^[a-z0-9]+$/.test(usernameInput) && (
+                      <span className="text-orange text-xs">{t('buy.invalidUsername')}</span>
+                    )}
+                  </div>
                 )}
               </label>
 
@@ -310,12 +337,24 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
                   </span>
                 </div>
                 {!randomPassword && (
-                  <input
-                    type="text"
-                    value={passwordInput}
-                    onChange={(e) => setPasswordInput(e.target.value)}
-                    placeholder={t('buy.customPassword')}
-                  />
+                  <div className="flex flex-col gap-1">
+                    <input
+                      type="text"
+                      className={`${
+                        passwordInput &&
+                        !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{10,}$/.test(passwordInput)
+                          ? 'border-orange focus:border-orange focus:ring-orange/20'
+                          : ''
+                      }`}
+                      value={passwordInput}
+                      onChange={(e) => setPasswordInput(e.target.value)}
+                      placeholder={t('buy.customPassword')}
+                    />
+                    {passwordInput &&
+                      !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{10,}$/.test(passwordInput) && (
+                        <span className="text-orange text-xs">{t('buy.invalidPassword')}</span>
+                      )}
+                  </div>
                 )}
               </label>
 

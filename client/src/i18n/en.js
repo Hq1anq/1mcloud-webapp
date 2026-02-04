@@ -227,6 +227,8 @@ const en = {
   'buy.purchaseFailed': 'Purchase failed',
   'buy.errorOccurred': 'Error occurred',
   'buy.processing': 'Processing...',
+  'buy.invalidUsername': 'Only lowercase letters (a-z) and numbers (0-9) are allowed',
+  'buy.invalidPassword': 'Uppercase, lowercase, number, min length 10',
 
   // Account Page
   'account.title': 'My Account',

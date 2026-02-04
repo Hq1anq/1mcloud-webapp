@@ -12,12 +12,18 @@ export const ToastProvider = ({ children }) => {
     return id
   }, [])
 
+  const updateToast = useCallback((id, message) => {
+    setToasts((prevToasts) =>
+      prevToasts.map((toast) => (toast.id === id ? { ...toast, message } : toast))
+    )
+  }, [])
+
   const removeToast = useCallback((id) => {
     setToasts((prevToasts) => prevToasts.filter((toast) => toast.id !== id))
   }, [])
 
   return (
-    <ToastContext.Provider value={{ addToast, removeToast }}>
+    <ToastContext.Provider value={{ addToast, updateToast, removeToast }}>
       {children}
       <ToastContainer toasts={toasts} removeToast={removeToast} />
     </ToastContext.Provider>

@@ -1,9 +1,11 @@
 import DropDown from '../components/ui/DropDown'
 import Table from '../components/ui/Table'
+import CopyDialog from '../components/dialog/CopyDialog'
 import axiosInstance from '../lib/axios'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useToast } from '../context/ToastContext'
 import { extractIP } from '../lib/utils'
+import useSafeCopy from '../hooks/useSafeCopy'
 
 const OPERATOR_CONFIG = {
   sid: ['greater-equal', 'less-equal', 'equal', 'contain'],
@@ -52,7 +54,8 @@ export default function ProxyManager() {
   const [reinstallType, setReinstallType] = useState('HTTPS')
   const [changeIpType, setChangeIpType] = useState('HTTPS')
   const [selectedRows, setSelectedRows] = useState([])
-  const { addToast, removeToast } = useToast()
+  const { addToast, updateToast, removeToast } = useToast()
+  const { safeCopy, copyDialogProps } = useSafeCopy()
 
   // Controlled input state
   const [ips, setIps] = useState('')
@@ -62,6 +65,12 @@ export default function ProxyManager() {
   const [origin, setOrigin] = useState(loadOrigin)
   // TableData: what renders in the table (target after GetData, origin on first load)
   const [tableData, setTableData] = useState(loadOrigin)
+
+  // Action feedback state
+  const selectedRowsRef = useRef(selectedRows)
+  useEffect(() => {
+    selectedRowsRef.current = selectedRows
+  }, [selectedRows])
 
   // Save origin to localStorage whenever it changes
   useEffect(() => {
@@ -155,7 +164,6 @@ export default function ProxyManager() {
                   </button>
                 </div>
                 <textarea
-                  id="ip-list"
                   className="min-h-24 grow"
                   placeholder="192.168.1.1&#10;10.0.0.1&#10;172.16.0.1"
                   value={ips}
@@ -170,7 +178,6 @@ export default function ProxyManager() {
                   <div className="col-start-1 col-end-2 row-start-1 row-end-2 m-1 space-y-1 md:row-end-3">
                     <input
                       type="number"
-                      id="amount"
                       placeholder="Enter amount"
                       min="1"
                       value={amount}
@@ -178,7 +185,6 @@ export default function ProxyManager() {
                     />
                     <div className="flex items-center">
                       <button
-                        id="getDataBtn"
                         className="bg-bg-getData flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
                         onClick={handleGetData}
                       >
@@ -205,7 +211,6 @@ export default function ProxyManager() {
                   <div className="col-start-2 col-end-4 row-start-1 row-end-2 m-1 flex-1 space-y-1 md:col-end-3 md:row-end-3">
                     <input type="text" id="noteInput" placeholder="Enter note" />
                     <button
-                      id="changeNoteBtn"
                       className="bg-bg-changeNote flex w-full items-center justify-center rounded-lg px-3 py-2 font-medium transition-colors duration-200 hover:brightness-(--highlight-brightness)"
                     >
                       <svg
@@ -223,7 +228,6 @@ export default function ProxyManager() {
                     <input type="text" id="reinstallInput" placeholder="port:username:password" />
                     <div className="flex">
                       <button
-                        id="reinstallBtn"
                         className="bg-bg-reinstall flex flex-1 items-center justify-center rounded-l-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
                       >
                         <svg
@@ -247,7 +251,6 @@ export default function ProxyManager() {
                   {/* Change IP */}
                   <div className="col-start-1 col-end-3 row-start-3 row-end-4 m-1 mb-0 flex self-start md:col-end-2">
                     <button
-                      id="changeIpBtn"
                       className="bg-bg-changeIp flex w-full items-center justify-center rounded-l-lg px-3 py-2 font-medium transition-colors duration-200 hover:brightness-(--highlight-brightness)"
                     >
                       <svg
@@ -270,7 +273,17 @@ export default function ProxyManager() {
                   {/* Simple button */}
                   <div className="col-start-3 col-end-4 row-start-2 row-end-4 mr-1 grid flex-1 grid-cols-1 gap-1 sm:mr-0 md:col-start-2 md:row-start-3 md:grid-cols-3">
                     <button
-                      id="copyIpBtn"
+                      onClick={() => {
+                        const rows = selectedRowsRef.current
+                        if (rows.length === 0) return addToast('No rows selected', 'warning')
+                        const text = rows
+                          .map((r) => r.ip_port?.split(':')[0])
+                          .filter(Boolean)
+                          .join('\n')
+                        safeCopy(text).then(
+                          (ok) => ok && addToast('Copied IPs to clipboard', 'success')
+                        )
+                      }}
                       className="bg-bg-copyIp m-0.5 flex items-center justify-center rounded-lg px-3 py-2 font-medium transition-colors duration-200 hover:brightness-(--highlight-brightness) sm:m-1"
                     >
                       <svg
@@ -283,7 +296,6 @@ export default function ProxyManager() {
                       Copy IP
                     </button>
                     <button
-                      id="pauseBtn"
                       className="bg-bg-pause m-0.5 flex items-center justify-center rounded-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness) sm:m-1"
                     >
                       <svg
@@ -295,10 +307,7 @@ export default function ProxyManager() {
                       </svg>
                       Pause
                     </button>
-                    <button
-                      id="buyBtn"
-                      className="bg-bg-changeIp m-0.5 flex items-center justify-center rounded-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness) sm:m-1"
-                    >
+                    <button className="bg-bg-changeIp m-0.5 flex items-center justify-center rounded-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness) sm:m-1">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 640 640"
@@ -314,6 +323,20 @@ export default function ProxyManager() {
                   <button
                     id="getInfoBtn"
                     className="bg-bg-getInfo m-1 flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
+                    onClick={() => {
+                      const rows = selectedRowsRef.current
+                      if (rows.length === 0) return addToast('No rows selected', 'warning')
+                      const text = rows
+                        .map((r) => {
+                          const [ip, port] = (r.ip_port || '').split(':')
+                          const [user, pass] = (r.user_pass || '').split(':')
+                          return [ip, port, user, pass].filter(Boolean).join(':')
+                        })
+                        .join('\n')
+                      safeCopy(text).then(
+                        (ok) => ok && addToast('Copied info to clipboard', 'success')
+                      )
+                    }}
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -324,10 +347,7 @@ export default function ProxyManager() {
                     </svg>
                     Get Info
                   </button>
-                  <button
-                    id="renewBtn"
-                    className="bg-bg-renew m-1 flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
-                  >
+                  <button className="bg-bg-renew m-1 flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 640 640"
@@ -338,7 +358,6 @@ export default function ProxyManager() {
                     Renew
                   </button>
                   <button
-                    id="rebootBtn"
                     className="bg-bg-reboot m-1 flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
                   >
                     <svg
@@ -405,6 +424,8 @@ export default function ProxyManager() {
         }
         onSelectionChange={setSelectedRows}
       />
+
+      <CopyDialog {...copyDialogProps} />
     </div>
   )
 }

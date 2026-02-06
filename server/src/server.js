@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import path from "path";
 import authRoute from "./route/auth.route.js";
 import managerRoute from "./route/manager.route.js";
 import checkerRoute from "./route/checker.route.js";
@@ -7,7 +8,10 @@ import userRoute from "./route/user.route.js";
 import proxyRoute from "./route/proxy.route.js";
 import { initDatabase } from "./lib/db.js";
 
+const __dirname = path.resolve();
+
 const app = express();
+app.use(express.static(path.join(__dirname, "../client/dist")));
 const PORT = process.env.PORT;
 
 app.use(express.json());
@@ -17,6 +21,11 @@ app.use(
     credentials: true,
   }),
 );
+
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "../client/dist/index.html"));
+});
+
 app.use("/api/auth", authRoute);
 app.use("/api/server", managerRoute);
 app.use("/api/user", userRoute);

@@ -4,7 +4,7 @@ import CopyDialog from '../components/dialog/CopyDialog'
 import axiosInstance from '../lib/axios'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useToast } from '../context/ToastContext'
-import { extractIP } from '../lib/utils'
+import { extractIP, randomDelay } from '../lib/utils'
 import useSafeCopy from '../hooks/useSafeCopy'
 
 const OPERATOR_CONFIG = {
@@ -60,13 +60,20 @@ export default function ProxyManager() {
   // Controlled input state
   const [ips, setIps] = useState('')
   const [amount, setAmount] = useState('')
+  const [noteInput, setNoteInput] = useState('')
+  const [reinstallInput, setReinstallInput] = useState('')
 
   // Origin: persistent data in localStorage (includes user_pass)
   const [origin, setOrigin] = useState(loadOrigin)
   // TableData: what renders in the table (target after GetData, origin on first load)
   const [tableData, setTableData] = useState(loadOrigin)
+  // Increments on fresh getData to signal Table to reset filters
+  const [dataVersion, setDataVersion] = useState(0)
 
   // Action feedback state
+  const [rowClassMap, setRowClassMap] = useState({})
+  const [deselectSids, setDeselectSids] = useState([])
+  const [isProcessing, setIsProcessing] = useState(false)
   const selectedRowsRef = useRef(selectedRows)
   useEffect(() => {
     selectedRowsRef.current = selectedRows
@@ -97,6 +104,7 @@ export default function ProxyManager() {
 
       // Render target in the table
       setTableData(target)
+      setDataVersion((v) => v + 1)
 
       // Merge target into origin and persist
       setOrigin((prev) => {
@@ -115,6 +123,284 @@ export default function ProxyManager() {
       addToast(`Failed to get data: ${err.message}`, 'error')
     }
   }, [ips, amount, addToast, removeToast])
+
+  // ── Helper: update a single row in both tableData and origin by sid ──
+  const updateRowBySid = useCallback((sid, updater) => {
+    setTableData((prev) => prev.map((r) => (r.sid === sid ? { ...r, ...updater(r) } : r)))
+    setOrigin((prev) => prev.map((r) => (r.sid === sid ? { ...r, ...updater(r) } : r)))
+  }, [])
+
+  // ── Sequential processor with per-row feedback ──
+  const processSequential = useCallback(
+    async (rows, apiCallFn, actionName) => {
+      if (rows.length === 0) {
+        addToast('No rows selected', 'warning')
+        return
+      }
+      setIsProcessing(true)
+      setRowClassMap({})
+      setDeselectSids([])
+      let successCount = 0
+      let failCount = 0
+
+      const total = rows.length
+      const loadingId = addToast(
+        `${actionName} <span class="text-text-toast-success">1/${total}</span>`,
+        'loading'
+      )
+
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i]
+        try {
+          const res = await apiCallFn(row)
+          if (res.data?.success) {
+            successCount++
+            setRowClassMap((prev) => ({ ...prev, [row.sid]: 'bg-success-cell' }))
+          } else {
+            failCount++
+            setRowClassMap((prev) => ({ ...prev, [row.sid]: 'bg-error-cell' }))
+          }
+        } catch {
+          failCount++
+          setRowClassMap((prev) => ({ ...prev, [row.sid]: 'bg-error-cell' }))
+        }
+        // Deselect this row
+        setDeselectSids((prev) => [...prev, row.sid])
+        // Update progress toast
+        updateToast(
+          loadingId,
+          `${actionName} <span class="text-text-toast-success">${i + 2}/${total}</span>`
+        )
+        // Random delay before next request
+        if (i < rows.length - 1) await randomDelay()
+      }
+
+      removeToast(loadingId)
+      setIsProcessing(false)
+      if (failCount === 0)
+        addToast(
+          `${actionName} completed <br><span class="text-text-toast-success">${successCount} success</span>`,
+          'success'
+        )
+      else if (successCount === 0)
+        addToast(
+          `${actionName} completed <br><span class="text-text-toast-error">${failCount} failed</span>`,
+          'error'
+        )
+      else
+        addToast(
+          `${actionName} completed <br><span class="text-text-toast-success">${successCount} success</span>, <span class="text-text-toast-error">${failCount} failed</span>`,
+          failCount === 0 ? 'success' : 'error'
+        )
+    },
+    [addToast, updateToast, removeToast]
+  )
+
+  // ── Change IP handler ──
+  const handleChangeIp = useCallback(async () => {
+    const rows = [...selectedRowsRef.current]
+    const type = changeIpType === 'HTTPS' ? 'proxy_https' : 'proxy_sock_5'
+    const proxyResults = []
+
+    await processSequential(
+      rows,
+      async (row) => {
+        const ip = row.ip_port?.split(':')[0]
+        const res = await axiosInstance.post('/server/change-ip', { ip, type })
+        if (res.data?.success) {
+          const [newIp, port, user, pass] = res.data.proxyInfo
+          updateRowBySid(row.sid, () => ({
+            ip_port: `${newIp}:${port}`,
+            user_pass: `${user}:${pass}`,
+            type: changeIpType + ' Proxy',
+            status: 'Running',
+          }))
+          proxyResults.push(`${newIp}:${port}:${user}:${pass}`)
+        }
+        return res
+      },
+      'IP CHANGE'
+    )
+
+    if (proxyResults.length > 0) {
+      const text = proxyResults.join('\n')
+      safeCopy(text).then(
+        (ok) =>
+          ok &&
+          addToast(
+            `Copied <span class="text-text-toast-success">${proxyResults.length}</span> proxy to clipboard`,
+            'success'
+          )
+      )
+    }
+  }, [changeIpType, processSequential, updateRowBySid, safeCopy, addToast])
+
+  // ── Reinstall handler ──
+  const handleReinstall = useCallback(async () => {
+    const rows = [...selectedRowsRef.current]
+    const type = reinstallType === 'HTTPS' ? 'proxy_https' : 'proxy_sock_5'
+    const custom_info = reinstallInput || undefined
+    const proxyResults = []
+
+    await processSequential(
+      rows,
+      async (row) => {
+        const res = await axiosInstance.post('/server/reinstall', {
+          sid: row.sid.toString(),
+          custom_info,
+          type,
+        })
+        if (res.data?.success) {
+          const [ip, port, user, pass] = res.data.proxyInfo
+          updateRowBySid(row.sid, () => ({
+            ip_port: `${ip}:${port}`,
+            user_pass: `${user}:${pass}`,
+            type: reinstallType + ' Proxy',
+            status: 'Running',
+          }))
+          proxyResults.push(`${ip}:${port}:${user}:${pass}`)
+        }
+        return res
+      },
+      'REINSTALL'
+    )
+
+    if (proxyResults.length > 0) {
+      const text = proxyResults.join('\n')
+      safeCopy(text).then(
+        (ok) =>
+          ok &&
+          addToast(
+            `Copied <span class="text-text-toast-success">${proxyResults.length}</span> proxy to clipboard`,
+            'success'
+          )
+      )
+    }
+  }, [reinstallType, reinstallInput, processSequential, updateRowBySid, safeCopy, addToast])
+
+  // ── Change Note handler ──
+  const handleChangeNote = useCallback(async () => {
+    const rows = [...selectedRowsRef.current]
+    const newNote = noteInput
+
+    await processSequential(
+      rows,
+      async (row) => {
+        const res = await axiosInstance.put('/server/info/note', {
+          sid: row.sid.toString(),
+          newNote,
+        })
+        if (res.data?.success) {
+          updateRowBySid(row.sid, () => ({ note: newNote }))
+        }
+        return res
+      },
+      'CHANGE NOTE'
+    )
+  }, [noteInput, processSequential, updateRowBySid])
+
+  // ── Pause handler (batch) ──
+  const handlePause = useCallback(async () => {
+    const rows = [...selectedRowsRef.current]
+    if (rows.length === 0) {
+      addToast('No rows selected', 'warning')
+      return
+    }
+    const pausingId = addToast('Pausing...', 'loading')
+    setIsProcessing(true)
+    setRowClassMap({})
+    setDeselectSids([])
+    const sids = rows.map((r) => r.sid).join(',')
+
+    try {
+      const res = await axiosInstance.post('/server/pause', { sids })
+      if (res.data?.success) {
+        const classUpdates = {}
+        for (const row of rows) {
+          updateRowBySid(row.sid, () => ({ status: 'Paused' }))
+          classUpdates[row.sid] = 'bg-success-cell'
+        }
+        setRowClassMap(classUpdates)
+        setDeselectSids(rows.map((r) => r.sid))
+        addToast(
+          `PAUSE completed <br><span class="text-text-toast-success">${rows.length} success</span>`,
+          'success'
+        )
+      } else {
+        const classUpdates = {}
+        for (const row of rows) classUpdates[row.sid] = 'bg-error-cell'
+        setRowClassMap(classUpdates)
+        setDeselectSids(rows.map((r) => r.sid))
+        addToast(
+          `PAUSE completed <br><span class="text-text-toast-error">${rows.length} failed</span>`,
+          'error'
+        )
+      }
+    } catch {
+      const classUpdates = {}
+      for (const row of rows) classUpdates[row.sid] = 'bg-error-cell'
+      setRowClassMap(classUpdates)
+      setDeselectSids(rows.map((r) => r.sid))
+      addToast(
+        `PAUSE completed <br><span class="text-text-toast-error">${rows.length} failed</span>`,
+        'error'
+      )
+    }
+    removeToast(pausingId)
+    setIsProcessing(false)
+  }, [addToast, updateRowBySid])
+
+  // ── Reboot handler (batch) ──
+  const handleReboot = useCallback(async () => {
+    const rows = [...selectedRowsRef.current]
+    if (rows.length === 0) {
+      addToast('No rows selected', 'warning')
+      return
+    }
+    const rebootingId = addToast('Rebooting...', 'loading')
+    setIsProcessing(true)
+    setRowClassMap({})
+    setDeselectSids([])
+    const sids = rows.map((r) => r.sid).join(',')
+
+    try {
+      const res = await axiosInstance.post('/server/reboot', { sids })
+      if (res.data?.success) {
+        const classUpdates = {}
+        for (const row of rows) {
+          updateRowBySid(row.sid, () => ({ status: 'Running' }))
+          classUpdates[row.sid] = 'bg-success-cell'
+        }
+        setRowClassMap(classUpdates)
+        setDeselectSids(rows.map((r) => r.sid))
+        addToast(
+          `REBOOT completed <br><span class="text-text-toast-success">${rows.length} success</span>`,
+          'success'
+        )
+      } else {
+        const classUpdates = {}
+        for (const row of rows) classUpdates[row.sid] = 'bg-error-cell'
+        setRowClassMap(classUpdates)
+        setDeselectSids(rows.map((r) => r.sid))
+        addToast(
+          `REBOOT completed <br><span class="text-text-toast-error">${rows.length} failed</span>`,
+          'error'
+        )
+      }
+    } catch {
+      const classUpdates = {}
+      for (const row of rows) classUpdates[row.sid] = 'bg-error-cell'
+      setRowClassMap(classUpdates)
+      setDeselectSids(rows.map((r) => r.sid))
+      addToast(
+        `REBOOT completed <br><span class="text-text-toast-error">${rows.length} failed</span>`,
+        'error'
+      )
+    }
+    removeToast(rebootingId)
+    setIsProcessing(false)
+  }, [addToast, updateRowBySid])
+
   return (
     <div>
       {/* ========== TOP CONTROLS ========== */}
@@ -209,9 +495,16 @@ export default function ProxyManager() {
 
                   {/* Change Note */}
                   <div className="col-start-2 col-end-4 row-start-1 row-end-2 m-1 flex-1 space-y-1 md:col-end-3 md:row-end-3">
-                    <input type="text" id="noteInput" placeholder="Enter note" />
+                    <input
+                      type="text"
+                      placeholder="Enter note"
+                      value={noteInput}
+                      onChange={(e) => setNoteInput(e.target.value)}
+                    />
                     <button
                       className="bg-bg-changeNote flex w-full items-center justify-center rounded-lg px-3 py-2 font-medium transition-colors duration-200 hover:brightness-(--highlight-brightness)"
+                      onClick={handleChangeNote}
+                      disabled={isProcessing}
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -225,10 +518,17 @@ export default function ProxyManager() {
                   </div>
                   {/* Reinstall */}
                   <div className="col-start-1 col-end-3 row-start-2 row-end-3 m-0.5 ml-1 space-y-1 sm:m-1 md:col-start-3 md:col-end-4 md:row-start-1">
-                    <input type="text" id="reinstallInput" placeholder="port:username:password" />
+                    <input
+                      type="text"
+                      placeholder="port:username:password"
+                      value={reinstallInput}
+                      onChange={(e) => setReinstallInput(e.target.value)}
+                    />
                     <div className="flex">
                       <button
                         className="bg-bg-reinstall flex flex-1 items-center justify-center rounded-l-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
+                        onClick={handleReinstall}
+                        disabled={isProcessing}
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -252,6 +552,8 @@ export default function ProxyManager() {
                   <div className="col-start-1 col-end-3 row-start-3 row-end-4 m-1 mb-0 flex self-start md:col-end-2">
                     <button
                       className="bg-bg-changeIp flex w-full items-center justify-center rounded-l-lg px-3 py-2 font-medium transition-colors duration-200 hover:brightness-(--highlight-brightness)"
+                      onClick={handleChangeIp}
+                      disabled={isProcessing}
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -281,7 +583,12 @@ export default function ProxyManager() {
                           .filter(Boolean)
                           .join('\n')
                         safeCopy(text).then(
-                          (ok) => ok && addToast('Copied IPs to clipboard', 'success')
+                          (ok) =>
+                            ok &&
+                            addToast(
+                              `Copied <span class="text-text-toast-success">${rows.length}</span> IPs to clipboard`,
+                              'success'
+                            )
                         )
                       }}
                       className="bg-bg-copyIp m-0.5 flex items-center justify-center rounded-lg px-3 py-2 font-medium transition-colors duration-200 hover:brightness-(--highlight-brightness) sm:m-1"
@@ -297,6 +604,8 @@ export default function ProxyManager() {
                     </button>
                     <button
                       className="bg-bg-pause m-0.5 flex items-center justify-center rounded-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness) sm:m-1"
+                      onClick={handlePause}
+                      disabled={isProcessing}
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -307,7 +616,16 @@ export default function ProxyManager() {
                       </svg>
                       Pause
                     </button>
-                    <button className="bg-bg-changeIp m-0.5 flex items-center justify-center rounded-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness) sm:m-1">
+                    <button
+                      className="bg-bg-changeIp m-0.5 flex items-center justify-center rounded-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness) sm:m-1"
+                      onClick={async () => {
+                        const res = await axiosInstance.post('/server/create/calculate', {
+                          quantity: 1,
+                          nation: 'VN',
+                        })
+                        console.log(res.data.info)
+                      }}
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 640 640"
@@ -334,7 +652,12 @@ export default function ProxyManager() {
                         })
                         .join('\n')
                       safeCopy(text).then(
-                        (ok) => ok && addToast('Copied info to clipboard', 'success')
+                        (ok) =>
+                          ok &&
+                          addToast(
+                            `Copied <span class="text-text-toast-success">${rows.length}</span> proxy to clipboard`,
+                            'success'
+                          )
                       )
                     }}
                   >
@@ -359,6 +682,8 @@ export default function ProxyManager() {
                   </button>
                   <button
                     className="bg-bg-reboot m-1 flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
+                    onClick={handleReboot}
+                    disabled={isProcessing}
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -381,6 +706,7 @@ export default function ProxyManager() {
         className="text-xs sm:text-sm"
         data={tableData}
         filterData={origin}
+        resetFilterKey={dataVersion}
         headers={[
           'sid',
           'ip_port',
@@ -393,6 +719,8 @@ export default function ProxyManager() {
           'note',
         ]}
         operatorConfig={OPERATOR_CONFIG}
+        rowClassMap={rowClassMap}
+        deselectSids={deselectSids}
         extraBtn={
           <button
             id="reloadBtn"

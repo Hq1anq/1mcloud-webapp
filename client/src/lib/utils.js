@@ -40,3 +40,6 @@ export const extractIP = (line) => {
 
   return ip
 }
+
+const delay = (ms) => new Promise((r) => setTimeout(r, ms))
+export const randomDelay = () => delay(700 + Math.random() * 400)

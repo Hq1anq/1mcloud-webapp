@@ -13,9 +13,9 @@ const OPERATOR_CONFIG = {
   expired: ['greater-equal', 'less-equal', 'contain'],
 }
 
-const STORAGE_KEY = 'proxyManager_origin'
+const STORAGE_KEY = 'proxyManager_data'
 
-function loadOrigin() {
+function loadData() {
   try {
     const stored = localStorage.getItem(STORAGE_KEY)
     return stored ? JSON.parse(stored) : []
@@ -24,30 +24,30 @@ function loadOrigin() {
   }
 }
 
-function saveOrigin(data) {
+function saveData(data) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
 }
 
-/** Merge target into origin by sid, preserving user_pass from origin */
-function mergeTargetIntoOrigin(origin, target) {
-  const originMap = new Map(origin.map((row) => [row.sid, row]))
+/** Merge res into data by sid, preserving user_pass from data */
+function mergeResIntoData(data, res) {
+  const dataMap = new Map(data.map((row) => [row.sid, row]))
 
-  for (const targetRow of target) {
-    const existingRow = originMap.get(targetRow.sid)
+  for (const resRow of res) {
+    const existingRow = dataMap.get(resRow.sid)
     if (existingRow) {
-      // Update all columns from target, but keep user_pass from origin
+      // Update all columns from res, but keep user_pass from data
       const userPass = existingRow.user_pass
-      Object.assign(existingRow, targetRow)
+      Object.assign(existingRow, resRow)
       if (userPass !== undefined) {
         existingRow.user_pass = userPass
       }
     } else {
-      // New row from target — add to origin
-      originMap.set(targetRow.sid, { ...targetRow })
+      // New row from res — add to data
+      dataMap.set(resRow.sid, { ...resRow })
     }
   }
 
-  return Array.from(originMap.values())
+  return Array.from(dataMap.values())
 }
 
 export default function ProxyManager() {
@@ -63,12 +63,10 @@ export default function ProxyManager() {
   const [noteInput, setNoteInput] = useState('')
   const [reinstallInput, setReinstallInput] = useState('')
 
-  // Origin: persistent data in localStorage (includes user_pass)
-  const [origin, setOrigin] = useState(loadOrigin)
-  // TableData: what renders in the table (target after GetData, origin on first load)
-  const [tableData, setTableData] = useState(loadOrigin)
-  // Increments on fresh getData to signal Table to reset filters
-  const [dataVersion, setDataVersion] = useState(0)
+  // persistent data in localStorage (includes user_pass)
+  const [data, setData] = useState(loadData)
+  // TableData: what renders in the table (receivedData after GetData, data on first load)
+  const [receivedData, setReceivedData] = useState(loadData)
 
   // Action feedback state
   const [rowClassMap, setRowClassMap] = useState({})
@@ -79,10 +77,10 @@ export default function ProxyManager() {
     selectedRowsRef.current = selectedRows
   }, [selectedRows])
 
-  // Save origin to localStorage whenever it changes
+  // Save data to localStorage whenever it changes
   useEffect(() => {
-    saveOrigin(origin)
-  }, [origin])
+    saveData(data)
+  }, [data])
 
   const handleGetData = useCallback(async () => {
     const parsedIps = ips
@@ -100,21 +98,20 @@ export default function ProxyManager() {
     try {
       const res = await axiosInstance.get('/server/list', { params })
 
-      const target = res.data?.data || []
+      const resData = res.data?.data || []
 
-      // Render target in the table
-      setTableData(target)
-      setDataVersion((v) => v + 1)
+      // Render resData in the table
+      setReceivedData(resData)
 
-      // Merge target into origin and persist
-      setOrigin((prev) => {
-        const merged = mergeTargetIntoOrigin(prev, target)
+      // Merge resData into data and persist
+      setData((prev) => {
+        const merged = mergeResIntoData(prev, resData)
         return merged
       })
 
       removeToast(loadingId)
       addToast(
-        `Loaded <span class="text-text-toast-success">${target.length}</span> rows`,
+        `Loaded <span class="text-text-toast-success">${resData.length}</span> rows`,
         'success'
       )
     } catch (err) {
@@ -124,10 +121,10 @@ export default function ProxyManager() {
     }
   }, [ips, amount, addToast, removeToast])
 
-  // ── Helper: update a single row in both tableData and origin by sid ──
+  // ── Helper: update a single row in both receivedData and data by sid ──
   const updateRowBySid = useCallback((sid, updater) => {
-    setTableData((prev) => prev.map((r) => (r.sid === sid ? { ...r, ...updater(r) } : r)))
-    setOrigin((prev) => prev.map((r) => (r.sid === sid ? { ...r, ...updater(r) } : r)))
+    setReceivedData((prev) => prev.map((r) => (r.sid === sid ? { ...r, ...updater(r) } : r)))
+    setData((prev) => prev.map((r) => (r.sid === sid ? { ...r, ...updater(r) } : r)))
   }, [])
 
   // ── Sequential processor with per-row feedback ──
@@ -704,9 +701,9 @@ export default function ProxyManager() {
       <Table
         title="Proxy Manager"
         className="text-xs sm:text-sm"
-        data={tableData}
-        filterData={origin}
-        resetFilterKey={dataVersion}
+        data={data}
+        receivedData={receivedData}
+        useFilter={true}
         headers={[
           'sid',
           'ip_port',
@@ -725,6 +722,7 @@ export default function ProxyManager() {
           <button
             id="reloadBtn"
             className="bg-bg-reboot rounded-lg px-2 py-2 hover:brightness-(--highlight-brightness)"
+            onClick={() => setReceivedData([...data])}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"

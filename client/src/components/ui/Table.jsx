@@ -91,8 +91,9 @@ const itemContent = (index, row, context) => {
 }
 
 export default function Table({
-  data = DEFAULT_DATA,
-  filterData,
+  data,
+  receivedData = DEFAULT_DATA,
+  useFilter,
   onSelectionChange,
   title,
   headers,
@@ -102,32 +103,30 @@ export default function Table({
   className,
   rowClassMap,
   deselectSids,
-  resetFilterKey,
 }) {
   const [selectedIds, setSelectedIds] = useState(new Set())
   const [lastSelectedIndex, setLastSelectedIndex] = useState(null)
   const [lastSelectionAction, setLastSelectionAction] = useState('add') // 'add' or 'delete'
   const [filters, setFilters] = useState({})
   const [filterInputs, setFilterInputs] = useState({})
+  const [forceRender, setForceRender] = useState(false)
 
   // Reset selection when filters change
   useEffect(() => {
     setSelectedIds(new Set())
     setLastSelectedIndex(null)
-  }, [filters])
+  }, [filters, forceRender])
 
-  // When resetFilterKey changes (e.g. fresh getData), clear active filters
-  // so the new data renders immediately. filterInputs (typed text) are preserved.
   useEffect(() => {
-    setFilters({})
-  }, [resetFilterKey])
+    setForceRender(true)
+  }, [receivedData])
 
   const filteredData = useMemo(() => {
+    if (forceRender) return receivedData
     const hasActiveFilters = Object.values(filters).some((f) => f.value)
     if (!hasActiveFilters) return data
 
-    const sourceData = filterData || data
-    return sourceData.filter((row) => {
+    return data.filter((row) => {
       return Object.entries(filters).every(([key, filter]) => {
         if (!filter.value) return true // Skip empty filters
 
@@ -176,7 +175,7 @@ export default function Table({
         }
       })
     })
-  }, [data, filterData, filters, operatorConfig])
+  }, [data, receivedData, filters, forceRender])
 
   function handleSelectAll(checked) {
     if (checked) {
@@ -248,6 +247,7 @@ export default function Table({
 
   const handleFilterKeyDown = (e, header) => {
     if (e.key === 'Enter') {
+      setForceRender(false)
       const inputValue =
         filterInputs[header] !== undefined ? filterInputs[header] : filters[header]?.value || ''
       setFilters((prev) => ({
@@ -310,7 +310,7 @@ export default function Table({
                 >
                   {header}
                 </span>
-                {filterData && (
+                {useFilter && (
                   <div className="relative">
                     {/* Operator icon */}
                     {showOperator && (

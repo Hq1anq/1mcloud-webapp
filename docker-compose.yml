@@ -1,0 +1,15 @@
+services:
+  1mcloud:
+    build: .
+    container_name: 1mcloud_app
+    restart: unless-stopped
+    env_file:
+      - .env
+    networks:
+      - shared_infra
+    ports:
+      - "3001:3001"
+
+networks:
+  shared_infra:
+    external: true

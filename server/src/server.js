@@ -17,8 +17,8 @@ app.use(
 );
 app.use("/api/auth", authRoute);
 app.use("/api/server", managerRoute);
-app.use("/api/checker", checkerRoute);
 app.use("/api/user", userRoute);
+app.use("/api/check", checkerRoute);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

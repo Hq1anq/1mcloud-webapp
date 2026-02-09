@@ -65,7 +65,7 @@ const itemContent = (index, row, context) => {
       </td>
       {headers.map((header) => {
         const cellValue = row[header]
-        const statusClass = getStatusClasses(cellValue)
+        const statusClass = header === 'status' ? getStatusClasses(cellValue) : ''
 
         return (
           <td
@@ -77,7 +77,7 @@ const itemContent = (index, row, context) => {
             title="Double click to copy"
           >
             {statusClass ? (
-              <span className={`rounded-full px-2 py-0.5 font-semibold ${statusClass}`}>
+              <span className={`rounded-full px-3 py-0.5 font-semibold ${statusClass}`}>
                 {cellValue}
               </span>
             ) : (
@@ -103,6 +103,7 @@ export default function Table({
   className,
   rowClassMap,
   deselectSids,
+  selectIndices,
 }) {
   const [selectedIds, setSelectedIds] = useState(new Set())
   const [lastSelectedIndex, setLastSelectedIndex] = useState(null)
@@ -122,6 +123,7 @@ export default function Table({
   }, [receivedData])
 
   const filteredData = useMemo(() => {
+    if (!useFilter) return data || DEFAULT_DATA
     if (forceRender) return receivedData
     const hasActiveFilters = Object.values(filters).some((f) => f.value)
     if (!hasActiveFilters) return data
@@ -175,7 +177,7 @@ export default function Table({
         }
       })
     })
-  }, [data, receivedData, filters, forceRender])
+  }, [data, receivedData, filters, forceRender, useFilter])
 
   function handleSelectAll(checked) {
     if (checked) {
@@ -256,6 +258,12 @@ export default function Table({
       }))
     }
   }
+
+  // Select rows by index when selectIndices changes
+  useEffect(() => {
+    if (!selectIndices) return
+    setSelectedIds(new Set(selectIndices))
+  }, [selectIndices])
 
   // Deselect rows by sid when deselectSids changes
   useEffect(() => {

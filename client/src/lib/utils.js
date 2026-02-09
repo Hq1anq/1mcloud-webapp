@@ -41,5 +41,30 @@ export const extractIP = (line) => {
   return ip
 }
 
+// Proxy parser
+// Supports: ip:port:user:pass | user:pass@ip:port
+export const parseProxy = (raw) => {
+  const line = raw.trim()
+  if (!line) return null
+
+  let ip, port, username, password
+
+  if (line.includes('@')) {
+    // user:pass@ip:port
+    const [auth, hostPart] = line.split('@')
+    ;[username, password] = auth.split(':')
+    ;[ip, port] = hostPart.split(':')
+  } else {
+    const parts = line.split(':')
+    if (parts.length === 4) [ip, port, username, password] = parts
+    else if (parts.length === 2) [ip, port] = parts
+    else return null
+  }
+
+  if (!ip || !port) return null
+  if (!username || !password) return `${ip}:${port}`
+  return `${ip}:${port}:${username}:${password}`
+}
+
 const delay = (ms) => new Promise((r) => setTimeout(r, ms))
 export const randomDelay = () => delay(700 + Math.random() * 400)

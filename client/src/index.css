@@ -6,7 +6,6 @@
   --color-surface: var(--bg-surface);
   --color-wrapper: var(--bg-wrapper);
   --color-thead: var(--bg-thead);
-  --color-input: var(--bg-input);
   --color-checkbox: var(--bg-checkbox);
 
   --color-toast: var(--bg-toast);
@@ -39,6 +38,7 @@
   --color-text-primary: var(--text-primary);
   --color-text-secondary: var(--text-secondary);
   --color-text-muted: var(--text-muted);
+  --color-highlight: var(--highlight-text);
 
   /* Border */
   --color-border: var(--border);
@@ -106,7 +106,6 @@
   --bg-surface: var(--blue-200);
   --bg-wrapper: var(--blue-300);
   --bg-thead: var(--blue-500);
-  --bg-input: #f5f0cd;
   --bg-dropdown: #fada7a;
   --bg-checkbox: #f5f0cd;
 
@@ -140,13 +139,14 @@
 
   /* Border Colors */
   --border: var(--light-400);
-  --border-input: var(--light-400);
+  --border-input: #e3c00e;
   --border-checkbox-hover: var(--light-500);
 
-  --logo-ring: #fac01a;
+  --logo-ring: #f9bb10;
   --logo-inner: #000000;
 
   --highlight-brightness: 90%;
+  --highlight-text: #1d4ed8;
 
   --success-cell: #00c95066;
   /* green-500/40 */
@@ -157,8 +157,8 @@
   --text-success: #dff0d4;
   --bg-error: #e03b24;
   --text-error: #f9d8d3;
-  --bg-warning: #9a5b12;
-  --text-warning: #ffc861;
+  --bg-warning: #e18504;
+  --text-warning: #feecd3;
   --bg-info: #4b251c;
   --text-info: #e7ecf4;
   --bg-unknowed: #a2c7cc;
@@ -174,10 +174,6 @@
   --bg-refund: #f472b6;
   --bg-renew: #e07211;
   --bg-getAPIKey: #ef4646;
-
-  #theme-toggle-slider {
-    transform: translateX(26px);
-  }
 }
 
 /* Dark Theme */
@@ -187,7 +183,6 @@
   --bg-surface: var(--dark-800);
   --bg-wrapper: var(--dark-700);
   --bg-thead: var(--dark-700);
-  --bg-input: var(--dark-600);
   --bg-dropdown: var(--dark-800);
   --bg-checkbox: var(--dark-750);
 
@@ -228,6 +223,7 @@
   --logo-inner: #e2e2e4;
 
   --highlight-brightness: 120%;
+  --highlight-text: #38bdf8;
 
   --success-cell: #0d542b99;
   /* green-900 */
@@ -265,18 +261,9 @@
 
 /* Enable transitions only after adding this class */
 .theme-transitions * {
-  transition:
-    background-color 0.3s ease,
-    color 0.3s ease,
-    border-color 0.3s ease,
-    transform 0.3s ease;
-  /* Add transform transition for slider */
-}
-
-.theme-transitions .all-slow {
   transition-property: all;
   transition-timing-function: ease-out;
-  transition-duration: 0.5s;
+  transition-duration: 0.3s;
 }
 
 .theme-transitions .all-fast {
@@ -310,12 +297,15 @@
 
 /* Custom base styles */
 @layer base {
+  body {
+    @apply bg-body text-text-primary;
+  }
 
   input[type='text'],
   input[type='number'],
   input[type='password'],
   textarea {
-    @apply bg-input text-text-secondary border-2 border-border-input rounded-lg px-3 py-2 placeholder-gray-400 focus:outline-none focus:border-blue-500 w-full;
+    @apply bg-navbar text-text-secondary border-border-input w-full rounded-lg border-2 px-3 py-2 placeholder-gray-400 focus:border-blue-500 focus:outline-none;
   }
 
   /* Hides the arrows in Chrome, Safari, Edge */
@@ -330,7 +320,7 @@
   }
 
   button {
-    @apply cursor-pointer;
+    @apply cursor-pointer text-nowrap;
   }
 
   h1 {
@@ -340,19 +330,19 @@
   textarea::-webkit-scrollbar,
   body::-webkit-scrollbar,
   .scroll-container::-webkit-scrollbar {
-    @apply w-2 h-2;
+    @apply h-2 w-2;
   }
 
   textarea::-webkit-scrollbar-track,
   body::-webkit-scrollbar-track,
   .scroll-container::-webkit-scrollbar-track {
-    @apply bg-scrollbar-track rounded-full my-1;
+    @apply bg-scrollbar-track my-1 rounded-full;
   }
 
   textarea::-webkit-scrollbar-thumb,
   body::-webkit-scrollbar-thumb,
   .scroll-container::-webkit-scrollbar-thumb {
-    @apply bg-scrollbar-thumb rounded-full cursor-pointer;
+    @apply bg-scrollbar-thumb cursor-pointer rounded-full;
   }
 
   textarea::-webkit-scrollbar-thumb:hover,
@@ -372,7 +362,7 @@
   }
 
   .social-link {
-    @apply flex items-center text-text-muted;
+    @apply text-text-muted flex items-center;
   }
 }
 

@@ -2,6 +2,8 @@ mysql.yml
 loginRequest.yaml
 vpsRequest.yml
 src/public/css/style.css
+client1/
+.agent/
 
 # Node.js
 node_modules/

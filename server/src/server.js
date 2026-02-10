@@ -22,15 +22,15 @@ app.use(
   }),
 );
 
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "../client/dist/index.html"));
-});
-
 app.use("/api/auth", authRoute);
 app.use("/api/server", managerRoute);
 app.use("/api/user", userRoute);
 app.use("/api/check", checkerRoute);
 app.use("/api/proxy", proxyRoute);
+
+app.use((req, res) => {
+  res.sendFile(path.join(__dirname, "../client/dist/index.html"));
+});
 
 // Initialize database and start server
 initDatabase()

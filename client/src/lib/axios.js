@@ -1,9 +1,8 @@
 import axios from 'axios'
 import useAuthStore from '../store/useAuthStore'
 
-const BASE_URL = import.meta.env.VITE_SERVER_URL
 const axiosInstance = axios.create({
-  baseURL: `${BASE_URL}/api`,
+  baseURL: `/api`,
   timeout: 10000,
   withCredentials: true,
   headers: {

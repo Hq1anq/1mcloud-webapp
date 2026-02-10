@@ -1,13 +1,15 @@
 import DropDown from '../components/ui/DropDown'
 import Table from '../components/ui/Table'
 import CopyDialog from '../components/dialog/CopyDialog'
-import { useState, useCallback } from 'react'
-import { useToast } from '../context/ToastContext'
 import useSafeCopy from '../hooks/useSafeCopy'
+import useCapture from '../hooks/useCapture'
 import axiosInstance from '../lib/axios'
+import { useState, useCallback, useRef } from 'react'
+import { useToast } from '../context/ToastContext'
 import { parseProxy } from '../lib/utils'
 
 export default function ProxyChecker() {
+  const tableRef = useRef(null)
   const [proxyType, setProxyType] = useState('AUTO')
   const [proxyInput, setProxyInput] = useState('')
   const [selectedRows, setSelectedRows] = useState([])
@@ -16,6 +18,7 @@ export default function ProxyChecker() {
   const [selectIndices, setSelectIndices] = useState(null)
   const { addToast, removeToast } = useToast()
   const { safeCopy, copyDialogProps } = useSafeCopy()
+  const { handleCapture, captureUI } = useCapture(tableRef)
 
   const handleCheck = useCallback(async () => {
     const trimmed = proxyInput.trim()
@@ -321,9 +324,11 @@ export default function ProxyChecker() {
         className="text-base sm:text-lg"
         headers={['ip', 'port', 'username', 'password', 'type', 'country', 'status']}
         selectIndices={selectIndices}
+        ref={tableRef}
         extraBtn={
           <button
             id="captureBtn"
+            onClick={handleCapture}
             className="bg-bg-reboot rounded-lg px-2 py-2 hover:brightness-(--highlight-brightness)"
           >
             <svg
@@ -361,6 +366,7 @@ export default function ProxyChecker() {
       />
 
       <CopyDialog {...copyDialogProps} />
+      {captureUI}
     </div>
   )
 }

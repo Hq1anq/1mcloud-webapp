@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, forwardRef } from 'react'
 import { TableVirtuoso } from 'react-virtuoso'
 import { handleCopy, getStatusClasses } from '../../lib/utils.js'
 import Checkbox from './Checkbox.jsx'
@@ -60,7 +60,7 @@ const itemContent = (index, row, context) => {
 
   return (
     <>
-      <td className="border-border border-b px-2 py-2 text-center sm:px-4">
+      <td data-capture-ignore className="border-border border-b px-2 py-2 text-center sm:px-4">
         <Checkbox checked={isSelected} onChange={(e) => handleSelectRow(index, e.shiftKey)} />
       </td>
       {headers.map((header) => {
@@ -90,21 +90,24 @@ const itemContent = (index, row, context) => {
   )
 }
 
-export default function Table({
-  data,
-  receivedData = DEFAULT_DATA,
-  useFilter,
-  onSelectionChange,
-  title,
-  headers,
-  operatorConfig,
-  extraBtn,
-  emptyMessage,
-  className,
-  rowClassMap,
-  deselectSids,
-  selectIndices,
-}) {
+const Table = forwardRef(function Table(
+  {
+    data,
+    receivedData = DEFAULT_DATA,
+    useFilter,
+    onSelectionChange,
+    title,
+    headers,
+    operatorConfig,
+    extraBtn,
+    emptyMessage,
+    className,
+    rowClassMap,
+    deselectSids,
+    selectIndices,
+  },
+  tableRef
+) {
   const [selectedIds, setSelectedIds] = useState(new Set())
   const [lastSelectedIndex, setLastSelectedIndex] = useState(null)
   const [lastSelectionAction, setLastSelectionAction] = useState('add') // 'add' or 'delete'
@@ -285,7 +288,7 @@ export default function Table({
   const fixedHeader = useMemo(() => {
     return () => (
       <tr className="bg-thead">
-        <th className="px-2 sm:px-4">
+        <th data-capture-ignore className="px-2 sm:px-4">
           <Checkbox
             checked={selectedIds.size === filteredData.length && filteredData.length > 0}
             indeterminate={selectedIds.size > 0 && selectedIds.size < filteredData.length}
@@ -363,6 +366,7 @@ export default function Table({
       <div id="table-wrapper" className="mx-auto max-w-7xl px-4 py-3">
         <div
           id="table-container"
+          ref={tableRef}
           className="bg-surface mx-auto w-full rounded-lg shadow-lg select-none"
         >
           {/* Table Header */}
@@ -395,7 +399,7 @@ export default function Table({
                     Total: <span id="totalCount">{filteredData.length}</span> rows
                   </span>
                 </div>
-                {extraBtn}
+                {extraBtn && <span data-capture-ignore>{extraBtn}</span>}
               </div>
             </div>
           </div>
@@ -416,4 +420,6 @@ export default function Table({
       </div>
     </div>
   )
-}
+})
+
+export default Table

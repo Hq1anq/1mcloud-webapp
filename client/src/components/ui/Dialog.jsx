@@ -1,19 +1,25 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 export default function Dialog({ isOpen, onClose, title, children, className = '' }) {
-  const dialogRef = useRef(null)
-  const [visible, setVisible] = useState(false)
+  const [visible, setVisible] = useState(isOpen)
   const [animating, setAnimating] = useState(false)
+
+  // Derive state during render to avoid synchronous setState in useEffect
+  if (isOpen && !visible) {
+    setVisible(true)
+  }
+  if (!isOpen && animating) {
+    setAnimating(false)
+  }
 
   useEffect(() => {
     if (isOpen) {
-      setVisible(true)
       // Trigger enter animation on next frame
-      requestAnimationFrame(() => setAnimating(true))
-    } else if (visible) {
-      // Trigger exit animation
-      setAnimating(false)
+      const frameId = requestAnimationFrame(() => setAnimating(true))
+      return () => cancelAnimationFrame(frameId)
+    } else {
+      // Wait for exit animation to finish before unmounting
       const timer = setTimeout(() => setVisible(false), 200)
       return () => clearTimeout(timer)
     }
@@ -47,7 +53,6 @@ export default function Dialog({ isOpen, onClose, title, children, className = '
     >
       <div className="fixed inset-0" onClick={onClose} aria-hidden="true" />
       <div
-        ref={dialogRef}
         className={`bg-dialog text-text-primary relative flex w-full max-w-md transform flex-col rounded-xl p-6 shadow-2xl transition-all duration-200 ${
           animating ? 'scale-100 opacity-100' : 'scale-90 opacity-0'
         } ${className}`}

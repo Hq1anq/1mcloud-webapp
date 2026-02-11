@@ -1,7 +1,6 @@
 import DropDown from '../components/ui/DropDown'
 import Table from '../components/ui/Table'
-import CopyDialog from '../components/dialog/CopyDialog'
-import useSafeCopy from '../hooks/useSafeCopy'
+import { useSafeCopy } from '../context/SafeCopyContext'
 import useCapture from '../hooks/useCapture'
 import axiosInstance from '../lib/axios'
 import { useState, useCallback, useRef } from 'react'
@@ -15,9 +14,9 @@ export default function ProxyChecker() {
   const [selectedRows, setSelectedRows] = useState([])
   const [results, setResults] = useState([])
   const [isChecking, setIsChecking] = useState(false)
-  const [selectIndices, setSelectIndices] = useState(null)
+  const [selectedIds, setSelectedIds] = useState(new Set())
   const { addToast, removeToast } = useToast()
-  const { safeCopy, copyDialogProps } = useSafeCopy()
+  const { safeCopy } = useSafeCopy()
   const { handleCapture, captureUI } = useCapture(tableRef)
 
   const handleCheck = useCallback(async () => {
@@ -94,14 +93,15 @@ export default function ProxyChecker() {
       setIsChecking(false)
       removeToast(loadingId)
     }
-  }, [proxyType, proxyInput, isChecking])
+  }, [proxyType, proxyInput, isChecking, addToast, removeToast])
 
   const handleSelectByStatus = useCallback(
     (status) => {
-      const indices = results
-        .map((row, i) => (row.status === status ? i : -1))
-        .filter((i) => i !== -1)
-      setSelectIndices(indices)
+      const indices = new Set(
+        results.map((row, i) => (row.status === status ? i : -1)).filter((i) => i !== -1)
+      )
+      setSelectedIds(indices)
+      setSelectedRows(Array.from(indices).map((i) => results[i]))
     },
     [results]
   )
@@ -323,7 +323,7 @@ export default function ProxyChecker() {
         useFilter={false}
         className="text-base sm:text-lg"
         headers={['ip', 'port', 'username', 'password', 'type', 'country', 'status']}
-        selectIndices={selectIndices}
+        selectedIds={selectedIds}
         ref={tableRef}
         extraBtn={
           <button
@@ -362,10 +362,12 @@ export default function ProxyChecker() {
             </div>
           )
         }
-        onSelectionChange={setSelectedRows}
+        onSelectionChange={(rows, ids) => {
+          setSelectedRows(rows)
+          setSelectedIds(ids)
+        }}
       />
 
-      <CopyDialog {...copyDialogProps} />
       {captureUI}
     </div>
   )

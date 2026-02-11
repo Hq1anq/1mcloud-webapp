@@ -1,11 +1,10 @@
 import DropDown from '../components/ui/DropDown'
 import Table from '../components/ui/Table'
-import CopyDialog from '../components/dialog/CopyDialog'
 import axiosInstance from '../lib/axios'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useToast } from '../context/ToastContext'
 import { extractIP, randomDelay } from '../lib/utils'
-import useSafeCopy from '../hooks/useSafeCopy'
+import { useSafeCopy } from '../context/SafeCopyContext'
 
 const OPERATOR_CONFIG = {
   sid: ['greater-equal', 'less-equal', 'equal', 'contain'],
@@ -55,7 +54,7 @@ export default function ProxyManager() {
   const [changeIpType, setChangeIpType] = useState('HTTPS')
   const [selectedRows, setSelectedRows] = useState([])
   const { addToast, updateToast, removeToast } = useToast()
-  const { safeCopy, copyDialogProps } = useSafeCopy()
+  const { safeCopy } = useSafeCopy()
 
   // Controlled input state
   const [ips, setIps] = useState('')
@@ -67,10 +66,11 @@ export default function ProxyManager() {
   const [data, setData] = useState(loadData)
   // TableData: what renders in the table (receivedData after GetData, data on first load)
   const [receivedData, setReceivedData] = useState(loadData)
+  const [renderingReceived, setRenderingReceived] = useState(false)
 
   // Action feedback state
   const [rowClassMap, setRowClassMap] = useState({})
-  const [deselectSids, setDeselectSids] = useState([])
+  const [selectedIds, setSelectedIds] = useState(new Set())
   const [isProcessing, setIsProcessing] = useState(false)
   const selectedRowsRef = useRef(selectedRows)
   useEffect(() => {
@@ -114,6 +114,8 @@ export default function ProxyManager() {
         `Loaded <span class="text-text-toast-success">${resData.length}</span> rows`,
         'success'
       )
+      setRenderingReceived(true)
+      setSelectedIds(new Set())
     } catch (err) {
       console.error('[GetData] Error:', err.message)
       removeToast(loadingId)
@@ -121,13 +123,13 @@ export default function ProxyManager() {
     }
   }, [ips, amount, addToast, removeToast])
 
-  // ── Helper: update a single row in both receivedData and data by sid ──
+  // --- Helper: update a single row in both receivedData and data by sid ---
   const updateRowBySid = useCallback((sid, updater) => {
     setReceivedData((prev) => prev.map((r) => (r.sid === sid ? { ...r, ...updater(r) } : r)))
     setData((prev) => prev.map((r) => (r.sid === sid ? { ...r, ...updater(r) } : r)))
   }, [])
 
-  // ── Sequential processor with per-row feedback ──
+  // --- Sequential processor with per-row feedback ---
   const processSequential = useCallback(
     async (rows, apiCallFn, actionName) => {
       if (rows.length === 0) {
@@ -136,7 +138,6 @@ export default function ProxyManager() {
       }
       setIsProcessing(true)
       setRowClassMap({})
-      setDeselectSids([])
       let successCount = 0
       let failCount = 0
 
@@ -162,7 +163,11 @@ export default function ProxyManager() {
           setRowClassMap((prev) => ({ ...prev, [row.sid]: 'bg-error-cell' }))
         }
         // Deselect this row
-        setDeselectSids((prev) => [...prev, row.sid])
+        setSelectedIds((prev) => {
+          const newSet = new Set(prev)
+          newSet.delete(row._index)
+          return newSet
+        })
         // Update progress toast
         updateToast(
           loadingId,
@@ -193,7 +198,7 @@ export default function ProxyManager() {
     [addToast, updateToast, removeToast]
   )
 
-  // ── Change IP handler ──
+  // --- Change IP handler ---
   const handleChangeIp = useCallback(async () => {
     const rows = [...selectedRowsRef.current]
     const type = changeIpType === 'HTTPS' ? 'proxy_https' : 'proxy_sock_5'
@@ -232,7 +237,7 @@ export default function ProxyManager() {
     }
   }, [changeIpType, processSequential, updateRowBySid, safeCopy, addToast])
 
-  // ── Reinstall handler ──
+  // --- Reinstall handler ---
   const handleReinstall = useCallback(async () => {
     const rows = [...selectedRowsRef.current]
     const type = reinstallType === 'HTTPS' ? 'proxy_https' : 'proxy_sock_5'
@@ -275,7 +280,7 @@ export default function ProxyManager() {
     }
   }, [reinstallType, reinstallInput, processSequential, updateRowBySid, safeCopy, addToast])
 
-  // ── Change Note handler ──
+  // --- Change Note handler ---
   const handleChangeNote = useCallback(async () => {
     const rows = [...selectedRowsRef.current]
     const newNote = noteInput
@@ -296,7 +301,7 @@ export default function ProxyManager() {
     )
   }, [noteInput, processSequential, updateRowBySid])
 
-  // ── Pause handler (batch) ──
+  // --- Pause handler (batch) ---
   const handlePause = useCallback(async () => {
     const rows = [...selectedRowsRef.current]
     if (rows.length === 0) {
@@ -306,7 +311,6 @@ export default function ProxyManager() {
     const pausingId = addToast('Pausing...', 'loading')
     setIsProcessing(true)
     setRowClassMap({})
-    setDeselectSids([])
     const sids = rows.map((r) => r.sid).join(',')
 
     try {
@@ -318,7 +322,11 @@ export default function ProxyManager() {
           classUpdates[row.sid] = 'bg-success-cell'
         }
         setRowClassMap(classUpdates)
-        setDeselectSids(rows.map((r) => r.sid))
+        setSelectedIds((prev) => {
+          const newSet = new Set(prev)
+          for (const row of rows) newSet.delete(row._index)
+          return newSet
+        })
         addToast(
           `PAUSE completed <br><span class="text-text-toast-success">${rows.length} success</span>`,
           'success'
@@ -327,7 +335,11 @@ export default function ProxyManager() {
         const classUpdates = {}
         for (const row of rows) classUpdates[row.sid] = 'bg-error-cell'
         setRowClassMap(classUpdates)
-        setDeselectSids(rows.map((r) => r.sid))
+        setSelectedIds((prev) => {
+          const newSet = new Set(prev)
+          for (const row of rows) newSet.delete(row._index)
+          return newSet
+        })
         addToast(
           `PAUSE completed <br><span class="text-text-toast-error">${rows.length} failed</span>`,
           'error'
@@ -337,7 +349,11 @@ export default function ProxyManager() {
       const classUpdates = {}
       for (const row of rows) classUpdates[row.sid] = 'bg-error-cell'
       setRowClassMap(classUpdates)
-      setDeselectSids(rows.map((r) => r.sid))
+      setSelectedIds((prev) => {
+        const newSet = new Set(prev)
+        for (const row of rows) newSet.delete(row._index)
+        return newSet
+      })
       addToast(
         `PAUSE completed <br><span class="text-text-toast-error">${rows.length} failed</span>`,
         'error'
@@ -345,9 +361,9 @@ export default function ProxyManager() {
     }
     removeToast(pausingId)
     setIsProcessing(false)
-  }, [addToast, updateRowBySid])
+  }, [updateRowBySid, addToast, removeToast])
 
-  // ── Reboot handler (batch) ──
+  // --- Reboot handler (batch) ---
   const handleReboot = useCallback(async () => {
     const rows = [...selectedRowsRef.current]
     if (rows.length === 0) {
@@ -357,7 +373,6 @@ export default function ProxyManager() {
     const rebootingId = addToast('Rebooting...', 'loading')
     setIsProcessing(true)
     setRowClassMap({})
-    setDeselectSids([])
     const sids = rows.map((r) => r.sid).join(',')
 
     try {
@@ -369,7 +384,11 @@ export default function ProxyManager() {
           classUpdates[row.sid] = 'bg-success-cell'
         }
         setRowClassMap(classUpdates)
-        setDeselectSids(rows.map((r) => r.sid))
+        setSelectedIds((prev) => {
+          const newSet = new Set(prev)
+          for (const row of rows) newSet.delete(row._index)
+          return newSet
+        })
         addToast(
           `REBOOT completed <br><span class="text-text-toast-success">${rows.length} success</span>`,
           'success'
@@ -378,7 +397,11 @@ export default function ProxyManager() {
         const classUpdates = {}
         for (const row of rows) classUpdates[row.sid] = 'bg-error-cell'
         setRowClassMap(classUpdates)
-        setDeselectSids(rows.map((r) => r.sid))
+        setSelectedIds((prev) => {
+          const newSet = new Set(prev)
+          for (const row of rows) newSet.delete(row._index)
+          return newSet
+        })
         addToast(
           `REBOOT completed <br><span class="text-text-toast-error">${rows.length} failed</span>`,
           'error'
@@ -388,7 +411,11 @@ export default function ProxyManager() {
       const classUpdates = {}
       for (const row of rows) classUpdates[row.sid] = 'bg-error-cell'
       setRowClassMap(classUpdates)
-      setDeselectSids(rows.map((r) => r.sid))
+      setSelectedIds((prev) => {
+        const newSet = new Set(prev)
+        for (const row of rows) newSet.delete(row._index)
+        return newSet
+      })
       addToast(
         `REBOOT completed <br><span class="text-text-toast-error">${rows.length} failed</span>`,
         'error'
@@ -396,7 +423,7 @@ export default function ProxyManager() {
     }
     removeToast(rebootingId)
     setIsProcessing(false)
-  }, [addToast, updateRowBySid])
+  }, [updateRowBySid, addToast, removeToast])
 
   return (
     <div>
@@ -703,6 +730,8 @@ export default function ProxyManager() {
         className="text-xs sm:text-sm"
         data={data}
         receivedData={receivedData}
+        renderingReceived={renderingReceived}
+        setRenderingReceived={setRenderingReceived}
         useFilter={true}
         headers={[
           'sid',
@@ -717,12 +746,16 @@ export default function ProxyManager() {
         ]}
         operatorConfig={OPERATOR_CONFIG}
         rowClassMap={rowClassMap}
-        deselectSids={deselectSids}
+        selectedIds={selectedIds}
         extraBtn={
           <button
             id="reloadBtn"
             className="bg-bg-reboot rounded-lg px-2 py-2 hover:brightness-(--highlight-brightness)"
-            onClick={() => setReceivedData([...data])}
+            onClick={() => {
+              setReceivedData([...data])
+              setRenderingReceived(true)
+              setSelectedIds(new Set())
+            }}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -748,10 +781,11 @@ export default function ProxyManager() {
             </p>
           </div>
         }
-        onSelectionChange={setSelectedRows}
+        onSelectionChange={(rows, ids) => {
+          setSelectedRows(rows)
+          setSelectedIds(ids)
+        }}
       />
-
-      <CopyDialog {...copyDialogProps} />
     </div>
   )
 }

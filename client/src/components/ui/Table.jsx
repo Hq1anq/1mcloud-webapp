@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, forwardRef } from 'react'
+import { useState, useMemo, useCallback, forwardRef } from 'react'
 import { TableVirtuoso } from 'react-virtuoso'
 import { handleCopy, getStatusClasses } from '../../lib/utils.js'
 import Checkbox from './Checkbox.jsx'
@@ -24,18 +24,18 @@ const operatorCycle = ['greater-equal', 'less-equal', 'equal', 'contain']
 
 // Custom Row Component for TableVirtuoso
 const TableRow = ({ context, ...props }) => {
-  const { selectedIds, handleSelectRow, filteredData, rowClassMap } = context
+  const { selectedIds, handleSelectRow, rowClassMap } = context
   const index = props['data-index']
   const isSelected = selectedIds.has(index)
 
   // Check for row-level class override (e.g. success/error background)
-  const row = filteredData[index]
+  const row = props.item // = filteredData[index]
   const overrideClass = row && rowClassMap?.[row.sid]
 
   return (
     <tr
       {...props}
-      className={`hover:bg-bg-hover text-text-secondary ${(isSelected ? 'bg-bg-selected' : '') || overrideClass} ${props.className || ''}`}
+      className={`hover:bg-bg-hover text-text-secondary ${isSelected ? 'bg-bg-selected' : overrideClass || ''} ${props.className || ''}`}
       onClick={(e) => {
         // Prevent row selection if clicking/interacting with inputs/buttons/labels
         if (e.target.closest('input') || e.target.closest('button') || e.target.closest('label'))
@@ -94,8 +94,10 @@ const Table = forwardRef(function Table(
   {
     data,
     receivedData = DEFAULT_DATA,
+    renderingReceived,
+    setRenderingReceived,
     useFilter,
-    onSelectionChange,
+    selectedIds = new Set(),
     title,
     headers,
     operatorConfig,
@@ -103,31 +105,18 @@ const Table = forwardRef(function Table(
     emptyMessage,
     className,
     rowClassMap,
-    deselectSids,
-    selectIndices,
+    onSelectionChange,
   },
   tableRef
 ) {
-  const [selectedIds, setSelectedIds] = useState(new Set())
   const [lastSelectedIndex, setLastSelectedIndex] = useState(null)
   const [lastSelectionAction, setLastSelectionAction] = useState('add') // 'add' or 'delete'
   const [filters, setFilters] = useState({})
   const [filterInputs, setFilterInputs] = useState({})
-  const [forceRender, setForceRender] = useState(false)
-
-  // Reset selection when filters change
-  useEffect(() => {
-    setSelectedIds(new Set())
-    setLastSelectedIndex(null)
-  }, [filters, forceRender])
-
-  useEffect(() => {
-    setForceRender(true)
-  }, [receivedData])
 
   const filteredData = useMemo(() => {
     if (!useFilter) return data || DEFAULT_DATA
-    if (forceRender) return receivedData
+    if (renderingReceived) return receivedData
     const hasActiveFilters = Object.values(filters).some((f) => f.value)
     if (!hasActiveFilters) return data
 
@@ -180,119 +169,114 @@ const Table = forwardRef(function Table(
         }
       })
     })
-  }, [data, receivedData, filters, forceRender, useFilter])
+  }, [data, receivedData, renderingReceived, filters, useFilter])
 
-  function handleSelectAll(checked) {
-    if (checked) {
-      // Select all currently VISIBLE items
-      const allIds = new Set(filteredData.map((_, index) => index))
-      setSelectedIds(allIds)
-    } else setSelectedIds(new Set())
-  }
+  const handleSelectRow = useCallback(
+    (index, shiftKey) => {
+      const newSelected = new Set(selectedIds)
 
-  function handleSelectRow(index, shiftKey) {
-    const newSelected = new Set(selectedIds)
+      if (shiftKey && lastSelectedIndex !== null && index !== undefined) {
+        // Range selection
+        const start = Math.min(lastSelectedIndex, index)
+        const end = Math.max(lastSelectedIndex, index)
 
-    if (shiftKey && lastSelectedIndex !== null && index !== undefined) {
-      // Range selection
-      const start = Math.min(lastSelectedIndex, index)
-      const end = Math.max(lastSelectedIndex, index)
-
-      for (let i = start; i <= end; i++) {
-        if (lastSelectionAction === 'add') newSelected.add(i)
-        else newSelected.delete(i)
-      }
-    } else {
-      // Single selection / Toggle
-      if (newSelected.has(index)) {
-        newSelected.delete(index)
-        setLastSelectionAction('delete')
+        for (let i = start; i <= end; i++) {
+          if (lastSelectionAction === 'add') newSelected.add(i)
+          else newSelected.delete(i)
+        }
       } else {
-        newSelected.add(index)
-        setLastSelectionAction('add')
+        // Single selection / Toggle
+        if (newSelected.has(index)) {
+          newSelected.delete(index)
+          setLastSelectionAction('delete')
+        } else {
+          newSelected.add(index)
+          setLastSelectionAction('add')
+        }
+        setLastSelectedIndex(index)
       }
-      setLastSelectedIndex(index)
-    }
 
-    setSelectedIds(newSelected)
-  }
+      const selectedRows = filteredData
+        .map((row, idx) => ({ ...row, _index: idx })) // Add _index for mapping (row->idx of set for set.delete) (use for unselect from proxyManager)
+        .filter((_, idx) => newSelected.has(idx))
+      onSelectionChange(selectedRows, newSelected)
+    },
+    [selectedIds, lastSelectedIndex, lastSelectionAction, filteredData, onSelectionChange]
+  )
 
-  const toggleOperator = (header) => {
-    // Get the current input value, defaulting to active filter value if no input change
-    const inputValue =
-      filterInputs[header] !== undefined ? filterInputs[header] : filters[header]?.value || ''
-
-    setFilters((prev) => {
-      const current = prev[header] || { value: '', operator: 'contain' }
-
-      // Determine allowed cycle for this header
-      const cycle = operatorConfig ? operatorConfig[header] || ['contain'] : operatorCycle
-
-      if (cycle.length <= 1) return prev // No cycling if only 1 option (or empty)
-
-      let currentIndex = cycle.indexOf(current.operator)
-      // If current operator is invalid/not in cycle, reset to 0
-      if (currentIndex === -1) currentIndex = 0
-
-      const nextIndex = (currentIndex + 1) % cycle.length
-
-      return {
-        ...prev,
-        [header]: { value: inputValue, operator: cycle[nextIndex] },
-      }
-    })
-  }
-
-  const handleFilterInputChange = (header, value) => {
-    setFilterInputs((prev) => ({
-      ...prev,
-      [header]: value,
-    }))
-  }
-
-  const handleFilterKeyDown = (e, header) => {
-    if (e.key === 'Enter') {
-      setForceRender(false)
-      const inputValue =
-        filterInputs[header] !== undefined ? filterInputs[header] : filters[header]?.value || ''
-      setFilters((prev) => ({
-        ...prev,
-        [header]: { ...(prev[header] || { operator: 'contain' }), value: inputValue },
-      }))
-    }
-  }
-
-  // Select rows by index when selectIndices changes
-  useEffect(() => {
-    if (!selectIndices) return
-    setSelectedIds(new Set(selectIndices))
-  }, [selectIndices])
-
-  // Deselect rows by sid when deselectSids changes
-  useEffect(() => {
-    if (!deselectSids || deselectSids.length === 0) return
-    setSelectedIds((prev) => {
-      const newSet = new Set(prev)
-      for (const sid of deselectSids) {
-        const idx = filteredData.findIndex((row) => row.sid === sid)
-        if (idx !== -1) newSet.delete(idx)
-      }
-      return newSet
-    })
-  }, [deselectSids])
+  // Deselect effect removed; controlled via selectedIds parent state.
 
   const virtuosoContext = useMemo(() => {
-    return { selectedIds, handleSelectRow, headers, filteredData, rowClassMap }
-  }, [selectedIds, headers, filteredData, rowClassMap])
+    return { selectedIds, headers, rowClassMap, handleSelectRow }
+  }, [selectedIds, headers, rowClassMap, handleSelectRow])
 
   const fixedHeader = useMemo(() => {
+    const toggleOperator = (header) => {
+      // Get the current input value, defaulting to active filter value if no input change
+      const inputValue =
+        filterInputs[header] !== undefined ? filterInputs[header] : filters[header]?.value || ''
+
+      setFilters((prev) => {
+        const current = prev[header] || { value: '', operator: 'contain' }
+
+        // Determine allowed cycle for this header
+        const cycle = operatorConfig ? operatorConfig[header] || ['contain'] : operatorCycle
+
+        if (cycle.length <= 1) return prev // No cycling if only 1 option (or empty)
+
+        let currentIndex = cycle.indexOf(current.operator)
+        // If current operator is invalid/not in cycle, reset to 0
+        if (currentIndex === -1) currentIndex = 0
+
+        const nextIndex = (currentIndex + 1) % cycle.length
+
+        return {
+          ...prev,
+          [header]: { value: inputValue, operator: cycle[nextIndex] },
+        }
+      })
+    }
+
+    const handleFilterInputChange = (header, value) => {
+      setFilterInputs((prev) => ({
+        ...prev,
+        [header]: value,
+      }))
+    }
+
+    const handleFilterKeyDown = (e, header) => {
+      if (e.key === 'Enter') {
+        const inputValue =
+          filterInputs[header] !== undefined ? filterInputs[header] : filters[header]?.value || ''
+        setFilters((prev) => ({
+          ...prev,
+          [header]: { ...(prev[header] || { operator: 'contain' }), value: inputValue },
+        }))
+        onSelectionChange([], new Set())
+        setLastSelectedIndex(null)
+        setRenderingReceived(false)
+      }
+    }
+
     return () => (
       <tr className="bg-thead">
         <th data-capture-ignore className="px-2 sm:px-4">
           <Checkbox
             checked={selectedIds.size === filteredData.length && filteredData.length > 0}
             indeterminate={selectedIds.size > 0 && selectedIds.size < filteredData.length}
-            onChange={(e) => handleSelectAll(e.target.checked)}
+            onChange={(e) => {
+              let newSelected
+              if (e.target.checked) {
+                // Select all currently VISIBLE items
+                newSelected = new Set(filteredData.map((_, index) => index))
+              } else {
+                newSelected = new Set()
+              }
+              const selectedRows = filteredData
+                .map((row, idx) => ({ ...row, _index: idx }))
+                .filter((_, idx) => newSelected.has(idx))
+              onSelectionChange(selectedRows, newSelected)
+            }}
           />
         </th>
 
@@ -353,13 +337,18 @@ const Table = forwardRef(function Table(
         })}
       </tr>
     )
-  }, [title, headers, selectedIds.size, filteredData.length, filters, filterInputs, operatorConfig])
-
-  useEffect(() => {
-    if (!onSelectionChange) return
-    const selectedRows = filteredData.filter((_, index) => selectedIds.has(index))
-    onSelectionChange(selectedRows)
-  }, [selectedIds, filteredData, onSelectionChange])
+  }, [
+    title,
+    headers,
+    useFilter,
+    operatorConfig,
+    selectedIds.size,
+    filters,
+    filterInputs,
+    filteredData,
+    onSelectionChange,
+    setRenderingReceived,
+  ])
 
   return (
     <div className={`flex-1 overflow-hidden ${className}`}>

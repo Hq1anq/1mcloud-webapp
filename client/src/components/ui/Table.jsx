@@ -1,6 +1,185 @@
+import { useState, useEffect, useMemo } from 'react'
+import { TableVirtuoso } from 'react-virtuoso'
+import { handleCopy, getStatusClasses } from '../../lib/utils.js'
 import Checkbox from './Checkbox.jsx'
 
-export default function Table({ title, headers, extraBtn, emptyMessage }) {
+const DEFAULT_DATA = []
+
+// Custom Row Component for TableVirtuoso
+const TableRow = ({ context, ...props }) => {
+  const { data, selectedIds, handleSelectRow } = context
+  const index = props['data-index']
+  const row = data[index]
+  const isSelected = selectedIds.has(row.sid)
+
+  return (
+    <tr
+      {...props}
+      className={`hover:bg-bg-hover text-text-secondary ${isSelected ? 'bg-bg-selected' : ''} ${props.className || ''}`}
+      onClick={(e) => {
+        // Prevent row selection if clicking/interacting with inputs/buttons/labels
+        if (e.target.closest('input') || e.target.closest('button') || e.target.closest('label'))
+          return
+        handleSelectRow(row.sid, index, e.shiftKey)
+        if (props.onClick) props.onClick(e)
+      }}
+    />
+  )
+}
+
+const TableComponent = (props) => <table {...props} className="w-full" />
+
+const VIRTUOSO_COMPONENTS = {
+  TableRow,
+  Table: TableComponent,
+}
+
+const itemContent = (index, row, context) => {
+  const { selectedIds, handleSelectRow, headers } = context
+  const isSelected = selectedIds.has(row.sid)
+
+  return (
+    <>
+      <td className="border-border border-b px-2 py-2 text-center sm:px-4">
+        <Checkbox
+          checked={isSelected}
+          onChange={(e) => handleSelectRow(row.sid, index, e.shiftKey)}
+        />
+      </td>
+      {headers.map((header) => {
+        const cellValue = row[header]
+        const statusClass = getStatusClasses(cellValue)
+
+        return (
+          <td
+            key={header}
+            className={`border-border border-b px-2 py-2 whitespace-nowrap sm:px-4 ${
+              ['ip_port', 'note'].includes(header) ? 'text-left' : 'text-center'
+            }`}
+            onDoubleClick={(e) => handleCopy(e, cellValue)}
+            title="Double click to copy"
+          >
+            {statusClass ? (
+              <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${statusClass}`}>
+                {cellValue}
+              </span>
+            ) : (
+              <span>{cellValue}</span>
+            )}
+          </td>
+        )
+      })}
+    </>
+  )
+}
+
+export default function Table({
+  data = DEFAULT_DATA,
+  onSelectionChange,
+  title,
+  headers,
+  extraBtn,
+  emptyMessage,
+}) {
+  const [selectedIds, setSelectedIds] = useState(new Set())
+  const [lastSelectedIndex, setLastSelectedIndex] = useState(null)
+  const [lastSelectionAction, setLastSelectionAction] = useState('add') // 'add' or 'delete'
+
+  function handleSelectAll(checked) {
+    if (checked) {
+      const allIds = new Set(data.map((row) => row.sid))
+      setSelectedIds(allIds)
+    } else setSelectedIds(new Set())
+  }
+
+  function handleSelectRow(sid, index, shiftKey) {
+    const newSelected = new Set(selectedIds)
+
+    if (shiftKey && lastSelectedIndex !== null && index !== undefined) {
+      // Range selection
+      const start = Math.min(lastSelectedIndex, index)
+      const end = Math.max(lastSelectedIndex, index)
+
+      for (let i = start; i <= end; i++) {
+        const rowSid = data[i].sid
+        if (lastSelectionAction === 'add') {
+          newSelected.add(rowSid)
+        } else {
+          newSelected.delete(rowSid)
+        }
+      }
+    } else {
+      // Single selection / Toggle
+      if (newSelected.has(sid)) {
+        newSelected.delete(sid)
+        setLastSelectionAction('delete')
+      } else {
+        newSelected.add(sid)
+        setLastSelectionAction('add')
+      }
+      setLastSelectedIndex(index)
+    }
+
+    setSelectedIds(newSelected)
+  }
+
+  const virtuosoContext = useMemo(() => {
+    return { data, selectedIds, handleSelectRow, headers }
+  }, [data, selectedIds, headers])
+
+  const fixedHeader = useMemo(() => {
+    return () => (
+      <tr className="bg-thead">
+        <th className="px-2 sm:px-4">
+          <Checkbox
+            checked={selectedIds.size === data.length && data.length > 0}
+            onChange={(e) => handleSelectAll(e.target.checked)}
+          />
+        </th>
+
+        {headers.map((header) => (
+          <th key={header} className="px-2 py-3 font-medium tracking-wider uppercase sm:px-4">
+            <div
+              className={`flex min-w-15 flex-col gap-1 font-bold ${
+                title === 'Proxy Status' ? 'text-base sm:text-lg' : 'text-sm sm:text-base'
+              }`}
+            >
+              <span className={['ip_port', 'note'].includes(header) ? 'text-left' : 'text-center'}>
+                {header}
+              </span>
+              {title === 'Proxy Manager' && (
+                <div className="relative">
+                  {/* Operator icon */}
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    data-operator="contain"
+                    viewBox="0 0 640 640"
+                    className="bg-border-input filter-operator fill-text-primary absolute top-[-2px] right-[-6px] h-4 w-4 cursor-pointer rounded-full p-0.5 hover:brightness-(--highlight-brightness)"
+                  >
+                    <path d="M136,128h216c105.9,0,192,86.1,192,192s-86.1,192-192,192H136c-22.1,0-40-17.9-40-40s17.9-40,40-40h216c61.8,0,112-50.2,112-112s-50.2-112-112-112H136c-22.1,0-40-17.9-40-40S113.9,128,136,128z" />
+                  </svg>
+                  <input
+                    type="text"
+                    placeholder="Filter"
+                    className={`filter-input bg-dropdown mt-1 px-2 py-1 text-center ${
+                      ['ip_port', 'note'].includes(header) ? 'text-left' : 'text-center'
+                    }`}
+                  />
+                </div>
+              )}
+            </div>
+          </th>
+        ))}
+      </tr>
+    )
+  }, [title, headers])
+
+  useEffect(() => {
+    if (!onSelectionChange) return
+    const selectedRows = data.filter((r) => selectedIds.has(r.sid))
+    onSelectionChange(selectedRows)
+  }, [selectedIds, data, onSelectionChange])
+
   return (
     <div className="flex-1 overflow-hidden text-xs sm:text-sm">
       <div id="table-wrapper" className="mx-auto max-w-7xl px-4 py-3">
@@ -44,36 +223,17 @@ export default function Table({ title, headers, extraBtn, emptyMessage }) {
           </div>
           {/* Table */}
           <div className="scroll-container overflow-x-auto rounded-b-lg">
-            <table className="min-w-full table-fixed">
-              <thead className="bg-thead" id="tableHeader">
-                <tr>
-                  <th className="px-2 sm:px-4">
-                    <Checkbox />
-                  </th>
-
-                  {headers.map((header) => (
-                    <th
-                      key={header}
-                      className="px-2 py-3 font-medium tracking-wider uppercase sm:px-4"
-                    >
-                      <div
-                        className={
-                          title === 'Proxy Status'
-                            ? 'text-base sm:text-lg'
-                            : 'text-sm sm:text-base' + 'flex min-w-15 flex-col gap-1 font-bold'
-                        }
-                      >
-                        {header}
-                      </div>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody id="tableBody" className="text-text-secondary"></tbody>
-            </table>
+            <TableVirtuoso
+              data={data}
+              useWindowScroll
+              overscan={1000}
+              context={virtuosoContext}
+              components={VIRTUOSO_COMPONENTS}
+              fixedHeaderContent={fixedHeader}
+              itemContent={itemContent}
+            />
           </div>
-
-          {typeof emptyMessage !== 'undefined' ? emptyMessage : ''}
+          {data.length === 0 && emptyMessage}
         </div>
       </div>
     </div>

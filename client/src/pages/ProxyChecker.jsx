@@ -2,8 +2,53 @@ import DropDown from '../components/ui/DropDown'
 import Table from '../components/ui/Table'
 import { useState } from 'react'
 
+const MOCK_DATA = [
+  {
+    ip: '192.168.1.1',
+    port: '8080',
+    username: 'user1',
+    password: 'pass1',
+    type: 'HTTPS',
+    status: 'Active',
+  },
+  {
+    ip: '192.168.1.2',
+    port: '3128',
+    username: 'user2',
+    password: 'pass2',
+    type: 'SOCKS5',
+    status: 'Inactive',
+  },
+  {
+    ip: '192.168.1.3',
+    port: '80',
+    username: 'user3',
+    password: 'pass3',
+    type: 'HTTPS',
+    status: 'Active',
+  },
+  {
+    ip: '192.168.1.4',
+    port: '1080',
+    username: 'user4',
+    password: 'pass4',
+    type: 'SOCKS5',
+    status: 'Inactive',
+  },
+  {
+    ip: '192.168.1.5',
+    port: '8888',
+    username: 'user5',
+    password: 'pass5',
+    type: 'HTTPS',
+    status: 'Active',
+  },
+]
+
 export default function ProxyChecker() {
   const [proxyType, setProxyType] = useState('AUTO DETECT')
+
+  const [selectedRows, setSelectedRows] = useState([])
   return (
     <div>
       <div className="bg-surface border-border z-40 border-b select-none">
@@ -157,6 +202,7 @@ export default function ProxyChecker() {
         </div>
       </div>
       <Table
+        data={MOCK_DATA}
         title="Proxy Status"
         headers={['ip', 'port', 'username', 'password', 'type', 'status']}
         extraBtn={
@@ -193,6 +239,7 @@ export default function ProxyChecker() {
             </p>
           </div>
         }
+        onSelectionChange={setSelectedRows}
       />
     </div>
   )

@@ -21,7 +21,7 @@ export default function ControlMenuContent({ actions, onClose }) {
 
   return (
     <>
-      {actions.map((action) => (
+      {actions.filter(Boolean).map((action) => (
         <button
           key={action.label}
           className={`group hover:bg-bg-hover flex cursor-pointer items-center rounded-md p-2 ${action.className ?? ''}`}

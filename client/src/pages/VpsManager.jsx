@@ -1,4 +1,5 @@
 import Table from '../components/ui/Table'
+import ControlButton from '../components/ui/ControlButton'
 import axiosInstance from '../lib/axios'
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useToast } from '../context/ToastContext'
@@ -809,6 +810,22 @@ export default function VpsManager({ onBuySuccessRef }) {
           'control',
           'is_auto_renew',
         ]}
+        controlButton={
+          <ControlButton
+            onUpgrade={() => {
+              addToast(t('vpsManager.comingSoon'), 'info')
+            }}
+            onPause={() => {
+              addToast(t('vpsManager.comingSoon'), 'info')
+            }}
+            onReboot={() => {
+              addToast(t('vpsManager.comingSoon'), 'info')
+            }}
+            onChangeIp={() => {
+              addToast(t('vpsManager.comingSoon'), 'info')
+            }}
+          />
+        }
         operatorConfig={OPERATOR_CONFIG}
         rowClassMap={rowClassMap}
         selectedIds={selectedIds}

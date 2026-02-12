@@ -5,7 +5,6 @@ import { getFlagIcon } from '../../data/flags.jsx'
 import { useTranslation } from '../../i18n'
 import Checkbox from './Checkbox.jsx'
 import RenewToggle from './RenewToggle.jsx'
-import ControlButton from './ControlButton'
 
 const DEFAULT_DATA = []
 
@@ -61,7 +60,14 @@ const VIRTUOSO_COMPONENTS = {
 }
 
 const itemContent = (index, row, context) => {
-  const { selectedIds, handleSelectRow, headers, showCountryCode, onAutoRenewToggle } = context
+  const {
+    selectedIds,
+    handleSelectRow,
+    headers,
+    showCountryCode,
+    onAutoRenewToggle,
+    controlButton,
+  } = context
   const isSelected = selectedIds.has(index)
   const isRefunded = row?.status?.toLowerCase() === 'refunded'
 
@@ -89,7 +95,7 @@ const itemContent = (index, row, context) => {
             title="Double click to copy"
           >
             {header === 'control' ? (
-              <ControlButton onControlClick={(e) => console.log(e)} />
+              controlButton
             ) : header === 'is_auto_renew' ? (
               <RenewToggle
                 isOn={cellValue}
@@ -135,6 +141,7 @@ const Table = forwardRef(function Table(
     selectedIds = new Set(),
     title,
     headers,
+    controlButton,
     operatorConfig,
     extraBtn,
     emptyMessage,
@@ -331,9 +338,19 @@ const Table = forwardRef(function Table(
       handleSelectRow,
       showCountryCode,
       onAutoRenewToggle,
+      controlButton,
       t,
     }
-  }, [selectedIds, headers, rowClassMap, handleSelectRow, showCountryCode, onAutoRenewToggle, t])
+  }, [
+    selectedIds,
+    headers,
+    rowClassMap,
+    handleSelectRow,
+    showCountryCode,
+    onAutoRenewToggle,
+    controlButton,
+    t,
+  ])
 
   const fixedHeader = useMemo(() => {
     const toggleOperator = (header) => {

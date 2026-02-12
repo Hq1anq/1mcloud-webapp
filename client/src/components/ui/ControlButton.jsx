@@ -21,7 +21,7 @@ export default function ControlButton({ onUpgrade, onPause, onReboot, onChangeIp
 
     show(buttonRef.current, {
       actions: [
-        {
+        onUpgrade && {
           label: t('vpsManager.upgrade'),
           icon: (
             <svg

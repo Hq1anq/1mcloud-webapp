@@ -51,7 +51,7 @@ export function PopConfirmProvider({ children }) {
           isOpen={active.isOpen}
           coords={active.coords}
           onClose={hide}
-          bgClassName="bg-surface-secondary"
+          bgClassName="bg-terminal"
           cardClassName="p-4 gap-4"
         >
           <PopConfirmContent

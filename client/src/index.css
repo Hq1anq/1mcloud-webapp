@@ -128,7 +128,7 @@
 [data-theme='light'] {
   /* Background Colors */
   --bg-body: var(--blue-100);
-  --bg-surface: var(--blue-200);
+  --bg-surface: var(--color-slate-100);
   --bg-wrapper: var(--blue-300);
   --bg-thead: var(--blue-500);
   --bg-dropdown: #fada7a;
@@ -160,10 +160,10 @@
   --text-title: #007bfc;
   --text-primary: var(--light-100);
   --text-secondary: var(--dark-800);
-  --text-muted: var(--light-400);
+  --text-muted: var(--color-slate-500);
 
   /* Border Colors */
-  --border: var(--light-400);
+  --border: var(--color-slate-500);
   --border-input: #e3c00e;
   --border-checkbox-hover: var(--light-500);
 
@@ -289,7 +289,7 @@
   transition-duration: 0.3s;
 }
 
-.scroll-container * {
+.scroll-container::-webkit-scrollbar * {
   transition: none;
 }
 

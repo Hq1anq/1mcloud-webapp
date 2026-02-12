@@ -361,7 +361,7 @@ const Table = forwardRef(function Table(
           {/* Table Header */}
           <div
             id="container-header"
-            className="bg-thead border-border-input top-0 z-30 rounded-t-lg border-b-[5px] px-4 py-3"
+            className="bg-thead top-0 z-30 rounded-t-lg border-b-[5px] border-[color-mix(in_srgb,var(--color-thead)_50%,white)] px-4 py-3"
           >
             <div className="flex items-center justify-between">
               <h2 className="flex items-center text-lg font-semibold sm:text-2xl">

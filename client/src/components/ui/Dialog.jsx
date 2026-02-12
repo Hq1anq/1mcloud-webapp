@@ -59,9 +59,7 @@ export default function Dialog({ isOpen, onClose, title, children, className = '
         role="dialog"
         aria-modal="true"
       >
-        <div className="mb-4">
-          <h1 className="font-bold">{title}</h1>
-        </div>
+        {title && <h1 className="mb-4 font-bold">{title}</h1>}
         {children}
       </div>
     </div>,

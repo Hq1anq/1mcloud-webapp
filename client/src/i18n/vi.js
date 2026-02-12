@@ -3,6 +3,8 @@ const vi = {
   'nav.home': 'Home',
   'nav.proxyChecker': 'Proxy Checker',
   'nav.proxyManager': 'Proxy Manager',
+  'nav.vpsManager': 'VPS Manager',
+  'nav.manager': 'Manager',
 
   // UserMenu
   'menu.login': 'Đăng nhập',
@@ -138,8 +140,8 @@ const vi = {
   'checker.active': 'hoạt động',
   'checker.inactive': 'không hoạt động',
   'checker.checkFailed': 'Kiểm tra proxy thất bại',
-  'checker.copiedIp': 'IP vào bộ nhớ tạm',
-  'checker.copiedProxy': 'proxy vào bộ nhớ tạm',
+  'checker.copiedIp': 'IP',
+  'checker.copiedProxy': 'proxy',
   'checker.noProxyToCheck': 'Chưa có proxy để kiểm tra',
   'checker.enterAndClick': 'Nhập proxy và nhấn',
 
@@ -254,6 +256,20 @@ const vi = {
   'addfunds.note': 'Lưu ý',
   'addfunds.noteContent':
     'Vui lòng chuyển khoản tối thiểu 50.000 VNĐ (năm mươi nghìn Việt Nam Đồng) để hệ thống có thể xử lý.',
+
+  // VPS Manager
+  'vpsManager.title': 'Quản lý VPS',
+  'vpsManager.resetPassword': 'Đặt lại mật khẩu',
+  'vpsManager.autoFix': 'Tự động sửa',
+  'vpsManager.comingSoon': 'Sắp ra mắt',
+
+  // Additional Table Headers
+  'table.planNumber': 'Dịch vụ',
+  'table.os': 'OS',
+  'table.priceVnd': 'Giá (VNĐ)',
+
+  // Navbar
+  'nav.vpsManager': 'VPS Manager',
 }
 
 export default vi

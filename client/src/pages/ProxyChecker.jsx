@@ -29,7 +29,6 @@ export default function ProxyChecker() {
     }
 
     const proxies = trimmed.split('\n').map(parseProxy).filter(Boolean)
-    console.log(proxies)
     if (proxies.length === 0) {
       addToast(t('checker.noProxyFound'), 'warning')
       return

@@ -10,6 +10,7 @@ import useAuthStore from './store/useAuthStore'
 import useThemeStore from './store/useThemeStore'
 import Home from './pages/Home.jsx'
 import ProxyManager from './pages/ProxyManager.jsx'
+import VpsManager from './pages/VpsManager.jsx'
 import ProxyChecker from './pages/ProxyChecker.jsx'
 import LoginPage from './pages/LoginPage.jsx'
 import SignupPage from './pages/SignupPage.jsx'
@@ -55,6 +56,23 @@ function App() {
                     <SafeCopyProvider>
                       <ConfirmProvider>
                         <ProxyManager />
+                      </ConfirmProvider>
+                    </SafeCopyProvider>
+                  </ToastProvider>
+                ) : (
+                  <Navigate to="/login" replace />
+                )
+              }
+            />
+
+            <Route
+              path="/vpsManager"
+              element={
+                isAuthenticated ? (
+                  <ToastProvider>
+                    <SafeCopyProvider>
+                      <ConfirmProvider>
+                        <VpsManager />
                       </ConfirmProvider>
                     </SafeCopyProvider>
                   </ToastProvider>

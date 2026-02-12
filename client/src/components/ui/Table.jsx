@@ -304,7 +304,7 @@ const Table = forwardRef(function Table(
           return (
             <th key={header} className="px-2 py-3 font-medium tracking-wider uppercase sm:px-4">
               <div
-                className={`flex min-w-15 flex-col gap-1 font-bold ${
+                className={`flex min-w-15 flex-col gap-1 font-bold whitespace-nowrap ${
                   title === 'Proxy Status' ? 'text-base sm:text-lg' : 'text-sm sm:text-base'
                 }`}
               >

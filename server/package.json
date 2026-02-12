@@ -16,7 +16,7 @@
   "main": "src/server.js",
   "scripts": {
     "dev": "node --env-file=.env --watch src/server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node --env-file=.env src/server.js"
   },
   "dependencies": {
     "@maxmind/geoip2-node": "^6.3.4",

@@ -136,7 +136,7 @@ export default function ProxyManager() {
       .filter(Boolean)
       .join(',')
 
-    const params = {}
+    const params = { proxy: 'true' }
     if (parsedIps) params.ips = parsedIps
     if (amount) params.amount = +amount
 

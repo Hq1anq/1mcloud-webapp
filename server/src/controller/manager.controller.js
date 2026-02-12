@@ -7,7 +7,7 @@ const HEADERS = {
 
 export async function list(req, res) {
   const url = `${process.env.BASE_URL}/server/list`;
-  const { ips, amount } = req.query;
+  const { ips, amount, proxy } = req.query;
 
   const headers = { ...HEADERS, authorization: `Bearer ${req.token}` };
 
@@ -19,8 +19,13 @@ export async function list(req, res) {
     by_created: "",
     keyword: "",
     ips: ips || "",
-    proxy: "true",
   });
+
+  const isProxy = proxy === "true";
+
+  if (isProxy) {
+    params.set("proxy", "true");
+  }
 
   try {
     const response = await fetch(`${url}?${params.toString()}`, {
@@ -40,9 +45,12 @@ export async function list(req, res) {
 
     const data = servers.map((server) => ({
       sid: server.server_id,
+      ...(!isProxy && { plan_number: server.plan_number }),
       ip_port: server.ip_port,
       country: server.country,
       type: server.he_dieu_hanh,
+      ...(!isProxy && { he_dieu_hanh: server.he_dieu_hanh }),
+      ...(!isProxy && { price_vnd: server.price_vnd }),
       created: server.ngay_mua,
       expired: server.het_han,
       ip_changed: server.change_ip_time,
@@ -530,5 +538,70 @@ export async function updateNote(req, res) {
     res
       .status(500)
       .json({ success: false, error: "Internal server error", sid });
+  }
+}
+
+export async function resetPassword(req, res) {
+  const { sids } = req.body;
+  const url = `${process.env.BASE_URL}/server/reset-password`;
+  const headers = { ...HEADERS, authorization: `Bearer ${req.token}` };
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ sid: sids }),
+    });
+
+    if (!response.ok) {
+      console.error(
+        `Failed to RESET PASSWORD for sids: ${sids}:`,
+        response.status,
+      );
+      return res.status(response.status).json({
+        success: false,
+        error: "Request failed",
+        sids,
+      });
+    }
+
+    const data = await response.json();
+    res.json({ success: true, result: data.result });
+  } catch (error) {
+    console.error(`Failed to RESET PASSWORD for sid: ${sids}`, error.message);
+    res
+      .status(500)
+      .json({ success: false, error: "Internal server error", sids });
+  }
+}
+
+export async function autoFix(req, res) {
+  const { sids } = req.body;
+  const url = `${process.env.BASE_URL}/server/auto-fix`;
+  const headers = { ...HEADERS, authorization: `Bearer ${req.token}` };
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ sid: sids }),
+    });
+
+    if (!response.ok) {
+      console.error(`Failed to AUTO FIX for sids: ${sids}:`, response.status);
+      return res.status(response.status).json({
+        success: false,
+        error: "Request failed",
+        sids,
+      });
+    }
+
+    const data = await response.json();
+    res.json({ success: true, result: data.result });
+  } catch (error) {
+    console.error(`Failed to AUTO FIX for sid: ${sids}`, error.message);
+    res
+      .status(500)
+      .json({ success: false, error: "Internal server error", sids });
   }
 }

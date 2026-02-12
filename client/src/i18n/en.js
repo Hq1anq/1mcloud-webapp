@@ -3,6 +3,8 @@ const en = {
   'nav.home': 'Home',
   'nav.proxyChecker': 'Proxy Checker',
   'nav.proxyManager': 'Proxy Manager',
+  'nav.vpsManager': 'VPS Manager',
+  'nav.manager': 'Manager',
 
   // UserMenu
   'menu.login': 'Login',
@@ -253,6 +255,20 @@ const en = {
   'addfunds.note': 'Note',
   'addfunds.noteContent':
     'Please transfer a minimum of 50,000 VND (fifty thousand Vietnamese Dong) for the system to process.',
+
+  // VPS Manager
+  'vpsManager.title': 'VPS Manager',
+  'vpsManager.resetPassword': 'Reset Password',
+  'vpsManager.autoFix': 'Auto Fix',
+  'vpsManager.comingSoon': 'Coming Soon',
+
+  // Additional Table Headers
+  'table.planNumber': 'Plan',
+  'table.os': 'OS',
+  'table.priceVnd': 'Price (VNĐ)',
+
+  // Navbar
+  'nav.vpsManager': 'VPS Manager',
 }
 
 export default en

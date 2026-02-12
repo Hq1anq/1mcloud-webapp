@@ -18,5 +18,7 @@ router.post("/reboot", managerController.reboot);
 router.post("/renew", managerController.renew);
 router.post("/renew/calculate", managerController.renewCalculate);
 router.put("/info/note", managerController.updateNote);
+router.post("/reset-password", managerController.resetPassword);
+router.post("/auto-fix", managerController.autoFix);
 
 export default router;

@@ -145,8 +145,8 @@
   --bg-navbar-menu-hover: var(--light-300);
 
   --bg-toggle-theme: var(--blue-400);
-  --bg-hover: hsl(from var(--bg-surface) h s calc(l - 10));
-  --bg-selected: hsl(from var(--bg-surface) h s calc(l - 20));
+  --bg-hover: hsl(from var(--bg-thead) h calc(s - 10) calc(l + 40));
+  --bg-selected: hsl(from var(--bg-thead) h calc(s - 20) calc(l + 35));
 
   --bg-dialog: var(--light-100);
   --bg-dialog-thead: var(--blue-500);
@@ -221,8 +221,8 @@
   --bg-navbar-menu-hover: #2c3c57;
 
   --bg-toggle-theme: var(--dark-500);
-  --bg-hover: hsl(from var(--bg-surface) h s calc(l + 5));
-  --bg-selected: hsl(from var(--bg-surface) h s calc(l + 10));
+  --bg-hover: hsl(from var(--bg-thead) h calc(s - 3) l);
+  --bg-selected: hsl(from var(--bg-thead) h calc(s - 3) calc(l + 5));
 
   --bg-dialog: var(--dark-700);
   --bg-dialog-thead: var(--dark-600);

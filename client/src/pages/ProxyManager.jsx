@@ -1,5 +1,6 @@
 import DropDown from '../components/ui/DropDown'
 import Table from '../components/ui/Table'
+import BuyProxyDialog from '../components/dialog/BuyProxyDialog'
 import axiosInstance from '../lib/axios'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useToast } from '../context/ToastContext'
@@ -55,6 +56,7 @@ export default function ProxyManager() {
   const [selectedRows, setSelectedRows] = useState([])
   const { addToast, updateToast, removeToast } = useToast()
   const { safeCopy } = useSafeCopy()
+  const [buyDialogOpen, setBuyDialogOpen] = useState(false)
 
   // Controlled input state
   const [ips, setIps] = useState('')
@@ -642,13 +644,7 @@ export default function ProxyManager() {
                     </button>
                     <button
                       className="bg-bg-changeIp m-0.5 flex items-center justify-center rounded-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness) sm:m-1"
-                      onClick={async () => {
-                        const res = await axiosInstance.post('/server/create/calculate', {
-                          quantity: 1,
-                          nation: 'VN',
-                        })
-                        console.log(res.data.info)
-                      }}
+                      onClick={() => setBuyDialogOpen(true)}
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -785,6 +781,12 @@ export default function ProxyManager() {
           setSelectedRows(rows)
           setSelectedIds(ids)
         }}
+      />
+
+      <BuyProxyDialog
+        isOpen={buyDialogOpen}
+        onClose={() => setBuyDialogOpen(false)}
+        onSuccess={() => handleGetData()}
       />
     </div>
   )

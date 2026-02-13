@@ -8,6 +8,7 @@ const router = express.Router();
 router.use(authenticate);
 
 router.get("/list", managerController.list);
+router.get("/proxy/support", managerController.support);
 router.post("/create", managerController.create);
 router.post("/create/calculate", managerController.calculate);
 router.post("/change-ip", managerController.changeIp);

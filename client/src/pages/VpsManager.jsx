@@ -6,6 +6,7 @@ import { extractIP, randomDelay } from '../lib/utils'
 import { useSafeCopy } from '../context/SafeCopyContext'
 import { useConfirm } from '../context/ConfirmContext'
 import { useTranslation } from '../i18n'
+import useAuthStore from '../store/useAuthStore'
 
 const OPERATOR_CONFIG = {
   sid: ['greater-equal', 'less-equal', 'equal', 'contain'],
@@ -28,15 +29,21 @@ function saveData(data) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
 }
 
-/** Merge res into data by sid */
+/** Merge res into data by sid, preserving user_pass from data */
 function mergeResIntoData(data, res) {
   const dataMap = new Map(data.map((row) => [row.sid, row]))
 
   for (const resRow of res) {
     const existingRow = dataMap.get(resRow.sid)
     if (existingRow) {
+      // Update all columns from res, but keep user_pass from data
+      const userPass = existingRow.user_pass
       Object.assign(existingRow, resRow)
+      if (userPass !== undefined) {
+        existingRow.user_pass = userPass
+      }
     } else {
+      // New row from res — add to data
       dataMap.set(resRow.sid, { ...resRow })
     }
   }
@@ -70,6 +77,66 @@ export default function VpsManager() {
     selectedRowsRef.current = selectedRows
   }, [selectedRows])
 
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+
+  // --- DB sync helpers ---
+  const syncToDb = useCallback(
+    async (vpsToSync) => {
+      if (!isAuthenticated || !vpsToSync || vpsToSync.length === 0) return
+      try {
+        await axiosInstance.post('/vps', { vpsList: vpsToSync })
+      } catch (err) {
+        console.error('[DB Sync] Save failed:', err.message)
+      }
+    },
+    [isAuthenticated]
+  )
+
+  // Load from DB on mount (merge with localStorage, DB wins)
+  // If DB is empty (first-time user), auto-fetch from /server/list and sync to DB
+  useEffect(() => {
+    if (!isAuthenticated) return
+    let cancelled = false
+
+    async function loadFromDb() {
+      try {
+        const res = await axiosInstance.get('/vps')
+        if (cancelled) return
+        const dbData = res.data?.data || []
+
+        if (dbData.length > 0) {
+          // Returning user — load from DB
+          setData((prev) => mergeResIntoData(prev, dbData))
+          setReceivedData(dbData)
+          setRenderingReceived(true)
+        } else {
+          // First-time user — DB empty, auto-fetch from API
+          try {
+            const listRes = await axiosInstance.get('/server/list')
+            if (cancelled) return
+            const listData = listRes.data?.data || []
+            if (listData.length > 0) {
+              setData((prev) => mergeResIntoData(prev, listData))
+              setReceivedData(listData)
+              setRenderingReceived(true)
+              // Sync fetched data to DB so next visit loads from DB
+              syncToDb(listData)
+            }
+          } catch (listErr) {
+            console.error('[DB Sync] Initial fetch failed:', listErr.message)
+          }
+        }
+      } catch (err) {
+        console.error('[DB Sync] Load failed:', err.message)
+      }
+    }
+
+    loadFromDb()
+    return () => {
+      cancelled = true
+    }
+  }, [isAuthenticated, syncToDb])
+
   // Save data to localStorage whenever it changes
   useEffect(() => {
     saveData(data)
@@ -101,6 +168,9 @@ export default function VpsManager() {
         setRenderingReceived(true)
         setSelectedIds(new Set())
 
+        // Sync updated data to DB
+        syncToDb(finalResData)
+
         removeToast(loadingId)
         addToast(
           <>
@@ -118,7 +188,7 @@ export default function VpsManager() {
       removeToast(loadingId)
       addToast(`${t('manager.failedGetData')}: ${err.message}`, 'error')
     }
-  }, [ips, amount, addToast, removeToast, t])
+  }, [ips, amount, addToast, removeToast, t, syncToDb])
 
   // Helper: update a single row in both receivedData and data by sid
   const updateRowBySid = useCallback((sid, updater) => {
@@ -682,12 +752,35 @@ export default function VpsManager() {
                       {t('manager.reboot')}
                     </button>
 
-                    {/* Get Info (placeholder) */}
+                    {/* Get Info */}
                     <button
                       id="getInfoBtn"
                       className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap hover:brightness-(--highlight-brightness)"
                       style={{ '--action-color': 'var(--primary)' }}
-                      onClick={() => addToast(t('vpsManager.comingSoon'), 'warning')}
+                      onClick={() => {
+                        const rows = selectedRowsRef.current
+                        if (rows.length === 0)
+                          return addToast(t('manager.noRowsSelected'), 'warning')
+                        const text = rows
+                          .map((r) => {
+                            const [ip, port] = (r.ip_port || '').split(':')
+                            const [user, pass] = (r.user_pass || '').split(':')
+                            return [ip, port, user, pass].filter(Boolean).join(':')
+                          })
+                          .join('\n')
+                        safeCopy(text).then(
+                          (ok) =>
+                            ok &&
+                            addToast(
+                              <>
+                                {t('manager.copied')}{' '}
+                                <span className="text-text-toast-success">{rows.length}</span>{' '}
+                                {t('manager.copiedVps')}
+                              </>,
+                              'success'
+                            )
+                        )
+                      }}
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"

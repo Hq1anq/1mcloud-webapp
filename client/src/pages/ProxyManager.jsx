@@ -99,6 +99,7 @@ export default function ProxyManager() {
     [isAuthenticated]
   )
   // Load from DB on mount (merge with localStorage, DB wins)
+  // If DB is empty (first-time user), auto-fetch from /server/list and sync to DB
   useEffect(() => {
     if (!isAuthenticated) return
     let cancelled = false
@@ -108,10 +109,30 @@ export default function ProxyManager() {
         const res = await axiosInstance.get('/proxy')
         if (cancelled) return
         const dbData = res.data?.data || []
+
         if (dbData.length > 0) {
+          // Returning user — load from DB
           setData((prev) => mergeResIntoData(prev, dbData))
           setReceivedData(dbData)
           setRenderingReceived(true)
+        } else {
+          // First-time user — DB empty, auto-fetch from API
+          try {
+            const listRes = await axiosInstance.get('/server/list', {
+              params: { proxy: 'true' },
+            })
+            if (cancelled) return
+            const listData = listRes.data?.data || []
+            if (listData.length > 0) {
+              setData((prev) => mergeResIntoData(prev, listData))
+              setReceivedData(listData)
+              setRenderingReceived(true)
+              // Sync fetched data to DB so next visit loads from DB
+              syncToDb(listData)
+            }
+          } catch (listErr) {
+            console.error('[DB Sync] Initial fetch failed:', listErr.message)
+          }
         }
       } catch (err) {
         console.error('[DB Sync] Load failed:', err.message)
@@ -122,7 +143,7 @@ export default function ProxyManager() {
     return () => {
       cancelled = true
     }
-  }, [isAuthenticated])
+  }, [isAuthenticated, syncToDb])
 
   // Save data to localStorage whenever it changes
   useEffect(() => {

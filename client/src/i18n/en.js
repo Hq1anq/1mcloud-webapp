@@ -168,7 +168,8 @@ const en = {
   'manager.failedGetData': 'Failed to get data',
   'manager.noRowsSelected': 'No rows selected',
   'manager.copiedIps': 'IPs to clipboard',
-  'manager.copiedProxy': 'proxy to clipboard',
+  'manager.copiedProxy': 'Proxy to clipboard',
+  'manager.copiedVps': 'VPS to clipboard',
   'manager.pausing': 'Pausing...',
   'manager.rebooting': 'Rebooting...',
   'manager.renewing': 'Renewing...',
@@ -266,9 +267,6 @@ const en = {
   'table.planNumber': 'Plan',
   'table.os': 'OS',
   'table.priceVnd': 'Price (VNĐ)',
-
-  // Navbar
-  'nav.vpsManager': 'VPS Manager',
 }
 
 export default en

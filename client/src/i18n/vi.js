@@ -168,8 +168,9 @@ const vi = {
   'manager.rows': 'dòng',
   'manager.failedGetData': 'Lấy dữ liệu thất bại',
   'manager.noRowsSelected': 'Chưa chọn dòng nào',
-  'manager.copiedIps': 'IP vào bộ nhớ tạm',
-  'manager.copiedProxy': 'proxy vào bộ nhớ tạm',
+  'manager.copiedIps': 'IP',
+  'manager.copiedProxy': 'Proxy',
+  'manager.copiedVps': 'VPS',
   'manager.pausing': 'Đang tạm dừng...',
   'manager.rebooting': 'Đang khởi động lại...',
   'manager.renewing': 'Đang gia hạn...',
@@ -267,9 +268,6 @@ const vi = {
   'table.planNumber': 'Dịch vụ',
   'table.os': 'OS',
   'table.priceVnd': 'Giá (VNĐ)',
-
-  // Navbar
-  'nav.vpsManager': 'VPS Manager',
 }
 
 export default vi

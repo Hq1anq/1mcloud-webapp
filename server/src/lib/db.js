@@ -59,5 +59,29 @@ export async function initDatabase() {
     END
   `);
 
+  await pool.request().query(`
+    IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Vps')
+    BEGIN
+      CREATE TABLE Vps (
+        id INT IDENTITY(1,1) PRIMARY KEY,
+        user_id INT NOT NULL,
+        sid INT NOT NULL,
+        plan_number NVARCHAR(100),
+        ip_port NVARCHAR(100),
+        user_pass NVARCHAR(200),
+        country NVARCHAR(10),
+        he_dieu_hanh NVARCHAR(50),
+        price_vnd NVARCHAR(50),
+        created NVARCHAR(20),
+        expired NVARCHAR(20),
+        status NVARCHAR(50),
+        note NVARCHAR(500),
+        CONSTRAINT FK_Vps_Users FOREIGN KEY (user_id) REFERENCES Users(user_id),
+        CONSTRAINT UQ_Vps_user_sid UNIQUE (user_id, sid)
+      );
+      CREATE INDEX IX_Vps_user_id ON Vps(user_id);
+    END
+  `);
+
   console.log("✅ Database tables initialized");
 }

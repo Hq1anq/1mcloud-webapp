@@ -6,6 +6,7 @@ import managerRoute from "./route/manager.route.js";
 import checkerRoute from "./route/checker.route.js";
 import userRoute from "./route/user.route.js";
 import proxyRoute from "./route/proxy.route.js";
+import vpsRoute from "./route/vps.route.js";
 import { initDatabase } from "./lib/db.js";
 
 const __dirname = path.resolve();
@@ -27,6 +28,7 @@ app.use("/api/server", managerRoute);
 app.use("/api/user", userRoute);
 app.use("/api/check", checkerRoute);
 app.use("/api/proxy", proxyRoute);
+app.use("/api/vps", vpsRoute);
 
 app.use((req, res) => {
   res.sendFile(path.join(__dirname, "../client/dist/index.html"));

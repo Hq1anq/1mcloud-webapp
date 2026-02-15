@@ -210,7 +210,7 @@
   --bg-dropdown: var(--dark-800);
   --bg-checkbox: var(--dark-750);
 
-  --bg-toast: #0f2045;
+  --bg-toast: #0a1530;
   --text-toast: #f8fafc;
   --text-toast-success: #4ade80;
   --text-toast-error: #f87171;
@@ -287,10 +287,6 @@
   transition-property: all;
   transition-timing-function: ease-out;
   transition-duration: 0.3s;
-}
-
-.scroll-container::-webkit-scrollbar * {
-  transition: none;
 }
 
 .theme-transitions .all-fast {

@@ -393,7 +393,7 @@ const Table = forwardRef(function Table(
             </div>
           </div>
           {/* Table */}
-          <div className="scroll-container overflow-x-auto overflow-y-hidden rounded-b-lg">
+          <div className="scroll-container overflow-x-auto overflow-y-hidden rounded-b-lg **:transition-colors!">
             <TableVirtuoso
               data={filteredData}
               useWindowScroll

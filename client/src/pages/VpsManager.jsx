@@ -35,16 +35,32 @@ function mergeResIntoData(data, res) {
 
   for (const resRow of res) {
     const existingRow = dataMap.get(resRow.sid)
+    let userPass = existingRow ? existingRow.user_pass : resRow.user_pass
+
+    // Add default user if missing based on OS
+    if (!userPass || !userPass.includes('/')) {
+      const os = resRow.he_dieu_hanh || existingRow?.he_dieu_hanh || ''
+      const defaultUser = os.toLowerCase().includes('ubuntu')
+        ? 'root'
+        : os.toLowerCase().includes('win')
+          ? 'Administrator'
+          : ''
+      if (defaultUser) {
+        userPass = `${defaultUser}/`
+      }
+    }
+
     if (existingRow) {
       // Update all columns from res, but keep user_pass from data
-      const userPass = existingRow.user_pass
       Object.assign(existingRow, resRow)
       if (userPass !== undefined) {
         existingRow.user_pass = userPass
       }
     } else {
       // New row from res — add to data
-      dataMap.set(resRow.sid, { ...resRow })
+      const newRow = { ...resRow }
+      if (userPass !== undefined) newRow.user_pass = userPass
+      dataMap.set(resRow.sid, newRow)
     }
   }
 
@@ -223,12 +239,16 @@ export default function VpsManager() {
         const res = await axiosInstance.post(endpoint, { sids })
         if (res.data?.success) {
           const classUpdates = {}
+          const updatedRows = []
           for (const row of rows) {
             if (statusUpdater) {
-              updateRowBySid(row.sid, statusUpdater)
+              const updated = updateRowBySid(row.sid, statusUpdater)
+              if (updated) updatedRows.push(updated)
             }
             classUpdates[row.sid] = 'bg-success-cell'
           }
+          if (updatedRows.length > 0) syncToDb(updatedRows)
+
           setRowClassMap(classUpdates)
           setSelectedIds((prev) => {
             const newSet = new Set(prev)
@@ -423,7 +443,16 @@ export default function VpsManager() {
   )
 
   const handleResetPassword = useCallback(
-    () => handleBatchAction('/server/reset-password', t('vpsManager.resetPassword').toUpperCase()),
+    () =>
+      handleBatchAction(
+        '/server/reset-password',
+        t('vpsManager.resetPassword').toUpperCase(),
+        (row) => {
+          const [user] = (row.user_pass || '').split('/')
+          const newUserPass = user ? `${user}/Httv1234` : `/Httv1234`
+          return { user_pass: newUserPass }
+        }
+      ),
     [handleBatchAction, t]
   )
 
@@ -436,6 +465,7 @@ export default function VpsManager() {
   const handleChangeNote = useCallback(async () => {
     const rows = [...selectedRowsRef.current]
     const newNote = noteInput
+    const updatedRowsToSync = []
 
     await processSequential(
       rows,
@@ -445,13 +475,15 @@ export default function VpsManager() {
           newNote,
         })
         if (res.data?.success) {
-          updateRowBySid(row.sid, () => ({ note: newNote }))
+          const updated = updateRowBySid(row.sid, () => ({ note: newNote }))
+          if (updated) updatedRowsToSync.push(updated)
         }
         return res
       },
       t('manager.changeNote').toUpperCase()
     )
-  }, [noteInput, processSequential, updateRowBySid, t])
+    if (updatedRowsToSync.length > 0) syncToDb(updatedRowsToSync)
+  }, [noteInput, processSequential, updateRowBySid, t, syncToDb])
 
   // --- Renew handler ---
   const handleRenew = useCallback(async () => {
@@ -754,7 +786,6 @@ export default function VpsManager() {
 
                     {/* Get Info */}
                     <button
-                      id="getInfoBtn"
                       className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap hover:brightness-(--highlight-brightness)"
                       style={{ '--action-color': 'var(--primary)' }}
                       onClick={() => {
@@ -763,9 +794,8 @@ export default function VpsManager() {
                           return addToast(t('manager.noRowsSelected'), 'warning')
                         const text = rows
                           .map((r) => {
-                            const [ip, port] = (r.ip_port || '').split(':')
-                            const [user, pass] = (r.user_pass || '').split(':')
-                            return [ip, port, user, pass].filter(Boolean).join(':')
+                            const [user, pass] = (r.user_pass || '').split('/')
+                            return [r.ip_port, user, pass].join('/')
                           })
                           .join('\n')
                         safeCopy(text).then(

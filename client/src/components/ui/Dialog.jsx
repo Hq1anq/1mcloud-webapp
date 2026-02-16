@@ -53,7 +53,7 @@ export default function Dialog({ isOpen, onClose, title, children, className = '
     >
       <div className="fixed inset-0" onClick={onClose} aria-hidden="true" />
       <div
-        className={`bg-dialog text-text-primary relative flex w-full max-w-md transform flex-col rounded-xl p-6 shadow-2xl transition-all duration-200 ${
+        className={`bg-dialog text-text-primary relative flex max-h-[90vh] w-fit max-w-[95vw] transform flex-col rounded-xl p-6 shadow-2xl ${
           animating ? 'scale-100 opacity-100' : 'scale-90 opacity-0'
         } ${className}`}
         role="dialog"

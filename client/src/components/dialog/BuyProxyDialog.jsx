@@ -194,7 +194,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
   const states = Array.isArray(supportData.state?.option) ? supportData.state.option : []
 
   return (
-    <Dialog isOpen={isOpen} onClose={onClose} className="w-[95%]! max-w-[1100px]! p-0!">
+    <Dialog isOpen={isOpen} onClose={onClose} className="p-0!">
       <div className="scroll-container text-text-secondary flex h-full max-h-[85vh] flex-col overflow-y-auto md:flex-row">
         {/* Left Form Panel */}
         <div className="flex flex-1 flex-col gap-6 p-6 md:p-8 lg:p-10">

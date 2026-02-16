@@ -303,7 +303,7 @@ const Table = forwardRef(function Table(
                 <span
                   className={['ip_port', 'note'].includes(header) ? 'text-left' : 'text-center'}
                 >
-                  {header}
+                  {header.replace(/_/g, ' ')}
                 </span>
                 {useFilter && (
                   <div className="relative">

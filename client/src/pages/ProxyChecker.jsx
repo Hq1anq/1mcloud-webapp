@@ -204,6 +204,7 @@ export default function ProxyChecker() {
       <Table
         data={MOCK_DATA}
         title="Proxy Status"
+        className="text-base sm:text-lg"
         headers={['ip', 'port', 'username', 'password', 'type', 'status']}
         extraBtn={
           <button

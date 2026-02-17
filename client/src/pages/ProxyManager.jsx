@@ -1,12 +1,111 @@
 import DropDown from '../components/ui/DropDown'
 import Table from '../components/ui/Table'
-import { useState } from 'react'
+import axiosInstance from '../lib/axios'
+import { useState, useEffect, useCallback } from 'react'
+import { useToast } from '../context/ToastContext'
+import { extractIP } from '../lib/utils'
+
+const OPERATOR_CONFIG = {
+  sid: ['greater-equal', 'less-equal', 'equal', 'contain'],
+  created: ['greater-equal', 'less-equal', 'contain'],
+  expired: ['greater-equal', 'less-equal', 'contain'],
+}
+
+const STORAGE_KEY = 'proxyManager_origin'
+
+function loadOrigin() {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    return stored ? JSON.parse(stored) : []
+  } catch {
+    return []
+  }
+}
+
+function saveOrigin(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+}
+
+/** Merge target into origin by sid, preserving user_pass from origin */
+function mergeTargetIntoOrigin(origin, target) {
+  const originMap = new Map(origin.map((row) => [row.sid, row]))
+
+  for (const targetRow of target) {
+    const existingRow = originMap.get(targetRow.sid)
+    if (existingRow) {
+      // Update all columns from target, but keep user_pass from origin
+      const userPass = existingRow.user_pass
+      Object.assign(existingRow, targetRow)
+      if (userPass !== undefined) {
+        existingRow.user_pass = userPass
+      }
+    } else {
+      // New row from target — add to origin
+      originMap.set(targetRow.sid, { ...targetRow })
+    }
+  }
+
+  return Array.from(originMap.values())
+}
 
 export default function ProxyManager() {
   const [reinstallType, setReinstallType] = useState('HTTPS')
   const [changeIpType, setChangeIpType] = useState('HTTPS')
-
   const [selectedRows, setSelectedRows] = useState([])
+  const { addToast, removeToast } = useToast()
+
+  // Controlled input state
+  const [ips, setIps] = useState('')
+  const [amount, setAmount] = useState('')
+
+  // Origin: persistent data in localStorage (includes user_pass)
+  const [origin, setOrigin] = useState(loadOrigin)
+  // TableData: what renders in the table (target after GetData, origin on first load)
+  const [tableData, setTableData] = useState(loadOrigin)
+
+  // Save origin to localStorage whenever it changes
+  useEffect(() => {
+    saveOrigin(origin)
+  }, [origin])
+
+  const handleGetData = useCallback(async () => {
+    const parsedIps = ips
+      .split('\n')
+      .map((line) => extractIP(line))
+      .filter(Boolean)
+      .join(',')
+
+    const params = {}
+    if (parsedIps) params.ips = parsedIps
+    if (amount) params.amount = +amount
+
+    const loadingId = addToast('Fetching data...', 'loading')
+
+    try {
+      const res = await axiosInstance.get('/server/list', { params })
+
+      const target = res.data?.data || []
+
+      // Render target in the table
+      setTableData(target)
+
+      // Merge target into origin and persist
+      setOrigin((prev) => {
+        const merged = mergeTargetIntoOrigin(prev, target)
+        return merged
+      })
+
+      removeToast(loadingId)
+      addToast(
+        `Loaded <span class="text-text-toast-success">${target.length}</span> rows`,
+        'success'
+      )
+    } catch (err) {
+      console.error('[GetData] Error:', err.message)
+      removeToast(loadingId)
+      addToast(`Failed to get data: ${err.message}`, 'error')
+    }
+  }, [ips, amount, addToast, removeToast])
   return (
     <div>
       {/* ========== TOP CONTROLS ========== */}
@@ -75,7 +174,9 @@ export default function ProxyManager() {
                   id="ip-list"
                   className="min-h-24 grow"
                   placeholder="192.168.1.1&#10;10.0.0.1&#10;172.16.0.1"
-                ></textarea>
+                  value={ips}
+                  onChange={(e) => setIps(e.target.value)}
+                />
               </div>
               {/* GetData & Change Note & Reinstall and Simple Action Buttons */}
               <div className="flex w-full flex-col space-y-4">
@@ -401,6 +502,9 @@ export default function ProxyManager() {
 
       <Table
         title="Proxy Manager"
+        className="text-xs sm:text-sm"
+        data={tableData}
+        filterData={origin}
         headers={[
           'sid',
           'ip_port',
@@ -412,6 +516,7 @@ export default function ProxyManager() {
           'status',
           'note',
         ]}
+        operatorConfig={OPERATOR_CONFIG}
         extraBtn={
           <button
             id="reloadBtn"

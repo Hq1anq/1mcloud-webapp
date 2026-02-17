@@ -349,6 +349,12 @@
     @apply h-2 w-2;
   }
 
+  textarea::-webkit-scrollbar-corner,
+  body::-webkit-scrollbar-corner,
+  .scroll-container::-webkit-scrollbar-corner {
+    background-color: transparent;
+  }
+
   textarea::-webkit-scrollbar-track,
   body::-webkit-scrollbar-track,
   .scroll-container::-webkit-scrollbar-track {

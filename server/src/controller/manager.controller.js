@@ -463,6 +463,40 @@ export async function renew(req, res) {
   }
 }
 
+export async function renewCalculate(req, res) {
+  const { sids, month = 1 } = req.body;
+  const url = `${process.env.BASE_URL}/server/renew/calculate`;
+  const headers = { ...HEADERS, authorization: `Bearer ${req.token}` };
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ sid: sids, month: month }),
+    });
+
+    if (!response.ok) {
+      console.error(
+        `Failed to RENEW CALCULATE for sids: ${sids}:`,
+        response.status,
+      );
+      return res.status(response.status).json({
+        success: false,
+        error: "Request failed",
+        sids,
+      });
+    }
+
+    const data = await response.json();
+    res.json({ success: true, result: data.result });
+  } catch (error) {
+    console.error(`Failed to RENEW CALCULATE for sid: ${sids}`, error.message);
+    res
+      .status(500)
+      .json({ success: false, error: "Internal server error", sids });
+  }
+}
+
 export async function updateNote(req, res) {
   const { sid, newNote } = req.body;
   const url = `${process.env.BASE_URL}/server/info/note`;

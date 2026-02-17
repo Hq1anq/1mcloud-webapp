@@ -16,6 +16,7 @@ router.post("/reinstall", managerController.reinstall);
 router.post("/pause", managerController.pause);
 router.post("/reboot", managerController.reboot);
 router.post("/renew", managerController.renew);
+router.post("/renew/calculate", managerController.renewCalculate);
 router.put("/info/note", managerController.updateNote);
 
 export default router;

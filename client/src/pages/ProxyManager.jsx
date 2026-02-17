@@ -6,6 +6,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useToast } from '../context/ToastContext'
 import { extractIP, randomDelay } from '../lib/utils'
 import { useSafeCopy } from '../context/SafeCopyContext'
+import { useConfirm } from '../context/ConfirmContext'
 
 const OPERATOR_CONFIG = {
   sid: ['greater-equal', 'less-equal', 'equal', 'contain'],
@@ -56,6 +57,7 @@ export default function ProxyManager() {
   const [selectedRows, setSelectedRows] = useState([])
   const { addToast, updateToast, removeToast } = useToast()
   const { safeCopy } = useSafeCopy()
+  const { confirmAction } = useConfirm()
   const [buyDialogOpen, setBuyDialogOpen] = useState(false)
 
   // Controlled input state
@@ -203,6 +205,24 @@ export default function ProxyManager() {
   // --- Change IP handler ---
   const handleChangeIp = useCallback(async () => {
     const rows = [...selectedRowsRef.current]
+    if (rows.length === 0) {
+      addToast('No rows selected', 'warning')
+      return
+    }
+
+    const confirmed = await confirmAction({
+      title: 'Confirm Change IP',
+      infoText: (
+        <>
+          Type <span className="text-highlight font-bold">{changeIpType}</span>
+        </>
+      ),
+      isRenew: false,
+      selectedRows: rows,
+    })
+
+    if (!confirmed) return
+
     const type = changeIpType === 'HTTPS' ? 'proxy_https' : 'proxy_sock_5'
     const proxyResults = []
 
@@ -237,13 +257,55 @@ export default function ProxyManager() {
           )
       )
     }
-  }, [changeIpType, processSequential, updateRowBySid, safeCopy, addToast])
+  }, [changeIpType, confirmAction, processSequential, updateRowBySid, safeCopy, addToast])
 
   // --- Reinstall handler ---
   const handleReinstall = useCallback(async () => {
     const rows = [...selectedRowsRef.current]
+    if (rows.length === 0) {
+      addToast('No rows selected', 'warning')
+      return
+    }
+
+    let infoTextNode = 'Reinstall target'
+    let ip = '__',
+      port = '__',
+      user = '__',
+      pass = '__'
+
+    if (reinstallInput) {
+      const parts = reinstallInput.split(':')
+      if (parts.length >= 4) [ip, port, user, pass] = parts
+      else if (parts.length === 3) [port, user, pass] = parts
+      else if (parts.length === 2) [user, pass] = parts
+      else {
+        addToast('Invalid reinstall config', 'error')
+        return
+      }
+      infoTextNode = (
+        <>
+          Type <span className="text-highlight font-bold">{reinstallType} </span> {ip}:{port}:{user}
+          :{pass}
+        </>
+      )
+    } else {
+      infoTextNode = (
+        <>
+          Type <span className="text-highlight font-bold">{reinstallType}</span>
+        </>
+      )
+    }
+
+    const confirmed = await confirmAction({
+      title: 'Confirm Reinstall',
+      infoText: infoTextNode,
+      isRenew: false,
+      selectedRows: rows,
+    })
+
+    if (!confirmed) return
+
     const type = reinstallType === 'HTTPS' ? 'proxy_https' : 'proxy_sock_5'
-    const custom_info = reinstallInput || undefined
     const proxyResults = []
 
     await processSequential(
@@ -251,7 +313,7 @@ export default function ProxyManager() {
       async (row) => {
         const res = await axiosInstance.post('/server/reinstall', {
           sid: row.sid.toString(),
-          custom_info,
+          custom_info: reinstallInput || undefined,
           type,
         })
         if (res.data?.success) {
@@ -280,7 +342,15 @@ export default function ProxyManager() {
           )
       )
     }
-  }, [reinstallType, reinstallInput, processSequential, updateRowBySid, safeCopy, addToast])
+  }, [
+    reinstallType,
+    reinstallInput,
+    confirmAction,
+    processSequential,
+    updateRowBySid,
+    safeCopy,
+    addToast,
+  ])
 
   // --- Change Note handler ---
   const handleChangeNote = useCallback(async () => {
@@ -426,6 +496,127 @@ export default function ProxyManager() {
     removeToast(rebootingId)
     setIsProcessing(false)
   }, [updateRowBySid, addToast, removeToast])
+
+  const handleRenew = useCallback(async () => {
+    const rows = [...selectedRowsRef.current]
+    if (rows.length === 0) {
+      addToast('No rows selected', 'warning')
+      return
+    }
+
+    const renewDataOrConfirmed = await confirmAction({
+      title: 'Confirm Renew',
+      isRenew: true,
+      selectedRows: rows,
+    })
+
+    if (!renewDataOrConfirmed) return
+
+    // confirmAction resolves with truthy (the renewData payload if successful fetching occurred).
+    // If somehow it's just TRUE, we default to whatever we can.
+    const renewData = typeof renewDataOrConfirmed === 'object' ? renewDataOrConfirmed : null
+
+    const validRows = []
+    const invalidRows = []
+
+    rows.forEach((row) => {
+      const cleanIp = row.ip_port?.split(':')[0]
+      if (
+        renewData &&
+        renewData.success &&
+        renewData.success[cleanIp] &&
+        renewData.success[cleanIp].new_expired_day &&
+        renewData.success[cleanIp].new_expired_day !== '-'
+      ) {
+        validRows.push(row)
+      } else {
+        invalidRows.push(row)
+      }
+    })
+
+    setRowClassMap((prev) => {
+      const updates = { ...prev }
+      invalidRows.forEach((r) => {
+        updates[r.sid] = 'bg-error-cell'
+      })
+      return updates
+    })
+
+    if (validRows.length === 0) {
+      addToast('No valid proxies to renew.', 'warning')
+      return
+    }
+
+    const sids = validRows.map((r) => r.sid).join(',')
+    setIsProcessing(true)
+    const toastId = addToast('Renewing...', 'loading')
+
+    try {
+      const res = await axiosInstance.post('/server/renew', { sids: sids, month: 1 })
+
+      const resSuccess = res.data?.result?.success || {}
+
+      let successCount = 0
+      let failCount = invalidRows.length
+
+      const classUpdates = {}
+      for (const row of validRows) {
+        const cleanIp = row.ip_port?.split(':')[0]
+
+        if (resSuccess[cleanIp]) {
+          const newExpiredDay = renewData.success[cleanIp].new_expired_day
+          updateRowBySid(row.sid, () => ({
+            status: 'Running',
+            expired: newExpiredDay,
+          }))
+          classUpdates[row.sid] = 'bg-success-cell'
+          successCount++
+        } else {
+          classUpdates[row.sid] = 'bg-error-cell'
+          failCount++
+        }
+      }
+
+      setRowClassMap((prev) => ({ ...prev, ...classUpdates }))
+
+      // Deselect all processed rows
+      setSelectedIds((prev) => {
+        const newSet = new Set(prev)
+        for (const row of rows) newSet.delete(row._index)
+        return newSet
+      })
+
+      if (successCount > 0 && failCount === 0) {
+        addToast(
+          `RENEW completed <br><span class="text-text-toast-success">${successCount} success</span>`,
+          'success'
+        )
+      } else if (successCount === 0 && failCount > 0) {
+        addToast(
+          `RENEW completed <br><span class="text-text-toast-error">${failCount} failed</span>`,
+          'error'
+        )
+      } else {
+        addToast(
+          `RENEW completed <br><span class="text-text-toast-success">${successCount} success</span>, <span class="text-text-toast-error">${failCount} failed</span>`,
+          'warning'
+        )
+      }
+    } catch {
+      const classUpdates = {}
+      for (const row of validRows) classUpdates[row.sid] = 'bg-error-cell'
+      setRowClassMap((prev) => ({ ...prev, ...classUpdates }))
+      setSelectedIds((prev) => {
+        const newSet = new Set(prev)
+        for (const row of rows) newSet.delete(row._index)
+        return newSet
+      })
+      addToast(`RENEW process encountered an error`, 'error')
+    } finally {
+      setIsProcessing(false)
+      removeToast(toastId)
+    }
+  }, [confirmAction, updateRowBySid, addToast, removeToast])
 
   return (
     <div>
@@ -690,7 +881,11 @@ export default function ProxyManager() {
                     </svg>
                     Get Info
                   </button>
-                  <button className="bg-bg-renew m-1 flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)">
+                  <button
+                    className="bg-bg-renew m-1 flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
+                    onClick={handleRenew}
+                    disabled={isProcessing}
+                  >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 640 640"
@@ -729,17 +924,7 @@ export default function ProxyManager() {
         renderingReceived={renderingReceived}
         setRenderingReceived={setRenderingReceived}
         useFilter={true}
-        headers={[
-          'sid',
-          'ip_port',
-          'country',
-          'type',
-          'created',
-          'expired',
-          'ip_changed',
-          'status',
-          'note',
-        ]}
+        headers={['sid', 'ip_port', 'country', 'type', 'created', 'expired', 'status', 'note']}
         operatorConfig={OPERATOR_CONFIG}
         rowClassMap={rowClassMap}
         selectedIds={selectedIds}
@@ -751,6 +936,7 @@ export default function ProxyManager() {
               setReceivedData([...data])
               setRenderingReceived(true)
               setSelectedIds(new Set())
+              setRowClassMap({})
             }}
           >
             <svg

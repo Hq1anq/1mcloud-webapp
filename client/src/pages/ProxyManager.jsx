@@ -115,7 +115,9 @@ export default function ProxyManager() {
 
       removeToast(loadingId)
       addToast(
-        `Loaded <span class="text-text-toast-success">${resData.length}</span> rows`,
+        <>
+          Loaded <span className="text-text-toast-success">{resData.length}</span> rows
+        </>,
         'success'
       )
       setRenderingReceived(true)
@@ -147,7 +149,9 @@ export default function ProxyManager() {
 
       const total = rows.length
       const loadingId = addToast(
-        `${actionName} <span class="text-text-toast-success">1/${total}</span>`,
+        <>
+          {actionName} <span className="text-text-toast-success">1/{total}</span>
+        </>,
         'loading'
       )
 
@@ -175,7 +179,12 @@ export default function ProxyManager() {
         // Update progress toast
         updateToast(
           loadingId,
-          `${actionName} <span class="text-text-toast-success">${i + 2}/${total}</span>`
+          <>
+            {actionName}{' '}
+            <span className="text-text-toast-success">
+              {i + 2}/{total}
+            </span>
+          </>
         )
         // Random delay before next request
         if (i < rows.length - 1) await randomDelay()
@@ -185,17 +194,27 @@ export default function ProxyManager() {
       setIsProcessing(false)
       if (failCount === 0)
         addToast(
-          `${actionName} completed <br><span class="text-text-toast-success">${successCount} success</span>`,
+          <>
+            {actionName} completed <br />
+            <span className="text-text-toast-success">{successCount} success</span>
+          </>,
           'success'
         )
       else if (successCount === 0)
         addToast(
-          `${actionName} completed <br><span class="text-text-toast-error">${failCount} failed</span>`,
+          <>
+            {actionName} completed <br />
+            <span className="text-text-toast-error">{failCount} failed</span>
+          </>,
           'error'
         )
       else
         addToast(
-          `${actionName} completed <br><span class="text-text-toast-success">${successCount} success</span>, <span class="text-text-toast-error">${failCount} failed</span>`,
+          <>
+            {actionName} completed <br />
+            <span className="text-text-toast-success">{successCount} success</span>,{' '}
+            <span className="text-text-toast-error">{failCount} failed</span>
+          </>,
           failCount === 0 ? 'success' : 'error'
         )
     },
@@ -252,7 +271,10 @@ export default function ProxyManager() {
         (ok) =>
           ok &&
           addToast(
-            `Copied <span class="text-text-toast-success">${proxyResults.length}</span> proxy to clipboard`,
+            <>
+              Copied <span className="text-text-toast-success">{proxyResults.length}</span> proxy to
+              clipboard
+            </>,
             'success'
           )
       )
@@ -337,7 +359,10 @@ export default function ProxyManager() {
         (ok) =>
           ok &&
           addToast(
-            `Copied <span class="text-text-toast-success">${proxyResults.length}</span> proxy to clipboard`,
+            <>
+              Copied <span className="text-text-toast-success">{proxyResults.length}</span> proxy to
+              clipboard
+            </>,
             'success'
           )
       )
@@ -400,7 +425,10 @@ export default function ProxyManager() {
           return newSet
         })
         addToast(
-          `PAUSE completed <br><span class="text-text-toast-success">${rows.length} success</span>`,
+          <>
+            PAUSE completed <br />
+            <span className="text-text-toast-success">{rows.length} success</span>
+          </>,
           'success'
         )
       } else {
@@ -413,7 +441,10 @@ export default function ProxyManager() {
           return newSet
         })
         addToast(
-          `PAUSE completed <br><span class="text-text-toast-error">${rows.length} failed</span>`,
+          <>
+            PAUSE completed <br />
+            <span className="text-text-toast-error">{rows.length} failed</span>
+          </>,
           'error'
         )
       }
@@ -427,7 +458,10 @@ export default function ProxyManager() {
         return newSet
       })
       addToast(
-        `PAUSE completed <br><span class="text-text-toast-error">${rows.length} failed</span>`,
+        <>
+          PAUSE completed <br />
+          <span className="text-text-toast-error">{rows.length} failed</span>
+        </>,
         'error'
       )
     }
@@ -462,7 +496,10 @@ export default function ProxyManager() {
           return newSet
         })
         addToast(
-          `REBOOT completed <br><span class="text-text-toast-success">${rows.length} success</span>`,
+          <>
+            REBOOT completed <br />
+            <span className="text-text-toast-success">{rows.length} success</span>
+          </>,
           'success'
         )
       } else {
@@ -475,7 +512,10 @@ export default function ProxyManager() {
           return newSet
         })
         addToast(
-          `REBOOT completed <br><span class="text-text-toast-error">${rows.length} failed</span>`,
+          <>
+            REBOOT completed <br />
+            <span className="text-text-toast-error">{rows.length} failed</span>
+          </>,
           'error'
         )
       }
@@ -489,7 +529,10 @@ export default function ProxyManager() {
         return newSet
       })
       addToast(
-        `REBOOT completed <br><span class="text-text-toast-error">${rows.length} failed</span>`,
+        <>
+          REBOOT completed <br />
+          <span className="text-text-toast-error">{rows.length} failed</span>
+        </>,
         'error'
       )
     }
@@ -588,17 +631,27 @@ export default function ProxyManager() {
 
       if (successCount > 0 && failCount === 0) {
         addToast(
-          `RENEW completed <br><span class="text-text-toast-success">${successCount} success</span>`,
+          <>
+            RENEW completed <br />
+            <span className="text-text-toast-success">{successCount} success</span>
+          </>,
           'success'
         )
       } else if (successCount === 0 && failCount > 0) {
         addToast(
-          `RENEW completed <br><span class="text-text-toast-error">${failCount} failed</span>`,
+          <>
+            RENEW completed <br />
+            <span className="text-text-toast-error">{failCount} failed</span>
+          </>,
           'error'
         )
       } else {
         addToast(
-          `RENEW completed <br><span class="text-text-toast-success">${successCount} success</span>, <span class="text-text-toast-error">${failCount} failed</span>`,
+          <>
+            RENEW completed <br />
+            <span className="text-text-toast-success">{successCount} success</span>,{' '}
+            <span className="text-text-toast-error">{failCount} failed</span>
+          </>,
           'warning'
         )
       }
@@ -803,7 +856,11 @@ export default function ProxyManager() {
                           (ok) =>
                             ok &&
                             addToast(
-                              `Copied <span class="text-text-toast-success">${rows.length}</span> IPs to clipboard`,
+                              <>
+                                Copied{' '}
+                                <span className="text-text-toast-success">{rows.length}</span> IPs
+                                to clipboard
+                              </>,
                               'success'
                             )
                         )

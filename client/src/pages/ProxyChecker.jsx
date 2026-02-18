@@ -77,12 +77,19 @@ export default function ProxyChecker() {
       if (processed > 0) {
         if (inactiveCount === 0)
           addToast(
-            `Check completed <br><span class="text-text-toast-success">${activeCount} active</span>`,
+            <>
+              Check completed <br />
+              <span className="text-text-toast-success">{activeCount} active</span>
+            </>,
             'success'
           )
         else
           addToast(
-            `Check completed <br><span class="text-text-toast-success">${activeCount} active</span>, <span class="text-text-toast-error">${inactiveCount} inactive</span>`,
+            <>
+              Check completed <br />
+              <span className="text-text-toast-success">{activeCount} active</span>,{' '}
+              <span className="text-text-toast-error">{inactiveCount} inactive</span>
+            </>,
             'success'
           )
       }
@@ -116,7 +123,10 @@ export default function ProxyChecker() {
       (ok) =>
         ok &&
         addToast(
-          `Copied <span class="text-text-toast-success">${selectedRows.length}</span> IP to clipboard`,
+          <>
+            Copied <span className="text-text-toast-success">{selectedRows.length}</span> IP to
+            clipboard
+          </>,
           'success'
         )
     )
@@ -131,7 +141,10 @@ export default function ProxyChecker() {
       (ok) =>
         ok &&
         addToast(
-          `Copied <span class="text-text-toast-success">${selectedRows.length}</span> proxy to clipboard`,
+          <>
+            Copied <span className="text-text-toast-success">{selectedRows.length}</span> proxy to
+            clipboard
+          </>,
           'success'
         )
     )

@@ -6,7 +6,7 @@ const ToastContainer = ({ toasts, removeToast }) => {
 
   return (
     <div
-      className="fixed top-4 right-4 z-50 w-full max-w-xs"
+      className="fixed top-4 right-4 z-55 w-full max-w-xs"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >

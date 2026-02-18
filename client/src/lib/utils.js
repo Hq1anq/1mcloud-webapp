@@ -68,3 +68,8 @@ export const parseProxy = (raw) => {
 
 const delay = (ms) => new Promise((r) => setTimeout(r, ms))
 export const randomDelay = () => delay(700 + Math.random() * 400)
+
+export function str2date(str) {
+  const [d, m, y] = str.split('-')
+  return new Date(y, m - 1, d)
+}

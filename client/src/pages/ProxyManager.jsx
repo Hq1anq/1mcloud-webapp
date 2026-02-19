@@ -1029,7 +1029,33 @@ export default function ProxyManager() {
       <BuyProxyDialog
         isOpen={buyDialogOpen}
         onClose={() => setBuyDialogOpen(false)}
-        onSuccess={() => handleGetData()}
+        onSuccess={(newData) => {
+          if (Array.isArray(newData) && newData.length > 0) {
+            // Merge into local persistent data using the helper
+            setData((prev) => mergeResIntoData(prev, newData))
+
+            // Push into the view immediately, similar to handleGetData
+            setReceivedData(newData)
+            setRenderingReceived(true)
+            setSelectedIds(new Set())
+
+            const proxies = newData.map((item) => `${item.ip_port}:${item.user_pass}`).join('\n')
+            safeCopy(proxies).then(
+              (ok) =>
+                ok &&
+                addToast(
+                  <>
+                    Copied <span className="text-text-toast-success">{newData.length}</span> proxy
+                    to clipboard
+                  </>,
+                  'success'
+                )
+            )
+          } else {
+            // Fallback to fetch from ground up if payload is missing or invalid
+            handleGetData()
+          }
+        }}
       />
     </div>
   )

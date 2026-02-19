@@ -88,7 +88,6 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
       }
     } catch (err) {
       console.error(err)
-      addToast('Failed to load support data', 'error')
     }
   }
 
@@ -154,8 +153,14 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
     try {
       const res = await axiosInstance.post('/server/create', proxyDataBuying)
       if (res.data?.success || res.status === 200) {
-        addToast('Proxy purchase successful!', 'success')
-        if (onSuccess) onSuccess()
+        addToast(
+          <>
+            Purchased <span className="text-text-toast-success">{res.data?.data.length}</span> proxy
+            successfully!
+          </>,
+          'success'
+        )
+        if (onSuccess) onSuccess(res.data?.data)
         onClose()
       } else {
         addToast(res.data?.message || 'Purchase failed', 'error')

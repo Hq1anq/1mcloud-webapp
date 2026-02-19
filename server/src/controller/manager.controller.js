@@ -181,17 +181,12 @@ export async function create(req, res) {
       ip_changed: 0,
       status: "Running",
       note: note,
+      user_pass: `${server.username}:${server.password}`,
     }));
-
-    const proxyInfo = servers.map(
-      (server) =>
-        `${server.ip}:${server.remote_port}:${server.username}:${server.password}`,
-    );
 
     return res.json({
       success: true,
       data: tableData,
-      info: proxyInfo,
     });
   } catch (error) {
     console.error("Failed to BUY PROXY", error.message);

@@ -69,7 +69,7 @@
   --color-bg-pause: var(--bg-pause);
   --color-bg-refund: var(--bg-refund);
   --color-bg-renew: var(--bg-renew);
-  --color-bg-getAPIKey: var(--bg-getAPIKey);
+  --color-bg-getInfo: var(--bg-getInfo);
 
   --breakpoint-sm: 749px;
   --breakpoint-md: 883px;
@@ -199,7 +199,7 @@
   --bg-pause: #f87171;
   --bg-refund: #f472b6;
   --bg-renew: #e07211;
-  --bg-getAPIKey: #ef4646;
+  --bg-getInfo: #ef4646;
 }
 
 /* Dark Theme */
@@ -276,7 +276,7 @@
   --bg-pause: #dc2626;
   --bg-refund: #db2777;
   --bg-renew: #a1520c;
-  --bg-getAPIKey: #263edc;
+  --bg-getInfo: #263edc;
 }
 
 /* Base theme colors without transitions */
@@ -305,12 +305,6 @@
 .theme-transitions .checkbox-transition {
   transition-property: all;
   transition-duration: 0.3s;
-}
-
-.theme-transitions .navbar-transition {
-  transition-property: all;
-  transition-timing-function: ease-in-out;
-  transition-duration: 0.5s;
 }
 
 .theme-transitions .social-link {

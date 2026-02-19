@@ -24,14 +24,18 @@ const operatorCycle = ['greater-equal', 'less-equal', 'equal', 'contain']
 
 // Custom Row Component for TableVirtuoso
 const TableRow = ({ context, ...props }) => {
-  const { selectedIds, handleSelectRow } = context
+  const { selectedIds, handleSelectRow, filteredData, rowClassMap } = context
   const index = props['data-index']
   const isSelected = selectedIds.has(index)
+
+  // Check for row-level class override (e.g. success/error background)
+  const row = filteredData[index]
+  const overrideClass = row && rowClassMap?.[row.sid]
 
   return (
     <tr
       {...props}
-      className={`hover:bg-bg-hover text-text-secondary ${isSelected ? 'bg-bg-selected' : ''} ${props.className || ''}`}
+      className={`hover:bg-bg-hover text-text-secondary ${(isSelected ? 'bg-bg-selected' : '') || overrideClass} ${props.className || ''}`}
       onClick={(e) => {
         // Prevent row selection if clicking/interacting with inputs/buttons/labels
         if (e.target.closest('input') || e.target.closest('button') || e.target.closest('label'))
@@ -96,6 +100,9 @@ export default function Table({
   extraBtn,
   emptyMessage,
   className,
+  rowClassMap,
+  deselectSids,
+  resetFilterKey,
 }) {
   const [selectedIds, setSelectedIds] = useState(new Set())
   const [lastSelectedIndex, setLastSelectedIndex] = useState(null)
@@ -108,6 +115,12 @@ export default function Table({
     setSelectedIds(new Set())
     setLastSelectedIndex(null)
   }, [filters])
+
+  // When resetFilterKey changes (e.g. fresh getData), clear active filters
+  // so the new data renders immediately. filterInputs (typed text) are preserved.
+  useEffect(() => {
+    setFilters({})
+  }, [resetFilterKey])
 
   const filteredData = useMemo(() => {
     const hasActiveFilters = Object.values(filters).some((f) => f.value)
@@ -244,9 +257,22 @@ export default function Table({
     }
   }
 
+  // Deselect rows by sid when deselectSids changes
+  useEffect(() => {
+    if (!deselectSids || deselectSids.length === 0) return
+    setSelectedIds((prev) => {
+      const newSet = new Set(prev)
+      for (const sid of deselectSids) {
+        const idx = filteredData.findIndex((row) => row.sid === sid)
+        if (idx !== -1) newSet.delete(idx)
+      }
+      return newSet
+    })
+  }, [deselectSids])
+
   const virtuosoContext = useMemo(() => {
-    return { selectedIds, handleSelectRow, headers }
-  }, [selectedIds, headers])
+    return { selectedIds, handleSelectRow, headers, filteredData, rowClassMap }
+  }, [selectedIds, headers, filteredData, rowClassMap])
 
   const fixedHeader = useMemo(() => {
     return () => (

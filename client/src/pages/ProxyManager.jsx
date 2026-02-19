@@ -1,9 +1,11 @@
 import DropDown from '../components/ui/DropDown'
 import Table from '../components/ui/Table'
+import CopyDialog from '../components/dialog/CopyDialog'
 import axiosInstance from '../lib/axios'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useToast } from '../context/ToastContext'
-import { extractIP } from '../lib/utils'
+import { extractIP, randomDelay } from '../lib/utils'
+import useSafeCopy from '../hooks/useSafeCopy'
 
 const OPERATOR_CONFIG = {
   sid: ['greater-equal', 'less-equal', 'equal', 'contain'],
@@ -52,16 +54,31 @@ export default function ProxyManager() {
   const [reinstallType, setReinstallType] = useState('HTTPS')
   const [changeIpType, setChangeIpType] = useState('HTTPS')
   const [selectedRows, setSelectedRows] = useState([])
-  const { addToast, removeToast } = useToast()
+  const { addToast, updateToast, removeToast } = useToast()
+  const { safeCopy, copyDialogProps } = useSafeCopy()
 
   // Controlled input state
   const [ips, setIps] = useState('')
   const [amount, setAmount] = useState('')
+  const [noteInput, setNoteInput] = useState('')
+  const [reinstallInput, setReinstallInput] = useState('')
+  const [changeIpInput, setChangeIpInput] = useState('')
 
   // Origin: persistent data in localStorage (includes user_pass)
   const [origin, setOrigin] = useState(loadOrigin)
   // TableData: what renders in the table (target after GetData, origin on first load)
   const [tableData, setTableData] = useState(loadOrigin)
+  // Increments on fresh getData to signal Table to reset filters
+  const [dataVersion, setDataVersion] = useState(0)
+
+  // Action feedback state
+  const [rowClassMap, setRowClassMap] = useState({})
+  const [deselectSids, setDeselectSids] = useState([])
+  const [isProcessing, setIsProcessing] = useState(false)
+  const selectedRowsRef = useRef(selectedRows)
+  useEffect(() => {
+    selectedRowsRef.current = selectedRows
+  }, [selectedRows])
 
   // Save origin to localStorage whenever it changes
   useEffect(() => {
@@ -88,6 +105,7 @@ export default function ProxyManager() {
 
       // Render target in the table
       setTableData(target)
+      setDataVersion((v) => v + 1)
 
       // Merge target into origin and persist
       setOrigin((prev) => {
@@ -106,6 +124,284 @@ export default function ProxyManager() {
       addToast(`Failed to get data: ${err.message}`, 'error')
     }
   }, [ips, amount, addToast, removeToast])
+
+  // ── Helper: update a single row in both tableData and origin by sid ──
+  const updateRowBySid = useCallback((sid, updater) => {
+    setTableData((prev) => prev.map((r) => (r.sid === sid ? { ...r, ...updater(r) } : r)))
+    setOrigin((prev) => prev.map((r) => (r.sid === sid ? { ...r, ...updater(r) } : r)))
+  }, [])
+
+  // ── Sequential processor with per-row feedback ──
+  const processSequential = useCallback(
+    async (rows, apiCallFn, actionName) => {
+      if (rows.length === 0) {
+        addToast('No rows selected', 'warning')
+        return
+      }
+      setIsProcessing(true)
+      setRowClassMap({})
+      setDeselectSids([])
+      let successCount = 0
+      let failCount = 0
+
+      const total = rows.length
+      const loadingId = addToast(
+        `${actionName} <span class="text-text-toast-success">1/${total}</span>`,
+        'loading'
+      )
+
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i]
+        try {
+          const res = await apiCallFn(row)
+          if (res.data?.success) {
+            successCount++
+            setRowClassMap((prev) => ({ ...prev, [row.sid]: 'bg-success-cell' }))
+          } else {
+            failCount++
+            setRowClassMap((prev) => ({ ...prev, [row.sid]: 'bg-error-cell' }))
+          }
+        } catch {
+          failCount++
+          setRowClassMap((prev) => ({ ...prev, [row.sid]: 'bg-error-cell' }))
+        }
+        // Deselect this row
+        setDeselectSids((prev) => [...prev, row.sid])
+        // Update progress toast
+        updateToast(
+          loadingId,
+          `${actionName} <span class="text-text-toast-success">${i + 2}/${total}</span>`
+        )
+        // Random delay before next request
+        if (i < rows.length - 1) await randomDelay()
+      }
+
+      removeToast(loadingId)
+      setIsProcessing(false)
+      if (failCount === 0)
+        addToast(
+          `${actionName} completed <br><span class="text-text-toast-success">${successCount} success</span>`,
+          'success'
+        )
+      else if (successCount === 0)
+        addToast(
+          `${actionName} completed <br><span class="text-text-toast-error">${failCount} failed</span>`,
+          'error'
+        )
+      else
+        addToast(
+          `${actionName} completed <br><span class="text-text-toast-success">${successCount} success</span>, <span class="text-text-toast-error">${failCount} failed</span>`,
+          failCount === 0 ? 'success' : 'error'
+        )
+    },
+    [addToast, updateToast, removeToast]
+  )
+
+  // ── Change IP handler ──
+  const handleChangeIp = useCallback(async () => {
+    const rows = [...selectedRowsRef.current]
+    const type = changeIpType === 'HTTPS' ? 'proxy_https' : 'proxy_sock_5'
+    const proxyResults = []
+
+    await processSequential(
+      rows,
+      async (row) => {
+        const ip = row.ip_port?.split(':')[0]
+        const res = await axiosInstance.post('/server/change-ip', { ip, type })
+        if (res.data?.success) {
+          const [newIp, port, user, pass] = res.data.proxyInfo
+          updateRowBySid(row.sid, () => ({
+            ip_port: `${newIp}:${port}`,
+            user_pass: `${user}:${pass}`,
+            type: changeIpType + ' Proxy',
+            status: 'Running',
+          }))
+          proxyResults.push(`${newIp}:${port}:${user}:${pass}`)
+        }
+        return res
+      },
+      'IP CHANGE'
+    )
+
+    if (proxyResults.length > 0) {
+      const text = proxyResults.join('\n')
+      safeCopy(text).then(
+        (ok) =>
+          ok &&
+          addToast(
+            `Copied <span class="text-text-toast-success">${proxyResults.length}</span> proxy to clipboard`,
+            'success'
+          )
+      )
+    }
+  }, [changeIpType, processSequential, updateRowBySid, safeCopy, addToast])
+
+  // ── Reinstall handler ──
+  const handleReinstall = useCallback(async () => {
+    const rows = [...selectedRowsRef.current]
+    const type = reinstallType === 'HTTPS' ? 'proxy_https' : 'proxy_sock_5'
+    const custom_info = reinstallInput || undefined
+    const proxyResults = []
+
+    await processSequential(
+      rows,
+      async (row) => {
+        const res = await axiosInstance.post('/server/reinstall', {
+          sid: row.sid.toString(),
+          custom_info,
+          type,
+        })
+        if (res.data?.success) {
+          const [ip, port, user, pass] = res.data.proxyInfo
+          updateRowBySid(row.sid, () => ({
+            ip_port: `${ip}:${port}`,
+            user_pass: `${user}:${pass}`,
+            type: reinstallType + ' Proxy',
+            status: 'Running',
+          }))
+          proxyResults.push(`${ip}:${port}:${user}:${pass}`)
+        }
+        return res
+      },
+      'REINSTALL'
+    )
+
+    if (proxyResults.length > 0) {
+      const text = proxyResults.join('\n')
+      safeCopy(text).then(
+        (ok) =>
+          ok &&
+          addToast(
+            `Copied <span class="text-text-toast-success">${proxyResults.length}</span> proxy to clipboard`,
+            'success'
+          )
+      )
+    }
+  }, [reinstallType, reinstallInput, processSequential, updateRowBySid, safeCopy, addToast])
+
+  // ── Change Note handler ──
+  const handleChangeNote = useCallback(async () => {
+    const rows = [...selectedRowsRef.current]
+    const newNote = noteInput
+
+    await processSequential(
+      rows,
+      async (row) => {
+        const res = await axiosInstance.put('/server/info/note', {
+          sid: row.sid.toString(),
+          newNote,
+        })
+        if (res.data?.success) {
+          updateRowBySid(row.sid, () => ({ note: newNote }))
+        }
+        return res
+      },
+      'CHANGE NOTE'
+    )
+  }, [noteInput, processSequential, updateRowBySid])
+
+  // ── Pause handler (batch) ──
+  const handlePause = useCallback(async () => {
+    const rows = [...selectedRowsRef.current]
+    if (rows.length === 0) {
+      addToast('No rows selected', 'warning')
+      return
+    }
+    const pausingId = addToast('Pausing...', 'loading')
+    setIsProcessing(true)
+    setRowClassMap({})
+    setDeselectSids([])
+    const sids = rows.map((r) => r.sid).join(',')
+
+    try {
+      const res = await axiosInstance.post('/server/pause', { sids })
+      if (res.data?.success) {
+        const classUpdates = {}
+        for (const row of rows) {
+          updateRowBySid(row.sid, () => ({ status: 'Paused' }))
+          classUpdates[row.sid] = 'bg-success-cell'
+        }
+        setRowClassMap(classUpdates)
+        setDeselectSids(rows.map((r) => r.sid))
+        addToast(
+          `PAUSE completed <br><span class="text-text-toast-success">${rows.length} success</span>`,
+          'success'
+        )
+      } else {
+        const classUpdates = {}
+        for (const row of rows) classUpdates[row.sid] = 'bg-error-cell'
+        setRowClassMap(classUpdates)
+        setDeselectSids(rows.map((r) => r.sid))
+        addToast(
+          `PAUSE completed <br><span class="text-text-toast-error">${rows.length} failed</span>`,
+          'error'
+        )
+      }
+    } catch {
+      const classUpdates = {}
+      for (const row of rows) classUpdates[row.sid] = 'bg-error-cell'
+      setRowClassMap(classUpdates)
+      setDeselectSids(rows.map((r) => r.sid))
+      addToast(
+        `PAUSE completed <br><span class="text-text-toast-error">${rows.length} failed</span>`,
+        'error'
+      )
+    }
+    removeToast(pausingId)
+    setIsProcessing(false)
+  }, [addToast, updateRowBySid])
+
+  // ── Reboot handler (batch) ──
+  const handleReboot = useCallback(async () => {
+    const rows = [...selectedRowsRef.current]
+    if (rows.length === 0) {
+      addToast('No rows selected', 'warning')
+      return
+    }
+    const rebootingId = addToast('Rebooting...', 'loading')
+    setIsProcessing(true)
+    setRowClassMap({})
+    setDeselectSids([])
+    const sids = rows.map((r) => r.sid).join(',')
+
+    try {
+      const res = await axiosInstance.post('/server/reboot', { sids })
+      if (res.data?.success) {
+        const classUpdates = {}
+        for (const row of rows) {
+          updateRowBySid(row.sid, () => ({ status: 'Running' }))
+          classUpdates[row.sid] = 'bg-success-cell'
+        }
+        setRowClassMap(classUpdates)
+        setDeselectSids(rows.map((r) => r.sid))
+        addToast(
+          `REBOOT completed <br><span class="text-text-toast-success">${rows.length} success</span>`,
+          'success'
+        )
+      } else {
+        const classUpdates = {}
+        for (const row of rows) classUpdates[row.sid] = 'bg-error-cell'
+        setRowClassMap(classUpdates)
+        setDeselectSids(rows.map((r) => r.sid))
+        addToast(
+          `REBOOT completed <br><span class="text-text-toast-error">${rows.length} failed</span>`,
+          'error'
+        )
+      }
+    } catch {
+      const classUpdates = {}
+      for (const row of rows) classUpdates[row.sid] = 'bg-error-cell'
+      setRowClassMap(classUpdates)
+      setDeselectSids(rows.map((r) => r.sid))
+      addToast(
+        `REBOOT completed <br><span class="text-text-toast-error">${rows.length} failed</span>`,
+        'error'
+      )
+    }
+    removeToast(rebootingId)
+    setIsProcessing(false)
+  }, [addToast, updateRowBySid])
+
   return (
     <div>
       {/* ========== TOP CONTROLS ========== */}
@@ -171,7 +467,6 @@ export default function ProxyManager() {
                   Copy
                 </button>
                 <textarea
-                  id="ip-list"
                   className="min-h-24 grow"
                   placeholder="192.168.1.1&#10;10.0.0.1&#10;172.16.0.1"
                   value={ips}
@@ -184,11 +479,17 @@ export default function ProxyManager() {
                 <div className="flex flex-wrap gap-3 sm:gap-4">
                   {/* Get Data */}
                   <div className="flex-1 space-y-1">
-                    <input type="number" id="amount" placeholder="Enter amount" min="0" />
+                    <input
+                      type="number"
+                      placeholder="Enter amount"
+                      min="1"
+                      value={amount}
+                      onChange={(e) => setAmount(e.target.value)}
+                    />
                     <div className="flex items-center">
                       <button
-                        id="downSyncBtn"
                         className="bg-bg-copyIp flex flex-1 items-center justify-center rounded-l-lg px-3 py-2 font-medium text-nowrap hover:brightness-(--highlight-brightness)"
+                        onClick={handleGetData}
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -217,11 +518,17 @@ export default function ProxyManager() {
 
                   {/* Change Note */}
                   <div className="flex-1 space-y-1">
-                    <input type="text" id="noteInput" placeholder="Enter note" />
+                    <input
+                      type="text"
+                      placeholder="Enter note"
+                      value={noteInput}
+                      onChange={(e) => setNoteInput(e.target.value)}
+                    />
                     <div className="flex items-center space-x-2">
                       <button
-                        id="changeNoteBtn"
                         className="bg-bg-changeNote flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
+                        onClick={handleChangeNote}
+                        disabled={isProcessing}
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -267,11 +574,17 @@ export default function ProxyManager() {
                 <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
                   {/* Reinstall */}
                   <div className="flex-1 space-y-1">
-                    <input type="text" id="reinstallInput" placeholder="port:username:password" />
+                    <input
+                      type="text"
+                      placeholder="port:username:password"
+                      value={reinstallInput}
+                      onChange={(e) => setReinstallInput(e.target.value)}
+                    />
                     <div className="flex">
                       <button
-                        id="reinstallBtn"
                         className="bg-bg-reinstall flex flex-1 items-center justify-center rounded-l-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
+                        onClick={handleReinstall}
+                        disabled={isProcessing}
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -293,11 +606,17 @@ export default function ProxyManager() {
 
                   {/* ChangeIP */}
                   <div className="flex-1 space-y-1">
-                    <input type="text" id="changeIpInput" placeholder="ip:port:username:password" />
+                    <input
+                      type="text"
+                      placeholder="ip:port:username:password"
+                      value={changeIpInput}
+                      onChange={(e) => setChangeIpInput(e.target.value)}
+                    />
                     <div className="flex">
                       <button
-                        id="changeIpBtn"
                         className="bg-bg-changeIp flex flex-1 items-center justify-center rounded-l-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
+                        onClick={handleChangeIp}
+                        disabled={isProcessing}
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -321,8 +640,9 @@ export default function ProxyManager() {
                 <div className="flex flex-col gap-2 md:flex-row lg:gap-3">
                   <div className="flex gap-2 lg:gap-3">
                     <button
-                      id="rebootBtn"
                       className="bg-bg-reboot flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
+                      onClick={handleReboot}
+                      disabled={isProcessing}
                     >
                       {/* Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools */}
                       <svg
@@ -347,10 +667,7 @@ export default function ProxyManager() {
                       </svg>
                       Refund
                     </button>
-                    <button
-                      id="renewBtn"
-                      className="bg-bg-renew flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium transition-colors duration-200 hover:brightness-(--highlight-brightness)"
-                    >
+                    <button className="bg-bg-renew flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium transition-colors duration-200 hover:brightness-(--highlight-brightness)">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 640 640"
@@ -363,8 +680,23 @@ export default function ProxyManager() {
                   </div>
                   <div className="flex gap-2 sm:gap-3">
                     <button
-                      id="copyIpBtn"
                       className="bg-bg-copyIp flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
+                      onClick={() => {
+                        const rows = selectedRowsRef.current
+                        if (rows.length === 0) return addToast('No rows selected', 'warning')
+                        const text = rows
+                          .map((r) => r.ip_port?.split(':')[0])
+                          .filter(Boolean)
+                          .join('\n')
+                        safeCopy(text).then(
+                          (ok) =>
+                            ok &&
+                            addToast(
+                              `Copied <span class="text-text-toast-success">${rows.length}</span> IPs to clipboard`,
+                              'success'
+                            )
+                        )
+                      }}
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -376,8 +708,9 @@ export default function ProxyManager() {
                       Copy IP
                     </button>
                     <button
-                      id="pauseBtn"
                       className="bg-bg-pause flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
+                      onClick={handlePause}
+                      disabled={isProcessing}
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -389,8 +722,14 @@ export default function ProxyManager() {
                       Pause
                     </button>
                     <button
-                      id="buyBtn"
                       className="bg-bg-changeIp flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
+                      onClick={async () => {
+                        const res = await axiosInstance.post('/server/create/calculate', {
+                          quantity: 1,
+                          nation: 'VN',
+                        })
+                        console.log(res.data.info)
+                      }}
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -424,7 +763,26 @@ export default function ProxyManager() {
                   </button>
                   <button
                     id="getInfoBtn"
-                    className="bg-bg-reboot flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
+                    className="bg-bg-getInfo flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
+                    onClick={() => {
+                      const rows = selectedRowsRef.current
+                      if (rows.length === 0) return addToast('No rows selected', 'warning')
+                      const text = rows
+                        .map((r) => {
+                          const [ip, port] = (r.ip_port || '').split(':')
+                          const [user, pass] = (r.user_pass || '').split(':')
+                          return [ip, port, user, pass].filter(Boolean).join(':')
+                        })
+                        .join('\n')
+                      safeCopy(text).then(
+                        (ok) =>
+                          ok &&
+                          addToast(
+                            `Copied <span class="text-text-toast-success">${rows.length}</span> proxy to clipboard`,
+                            'success'
+                          )
+                      )
+                    }}
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -462,38 +820,6 @@ export default function ProxyManager() {
                     Save
                   </button>
                 </div>
-                <div className="flex">
-                  <div className="relative flex-1">
-                    <input
-                      type="password"
-                      id="api-key"
-                      placeholder="Enter API Key"
-                      className="rounded-r-none border-r-0"
-                    />
-                    {/* Eye SVG (Show API key) */}
-                    <svg
-                      id="eyeIconAPIKey"
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 640 640"
-                      className="fill-text-muted absolute inset-y-0 right-0 my-auto mr-2 h-5 w-5 cursor-pointer hover:brightness-(--highlight-brightness) sm:h-7 sm:w-7"
-                    >
-                      <path d="M73 39.1C63.6 29.7 48.4 29.7 39.1 39.1C29.8 48.5 29.7 63.7 39 73.1L567 601.1C576.4 610.5 591.6 610.5 600.9 601.1C610.2 591.7 610.3 576.5 600.9 567.2L504.5 470.8C507.2 468.4 509.9 466 512.5 463.6C559.3 420.1 590.6 368.2 605.5 332.5C608.8 324.6 608.8 315.8 605.5 307.9C590.6 272.2 559.3 220.2 512.5 176.8C465.4 133.1 400.7 96.2 319.9 96.2C263.1 96.2 214.3 114.4 173.9 140.4L73 39.1zM236.5 202.7C260 185.9 288.9 176 320 176C399.5 176 464 240.5 464 320C464 351.1 454.1 379.9 437.3 403.5L402.6 368.8C415.3 347.4 419.6 321.1 412.7 295.1C399 243.9 346.3 213.5 295.1 227.2C286.5 229.5 278.4 232.9 271.1 237.2L236.4 202.5zM357.3 459.1C345.4 462.3 332.9 464 320 464C240.5 464 176 399.5 176 320C176 307.1 177.7 294.6 180.9 282.7L101.4 203.2C68.8 240 46.4 279 34.5 307.7C31.2 315.6 31.2 324.4 34.5 332.3C49.4 368 80.7 420 127.5 463.4C174.6 507.1 239.3 544 320.1 544C357.4 544 391.3 536.1 421.6 523.4L357.4 459.2z" />
-                    </svg>
-                  </div>
-                  <button
-                    id="getAPIKeyBtn"
-                    className="bg-bg-getAPIKey flex items-center justify-center rounded-r-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 640 640"
-                      className="mr-1 h-5 w-5 shrink-0 fill-current sm:mr-2 sm:h-7 sm:w-7"
-                    >
-                      <path d="M400 416C497.2 416 576 337.2 576 240C576 142.8 497.2 64 400 64C302.8 64 224 142.8 224 240C224 258.7 226.9 276.8 232.3 293.7L71 455C66.5 459.5 64 465.6 64 472L64 552C64 565.3 74.7 576 88 576L168 576C181.3 576 192 565.3 192 552L192 512L232 512C245.3 512 256 501.3 256 488L256 448L296 448C302.4 448 308.5 445.5 313 441L346.3 407.7C363.2 413.1 381.3 416 400 416zM440 160C462.1 160 480 177.9 480 200C480 222.1 462.1 240 440 240C417.9 240 400 222.1 400 200C400 177.9 417.9 160 440 160z" />
-                    </svg>
-                    Get API Key
-                  </button>
-                </div>
               </div>
             </div>
           </div>
@@ -505,6 +831,7 @@ export default function ProxyManager() {
         className="text-xs sm:text-sm"
         data={tableData}
         filterData={origin}
+        resetFilterKey={dataVersion}
         headers={[
           'sid',
           'ip_port',
@@ -517,6 +844,8 @@ export default function ProxyManager() {
           'note',
         ]}
         operatorConfig={OPERATOR_CONFIG}
+        rowClassMap={rowClassMap}
+        deselectSids={deselectSids}
         extraBtn={
           <button
             id="reloadBtn"
@@ -548,6 +877,8 @@ export default function ProxyManager() {
         }
         onSelectionChange={setSelectedRows}
       />
+
+      <CopyDialog {...copyDialogProps} />
     </div>
   )
 }

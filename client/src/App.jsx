@@ -13,7 +13,7 @@ import useAuthStore from './store/useAuthStore'
 import useThemeStore from './store/useThemeStore'
 
 function App() {
-  const checkAuth = useAuthStore((state) => state.checkAuth)
+  const { checkAuth, isAuthenticated } = useAuthStore()
   const theme = useThemeStore((state) => state.theme)
 
   useEffect(() => {
@@ -31,23 +31,51 @@ function App() {
 
   return (
     <div className="bg-body text-text-primary min-h-screen font-sans text-base sm:text-lg">
-      <ToastProvider>
-        <SafeCopyProvider>
-          <ConfirmProvider>
-            <BrowserRouter>
-              <Navbar />
-              <Routes>
-                <Route path="/" element={<Navigate to="/proxyManager" replace />} />
-                <Route path="/proxyManager" element={<ProxyManager />} />
-                <Route path="/proxyChecker" element={<ProxyChecker />} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/signup" element={<SignupPage />} />
-              </Routes>
-              <Footer />
-            </BrowserRouter>
-          </ConfirmProvider>
-        </SafeCopyProvider>
-      </ToastProvider>
+      <BrowserRouter>
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<Navigate to="/proxyManager" replace />} />
+
+          <Route
+            path="/proxyManager"
+            element={
+              isAuthenticated ? (
+                <ToastProvider>
+                  <SafeCopyProvider>
+                    <ConfirmProvider>
+                      <ProxyManager />
+                    </ConfirmProvider>
+                  </SafeCopyProvider>
+                </ToastProvider>
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
+
+          <Route
+            path="/proxyChecker"
+            element={
+              <ToastProvider>
+                <SafeCopyProvider>
+                  <ProxyChecker />
+                </SafeCopyProvider>
+              </ToastProvider>
+            }
+          />
+
+          <Route
+            path="/login"
+            element={isAuthenticated ? <Navigate to="/" replace /> : <LoginPage />}
+          />
+
+          <Route
+            path="/signup"
+            element={isAuthenticated ? <Navigate to="/" replace /> : <SignupPage />}
+          />
+        </Routes>
+        <Footer />
+      </BrowserRouter>
     </div>
   )
 }

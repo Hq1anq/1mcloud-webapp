@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Input from '../components/ui/Input'
 import Checkbox from '../components/ui/Checkbox'
@@ -11,7 +11,25 @@ export default function LoginPage() {
     remember: false,
   })
   const [error, setError] = useState('')
+  const [isLoadedPassword, setIsLoadedPassword] = useState(false)
   const navigate = useNavigate()
+
+  useEffect(() => {
+    const savedPasswordEncoded = localStorage.getItem('rememberedPassword')
+    if (savedPasswordEncoded) {
+      try {
+        const savedPassword = atob(savedPasswordEncoded)
+        setFormData((prev) => ({
+          ...prev,
+          password: savedPassword,
+          remember: true,
+        }))
+        setIsLoadedPassword(true)
+      } catch (e) {
+        console.error(e)
+      }
+    }
+  }, [])
 
   const login = useAuthStore((state) => state.login)
   const isLoading = useAuthStore((state) => state.isLoading)
@@ -22,6 +40,11 @@ export default function LoginPage() {
       ...prev,
       [id]: type === 'checkbox' ? checked : value,
     }))
+
+    if (id === 'password') {
+      setIsLoadedPassword(false)
+    }
+
     // Clear error when user types
     if (error) setError('')
   }
@@ -33,6 +56,11 @@ export default function LoginPage() {
     const success = await login(formData.email, formData.password)
 
     if (success) {
+      if (formData.remember) {
+        localStorage.setItem('rememberedPassword', btoa(formData.password))
+      } else {
+        localStorage.removeItem('rememberedPassword')
+      }
       navigate('/')
     } else {
       const storeError = useAuthStore.getState().error
@@ -69,6 +97,7 @@ export default function LoginPage() {
             onChange={handleChange}
             required
             disabled={isLoading}
+            hideEyeIcon={isLoadedPassword}
           />
 
           <div className="flex items-center justify-between">

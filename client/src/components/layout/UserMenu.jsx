@@ -76,12 +76,15 @@ export default function UserMenu() {
 
   if (!isAuthenticated) {
     return (
-      <Link
-        to="/login"
-        className="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white shadow-sm hover:bg-blue-700"
-      >
-        Login
-      </Link>
+      <>
+        <ThemeToggle />
+        <Link
+          to="/login"
+          className="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white shadow-sm hover:bg-blue-700"
+        >
+          Login
+        </Link>
+      </>
     )
   }
 

@@ -161,7 +161,7 @@ export default function ProxyChecker() {
               <div className="w-full lg:w-1/2">
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <label className="text-text-secondary flex items-center font-medium">
+                    <label className="text-text-primary flex items-center font-medium">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 640 640"
@@ -198,7 +198,7 @@ export default function ProxyChecker() {
               <div className="mt:0 flex w-full flex-col justify-center gap-2 sm:mt-8 lg:w-1/2">
                 {/* Top Row - Proxy Type and Check Button */}
                 <div className="grid grid-cols-[2fr_1fr] grid-rows-2">
-                  <label className="text-text-secondary flex items-center font-medium">
+                  <label className="text-text-primary flex items-center font-medium">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 640 640"
@@ -208,7 +208,7 @@ export default function ProxyChecker() {
                     </svg>
                     Check Proxy
                   </label>
-                  <label className="text-text-secondary flex items-center font-medium">
+                  <label className="text-text-primary flex items-center font-medium">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 640 640"

@@ -100,7 +100,7 @@ export default function UserMenu() {
 
       {/* Dropdown Menu */}
       <div
-        className={`bg-navbar-menu text-text-secondary border-border absolute right-0 mt-3 min-w-44 origin-top-right overflow-hidden rounded-xl border shadow-2xl ${isOpen ? 'translate-y-0 scale-100 opacity-100' : 'pointer-events-none -translate-y-3 scale-95 opacity-0'}`}
+        className={`text-text-primary border-border bg-terminal absolute right-0 mt-3 min-w-44 origin-top-right overflow-hidden rounded-xl border shadow-2xl ${isOpen ? 'translate-y-0 scale-100 opacity-100' : 'pointer-events-none -translate-y-3 scale-95 opacity-0'}`}
       >
         {/* Header */}
         <div className="border-border border-b px-4 py-4">
@@ -113,7 +113,7 @@ export default function UserMenu() {
         <div>
           <Link
             to="/profile"
-            className="group hover:bg-navbar-menu-hover flex items-center gap-2 px-4 py-2"
+            className="group hover:bg-bg-hover flex items-center gap-2 px-4 py-2"
             onClick={() => setIsOpen(false)}
           >
             <svg
@@ -138,7 +138,7 @@ export default function UserMenu() {
 
           <button
             onClick={handleLogout}
-            className="hover:bg-navbar-menu-hover flex w-full items-center px-4 py-2 text-red-500"
+            className="hover:bg-bg-hover flex w-full items-center px-4 py-2 text-red-500"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"

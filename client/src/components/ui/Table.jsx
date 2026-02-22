@@ -35,7 +35,7 @@ const TableRow = ({ context, ...props }) => {
   return (
     <tr
       {...props}
-      className={`hover:bg-bg-hover text-text-secondary ${isSelected ? 'bg-bg-selected' : overrideClass || ''} ${props.className || ''}`}
+      className={`hover:bg-bg-hover text-text-primary ${isSelected ? 'bg-bg-selected' : overrideClass || ''} ${props.className || ''}`}
       onClick={(e) => {
         // Prevent row selection if clicking/interacting with inputs/buttons/labels
         if (e.target.closest('input') || e.target.closest('button') || e.target.closest('label'))

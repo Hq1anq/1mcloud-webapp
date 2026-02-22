@@ -111,7 +111,7 @@ export default function SignupPage() {
             Create Account
           </button>
 
-          <div className="text-text-secondary mt-4 text-center text-sm">
+          <div className="text-text-primary mt-4 text-center text-sm">
             Already have an account?{' '}
             <Link
               to="/login"

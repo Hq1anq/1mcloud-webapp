@@ -3,14 +3,15 @@ import { useEffect } from 'react'
 import { ToastProvider } from './context/ToastContext.jsx'
 import { SafeCopyProvider } from './context/SafeCopyContext.jsx'
 import { ConfirmProvider } from './context/ConfirmContext.jsx'
-import ProxyManager from './pages/ProxyManager.jsx'
-import ProxyChecker from './pages/ProxyChecker.jsx'
-import LoginPage from './pages/LoginPage.jsx'
-import SignupPage from './pages/SignupPage.jsx'
 import Navbar from './components/layout/Navbar.jsx'
 import Footer from './components/layout/Footer.jsx'
 import useAuthStore from './store/useAuthStore'
 import useThemeStore from './store/useThemeStore'
+import Home from './pages/Home.jsx'
+import ProxyManager from './pages/ProxyManager.jsx'
+import ProxyChecker from './pages/ProxyChecker.jsx'
+import LoginPage from './pages/LoginPage.jsx'
+import SignupPage from './pages/SignupPage.jsx'
 
 function App() {
   const { checkAuth, isAuthenticated } = useAuthStore()
@@ -30,11 +31,11 @@ function App() {
   }, [theme])
 
   return (
-    <div className="bg-body text-text-primary min-h-screen font-sans text-base sm:text-lg">
+    <div className="bg-body text-text-secondary min-h-screen font-sans text-base sm:text-lg">
       <BrowserRouter>
         <Navbar />
         <Routes>
-          <Route path="/" element={<Navigate to="/proxyManager" replace />} />
+          <Route path="/" element={<Home />} />
 
           <Route
             path="/proxyManager"

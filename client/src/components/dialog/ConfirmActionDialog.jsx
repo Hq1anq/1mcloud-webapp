@@ -64,7 +64,7 @@ export default function ConfirmActionDialog({
   return (
     <Dialog isOpen={isOpen} onClose={isProcessing ? () => {} : onClose} title={title}>
       <div className="flex flex-col gap-4">
-        <p className="text-text-secondary font-medium">{infoText}</p>
+        <p className="text-text-primary font-medium">{infoText}</p>
 
         {fetchError ? (
           <p className="text-bg-pause mb-4 font-medium">abc</p>
@@ -83,7 +83,7 @@ export default function ConfirmActionDialog({
                   ))}
                 </tr>
               </thead>
-              <tbody className="text-text-secondary">
+              <tbody className="text-text-primary">
                 {selectedRows.map((row, idx) => {
                   let rowRenewData = null
                   if (isRenew && renewData) {

@@ -31,51 +31,53 @@ function App() {
   }, [theme])
 
   return (
-    <div className="bg-body text-text-secondary min-h-screen font-sans text-base sm:text-lg">
+    <div className="bg-body text-text-secondary flex h-screen flex-col overflow-hidden font-sans text-base sm:text-lg">
       <BrowserRouter>
         <Navbar />
-        <Routes>
-          <Route path="/" element={<Home />} />
+        <div id="main-scroll-container" className="scroll-container w-full flex-1 overflow-y-auto">
+          <Routes>
+            <Route path="/" element={<Home />} />
 
-          <Route
-            path="/proxyManager"
-            element={
-              isAuthenticated ? (
+            <Route
+              path="/proxyManager"
+              element={
+                isAuthenticated ? (
+                  <ToastProvider>
+                    <SafeCopyProvider>
+                      <ConfirmProvider>
+                        <ProxyManager />
+                      </ConfirmProvider>
+                    </SafeCopyProvider>
+                  </ToastProvider>
+                ) : (
+                  <Navigate to="/login" replace />
+                )
+              }
+            />
+
+            <Route
+              path="/proxyChecker"
+              element={
                 <ToastProvider>
                   <SafeCopyProvider>
-                    <ConfirmProvider>
-                      <ProxyManager />
-                    </ConfirmProvider>
+                    <ProxyChecker />
                   </SafeCopyProvider>
                 </ToastProvider>
-              ) : (
-                <Navigate to="/login" replace />
-              )
-            }
-          />
+              }
+            />
 
-          <Route
-            path="/proxyChecker"
-            element={
-              <ToastProvider>
-                <SafeCopyProvider>
-                  <ProxyChecker />
-                </SafeCopyProvider>
-              </ToastProvider>
-            }
-          />
+            <Route
+              path="/login"
+              element={isAuthenticated ? <Navigate to="/" replace /> : <LoginPage />}
+            />
 
-          <Route
-            path="/login"
-            element={isAuthenticated ? <Navigate to="/" replace /> : <LoginPage />}
-          />
-
-          <Route
-            path="/signup"
-            element={isAuthenticated ? <Navigate to="/" replace /> : <SignupPage />}
-          />
-        </Routes>
-        <Footer />
+            <Route
+              path="/signup"
+              element={isAuthenticated ? <Navigate to="/" replace /> : <SignupPage />}
+            />
+          </Routes>
+          <Footer />
+        </div>
       </BrowserRouter>
     </div>
   )

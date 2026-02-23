@@ -1,11 +1,8 @@
 export default function HeroSection() {
   return (
     <section
-      className="text-text-muted flex w-full justify-center overflow-hidden px-4 py-12 md:py-20"
-      style={{
-        background:
-          'linear-gradient(to bottom, var(--home-hero-gradient-from), var(--home-hero-gradient-to))',
-      }}
+      id="hero"
+      className="text-text-muted flex w-full justify-center overflow-hidden bg-[linear-gradient(to_bottom,var(--home-hero-gradient-from),var(--home-hero-gradient-to))] px-4 py-12 md:py-20"
     >
       <div className="flex max-w-[1280px] flex-1 flex-col">
         <div className="flex flex-col items-center gap-10 lg:flex-row">
@@ -107,18 +104,8 @@ export default function HeroSection() {
               </div>
 
               {/* Decorative lines */}
-              <div
-                className="absolute top-1/2 right-12 h-px w-20"
-                style={{
-                  background: 'linear-gradient(to left, var(--primary), transparent)',
-                }}
-              />
-              <div
-                className="absolute bottom-1/4 left-12 h-px w-24"
-                style={{
-                  background: 'linear-gradient(to right, var(--primary), transparent)',
-                }}
-              />
+              <div className="absolute top-1/2 right-12 h-px w-20 bg-[linear-gradient(to_left,var(--primary),transparent)]" />
+              <div className="absolute bottom-1/4 left-12 h-px w-24 bg-[linear-gradient(to_right,var(--primary),transparent)]" />
 
               {/* Bottom stats bar */}
               <div className="border-border absolute right-6 bottom-6 left-6 z-20 flex items-center rounded-lg border p-2 shadow-2xl backdrop-blur-md sm:p-4">

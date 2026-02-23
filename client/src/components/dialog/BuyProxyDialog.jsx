@@ -96,7 +96,6 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
     if (isOpen) {
       fetchSupport('VN')
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen])
 
   // Calculate effect

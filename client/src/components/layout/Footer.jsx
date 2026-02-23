@@ -1,7 +1,9 @@
+import { Link } from 'react-router-dom'
+
 export default function Footer() {
   return (
     <div class="text-text-muted border-text-muted mt-16 w-full border-t px-4 pt-12">
-      <div class="mx-auto flex max-w-[1280px] flex-col justify-between gap-10 md:flex-row">
+      <div class="mx-auto flex max-w-[1280px] flex-wrap gap-10">
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-4">
             <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" className="size-12">
@@ -25,24 +27,27 @@ export default function Footer() {
             cao toàn cầu.
           </div>
         </div>
-        <div class="flex flex-wrap gap-16">
+        <div class="m-auto flex flex-wrap gap-20">
           <div class="flex flex-col gap-4">
             <h4 class="text-text-primary font-bold">Dịch vụ</h4>
-            <a href="/" className="social-link cursor-pointer">
+            <Link to="/#vps" className="social-link cursor-pointer">
               VPS
-            </a>
-            <a href="/" className="social-link cursor-pointer">
+            </Link>
+            <Link to="/#vps" className="social-link cursor-pointer">
               VPS GPU
-            </a>
-            <a href="/" className="social-link cursor-pointer">
+            </Link>
+            <Link to="/#proxy" className="social-link cursor-pointer">
               Proxy dân cư
-            </a>
-            <a href="/" className="social-link cursor-pointer">
+            </Link>
+            <Link to="/#proxy" className="social-link cursor-pointer">
               Proxy Datacenter
-            </a>
+            </Link>
           </div>
           <div class="flex flex-col gap-4">
             <h4 class="text-text-primary font-bold">Thông tin</h4>
+            <Link to="/#hero" className="social-link cursor-pointer">
+              Về chúng tôi
+            </Link>
             <a href="/contact" className="social-link cursor-pointer">
               Liên hệ
             </a>

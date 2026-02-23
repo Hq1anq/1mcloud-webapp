@@ -15,7 +15,7 @@ export default function Navbar() {
   const navLinkClass = ({ isActive }) => `${linkBase} ${isActive ? active : inactive}`
 
   return (
-    <nav className="bg-navbar border-b-card-border sticky top-0 z-50 flex flex-wrap items-center justify-between border-b-2 px-3 py-3 shadow-md select-none sm:px-5">
+    <nav className="bg-navbar border-b-card-border z-50 flex flex-wrap items-center justify-between border-b-2 px-3 py-3 shadow-md select-none sm:px-5">
       {/* Logo and Title */}
       <div className="flex items-center space-x-4">
         <svg
@@ -73,7 +73,7 @@ export default function Navbar() {
         className={`bg-surface flex w-full flex-col justify-end overflow-hidden rounded-lg font-medium md:mr-8 md:max-h-none md:w-auto md:flex-1 md:flex-row md:items-center md:space-x-8 md:bg-transparent ${isMenuOpen ? 'mt-4 max-h-[500px] p-4' : 'max-h-0'}`}
       >
         <li>
-          <NavLink to="/" className={navLinkClass}>
+          <NavLink to="/" className={navLinkClass} onClick={() => setIsMenuOpen(false)}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 640 640"
@@ -85,7 +85,7 @@ export default function Navbar() {
           </NavLink>
         </li>
         <li>
-          <NavLink to="/proxyChecker" className={navLinkClass}>
+          <NavLink to="/proxyChecker" className={navLinkClass} onClick={() => setIsMenuOpen(false)}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 640 640"
@@ -97,7 +97,7 @@ export default function Navbar() {
           </NavLink>
         </li>
         <li>
-          <NavLink to="/proxyManager" className={navLinkClass}>
+          <NavLink to="/proxyManager" className={navLinkClass} onClick={() => setIsMenuOpen(false)}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 640 640"

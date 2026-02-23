@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, forwardRef } from 'react'
+import { useState, useMemo, useCallback, forwardRef, useEffect } from 'react'
 import { TableVirtuoso } from 'react-virtuoso'
 import { handleCopy, getStatusClasses } from '../../lib/utils.js'
 import Checkbox from './Checkbox.jsx'
@@ -113,6 +113,13 @@ const Table = forwardRef(function Table(
   const [lastSelectionAction, setLastSelectionAction] = useState('add') // 'add' or 'delete'
   const [filters, setFilters] = useState({})
   const [filterInputs, setFilterInputs] = useState({})
+  const [scrollParent, setScrollParent] = useState(undefined)
+
+  // Attach to our new custom scroll layout
+  useEffect(() => {
+    const parent = document.getElementById('main-scroll-container')
+    if (parent) setScrollParent(parent)
+  }, [])
 
   const filteredData = useMemo(() => {
     if (!useFilter) return data || DEFAULT_DATA
@@ -394,15 +401,17 @@ const Table = forwardRef(function Table(
           </div>
           {/* Table */}
           <div className="scroll-container overflow-x-auto overflow-y-hidden rounded-b-lg **:transition-colors!">
-            <TableVirtuoso
-              data={filteredData}
-              useWindowScroll
-              overscan={1000}
-              context={virtuosoContext}
-              components={VIRTUOSO_COMPONENTS}
-              fixedHeaderContent={fixedHeader}
-              itemContent={itemContent}
-            />
+            {scrollParent !== undefined && (
+              <TableVirtuoso
+                data={filteredData}
+                customScrollParent={scrollParent}
+                overscan={1000}
+                context={virtuosoContext}
+                components={VIRTUOSO_COMPONENTS}
+                fixedHeaderContent={fixedHeader}
+                itemContent={itemContent}
+              />
+            )}
           </div>
           {filteredData.length === 0 && emptyMessage}
         </div>

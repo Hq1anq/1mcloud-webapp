@@ -32,11 +32,11 @@ export default function VpsSection() {
     {
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor">
-          <path d="M120-80v-280h120v-160h200v-80H320v-280h320v280H520v80h200v160h120v280H520v-280h120v-80H320v80h120v280H120Zm280-600h160v-120H400v120ZM200-160h160v-120H200v120Zm400 0h160v-120H600v120ZM480-680ZM360-280Zm240 0Z" />
+          <path d="M160-120q-33 0-56.5-23.5T80-200v-560q0-33 23.5-56.5T160-840h560q33 0 56.5 23.5T800-760v80h80v80h-80v80h80v80h-80v80h80v80h-80v80q0 33-23.5 56.5T720-120H160Zm0-80h560v-560H160v560Zm80-80h200v-160H240v160Zm240-280h160v-120H480v120Zm-240 80h200v-200H240v200Zm240 200h160v-240H480v240ZM160-760v560-560Z" />
         </svg>
       ),
-      title: 'IPv4 chuyên dụng',
-      desc: 'Địa chỉ IP tĩnh riêng biệt, sạch sẽ, độ tin cậy cao.',
+      title: 'Cấu hình đa nhiệm & GPU',
+      desc: 'VPS GPU mạnh mẽ cho xử lý đồ họa, VPS PTU với dung lượng lưu trữ lớn.',
     },
     {
       icon: (
@@ -79,16 +79,33 @@ export default function VpsSection() {
     },
     {
       icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor">
-          <path d="m680-240-56-56 182-184-182-184 56-56 240 240-240 240Zm-400 0L40-480l240-240 56 56-182 184 182 184-56 56Zm11.5-211.5Q280-463 280-480t11.5-28.5Q303-520 320-520t28.5 11.5Q360-497 360-480t-11.5 28.5Q337-440 320-440t-28.5-11.5Zm160 0Q440-463 440-480t11.5-28.5Q463-520 480-520t28.5 11.5Q520-497 520-480t-11.5 28.5Q497-440 480-440t-28.5-11.5Zm160 0Q600-463 600-480t11.5-28.5Q623-520 640-520t28.5 11.5Q680-497 680-480t-11.5 28.5Q657-440 640-440t-28.5-11.5Z" />
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" fill="currentColor">
+          <path d="M119.7 263.7L150.6 294.6C156.6 300.6 164.7 304 173.2 304L194.7 304C203.2 304 211.3 307.4 217.3 313.4L246.6 342.7C252.6 348.7 256 356.8 256 365.3L256 402.8C256 411.3 259.4 419.4 265.4 425.4L278.7 438.7C284.7 444.7 288.1 452.8 288.1 461.3L288.1 480C288.1 497.7 302.4 512 320.1 512C337.8 512 352.1 497.7 352.1 480L352.1 477.3C352.1 468.8 355.5 460.7 361.5 454.7L406.8 409.4C412.8 403.4 416.2 395.3 416.2 386.8L416.2 352.1C416.2 334.4 401.9 320.1 384.2 320.1L301.5 320.1C293 320.1 284.9 316.7 278.9 310.7L262.9 294.7C258.7 290.5 256.3 284.7 256.3 278.7C256.3 266.2 266.4 256.1 278.9 256.1L313.6 256.1C326.1 256.1 336.2 246 336.2 233.5C336.2 227.5 333.8 221.7 329.6 217.5L309.9 197.8C306 194 304 189.1 304 184C304 178.9 306 174 309.7 170.3L327 153C332.8 147.2 336.1 139.3 336.1 131.1C336.1 123.9 333.7 117.4 329.7 112.2C326.5 112.1 323.3 112 320.1 112C224.7 112 144.4 176.2 119.8 263.7zM528 320C528 285.4 519.6 252.8 504.6 224.2C498.2 225.1 491.9 228.1 486.7 233.3L473.3 246.7C467.3 252.7 463.9 260.8 463.9 269.3L463.9 304C463.9 321.7 478.2 336 495.9 336L520 336C522.5 336 525 335.7 527.3 335.2C527.7 330.2 527.8 325.1 527.8 320zM64 320C64 178.6 178.6 64 320 64C461.4 64 576 178.6 576 320C576 461.4 461.4 576 320 576C178.6 576 64 461.4 64 320z" />
         </svg>
       ),
       iconColor: '#a855f7',
       iconBg: 'rgba(168,85,247,0.15)',
-      title: '10 Gbps Uplink Network',
-      desc: 'Hạ tầng mạng Tier-3 với đường truyền quốc tế riêng biệt. Cam kết băng thông và tốc độ đúng như gói cước.',
+      title: 'Mạng Lưới & Quốc Gia',
+      desc: (
+        <>
+          Nhà mạng: FPT, FPT-HCM, VNPT <br /> Quốc Gia: VN, Mỹ, Singapore, Nhật, Anh, Canada, ...
+        </>
+      ),
       statLabel: 'Băng thông',
       statValue: 'Không giới hạn',
+    },
+    {
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor">
+          <path d="M160-160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h640q33 0 56.5 23.5T880-720v480q0 33-23.5 56.5T800-160H160Zm0-80h640v-400H160v400Zm140-40-56-56 103-104-104-104 57-56 160 160-160 160Zm180 0v-80h240v80H480Z" />
+        </svg>
+      ),
+      iconColor: 'var(--color-green-500)',
+      iconBg: 'rgba(0,201,81,0.15)',
+      title: 'Quản trị toàn diện',
+      desc: 'Công cụ quản lý mạnh mẽ: Khởi động lại, tạm dừng, sửa lỗi tự động, cài lại server, Backup dữ liệu',
+      statLabel: 'SSD',
+      statValue: 'từ 30GB',
     },
   ]
 
@@ -117,7 +134,10 @@ export default function VpsSection() {
   ]
 
   return (
-    <section className="text-text-muted bg-home-section-alt border-card-border flex w-full justify-center overflow-hidden border-t border-b px-4 py-16">
+    <section
+      id="vps"
+      className="text-text-muted bg-home-section-alt border-card-border flex w-full justify-center overflow-hidden border-t border-b px-4 py-16"
+    >
       <div className="flex max-w-[1280px] flex-1 flex-col">
         <div className="flex flex-col items-center gap-12 lg:flex-row">
           {/*  Left: Monitoring Panel + Spec Cards  */}
@@ -144,12 +164,7 @@ export default function VpsSection() {
                       <span>{bar.label}</span>
                       <span className={bar.valueColor}>{bar.value}</span>
                     </div>
-                    <div
-                      className="bg-scrollbar-track h-3 w-full overflow-hidden rounded-full"
-                      style={{
-                        background: 'color-mix(in srgb, var(--color-terminal) 80%, var(--border))',
-                      }}
-                    >
+                    <div className="h-3 w-full overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--color-terminal)_80%,var(--border))]">
                       <div
                         className={`h-full rounded-full bg-linear-to-r ${bar.color} ${bar.animClass}`}
                       />
@@ -198,11 +213,11 @@ export default function VpsSection() {
           </div>
         </div>
         {/* Spec cards grid */}
-        <div className="mx-auto mt-8 grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-2">
+        <div className="mx-auto mt-8 flex flex-col gap-6 md:flex-row">
           {specCards.map((card) => (
             <div
               key={card.title}
-              className="border-card-border bg-navbar home-card-hover relative flex flex-col overflow-hidden rounded-2xl border p-6 text-left shadow-sm"
+              className="border-card-border bg-navbar home-card-hover relative flex flex-1 flex-col overflow-hidden rounded-2xl border p-6 text-left shadow-sm"
             >
               {/* Background icon */}
               <div className="text-text-primary home-largeicon-hover absolute top-0 right-0 size-35 p-4 opacity-10">

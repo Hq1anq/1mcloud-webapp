@@ -25,18 +25,21 @@ export default function ProxySection() {
     {
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor">
-          <path d="m600-120-240-84-186 72q-20 8-37-4.5T120-170v-560q0-13 7.5-23t20.5-15l212-72 240 84 186-72q20-8 37 4.5t17 33.5v560q0 13-7.5 23T812-192l-212 72Zm-40-98v-468l-160-56v468l160 56Zm80 0 120-40v-474l-120 46v468Zm-440-10 120-46v-468l-120 40v474Zm440-458v468-468Zm-320-56v468-468Z" />
+          <path d="M120-80v-280h120v-160h200v-80H320v-280h320v280H520v80h200v160h120v280H520v-280h120v-80H320v80h120v280H120Zm280-600h160v-120H400v120ZM200-160h160v-120H200v120Zm400 0h160v-120H600v120ZM480-680ZM360-280Zm240 0Z" />
         </svg>
       ),
       iconColor: '#a855f7',
       iconBg: 'rgba(168,85,247,0.1)',
-      title: 'Phủ sóng đa quốc gia',
-      desc: 'IP sạch từ VN, SG, USA, Canada, Australia, UK, France, Japan, HK đảm bảo truy cập mọi nơi.',
+      title: 'IPv4 chuyên dụng',
+      desc: 'Địa chỉ IP tĩnh riêng biệt, sạch sẽ, độ tin cậy cao.',
     },
   ]
 
   return (
-    <section className="text-text-muted flex w-full justify-center overflow-hidden px-4 pt-16">
+    <section
+      id="proxy"
+      className="text-text-muted flex w-full justify-center overflow-hidden px-4 pt-16"
+    >
       <div className="flex max-w-[1280px] flex-1 flex-col">
         <div className="flex flex-col items-center gap-12 lg:flex-row">
           {/*  Left: Header + Feature Cards  */}
@@ -151,12 +154,7 @@ export default function ProxySection() {
               </div>
 
               {/* IP info row */}
-              <div
-                className="relative z-10 mt-4 w-full border-t pt-4 sm:mt-8"
-                style={{
-                  borderColor: 'color-mix(in srgb, var(--border) 70%, transparent)',
-                }}
-              >
+              <div className="border-card-border relative z-10 mt-4 w-full border-t pt-4 sm:mt-8">
                 <div className="flex justify-center gap-4">
                   <div className="flex items-center gap-2">
                     <div className="h-2 w-2 rounded-full bg-green-500" />

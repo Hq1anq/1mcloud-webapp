@@ -5,6 +5,7 @@ import { SafeCopyProvider } from './context/SafeCopyContext.jsx'
 import { ConfirmProvider } from './context/ConfirmContext.jsx'
 import Navbar from './components/layout/Navbar.jsx'
 import Footer from './components/layout/Footer.jsx'
+import ScrollToTop from './components/layout/ScrollToTop.jsx'
 import useAuthStore from './store/useAuthStore'
 import useThemeStore from './store/useThemeStore'
 import Home from './pages/Home.jsx'
@@ -12,6 +13,7 @@ import ProxyManager from './pages/ProxyManager.jsx'
 import ProxyChecker from './pages/ProxyChecker.jsx'
 import LoginPage from './pages/LoginPage.jsx'
 import SignupPage from './pages/SignupPage.jsx'
+import Contact from './pages/Contact.jsx'
 
 function App() {
   const { checkAuth, isAuthenticated } = useAuthStore()
@@ -33,10 +35,12 @@ function App() {
   return (
     <div className="bg-body text-text-secondary flex h-screen flex-col overflow-hidden font-sans text-base sm:text-lg">
       <BrowserRouter>
+        <ScrollToTop />
         <Navbar />
         <div id="main-scroll-container" className="scroll-container w-full flex-1 overflow-y-auto">
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/contact" element={<Contact />} />
 
             <Route
               path="/proxyManager"

@@ -5,7 +5,7 @@ export default function Footer() {
     <div class="text-text-muted border-text-muted mt-16 w-full border-t px-4 pt-12">
       <div class="mx-auto flex max-w-[1280px] flex-wrap gap-10">
         <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
             <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" className="size-12">
               <path
                 fill="var(--logo-ring)"
@@ -20,7 +20,7 @@ export default function Footer() {
                 d="M819.7,443.62c-.9-90.84-75.12-164.24-166.74-164.69a166,166,0,0,0-115.89,47.65,175.87,175.87,0,0,0-119.31-47.64l-1.06,0a116.39,116.39,0,0,0-34.61,5.28V397.11h0a52.2,52.2,0,0,1,38-16.73,64.38,64.38,0,0,1,16.37,2.31A62.84,62.84,0,0,1,469,404.09l.16.2a52.23,52.23,0,0,1,10.93,32.34V745H588.19V442.25a58,58,0,0,1,12.92-36.44,64.34,64.34,0,0,1,99.42,0l.16.19a51.38,51.38,0,0,1,10.94,32V745H819.71V443.62Z"
               />
             </svg>
-            <h1 className="text-3xl font-semibold">1mcloud</h1>
+            <h1 className="text-3xl font-bold">1mcloud</h1>
           </div>
           <div className="max-w-lg">
             Cung cấp giải pháp hạ tầng linh hoạt, bảo mật với toàn quyền quản trị và kết nối tốc độ

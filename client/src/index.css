@@ -36,7 +36,6 @@
 
   /* Border */
   --color-border: var(--border);
-  --color-border-checkbox-hover: var(--border-checkbox-hover);
 
   --color-success-cell: var(--success-cell);
   --color-error-cell: var(--error-cell);
@@ -103,18 +102,12 @@
 
 /* Theme Variables */
 :root {
-  /* Dark Theme colors - Modern Premium Slate */
   --dark-900: #0b0f19;
   --dark-800: #1a2130;
   --dark-700: #293347;
   --dark-600: #39455d;
   --dark-500: #485774;
   --dark-400: #57698b;
-  /* Light Theme Colors */
-  --light-200: #e2e8f0;
-  --light-300: #cbd5e1;
-  --light-400: #94a3b8;
-  --light-500: #64748b;
 }
 
 [data-theme='light'] {
@@ -154,7 +147,6 @@
 
   /* Border Colors */
   --border: var(--color-sky-500);
-  --border-checkbox-hover: var(--light-500);
 
   --logo-ring: #f9bb10;
   --logo-inner: #000000;
@@ -192,7 +184,7 @@
   --home-hero-gradient-from: var(--bg-body);
   --home-hero-gradient-to: var(--color-blue-200);
   --home-section-alt: var(--color-blue-100);
-  --card-border: var(--color-cyan-100);
+  --card-border: var(--color-cyan-200);
   --home-card-icon-bg: rgba(19, 127, 236, 0.1);
 }
 
@@ -234,7 +226,6 @@
 
   /* Border Colors */
   --border: var(--dark-500);
-  --border-checkbox-hover: var(--dark-400);
 
   --logo-ring: #053fe5;
   --logo-inner: #e2e2e4;

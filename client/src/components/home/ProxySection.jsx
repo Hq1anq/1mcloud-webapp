@@ -1,4 +1,8 @@
+import { useTranslation } from '../../i18n'
+
 export default function ProxySection() {
+  const t = useTranslation()
+
   const features = [
     {
       icon: (
@@ -8,8 +12,8 @@ export default function ProxySection() {
       ),
       iconColor: '#22c55e',
       iconBg: 'rgba(34,197,94,0.1)',
-      title: 'Đa giao thức an toàn',
-      desc: 'Hỗ trợ đầy đủ SOCKS5 và HTTPS với mã hóa cao cấp, đảm bảo ẩn danh tuyệt đối.',
+      title: t('proxy.feat1.title'),
+      desc: t('proxy.feat1.desc'),
     },
     {
       icon: (
@@ -19,8 +23,8 @@ export default function ProxySection() {
       ),
       iconColor: '#3b82f6',
       iconBg: 'rgba(59,130,246,0.1)',
-      title: 'IP Dân cư (Residential IP)',
-      desc: 'Nguồn IP sạch, trust score cao, giảm thiểu tối đa tình trạng bị chặn (block) IP.',
+      title: t('proxy.feat2.title'),
+      desc: t('proxy.feat2.desc'),
     },
     {
       icon: (
@@ -30,8 +34,8 @@ export default function ProxySection() {
       ),
       iconColor: '#a855f7',
       iconBg: 'rgba(168,85,247,0.1)',
-      title: 'IPv4 chuyên dụng',
-      desc: 'Địa chỉ IP tĩnh riêng biệt, sạch sẽ, độ tin cậy cao.',
+      title: t('proxy.feat3.title'),
+      desc: t('proxy.feat3.desc'),
     },
   ]
 
@@ -53,16 +57,13 @@ export default function ProxySection() {
                 >
                   <path d="M 121.909 114.937 C 121.909 122.502 120.024 129.626 116.698 135.865 L 202.119 203.06 C 215.635 187.258 235.718 177.243 258.14 177.243 C 271.389 177.243 283.819 180.739 294.563 186.86 L 361.155 93.877 C 351.483 83.859 345.533 70.224 345.533 55.199 C 345.533 24.441 370.467 -0.493 401.225 -0.493 C 431.982 -0.493 456.916 24.441 456.916 55.199 C 456.916 85.957 431.982 110.89 401.225 110.89 C 393.545 110.89 386.227 109.338 379.572 106.526 L 312.095 200.744 C 324.29 213.851 331.767 231.404 331.826 250.703 L 381.705 260.977 C 388.531 245.126 404.291 234.029 422.645 234.029 C 447.252 234.029 467.198 253.975 467.198 278.582 C 467.198 303.188 447.252 323.134 422.645 323.134 C 398.578 323.134 378.969 304.053 378.122 280.192 L 329.295 270.137 C 325.107 285.687 315.958 299.203 303.649 308.883 L 366.739 402.438 C 373.315 399.383 380.645 397.677 388.373 397.677 C 416.765 397.677 439.781 420.693 439.781 449.085 C 439.781 477.478 416.765 500.493 388.373 500.493 C 359.98 500.493 336.965 477.478 336.965 449.085 C 336.965 435.719 342.064 423.546 350.425 414.402 L 286.155 319.098 C 277.519 322.652 268.059 324.613 258.14 324.613 C 247.029 324.613 236.489 322.154 227.04 317.748 L 173.107 393.059 C 182.315 403.72 187.884 417.612 187.884 432.805 C 187.884 466.403 160.649 493.638 127.05 493.638 C 93.453 493.638 66.218 466.403 66.218 432.805 C 66.218 399.208 93.453 371.972 127.05 371.972 C 138.234 371.972 148.715 374.991 157.719 380.258 L 210.239 306.92 C 194.457 293.405 184.454 273.333 184.454 250.927 C 184.454 239.438 187.084 228.564 191.773 218.873 L 104.527 150.247 C 97.007 156.041 87.583 159.488 77.357 159.488 C 52.75 159.488 32.803 139.541 32.803 114.935 C 32.803 90.329 52.75 70.382 77.357 70.382 C 101.963 70.382 121.909 90.329 121.909 114.935 L 121.909 114.937 Z" />
                 </svg>
-                MẠNG LƯỚI PROXY CAO CẤP
+                {t('proxy.label')}
               </div>
               <h2 className="text-text-primary text-3xl leading-tight font-bold md:text-4xl">
-                Dịch vụ Proxy linh hoạt <br />
-                HTTPS, SOCKS5, Residential
+                {t('proxy.heading1')} <br />
+                {t('proxy.heading2')}
               </h2>
-              <p className="leading-relaxed">
-                Hệ thống Proxy mạnh mẽ hỗ trợ giao thức HTTPS/SOCKS5, cung cấp IP dân cư chất lượng
-                cao và khả năng tích hợp API tự động hóa dễ dàng vào workflow của bạn.
-              </p>
+              <p className="leading-relaxed">{t('proxy.subtitle')}</p>
             </div>
 
             <div className="flex flex-col gap-6">

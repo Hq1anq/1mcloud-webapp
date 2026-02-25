@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import Input from '../components/ui/Input'
+import { useTranslation } from '../i18n'
 
 export default function SignupPage() {
+  const t = useTranslation()
   const [formData, setFormData] = useState({
     fullname: '',
     email: '',
@@ -28,10 +30,10 @@ export default function SignupPage() {
   const validate = () => {
     const newErrors = {}
     if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match'
+      newErrors.confirmPassword = t('signup.passwordMismatch')
     }
     if (formData.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters'
+      newErrors.password = t('signup.passwordLength')
     }
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -48,11 +50,11 @@ export default function SignupPage() {
   return (
     <div className="flex min-h-[calc(100vh-130px)] items-center justify-center p-4">
       <div className="bg-surface w-full max-w-xl rounded-xl p-8 shadow-2xl">
-        <h2 className="text-text-title mb-6 text-center text-2xl font-bold">Sign Up</h2>
+        <h2 className="text-text-title mb-6 text-center text-2xl font-bold">{t('signup.title')}</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
             id="fullname"
-            label="Full Name"
+            label={t('signup.fullname')}
             type="text"
             placeholder="John Doe"
             value={formData.fullname}
@@ -63,7 +65,7 @@ export default function SignupPage() {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <Input
               id="email"
-              label="Email"
+              label={t('signup.email')}
               type="email"
               placeholder="your@email.com"
               value={formData.email}
@@ -72,7 +74,7 @@ export default function SignupPage() {
             />
             <Input
               id="phone"
-              label="Phone Number"
+              label={t('signup.phone')}
               type="tel"
               placeholder="+1 234 567 8900"
               value={formData.phone}
@@ -84,7 +86,7 @@ export default function SignupPage() {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <Input
               id="password"
-              label="Password"
+              label={t('signup.password')}
               type="password"
               placeholder="••••••••"
               value={formData.password}
@@ -94,7 +96,7 @@ export default function SignupPage() {
             />
             <Input
               id="confirmPassword"
-              label="Confirm Password"
+              label={t('signup.confirmPassword')}
               type="password"
               placeholder="••••••••"
               value={formData.confirmPassword}
@@ -108,16 +110,16 @@ export default function SignupPage() {
             type="submit"
             className="focus:ring-opacity-75 mt-6 w-full rounded-lg bg-green-600 px-4 py-2 font-semibold text-white shadow-md transition-colors hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:outline-none"
           >
-            Create Account
+            {t('signup.submit')}
           </button>
 
           <div className="text-text-primary mt-4 text-center text-sm">
-            Already have an account?{' '}
+            {t('signup.hasAccount')}{' '}
             <Link
               to="/login"
               className="font-medium text-blue-500 hover:text-blue-400 focus:outline-none"
             >
-              Log in
+              {t('signup.login')}
             </Link>
           </div>
         </form>

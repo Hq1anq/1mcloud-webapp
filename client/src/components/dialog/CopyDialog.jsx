@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react'
 import Dialog from '../ui/Dialog'
+import { useTranslation } from '../../i18n'
 
 // Copy icon (default state)
 const CopyIcon = () => (
@@ -61,6 +62,7 @@ const FailedIcon = () => (
 export default function CopyDialog({ isOpen, onClose, text }) {
   // 'idle' | 'copied' | 'failed'
   const [copyState, setCopyState] = useState('idle')
+  const t = useTranslation()
 
   const handleCopy = useCallback(async () => {
     try {
@@ -78,7 +80,7 @@ export default function CopyDialog({ isOpen, onClose, text }) {
   }, [onClose])
 
   return (
-    <Dialog isOpen={isOpen} onClose={handleClose} title="Copy to Clipboard">
+    <Dialog isOpen={isOpen} onClose={handleClose} title={t('dialog.copy')}>
       <button
         onClick={handleCopy}
         className={`group absolute top-6 right-6 inline-flex cursor-pointer items-center justify-center rounded-lg px-1 py-0.5 hover:brightness-(--highlight-brightness) ${
@@ -96,14 +98,18 @@ export default function CopyDialog({ isOpen, onClose, text }) {
         ) : (
           <CopyIcon />
         )}
-        {copyState === 'copied' ? 'Copied' : copyState === 'failed' ? 'Failed' : 'Copy'}
+        {copyState === 'copied'
+          ? t('dialog.copied')
+          : copyState === 'failed'
+            ? t('dialog.failed')
+            : t('dialog.copy')}
       </button>
       <textarea readOnly value={text} className="min-h-48" onClick={(e) => e.target.select()} />
       <button
         onClick={handleClose}
         className="bg-bg-pause mt-3 self-end rounded-lg px-4 py-2 font-medium hover:brightness-(--highlight-brightness)"
       >
-        Close
+        {t('dialog.close')}
       </button>
     </Dialog>
   )

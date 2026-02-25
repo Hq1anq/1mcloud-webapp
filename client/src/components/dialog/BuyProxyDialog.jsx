@@ -4,9 +4,11 @@ import { useToast } from '../../context/ToastContext'
 import Dialog from '../ui/Dialog'
 import DropDown from '../ui/DropDown'
 import Checkbox from '../ui/Checkbox'
+import { useTranslation } from '../../i18n'
 
 export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
   const { addToast } = useToast()
+  const t = useTranslation()
 
   const [supportData, setSupportData] = useState({
     type: { option: { HTTPS: 'HTTPS' } },
@@ -154,18 +156,19 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
       if (res.data?.success || res.status === 200) {
         addToast(
           <>
-            Purchased <span className="text-text-toast-success">{res.data?.data.length}</span> proxy
-            successfully!
+            {t('buy.purchased')}{' '}
+            <span className="text-text-toast-success">{res.data?.data.length}</span>{' '}
+            {t('buy.proxySuccess')}
           </>,
           'success'
         )
         if (onSuccess) onSuccess(res.data?.data)
         onClose()
       } else {
-        addToast(res.data?.message || 'Purchase failed', 'error')
+        addToast(res.data?.message || t('buy.purchaseFailed'), 'error')
       }
     } catch (err) {
-      addToast(err.response?.data?.message || err.message || 'Error occurred', 'error')
+      addToast(err.response?.data?.message || err.message || t('buy.errorOccurred'), 'error')
     }
   }
 
@@ -203,13 +206,13 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
         {/* Left Form Panel */}
         <div className="flex flex-1 flex-col gap-6 p-6 md:p-8 lg:p-10">
           <div className="flex flex-col gap-2">
-            <h1 className="text-text-title text-2xl leading-tight font-bold">Buy Proxy</h1>
+            <h1 className="text-text-title text-2xl leading-tight font-bold">{t('buy.title')}</h1>
           </div>
 
           <div className="flex flex-1 flex-col gap-5">
             <div className="flex flex-wrap items-center gap-5">
               <div className="flex flex-1 flex-col gap-2">
-                <span className="text-sm font-medium">Type</span>
+                <span className="text-sm font-medium">{t('buy.type')}</span>
                 {renderSelect(
                   selectedType,
                   (e) => setSelectedType(e.target.value),
@@ -218,7 +221,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
               </div>
 
               <div className="flex flex-1 flex-col gap-2">
-                <span className="text-sm font-medium">Duration</span>
+                <span className="text-sm font-medium">{t('buy.duration')}</span>
                 {renderSelect(
                   selectedDuration,
                   (e) => setSelectedDuration(e.target.value),
@@ -227,25 +230,25 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
               </div>
 
               <label className="flex flex-1 flex-col gap-2">
-                <span className="text-text-primary text-sm font-medium">Amount</span>
+                <span className="text-text-primary text-sm font-medium">{t('buy.amount')}</span>
                 <input
                   type="number"
                   min="1"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  placeholder="Enter quantity"
+                  placeholder={t('buy.enterQuantity')}
                 />
               </label>
             </div>
 
             <div className="flex flex-wrap items-center gap-5">
               <div className="flex min-w-56 flex-1 flex-col gap-2">
-                <span className="text-text-primary text-sm font-medium">Nation</span>
+                <span className="text-text-primary text-sm font-medium">{t('buy.nation')}</span>
                 {renderSelect(selectedNation, handleNationChange, supportData.nation?.option || {})}
               </div>
 
               <div className="flex flex-1 flex-col gap-2">
-                <span className="text-text-primary text-sm font-medium">Range IP</span>
+                <span className="text-text-primary text-sm font-medium">{t('buy.rangeIp')}</span>
                 {renderSelect(
                   selectedRangeIp,
                   (e) => setSelectedRangeIp(e.target.value),
@@ -256,14 +259,14 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
 
               {isps.length > 0 && (
                 <div className="flex flex-1 flex-col gap-2">
-                  <span className="text-text-primary text-sm font-medium">Provider</span>
+                  <span className="text-text-primary text-sm font-medium">{t('buy.provider')}</span>
                   {renderSelect(selectedIsp, (e) => setSelectedIsp(e.target.value), isps, true)}
                 </div>
               )}
 
               {states.length > 0 && (
                 <div className="flex flex-1 flex-col gap-2">
-                  <span className="text-text-primary text-sm font-medium">State</span>
+                  <span className="text-text-primary text-sm font-medium">{t('buy.state')}</span>
                   {renderSelect(
                     selectedState,
                     (e) => setSelectedState(e.target.value),
@@ -281,14 +284,16 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
                     checked={randomUsername}
                     onChange={(e) => setRandomUsername(e.target.checked)}
                   />
-                  <span className="text-text-primary text-sm font-medium">Random Username</span>
+                  <span className="text-text-primary text-sm font-medium">
+                    {t('buy.randomUsername')}
+                  </span>
                 </div>
                 {!randomUsername && (
                   <input
                     type="text"
                     value={usernameInput}
                     onChange={(e) => setUsernameInput(e.target.value)}
-                    placeholder="Custom username"
+                    placeholder={t('buy.customUsername')}
                   />
                 )}
               </label>
@@ -299,14 +304,16 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
                     checked={randomPassword}
                     onChange={(e) => setRandomPassword(e.target.checked)}
                   />
-                  <span className="text-text-primary text-sm font-medium">Random Password</span>
+                  <span className="text-text-primary text-sm font-medium">
+                    {t('buy.randomPassword')}
+                  </span>
                 </div>
                 {!randomPassword && (
                   <input
                     type="text"
                     value={passwordInput}
                     onChange={(e) => setPasswordInput(e.target.value)}
-                    placeholder="Custom password"
+                    placeholder={t('buy.customPassword')}
                   />
                 )}
               </label>
@@ -317,7 +324,9 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
                     checked={randomPort}
                     onChange={(e) => setRandomPort(e.target.checked)}
                   />
-                  <span className="text-text-primary text-sm font-medium">Random Port</span>
+                  <span className="text-text-primary text-sm font-medium">
+                    {t('buy.randomPort')}
+                  </span>
                 </div>
                 {!randomPort && (
                   <input
@@ -331,11 +340,11 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
             </div>
 
             <label className="flex flex-1 flex-col gap-2">
-              <span className="text-text-primary text-sm font-medium">Note</span>
+              <span className="text-text-primary text-sm font-medium">{t('buy.note')}</span>
               <textarea
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
-                placeholder="Enter note"
+                placeholder={t('buy.enterNote')}
                 className="h-full min-h-0 resize-none"
               />
             </label>
@@ -345,25 +354,25 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
         {/* Right Summary Panel */}
         <div className="bg-surface border-border flex w-full shrink-0 flex-col justify-between rounded-b-xl p-6 md:w-[380px] md:rounded-r-xl md:rounded-bl-none md:border-l md:p-8">
           <div className="flex flex-col gap-6">
-            <h2 className="text-lg font-bold">Order Summary</h2>
+            <h2 className="text-lg font-bold">{t('buy.orderSummary')}</h2>
             <div className="flex flex-col gap-4">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-text-muted">Original Price</span>
+                <span className="text-text-muted">{t('buy.originalPrice')}</span>
                 <span className="font-medium">{summary.original_price}</span>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-text-muted">Discount</span>
+                <span className="text-text-muted">{t('buy.discount')}</span>
                 <span className="font-medium text-green-500">
                   {summary.discount && `-${summary.discount}`}
                 </span>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-text-muted">Coupon</span>
+                <span className="text-text-muted">{t('buy.coupon')}</span>
                 <span className="font-medium text-green-500">{summary.coupon}</span>
               </div>
               <div className="bg-border my-1 h-px"></div>
               <div className="flex items-center justify-between text-base">
-                <span className="font-bold">Total to Pay</span>
+                <span className="font-bold">{t('buy.totalToPay')}</span>
                 <h1 className="font-bold">{summary.must_pay}</h1>
               </div>
               {summary.warning && (
@@ -373,7 +382,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
 
             <div className="flex flex-col gap-2 pt-2">
               <label className="text-text-muted text-xs font-medium tracking-wider uppercase">
-                Discount Code
+                {t('buy.discountCode')}
               </label>
               <div className="flex gap-2">
                 <input
@@ -399,7 +408,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
                   onClick={() => setAutoRenew(!autoRenew)}
                   className="text-text-primary cursor-pointer text-sm font-medium select-none"
                 >
-                  Auto Renew
+                  {t('buy.autoRenew')}
                 </span>
               </div>
               <div className="flex items-start gap-2">
@@ -408,7 +417,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
                   onClick={() => setAgreeTerms(!agreeTerms)}
                   className="text-text-primary cursor-pointer text-sm font-medium select-none"
                 >
-                  Agree to our terms of service.
+                  {t('buy.agreeTerms')}
                 </span>
               </div>
             </div>
@@ -424,7 +433,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
                   : 'bg-bg-getInfo hover:brightness-(--highlight-brightness)'
               }`}
             >
-              <span>Pay Now</span>
+              <span>{t('buy.payNow')}</span>
               <svg
                 className="h-5 w-5 group-hover:translate-x-1"
                 fill="none"
@@ -443,7 +452,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
               onClick={onClose}
               className="text-text-muted hover:text-text-primary h-12 w-full rounded-lg bg-transparent font-medium transition-colors"
             >
-              Cancel
+              {t('buy.cancel')}
             </button>
           </div>
         </div>

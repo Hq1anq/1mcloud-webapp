@@ -100,6 +100,7 @@ const Table = forwardRef(function Table(
     selectedIds = new Set(),
     title,
     headers,
+    headerLabels,
     operatorConfig,
     extraBtn,
     emptyMessage,
@@ -214,8 +215,8 @@ const Table = forwardRef(function Table(
   // Deselect effect removed; controlled via selectedIds parent state.
 
   const virtuosoContext = useMemo(() => {
-    return { selectedIds, headers, rowClassMap, handleSelectRow }
-  }, [selectedIds, headers, rowClassMap, handleSelectRow])
+    return { selectedIds, headers, headerLabels, rowClassMap, handleSelectRow }
+  }, [selectedIds, headers, headerLabels, rowClassMap, handleSelectRow])
 
   const fixedHeader = useMemo(() => {
     const toggleOperator = (header) => {
@@ -310,7 +311,7 @@ const Table = forwardRef(function Table(
                 <span
                   className={['ip_port', 'note'].includes(header) ? 'text-left' : 'text-center'}
                 >
-                  {header.replace(/_/g, ' ')}
+                  {headerLabels?.[header] || header.replace(/_/g, ' ')}
                 </span>
                 {useFilter && (
                   <div className="relative">
@@ -347,6 +348,7 @@ const Table = forwardRef(function Table(
   }, [
     title,
     headers,
+    headerLabels,
     useFilter,
     operatorConfig,
     selectedIds.size,
@@ -389,10 +391,14 @@ const Table = forwardRef(function Table(
               <div className="flex items-center gap-3 sm:gap-5">
                 <div className="flex flex-col gap-1 sm:flex-row sm:gap-5">
                   <span className="text-right whitespace-nowrap">
-                    Selected: <span id="selectedCount">{selectedIds.size}</span> rows
+                    {headerLabels?._selected || 'Selected'}:{' '}
+                    <span id="selectedCount">{selectedIds.size}</span>{' '}
+                    {headerLabels?._rows || 'rows'}
                   </span>
                   <span className="text-right whitespace-nowrap">
-                    Total: <span id="totalCount">{filteredData.length}</span> rows
+                    {headerLabels?._total || 'Total'}:{' '}
+                    <span id="totalCount">{filteredData.length}</span>{' '}
+                    {headerLabels?._rows || 'rows'}
                   </span>
                 </div>
                 {extraBtn && <span data-capture-ignore>{extraBtn}</span>}

@@ -1,8 +1,10 @@
 import { useState, useCallback } from 'react'
 import { createPortal } from 'react-dom'
+import { useTranslation } from '../../i18n'
 
 export default function CaptureViewer({ dataUrl, onClose }) {
   const [closing, setClosing] = useState(false)
+  const t = useTranslation()
 
   const handleClose = useCallback(() => {
     setClosing(true)
@@ -33,9 +35,9 @@ export default function CaptureViewer({ dataUrl, onClose }) {
       />
       <button
         onClick={handleDownload}
-        className="bg-bg-getData mt-4 cursor-pointer rounded-lg px-5 py-2 text-base font-semibold hover:brightness-(--highlight-brightness)"
+        className="mt-4 cursor-pointer rounded-lg bg-blue-600 px-5 py-2 text-base font-semibold hover:brightness-(--highlight-brightness)"
       >
-        Download
+        {t('dialog.download')}
       </button>
     </div>,
     document.body

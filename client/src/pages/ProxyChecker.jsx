@@ -6,6 +6,7 @@ import axiosInstance from '../lib/axios'
 import { useState, useCallback, useRef } from 'react'
 import { useToast } from '../context/ToastContext'
 import { parseProxy } from '../lib/utils'
+import { useTranslation } from '../i18n'
 
 export default function ProxyChecker() {
   const tableRef = useRef(null)
@@ -18,18 +19,19 @@ export default function ProxyChecker() {
   const { addToast, removeToast } = useToast()
   const { safeCopy } = useSafeCopy()
   const { handleCapture, captureUI } = useCapture(tableRef)
+  const t = useTranslation()
 
   const handleCheck = useCallback(async () => {
     const trimmed = proxyInput.trim()
     if (!trimmed || isChecking) {
-      addToast('Please enter at least one proxy', 'warning')
+      addToast(t('checker.enterProxy'), 'warning')
       return
     }
 
     const proxies = trimmed.split('\n').map(parseProxy).filter(Boolean)
     console.log(proxies)
     if (proxies.length === 0) {
-      addToast('No proxy found', 'warning')
+      addToast(t('checker.noProxyFound'), 'warning')
       return
     }
 
@@ -40,7 +42,7 @@ export default function ProxyChecker() {
     let activeCount = 0
     let inactiveCount = 0
 
-    const loadingId = addToast('Checking proxies...', 'loading')
+    const loadingId = addToast(t('checker.checkingProxies'), 'loading')
     try {
       await axiosInstance.post(
         '/check',
@@ -78,29 +80,36 @@ export default function ProxyChecker() {
         if (inactiveCount === 0)
           addToast(
             <>
-              Check completed <br />
-              <span className="text-text-toast-success">{activeCount} active</span>
+              {t('checker.checkCompleted')} <br />
+              <span className="text-text-toast-success">
+                {activeCount} {t('checker.active')}
+              </span>
             </>,
             'success'
           )
         else
           addToast(
             <>
-              Check completed <br />
-              <span className="text-text-toast-success">{activeCount} active</span>,{' '}
-              <span className="text-text-toast-error">{inactiveCount} inactive</span>
+              {t('checker.checkCompleted')} <br />
+              <span className="text-text-toast-success">
+                {activeCount} {t('checker.active')}
+              </span>
+              ,{' '}
+              <span className="text-text-toast-error">
+                {inactiveCount} {t('checker.inactive')}
+              </span>
             </>,
             'success'
           )
       }
     } catch (err) {
       console.error('Proxy check failed:', err)
-      addToast('Proxy check failed', 'error')
+      addToast(t('checker.checkFailed'), 'error')
     } finally {
       setIsChecking(false)
       removeToast(loadingId)
     }
-  }, [proxyType, proxyInput, isChecking, addToast, removeToast])
+  }, [proxyType, proxyInput, isChecking, addToast, removeToast, t])
 
   const handleSelectByStatus = useCallback(
     (status) => {
@@ -124,13 +133,14 @@ export default function ProxyChecker() {
         ok &&
         addToast(
           <>
-            Copied <span className="text-text-toast-success">{selectedRows.length}</span> IP to
-            clipboard
+            {t('manager.copied')}{' '}
+            <span className="text-text-toast-success">{selectedRows.length}</span>{' '}
+            {t('checker.copiedIp')}
           </>,
           'success'
         )
     )
-  }, [selectedRows, safeCopy, addToast])
+  }, [selectedRows, safeCopy, addToast, t])
 
   const handleCopyFullProxy = useCallback(() => {
     if (selectedRows.length === 0) return
@@ -142,13 +152,14 @@ export default function ProxyChecker() {
         ok &&
         addToast(
           <>
-            Copied <span className="text-text-toast-success">{selectedRows.length}</span> proxy to
-            clipboard
+            {t('manager.copied')}{' '}
+            <span className="text-text-toast-success">{selectedRows.length}</span>{' '}
+            {t('checker.copiedProxy')}
           </>,
           'success'
         )
     )
-  }, [selectedRows, safeCopy, addToast])
+  }, [selectedRows, safeCopy, addToast, t])
 
   return (
     <div>
@@ -169,7 +180,7 @@ export default function ProxyChecker() {
                       >
                         <path d="M160 96C124.7 96 96 124.7 96 160L96 224C96 259.3 124.7 288 160 288L480 288C515.3 288 544 259.3 544 224L544 160C544 124.7 515.3 96 480 96L160 96zM376 168C389.3 168 400 178.7 400 192C400 205.3 389.3 216 376 216C362.7 216 352 205.3 352 192C352 178.7 362.7 168 376 168zM432 192C432 178.7 442.7 168 456 168C469.3 168 480 178.7 480 192C480 205.3 469.3 216 456 216C442.7 216 432 205.3 432 192zM160 352C124.7 352 96 380.7 96 416L96 480C96 515.3 124.7 544 160 544L480 544C515.3 544 544 515.3 544 480L544 416C544 380.7 515.3 352 480 352L160 352zM376 424C389.3 424 400 434.7 400 448C400 461.3 389.3 472 376 472C362.7 472 352 461.3 352 448C352 434.7 362.7 424 376 424zM432 448C432 434.7 442.7 424 456 424C469.3 424 480 434.7 480 448C480 461.3 469.3 472 456 472C442.7 472 432 461.3 432 448z" />
                       </svg>
-                      Proxy List (ip:port:username:password)
+                      {t('checker.proxyList')}
                     </label>
                     <button
                       className="bg-bg-pause flex items-center justify-center rounded-lg px-2 py-1 font-medium hover:brightness-(--highlight-brightness)"
@@ -182,7 +193,7 @@ export default function ProxyChecker() {
                       >
                         <path d="M232.7 69.9L224 96L128 96C110.3 96 96 110.3 96 128C96 145.7 110.3 160 128 160L512 160C529.7 160 544 145.7 544 128C544 110.3 529.7 96 512 96L416 96L407.3 69.9C402.9 56.8 390.7 48 376.9 48L263.1 48C249.3 48 237.1 56.8 232.7 69.9zM512 208L128 208L149.1 531.1C150.7 556.4 171.7 576 197 576L443 576C468.3 576 489.3 556.4 490.9 531.1L512 208z" />
                       </svg>
-                      Delete
+                      {t('checker.delete')}
                     </button>
                   </div>
                   <textarea
@@ -206,7 +217,7 @@ export default function ProxyChecker() {
                     >
                       <path d="M480 272C480 317.9 465.1 360.3 440 394.7L566.6 521.4C579.1 533.9 579.1 554.2 566.6 566.7C554.1 579.2 533.8 579.2 521.3 566.7L394.7 440C360.3 465.1 317.9 480 272 480C157.1 480 64 386.9 64 272C64 157.1 157.1 64 272 64C386.9 64 480 157.1 480 272zM272 416C351.5 416 416 351.5 416 272C416 192.5 351.5 128 272 128C192.5 128 128 192.5 128 272C128 351.5 192.5 416 272 416z" />
                     </svg>
-                    Check Proxy
+                    {t('checker.checkProxy')}
                   </label>
                   <label className="text-text-primary flex items-center font-medium">
                     <svg
@@ -216,7 +227,7 @@ export default function ProxyChecker() {
                     >
                       <path d="M96 128C83.1 128 71.4 135.8 66.4 147.8C61.4 159.8 64.2 173.5 73.4 182.6L256 365.3L256 480C256 488.5 259.4 496.6 265.4 502.6L329.4 566.6C338.6 575.8 352.3 578.5 364.3 573.5C376.3 568.5 384 556.9 384 544L384 365.3L566.6 182.7C575.8 173.5 578.5 159.8 573.5 147.8C568.5 135.8 556.9 128 544 128L96 128z" />
                     </svg>
-                    Proxy Type
+                    {t('checker.proxyType')}
                   </label>
                   <button
                     onClick={handleCheck}
@@ -256,7 +267,7 @@ export default function ProxyChecker() {
                         <path d="M187.2 100.9C174.8 94.1 159.8 94.4 147.6 101.6C135.4 108.8 128 121.9 128 136L128 504C128 518.1 135.5 531.2 147.6 538.4C159.7 545.6 174.8 545.9 187.2 539.1L523.2 355.1C536 348.1 544 334.6 544 320C544 305.4 536 291.9 523.2 284.9L187.2 100.9z" />
                       </svg>
                     )}
-                    {isChecking ? 'Checking...' : 'Check Now'}
+                    {isChecking ? t('checker.checking') : t('checker.checkNow')}
                   </button>
                   <DropDown
                     options={['AUTO', 'HTTP', 'SOCKS5']}
@@ -279,7 +290,7 @@ export default function ProxyChecker() {
                     >
                       <path d="M288 64C252.7 64 224 92.7 224 128L224 384C224 419.3 252.7 448 288 448L480 448C515.3 448 544 419.3 544 384L544 183.4C544 166 536.9 149.3 524.3 137.2L466.6 81.8C454.7 70.4 438.8 64 422.3 64L288 64zM160 192C124.7 192 96 220.7 96 256L96 512C96 547.3 124.7 576 160 576L352 576C387.3 576 416 547.3 416 512L416 496L352 496L352 512L160 512L160 256L176 256L176 192L160 192z" />
                     </svg>
-                    Copy IP
+                    {t('checker.copyIp')}
                   </button>
 
                   <button
@@ -293,7 +304,7 @@ export default function ProxyChecker() {
                     >
                       <path d="M288 64C252.7 64 224 92.7 224 128L224 384C224 419.3 252.7 448 288 448L480 448C515.3 448 544 419.3 544 384L544 183.4C544 166 536.9 149.3 524.3 137.2L466.6 81.8C454.7 70.4 438.8 64 422.3 64L288 64zM160 192C124.7 192 96 220.7 96 256L96 512C96 547.3 124.7 576 160 576L352 576C387.3 576 416 547.3 416 512L416 496L352 496L352 512L160 512L160 256L176 256L176 192L160 192z" />
                     </svg>
-                    Copy Full Proxy
+                    {t('checker.copyFullProxy')}
                   </button>
 
                   {/* Selection buttons*/}
@@ -308,7 +319,7 @@ export default function ProxyChecker() {
                     >
                       <path d="M320 576C178.6 576 64 461.4 64 320C64 178.6 178.6 64 320 64C461.4 64 576 178.6 576 320C576 461.4 461.4 576 320 576zM438 209.7C427.3 201.9 412.3 204.3 404.5 215L285.1 379.2L233 327.1C223.6 317.7 208.4 317.7 199.1 327.1C189.8 336.5 189.7 351.7 199.1 361L271.1 433C276.1 438 282.9 440.5 289.9 440C296.9 439.5 303.3 435.9 307.4 430.2L443.3 243.2C451.1 232.5 448.7 217.5 438 209.7z" />
                     </svg>
-                    Select Active
+                    {t('checker.selectActive')}
                   </button>
 
                   <button
@@ -322,7 +333,7 @@ export default function ProxyChecker() {
                     >
                       <path d="M320 576C461.4 576 576 461.4 576 320C576 178.6 461.4 64 320 64C178.6 64 64 178.6 64 320C64 461.4 178.6 576 320 576zM231 231C240.4 221.6 255.6 221.6 264.9 231L319.9 286L374.9 231C384.3 221.6 399.5 221.6 408.8 231C418.1 240.4 418.2 255.6 408.8 264.9L353.8 319.9L408.8 374.9C418.2 384.3 418.2 399.5 408.8 408.8C399.4 418.1 384.2 418.2 374.9 408.8L319.9 353.8L264.9 408.8C255.5 418.2 240.3 418.2 231 408.8C221.7 399.4 221.6 384.2 231 374.9L286 319.9L231 264.9C221.6 255.5 221.6 240.3 231 231z" />
                     </svg>
-                    Select Inactive
+                    {t('checker.selectInactive')}
                   </button>
                 </div>
               </div>
@@ -332,10 +343,18 @@ export default function ProxyChecker() {
       </div>
       <Table
         data={results}
-        title="Proxy Status"
+        title={t('checker.proxyStatus')}
         useFilter={false}
         className="text-base sm:text-lg"
         headers={['ip', 'port', 'username', 'password', 'type', 'country', 'status']}
+        headerLabels={{
+          type: t('table.type'),
+          country: t('table.country'),
+          status: t('table.status'),
+          _selected: t('table.selected'),
+          _total: t('table.total'),
+          _rows: t('table.rows'),
+        }}
         selectedIds={selectedIds}
         ref={tableRef}
         extraBtn={
@@ -369,8 +388,9 @@ export default function ProxyChecker() {
                 <path d="M21.7,6.2c0,0.4-0.4,0.8-0.8,0.8s-0.8-0.4-0.8-0.8s0.4-0.8,0.8-0.8S21.7,5.8,21.7,6.2z" />
               </svg>
               <p className="text-text-muted text-base select-none md:text-xl">
-                No proxy to check <br />
-                Enter your proxy and click <span className="text-highlight">Check Now</span>
+                {t('checker.noProxyToCheck')} <br />
+                {t('checker.enterAndClick')}{' '}
+                <span className="text-highlight">{t('checker.checkNow')}</span>
               </p>
             </div>
           )

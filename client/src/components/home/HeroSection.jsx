@@ -1,4 +1,8 @@
+import { useTranslation } from '../../i18n'
+
 export default function HeroSection() {
+  const t = useTranslation()
+
   return (
     <section
       id="hero"
@@ -15,28 +19,26 @@ export default function HeroSection() {
                   <span className="bg-primary absolute inline-flex h-full w-full animate-ping rounded-full opacity-75" />
                   <span className="bg-primary relative inline-flex h-2 w-2 rounded-full" />
                 </span>
-                HẠ TẦNG THẾ HỆ MỚI
+                {t('hero.badge')}
               </div>
 
               {/* Heading */}
               <h1 className="text-text-primary text-4xl leading-tight font-black tracking-tight md:text-5xl lg:text-6xl">
-                Hạ tầng VPS &amp; Proxy <br className="hidden lg:block" />
-                <span className="text-text-title">hiệu năng cao,</span>
+                {t('hero.heading1')} <br className="hidden lg:block" />
+                <span className="text-text-title">{t('hero.heading2')}</span>
                 <br />
-                kiểm soát toàn diện
+                {t('hero.heading3')}
               </h1>
 
               {/* Subtitle */}
               <p className="mx-auto max-w-2xl leading-relaxed font-normal lg:mx-0">
-                Hệ thống mạnh mẽ với đa dạng CPU: Intel Xeon E5, Gold & AMD, ổ cứng NVMe tốc độ cao
-                và đường truyền mạng 1 Gbps ổn định. Giải pháp tối ưu hiệu năng cho mọi nhu cầu phát
-                triển ứng dụng và automation.
+                {t('hero.subtitle')}
               </p>
             </div>
 
             {/* Feature Checks */}
             <div className="home-animate-fade-up-delay-1 flex flex-col justify-center gap-4 pt-4 sm:flex-row lg:justify-start">
-              {['VPS NVMe Gen4', 'Proxy SOCKS5/HTTPS', 'Hỗ trợ kỹ thuật 24/7'].map((label) => (
+              {[t('hero.feature1'), t('hero.feature2'), t('hero.feature3')].map((label) => (
                 <div key={label} className="flex items-center gap-2">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -120,7 +122,7 @@ export default function HeroSection() {
                     </svg>
                   </div>
                   <div>
-                    <p className="text-xs font-semibold uppercase">Tốc độ mạng</p>
+                    <p className="text-xs font-semibold uppercase">{t('hero.networkSpeed')}</p>
                     <p className="text-text-primary text-sm font-bold sm:text-base">
                       10 Gbps Uplink
                     </p>
@@ -138,7 +140,7 @@ export default function HeroSection() {
                     </svg>
                   </div>
                   <div>
-                    <p className="text-xs font-semibold uppercase">Uptime</p>
+                    <p className="text-xs font-semibold uppercase">{t('hero.uptime')}</p>
                     <p className="text-text-primary text-sm font-bold sm:text-base">99.99%</p>
                   </div>
                 </div>

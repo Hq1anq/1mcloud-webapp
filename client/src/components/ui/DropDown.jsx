@@ -23,10 +23,10 @@ export default function DropDown({ options, value, onChange, className }) {
   }
 
   return (
-    <div className="relative flex" ref={containerRef}>
+    <div className="text-text-secondary relative flex" ref={containerRef}>
       {/* Trigger */}
       <button
-        className={`bg-dropdown text-text-secondary flex w-full items-center justify-between border-0 px-3 py-2 focus:outline-none ${className || ''}`}
+        className={`bg-dropdown flex w-full items-center justify-between border-0 px-3 py-2 focus:outline-none ${className || ''}`}
         onClick={() => setOpen(!open)}
       >
         <span>{value}</span>
@@ -47,13 +47,13 @@ export default function DropDown({ options, value, onChange, className }) {
 
       {/* Dropdown Menu */}
       <div
-        className={`absolute top-full right-0 z-50 mt-1 w-full overflow-hidden rounded-lg border-0 shadow-lg ${open ? 'translate-y-0 scale-100 opacity-100' : 'pointer-events-none -translate-y-3 scale-95 opacity-0'}`}
+        className={`scroll-container absolute top-full right-0 z-50 mt-1 max-h-60 w-full overflow-y-auto rounded-lg border-0 shadow-lg ${open ? 'translate-y-0 scale-100 opacity-100' : 'pointer-events-none -translate-y-3 scale-95 opacity-0'}`}
       >
         {options.map((option) => (
           <div
             key={option}
             onClick={() => handleSelect(option)}
-            className={`bg-dropdown text-text-secondary cursor-pointer px-3 py-2 hover:brightness-110 ${option === value ? 'font-bold brightness-125' : ''}`}
+            className={`bg-dropdown cursor-pointer px-3 py-2 hover:brightness-125 ${option === value ? 'font-bold brightness-150' : ''}`}
           >
             {option}
           </div>

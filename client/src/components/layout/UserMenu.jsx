@@ -24,7 +24,7 @@ const SvgSun = () => (
   </svg>
 )
 
-const ThemeToggle = ({ compact = false }) => {
+const ThemeToggle = () => {
   const { theme, toggleTheme } = useThemeStore()
 
   const handleToggle = (e) => {

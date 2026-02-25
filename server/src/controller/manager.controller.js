@@ -57,39 +57,94 @@ export async function list(req, res) {
   }
 }
 
+export async function support(req, res) {
+  const url = `${process.env.BASE_URL}/server/proxy/support`;
+  const { nation } = req.query;
+  const headers = { ...HEADERS, authorization: `Bearer ${req.token}` };
+
+  const params = new URLSearchParams({
+    nation: nation,
+  });
+
+  try {
+    const response = await fetch(`${url}?${params.toString()}`, {
+      method: "GET",
+      headers,
+    });
+
+    if (!response.ok) {
+      console.error(`Failed to GET SUPPORT:`, response.status);
+      return res.status(response.status).json({
+        success: false,
+        error: "GET SUPPORT request failed",
+      });
+    }
+
+    const data = await response.json();
+    return res.json({ success: true, info: data });
+  } catch (error) {
+    console.error("Failed to GET SUPPORT", error.message);
+    return res
+      .status(500)
+      .json({ success: false, error: "Internal server error" });
+  }
+}
+
 export async function create(req, res) {
   const {
+    duration,
     quantity,
-    note,
-    rangeIp = "Ngẫu nhiên",
+    os_id,
     nation,
-    type = "proxy_https",
+    proxy_type,
+    random_username,
+    random_password,
+    random_remote_port,
+    username,
+    password,
+    remote_port,
+    range_ip,
+    note,
+    install_chrome,
+    install_firefox,
+    isp,
+    state,
+    coupon,
+    auto_renew,
   } = req.body;
-  const url = `${process.env.BASE_URL}/server/create`;
 
+  const url = `${process.env.BASE_URL}/server/create`;
   const headers = { ...HEADERS, authorization: `Bearer ${req.token}` };
+
+  const payload = {
+    plan_id: 0,
+    duration: Number(duration) || 1,
+    quantity: Number(quantity) || 1,
+    auto_renew: Boolean(auto_renew),
+    os_id: Number(os_id) || 1,
+    random_username: Boolean(random_username),
+    random_password: Boolean(random_password),
+    random_remote_port: Boolean(random_remote_port),
+    install_chrome: Boolean(install_chrome),
+    install_firefox: Boolean(install_firefox),
+    note: note || "",
+    range_ip: range_ip || "Ngẫu nhiên",
+    nation: nation || "VN",
+    coupon: coupon || undefined,
+    remote_port: random_remote_port ? undefined : remote_port,
+    username: random_username ? undefined : username,
+    password: random_password ? undefined : password,
+    state: state || undefined,
+    isp: isp || undefined,
+    proxy_type: proxy_type || "proxy_https",
+    is_proxy: true,
+  };
 
   try {
     const response = await fetch(url, {
       method: "POST",
       headers,
-      body: JSON.stringify({
-        plan_id: 0,
-        duration: 1,
-        auto_renew: false,
-        quantity: quantity,
-        os_id: 1,
-        random_password: true,
-        random_remote_port: true,
-        install_chrome: false,
-        install_firefox: false,
-        note: note,
-        range_ip: rangeIp,
-        nation: nation,
-        provider: "Ngẫu nhiên",
-        proxy_type: type,
-        is_proxy: true,
-      }),
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
@@ -102,7 +157,8 @@ export async function create(req, res) {
 
     const json = await response.json();
     const servers = json.servers || [];
-    const serverType = type === "proxy_https" ? "HTTPS Proxy" : "SOCKS5 Proxy";
+    const serverType =
+      proxy_type === "proxy_https" ? "HTTPS Proxy" : "SOCKS5 Proxy";
 
     const today = new Date();
     const expiredDate = new Date(today);
@@ -125,17 +181,12 @@ export async function create(req, res) {
       ip_changed: 0,
       status: "Running",
       note: note,
+      user_pass: `${server.username}:${server.password}`,
     }));
-
-    const proxyInfo = servers.map(
-      (server) =>
-        `${server.ip}:${server.remote_port}:${server.username}:${server.password}`,
-    );
 
     return res.json({
       success: true,
       data: tableData,
-      info: proxyInfo,
     });
   } catch (error) {
     console.error("Failed to BUY PROXY", error.message);
@@ -147,7 +198,7 @@ export async function create(req, res) {
 }
 
 export async function calculate(req, res) {
-  const { quantity, nation } = req.body;
+  const { quantity, duration, nation } = req.body;
   const url = `${process.env.BASE_URL}/server/create/calculate`;
   const headers = { ...HEADERS, authorization: `Bearer ${req.token}` };
 
@@ -159,7 +210,7 @@ export async function calculate(req, res) {
         plan_id: 0,
         nation: nation,
         quantity: quantity,
-        duration: 1,
+        duration: duration,
         is_proxy: true,
       }),
     });
@@ -401,6 +452,40 @@ export async function renew(req, res) {
     res.json({ success: true, result: data.result });
   } catch (error) {
     console.error(`Failed to RENEW for sid: ${sids}`, error.message);
+    res
+      .status(500)
+      .json({ success: false, error: "Internal server error", sids });
+  }
+}
+
+export async function renewCalculate(req, res) {
+  const { sids, month = 1 } = req.body;
+  const url = `${process.env.BASE_URL}/server/renew/calculate`;
+  const headers = { ...HEADERS, authorization: `Bearer ${req.token}` };
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ sid: sids, month: month }),
+    });
+
+    if (!response.ok) {
+      console.error(
+        `Failed to RENEW CALCULATE for sids: ${sids}:`,
+        response.status,
+      );
+      return res.status(response.status).json({
+        success: false,
+        error: "Request failed",
+        sids,
+      });
+    }
+
+    const data = await response.json();
+    res.json({ success: true, result: data.result });
+  } catch (error) {
+    console.error(`Failed to RENEW CALCULATE for sid: ${sids}`, error.message);
     res
       .status(500)
       .json({ success: false, error: "Internal server error", sids });

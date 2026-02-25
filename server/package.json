@@ -19,7 +19,9 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "@maxmind/geoip2-node": "^6.3.4",
     "cors": "^2.8.6",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "socks-proxy-agent": "^8.0.5"
   }
 }

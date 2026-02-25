@@ -1,11 +1,12 @@
 import DropDown from '../components/ui/DropDown'
 import Table from '../components/ui/Table'
-import CopyDialog from '../components/dialog/CopyDialog'
+import BuyProxyDialog from '../components/dialog/BuyProxyDialog'
 import axiosInstance from '../lib/axios'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useToast } from '../context/ToastContext'
 import { extractIP, randomDelay } from '../lib/utils'
-import useSafeCopy from '../hooks/useSafeCopy'
+import { useSafeCopy } from '../context/SafeCopyContext'
+import { useConfirm } from '../context/ConfirmContext'
 
 const OPERATOR_CONFIG = {
   sid: ['greater-equal', 'less-equal', 'equal', 'contain'],
@@ -13,9 +14,9 @@ const OPERATOR_CONFIG = {
   expired: ['greater-equal', 'less-equal', 'contain'],
 }
 
-const STORAGE_KEY = 'proxyManager_origin'
+const STORAGE_KEY = 'proxyManager_data'
 
-function loadOrigin() {
+function loadData() {
   try {
     const stored = localStorage.getItem(STORAGE_KEY)
     return stored ? JSON.parse(stored) : []
@@ -24,30 +25,30 @@ function loadOrigin() {
   }
 }
 
-function saveOrigin(data) {
+function saveData(data) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
 }
 
-/** Merge target into origin by sid, preserving user_pass from origin */
-function mergeTargetIntoOrigin(origin, target) {
-  const originMap = new Map(origin.map((row) => [row.sid, row]))
+/** Merge res into data by sid, preserving user_pass from data */
+function mergeResIntoData(data, res) {
+  const dataMap = new Map(data.map((row) => [row.sid, row]))
 
-  for (const targetRow of target) {
-    const existingRow = originMap.get(targetRow.sid)
+  for (const resRow of res) {
+    const existingRow = dataMap.get(resRow.sid)
     if (existingRow) {
-      // Update all columns from target, but keep user_pass from origin
+      // Update all columns from res, but keep user_pass from data
       const userPass = existingRow.user_pass
-      Object.assign(existingRow, targetRow)
+      Object.assign(existingRow, resRow)
       if (userPass !== undefined) {
         existingRow.user_pass = userPass
       }
     } else {
-      // New row from target — add to origin
-      originMap.set(targetRow.sid, { ...targetRow })
+      // New row from res — add to data
+      dataMap.set(resRow.sid, { ...resRow })
     }
   }
 
-  return Array.from(originMap.values())
+  return Array.from(dataMap.values())
 }
 
 export default function ProxyManager() {
@@ -55,7 +56,9 @@ export default function ProxyManager() {
   const [changeIpType, setChangeIpType] = useState('HTTPS')
   const [selectedRows, setSelectedRows] = useState([])
   const { addToast, updateToast, removeToast } = useToast()
-  const { safeCopy, copyDialogProps } = useSafeCopy()
+  const { safeCopy } = useSafeCopy()
+  const { confirmAction } = useConfirm()
+  const [buyDialogOpen, setBuyDialogOpen] = useState(false)
 
   // Controlled input state
   const [ips, setIps] = useState('')
@@ -64,26 +67,25 @@ export default function ProxyManager() {
   const [reinstallInput, setReinstallInput] = useState('')
   const [changeIpInput, setChangeIpInput] = useState('')
 
-  // Origin: persistent data in localStorage (includes user_pass)
-  const [origin, setOrigin] = useState(loadOrigin)
-  // TableData: what renders in the table (target after GetData, origin on first load)
-  const [tableData, setTableData] = useState(loadOrigin)
-  // Increments on fresh getData to signal Table to reset filters
-  const [dataVersion, setDataVersion] = useState(0)
+  // persistent data in localStorage (includes user_pass)
+  const [data, setData] = useState(loadData)
+  // TableData: what renders in the table (receivedData after GetData, data on first load)
+  const [receivedData, setReceivedData] = useState(loadData)
+  const [renderingReceived, setRenderingReceived] = useState(false)
 
   // Action feedback state
   const [rowClassMap, setRowClassMap] = useState({})
-  const [deselectSids, setDeselectSids] = useState([])
+  const [selectedIds, setSelectedIds] = useState(new Set())
   const [isProcessing, setIsProcessing] = useState(false)
   const selectedRowsRef = useRef(selectedRows)
   useEffect(() => {
     selectedRowsRef.current = selectedRows
   }, [selectedRows])
 
-  // Save origin to localStorage whenever it changes
+  // Save data to localStorage whenever it changes
   useEffect(() => {
-    saveOrigin(origin)
-  }, [origin])
+    saveData(data)
+  }, [data])
 
   const handleGetData = useCallback(async () => {
     const parsedIps = ips
@@ -101,23 +103,26 @@ export default function ProxyManager() {
     try {
       const res = await axiosInstance.get('/server/list', { params })
 
-      const target = res.data?.data || []
+      const resData = res.data?.data || []
 
-      // Render target in the table
-      setTableData(target)
-      setDataVersion((v) => v + 1)
+      // Render resData in the table
+      setReceivedData(resData)
 
-      // Merge target into origin and persist
-      setOrigin((prev) => {
-        const merged = mergeTargetIntoOrigin(prev, target)
+      // Merge resData into data and persist
+      setData((prev) => {
+        const merged = mergeResIntoData(prev, resData)
         return merged
       })
 
       removeToast(loadingId)
       addToast(
-        `Loaded <span class="text-text-toast-success">${target.length}</span> rows`,
+        <>
+          Loaded <span className="text-text-toast-success">{resData.length}</span> rows
+        </>,
         'success'
       )
+      setRenderingReceived(true)
+      setSelectedIds(new Set())
     } catch (err) {
       console.error('[GetData] Error:', err.message)
       removeToast(loadingId)
@@ -125,13 +130,13 @@ export default function ProxyManager() {
     }
   }, [ips, amount, addToast, removeToast])
 
-  // ── Helper: update a single row in both tableData and origin by sid ──
+  // --- Helper: update a single row in both receivedData and data by sid ---
   const updateRowBySid = useCallback((sid, updater) => {
-    setTableData((prev) => prev.map((r) => (r.sid === sid ? { ...r, ...updater(r) } : r)))
-    setOrigin((prev) => prev.map((r) => (r.sid === sid ? { ...r, ...updater(r) } : r)))
+    setReceivedData((prev) => prev.map((r) => (r.sid === sid ? { ...r, ...updater(r) } : r)))
+    setData((prev) => prev.map((r) => (r.sid === sid ? { ...r, ...updater(r) } : r)))
   }, [])
 
-  // ── Sequential processor with per-row feedback ──
+  // --- Sequential processor with per-row feedback ---
   const processSequential = useCallback(
     async (rows, apiCallFn, actionName) => {
       if (rows.length === 0) {
@@ -140,13 +145,14 @@ export default function ProxyManager() {
       }
       setIsProcessing(true)
       setRowClassMap({})
-      setDeselectSids([])
       let successCount = 0
       let failCount = 0
 
       const total = rows.length
       const loadingId = addToast(
-        `${actionName} <span class="text-text-toast-success">1/${total}</span>`,
+        <>
+          {actionName} <span className="text-text-toast-success">1/{total}</span>
+        </>,
         'loading'
       )
 
@@ -166,11 +172,20 @@ export default function ProxyManager() {
           setRowClassMap((prev) => ({ ...prev, [row.sid]: 'bg-error-cell' }))
         }
         // Deselect this row
-        setDeselectSids((prev) => [...prev, row.sid])
+        setSelectedIds((prev) => {
+          const newSet = new Set(prev)
+          newSet.delete(row._index)
+          return newSet
+        })
         // Update progress toast
         updateToast(
           loadingId,
-          `${actionName} <span class="text-text-toast-success">${i + 2}/${total}</span>`
+          <>
+            {actionName}{' '}
+            <span className="text-text-toast-success">
+              {i + 2}/{total}
+            </span>
+          </>
         )
         // Random delay before next request
         if (i < rows.length - 1) await randomDelay()
@@ -180,26 +195,54 @@ export default function ProxyManager() {
       setIsProcessing(false)
       if (failCount === 0)
         addToast(
-          `${actionName} completed <br><span class="text-text-toast-success">${successCount} success</span>`,
+          <>
+            {actionName} completed <br />
+            <span className="text-text-toast-success">{successCount} success</span>
+          </>,
           'success'
         )
       else if (successCount === 0)
         addToast(
-          `${actionName} completed <br><span class="text-text-toast-error">${failCount} failed</span>`,
+          <>
+            {actionName} completed <br />
+            <span className="text-text-toast-error">{failCount} failed</span>
+          </>,
           'error'
         )
       else
         addToast(
-          `${actionName} completed <br><span class="text-text-toast-success">${successCount} success</span>, <span class="text-text-toast-error">${failCount} failed</span>`,
+          <>
+            {actionName} completed <br />
+            <span className="text-text-toast-success">{successCount} success</span>,{' '}
+            <span className="text-text-toast-error">{failCount} failed</span>
+          </>,
           failCount === 0 ? 'success' : 'error'
         )
     },
     [addToast, updateToast, removeToast]
   )
 
-  // ── Change IP handler ──
+  // --- Change IP handler ---
   const handleChangeIp = useCallback(async () => {
     const rows = [...selectedRowsRef.current]
+    if (rows.length === 0) {
+      addToast('No rows selected', 'warning')
+      return
+    }
+
+    const confirmed = await confirmAction({
+      title: 'Confirm Change IP',
+      infoText: (
+        <>
+          Type <span className="text-highlight font-bold">{changeIpType}</span>
+        </>
+      ),
+      isRenew: false,
+      selectedRows: rows,
+    })
+
+    if (!confirmed) return
+
     const type = changeIpType === 'HTTPS' ? 'proxy_https' : 'proxy_sock_5'
     const proxyResults = []
 
@@ -229,18 +272,63 @@ export default function ProxyManager() {
         (ok) =>
           ok &&
           addToast(
-            `Copied <span class="text-text-toast-success">${proxyResults.length}</span> proxy to clipboard`,
+            <>
+              Copied <span className="text-text-toast-success">{proxyResults.length}</span> proxy to
+              clipboard
+            </>,
             'success'
           )
       )
     }
-  }, [changeIpType, processSequential, updateRowBySid, safeCopy, addToast])
+  }, [changeIpType, confirmAction, processSequential, updateRowBySid, safeCopy, addToast])
 
-  // ── Reinstall handler ──
+  // --- Reinstall handler ---
   const handleReinstall = useCallback(async () => {
     const rows = [...selectedRowsRef.current]
+    if (rows.length === 0) {
+      addToast('No rows selected', 'warning')
+      return
+    }
+
+    let infoTextNode = 'Reinstall target'
+    let ip = '__',
+      port = '__',
+      user = '__',
+      pass = '__'
+
+    if (reinstallInput) {
+      const parts = reinstallInput.split(':')
+      if (parts.length >= 4) [ip, port, user, pass] = parts
+      else if (parts.length === 3) [port, user, pass] = parts
+      else if (parts.length === 2) [user, pass] = parts
+      else {
+        addToast('Invalid reinstall config', 'error')
+        return
+      }
+      infoTextNode = (
+        <>
+          Type <span className="text-highlight font-bold">{reinstallType} </span> {ip}:{port}:{user}
+          :{pass}
+        </>
+      )
+    } else {
+      infoTextNode = (
+        <>
+          Type <span className="text-highlight font-bold">{reinstallType}</span>
+        </>
+      )
+    }
+
+    const confirmed = await confirmAction({
+      title: 'Confirm Reinstall',
+      infoText: infoTextNode,
+      isRenew: false,
+      selectedRows: rows,
+    })
+
+    if (!confirmed) return
+
     const type = reinstallType === 'HTTPS' ? 'proxy_https' : 'proxy_sock_5'
-    const custom_info = reinstallInput || undefined
     const proxyResults = []
 
     await processSequential(
@@ -248,7 +336,7 @@ export default function ProxyManager() {
       async (row) => {
         const res = await axiosInstance.post('/server/reinstall', {
           sid: row.sid.toString(),
-          custom_info,
+          custom_info: reinstallInput || undefined,
           type,
         })
         if (res.data?.success) {
@@ -272,14 +360,25 @@ export default function ProxyManager() {
         (ok) =>
           ok &&
           addToast(
-            `Copied <span class="text-text-toast-success">${proxyResults.length}</span> proxy to clipboard`,
+            <>
+              Copied <span className="text-text-toast-success">{proxyResults.length}</span> proxy to
+              clipboard
+            </>,
             'success'
           )
       )
     }
-  }, [reinstallType, reinstallInput, processSequential, updateRowBySid, safeCopy, addToast])
+  }, [
+    reinstallType,
+    reinstallInput,
+    confirmAction,
+    processSequential,
+    updateRowBySid,
+    safeCopy,
+    addToast,
+  ])
 
-  // ── Change Note handler ──
+  // --- Change Note handler ---
   const handleChangeNote = useCallback(async () => {
     const rows = [...selectedRowsRef.current]
     const newNote = noteInput
@@ -300,7 +399,7 @@ export default function ProxyManager() {
     )
   }, [noteInput, processSequential, updateRowBySid])
 
-  // ── Pause handler (batch) ──
+  // --- Pause handler (batch) ---
   const handlePause = useCallback(async () => {
     const rows = [...selectedRowsRef.current]
     if (rows.length === 0) {
@@ -310,7 +409,6 @@ export default function ProxyManager() {
     const pausingId = addToast('Pausing...', 'loading')
     setIsProcessing(true)
     setRowClassMap({})
-    setDeselectSids([])
     const sids = rows.map((r) => r.sid).join(',')
 
     try {
@@ -322,18 +420,32 @@ export default function ProxyManager() {
           classUpdates[row.sid] = 'bg-success-cell'
         }
         setRowClassMap(classUpdates)
-        setDeselectSids(rows.map((r) => r.sid))
+        setSelectedIds((prev) => {
+          const newSet = new Set(prev)
+          for (const row of rows) newSet.delete(row._index)
+          return newSet
+        })
         addToast(
-          `PAUSE completed <br><span class="text-text-toast-success">${rows.length} success</span>`,
+          <>
+            PAUSE completed <br />
+            <span className="text-text-toast-success">{rows.length} success</span>
+          </>,
           'success'
         )
       } else {
         const classUpdates = {}
         for (const row of rows) classUpdates[row.sid] = 'bg-error-cell'
         setRowClassMap(classUpdates)
-        setDeselectSids(rows.map((r) => r.sid))
+        setSelectedIds((prev) => {
+          const newSet = new Set(prev)
+          for (const row of rows) newSet.delete(row._index)
+          return newSet
+        })
         addToast(
-          `PAUSE completed <br><span class="text-text-toast-error">${rows.length} failed</span>`,
+          <>
+            PAUSE completed <br />
+            <span className="text-text-toast-error">{rows.length} failed</span>
+          </>,
           'error'
         )
       }
@@ -341,17 +453,24 @@ export default function ProxyManager() {
       const classUpdates = {}
       for (const row of rows) classUpdates[row.sid] = 'bg-error-cell'
       setRowClassMap(classUpdates)
-      setDeselectSids(rows.map((r) => r.sid))
+      setSelectedIds((prev) => {
+        const newSet = new Set(prev)
+        for (const row of rows) newSet.delete(row._index)
+        return newSet
+      })
       addToast(
-        `PAUSE completed <br><span class="text-text-toast-error">${rows.length} failed</span>`,
+        <>
+          PAUSE completed <br />
+          <span className="text-text-toast-error">{rows.length} failed</span>
+        </>,
         'error'
       )
     }
     removeToast(pausingId)
     setIsProcessing(false)
-  }, [addToast, updateRowBySid])
+  }, [updateRowBySid, addToast, removeToast])
 
-  // ── Reboot handler (batch) ──
+  // --- Reboot handler (batch) ---
   const handleReboot = useCallback(async () => {
     const rows = [...selectedRowsRef.current]
     if (rows.length === 0) {
@@ -361,7 +480,6 @@ export default function ProxyManager() {
     const rebootingId = addToast('Rebooting...', 'loading')
     setIsProcessing(true)
     setRowClassMap({})
-    setDeselectSids([])
     const sids = rows.map((r) => r.sid).join(',')
 
     try {
@@ -373,18 +491,32 @@ export default function ProxyManager() {
           classUpdates[row.sid] = 'bg-success-cell'
         }
         setRowClassMap(classUpdates)
-        setDeselectSids(rows.map((r) => r.sid))
+        setSelectedIds((prev) => {
+          const newSet = new Set(prev)
+          for (const row of rows) newSet.delete(row._index)
+          return newSet
+        })
         addToast(
-          `REBOOT completed <br><span class="text-text-toast-success">${rows.length} success</span>`,
+          <>
+            REBOOT completed <br />
+            <span className="text-text-toast-success">{rows.length} success</span>
+          </>,
           'success'
         )
       } else {
         const classUpdates = {}
         for (const row of rows) classUpdates[row.sid] = 'bg-error-cell'
         setRowClassMap(classUpdates)
-        setDeselectSids(rows.map((r) => r.sid))
+        setSelectedIds((prev) => {
+          const newSet = new Set(prev)
+          for (const row of rows) newSet.delete(row._index)
+          return newSet
+        })
         addToast(
-          `REBOOT completed <br><span class="text-text-toast-error">${rows.length} failed</span>`,
+          <>
+            REBOOT completed <br />
+            <span className="text-text-toast-error">{rows.length} failed</span>
+          </>,
           'error'
         )
       }
@@ -392,15 +524,153 @@ export default function ProxyManager() {
       const classUpdates = {}
       for (const row of rows) classUpdates[row.sid] = 'bg-error-cell'
       setRowClassMap(classUpdates)
-      setDeselectSids(rows.map((r) => r.sid))
+      setSelectedIds((prev) => {
+        const newSet = new Set(prev)
+        for (const row of rows) newSet.delete(row._index)
+        return newSet
+      })
       addToast(
-        `REBOOT completed <br><span class="text-text-toast-error">${rows.length} failed</span>`,
+        <>
+          REBOOT completed <br />
+          <span className="text-text-toast-error">{rows.length} failed</span>
+        </>,
         'error'
       )
     }
     removeToast(rebootingId)
     setIsProcessing(false)
-  }, [addToast, updateRowBySid])
+  }, [updateRowBySid, addToast, removeToast])
+
+  const handleRenew = useCallback(async () => {
+    const rows = [...selectedRowsRef.current]
+    if (rows.length === 0) {
+      addToast('No rows selected', 'warning')
+      return
+    }
+
+    const renewDataOrConfirmed = await confirmAction({
+      title: 'Confirm Renew',
+      isRenew: true,
+      selectedRows: rows,
+    })
+
+    if (!renewDataOrConfirmed) return
+
+    // confirmAction resolves with truthy (the renewData payload if successful fetching occurred).
+    // If somehow it's just TRUE, we default to whatever we can.
+    const renewData = typeof renewDataOrConfirmed === 'object' ? renewDataOrConfirmed : null
+
+    const validRows = []
+    const invalidRows = []
+
+    rows.forEach((row) => {
+      const cleanIp = row.ip_port?.split(':')[0]
+      if (
+        renewData &&
+        renewData.success &&
+        renewData.success[cleanIp] &&
+        renewData.success[cleanIp].new_expired_day &&
+        renewData.success[cleanIp].new_expired_day !== '-'
+      ) {
+        validRows.push(row)
+      } else {
+        invalidRows.push(row)
+      }
+    })
+
+    setRowClassMap((prev) => {
+      const updates = { ...prev }
+      invalidRows.forEach((r) => {
+        updates[r.sid] = 'bg-error-cell'
+      })
+      return updates
+    })
+
+    if (validRows.length === 0) {
+      addToast('No valid proxies to renew.', 'warning')
+      return
+    }
+
+    const sids = validRows.map((r) => r.sid).join(',')
+    setIsProcessing(true)
+    const toastId = addToast('Renewing...', 'loading')
+
+    try {
+      const res = await axiosInstance.post('/server/renew', { sids: sids, month: 1 })
+
+      const resSuccess = res.data?.result?.success || {}
+
+      let successCount = 0
+      let failCount = invalidRows.length
+
+      const classUpdates = {}
+      for (const row of validRows) {
+        const cleanIp = row.ip_port?.split(':')[0]
+
+        if (resSuccess[cleanIp]) {
+          const newExpiredDay = renewData.success[cleanIp].new_expired_day
+          updateRowBySid(row.sid, () => ({
+            status: 'Running',
+            expired: newExpiredDay,
+          }))
+          classUpdates[row.sid] = 'bg-success-cell'
+          successCount++
+        } else {
+          classUpdates[row.sid] = 'bg-error-cell'
+          failCount++
+        }
+      }
+
+      setRowClassMap((prev) => ({ ...prev, ...classUpdates }))
+
+      // Deselect all processed rows
+      setSelectedIds((prev) => {
+        const newSet = new Set(prev)
+        for (const row of rows) newSet.delete(row._index)
+        return newSet
+      })
+
+      if (successCount > 0 && failCount === 0) {
+        addToast(
+          <>
+            RENEW completed <br />
+            <span className="text-text-toast-success">{successCount} success</span>
+          </>,
+          'success'
+        )
+      } else if (successCount === 0 && failCount > 0) {
+        addToast(
+          <>
+            RENEW completed <br />
+            <span className="text-text-toast-error">{failCount} failed</span>
+          </>,
+          'error'
+        )
+      } else {
+        addToast(
+          <>
+            RENEW completed <br />
+            <span className="text-text-toast-success">{successCount} success</span>,{' '}
+            <span className="text-text-toast-error">{failCount} failed</span>
+          </>,
+          'warning'
+        )
+      }
+    } catch {
+      const classUpdates = {}
+      for (const row of validRows) classUpdates[row.sid] = 'bg-error-cell'
+      setRowClassMap((prev) => ({ ...prev, ...classUpdates }))
+      setSelectedIds((prev) => {
+        const newSet = new Set(prev)
+        for (const row of rows) newSet.delete(row._index)
+        return newSet
+      })
+      addToast(`RENEW process encountered an error`, 'error')
+    } finally {
+      setIsProcessing(false)
+      removeToast(toastId)
+    }
+  }, [confirmAction, updateRowBySid, addToast, removeToast])
 
   return (
     <div>
@@ -667,7 +937,11 @@ export default function ProxyManager() {
                       </svg>
                       Refund
                     </button>
-                    <button className="bg-bg-renew flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium transition-colors duration-200 hover:brightness-(--highlight-brightness)">
+                    <button
+                      className="bg-bg-renew flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium transition-colors duration-200 hover:brightness-(--highlight-brightness)"
+                      onClick={handleRenew}
+                      disabled={isProcessing}
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 640 640"
@@ -692,7 +966,11 @@ export default function ProxyManager() {
                           (ok) =>
                             ok &&
                             addToast(
-                              `Copied <span class="text-text-toast-success">${rows.length}</span> IPs to clipboard`,
+                              <>
+                                Copied{' '}
+                                <span className="text-text-toast-success">{rows.length}</span> IPs
+                                to clipboard
+                              </>,
                               'success'
                             )
                         )
@@ -722,14 +1000,8 @@ export default function ProxyManager() {
                       Pause
                     </button>
                     <button
-                      className="bg-bg-changeIp flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
-                      onClick={async () => {
-                        const res = await axiosInstance.post('/server/create/calculate', {
-                          quantity: 1,
-                          nation: 'VN',
-                        })
-                        console.log(res.data.info)
-                      }}
+                      className="bg-bg-changeIp flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
+                      onClick={() => setBuyDialogOpen(true)}
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -829,27 +1101,25 @@ export default function ProxyManager() {
       <Table
         title="Proxy Manager"
         className="text-xs sm:text-sm"
-        data={tableData}
-        filterData={origin}
-        resetFilterKey={dataVersion}
-        headers={[
-          'sid',
-          'ip_port',
-          'country',
-          'type',
-          'created',
-          'expired',
-          'ip_changed',
-          'status',
-          'note',
-        ]}
+        data={data}
+        receivedData={receivedData}
+        renderingReceived={renderingReceived}
+        setRenderingReceived={setRenderingReceived}
+        useFilter={true}
+        headers={['sid', 'ip_port', 'country', 'type', 'created', 'expired', 'status', 'note']}
         operatorConfig={OPERATOR_CONFIG}
         rowClassMap={rowClassMap}
-        deselectSids={deselectSids}
+        selectedIds={selectedIds}
         extraBtn={
           <button
             id="reloadBtn"
             className="bg-bg-reboot rounded-lg px-2 py-2 hover:brightness-(--highlight-brightness)"
+            onClick={() => {
+              setReceivedData([...data])
+              setRenderingReceived(true)
+              setSelectedIds(new Set())
+              setRowClassMap({})
+            }}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -875,10 +1145,43 @@ export default function ProxyManager() {
             </p>
           </div>
         }
-        onSelectionChange={setSelectedRows}
+        onSelectionChange={(rows, ids) => {
+          setSelectedRows(rows)
+          setSelectedIds(ids)
+        }}
       />
 
-      <CopyDialog {...copyDialogProps} />
+      <BuyProxyDialog
+        isOpen={buyDialogOpen}
+        onClose={() => setBuyDialogOpen(false)}
+        onSuccess={(newData) => {
+          if (Array.isArray(newData) && newData.length > 0) {
+            // Merge into local persistent data using the helper
+            setData((prev) => mergeResIntoData(prev, newData))
+
+            // Push into the view immediately, similar to handleGetData
+            setReceivedData(newData)
+            setRenderingReceived(true)
+            setSelectedIds(new Set())
+
+            const proxies = newData.map((item) => `${item.ip_port}:${item.user_pass}`).join('\n')
+            safeCopy(proxies).then(
+              (ok) =>
+                ok &&
+                addToast(
+                  <>
+                    Copied <span className="text-text-toast-success">{newData.length}</span> proxy
+                    to clipboard
+                  </>,
+                  'success'
+                )
+            )
+          } else {
+            // Fallback to fetch from ground up if payload is missing or invalid
+            handleGetData()
+          }
+        }}
+      />
     </div>
   )
 }

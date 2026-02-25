@@ -129,7 +129,7 @@
 [data-theme='light'] {
   /* Background Colors */
   --bg-body: var(--blue-100);
-  --bg-surface: var(--blue-200);
+  --bg-surface: var(--color-slate-100);
   --bg-wrapper: var(--blue-300);
   --bg-thead: var(--blue-500);
   --bg-dropdown: #fada7a;
@@ -146,8 +146,8 @@
   --bg-navbar-menu-hover: var(--light-300);
 
   --bg-toggle-theme: var(--blue-400);
-  --bg-hover: hsl(from var(--bg-surface) h s calc(l - 10));
-  --bg-selected: hsl(from var(--bg-surface) h s calc(l - 20));
+  --bg-hover: hsl(from var(--bg-thead) h calc(s - 10) calc(l + 40));
+  --bg-selected: hsl(from var(--bg-thead) h calc(s - 20) calc(l + 35));
 
   --bg-dialog: var(--light-100);
   --bg-dialog-thead: var(--blue-500);
@@ -161,10 +161,10 @@
   --text-title: #007bfc;
   --text-primary: var(--light-100);
   --text-secondary: var(--dark-800);
-  --text-muted: var(--light-400);
+  --text-muted: var(--color-slate-500);
 
   /* Border Colors */
-  --border: var(--light-400);
+  --border: var(--color-slate-500);
   --border-input: #e3c00e;
   --border-checkbox-hover: var(--light-500);
 
@@ -212,7 +212,7 @@
   --bg-dropdown: var(--dark-800);
   --bg-checkbox: var(--dark-750);
 
-  --bg-toast: #0f2045;
+  --bg-toast: #0a1530;
   --text-toast: #f8fafc;
   --text-toast-success: #4ade80;
   --text-toast-error: #f87171;
@@ -223,8 +223,8 @@
   --bg-navbar-menu-hover: #2c3c57;
 
   --bg-toggle-theme: var(--dark-500);
-  --bg-hover: hsl(from var(--bg-surface) h s calc(l + 5));
-  --bg-selected: hsl(from var(--bg-surface) h s calc(l + 10));
+  --bg-hover: hsl(from var(--bg-thead) h calc(s - 3) l);
+  --bg-selected: hsl(from var(--bg-thead) h calc(s - 3) calc(l + 5));
 
   --bg-dialog: var(--dark-700);
   --bg-dialog-thead: var(--dark-600);
@@ -292,10 +292,6 @@
   transition-duration: 0.3s;
 }
 
-.scroll-container * {
-  transition: none;
-}
-
 .theme-transitions .all-fast {
   transition-property: all;
   transition-timing-function: ease-out;
@@ -354,6 +350,12 @@
   body::-webkit-scrollbar,
   .scroll-container::-webkit-scrollbar {
     @apply h-2 w-2;
+  }
+
+  textarea::-webkit-scrollbar-corner,
+  body::-webkit-scrollbar-corner,
+  .scroll-container::-webkit-scrollbar-corner {
+    background-color: transparent;
   }
 
   textarea::-webkit-scrollbar-track,
@@ -463,5 +465,22 @@
     animation: flashAnim 0.4s ease-out;
     pointer-events: none;
     z-index: 9999;
+  }
+
+  /* Capture thumbnail bounce */
+  @keyframes capture-bounce {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    25% {
+      transform: translateY(-6px);
+    }
+    50% {
+      transform: translateY(0);
+    }
+    75% {
+      transform: translateY(-3px);
+    }
   }
 }

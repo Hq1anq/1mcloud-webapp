@@ -99,11 +99,9 @@ const Toast = ({ id, message, type, removeToast, style }) => {
         <div className={`${bg} flex h-8 w-8 shrink-0 items-center justify-center rounded-lg`}>
           {icon}
         </div>
-        <div
-          id="toast-message"
-          className="mx-3 flex-1 text-sm font-bold"
-          dangerouslySetInnerHTML={{ __html: message }}
-        />
+        <div id="toast-message" className="mx-3 flex-1 text-sm font-bold">
+          {message}
+        </div>
         <button
           type="button"
           className="bg-toast -mx-1.5 -my-1.5 ms-auto inline-flex h-8 w-8 items-center justify-center rounded-lg p-1.5 group-hover:brightness-125"

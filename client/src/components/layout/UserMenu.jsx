@@ -38,7 +38,7 @@ export const ThemeToggle = () => {
   return (
     <button
       onClick={handleToggle}
-      className={`bg-home-card-icon-bg hover:bg-bg-hover relative flex h-8 w-8 cursor-pointer items-center justify-center overflow-hidden rounded-2xl`}
+      className={`bg-primary/10 hover:bg-bg-hover relative flex size-8 cursor-pointer items-center justify-center overflow-hidden rounded-2xl`}
     >
       <div
         className={`absolute origin-top ease-[cubic-bezier(0.87,0,0.13,1)] ${isDark ? '-translate-x-12 -rotate-90 opacity-0' : 'translate-x-0 rotate-0 opacity-100'}`}
@@ -146,7 +146,7 @@ export default function UserMenu() {
       {/* Avatar Trigger */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="focus:ring-offset-navbar flex h-10 w-10 transform items-center justify-center rounded-full bg-linear-to-tr from-blue-500 to-purple-500 font-bold text-white shadow-md hover:scale-110 hover:shadow-lg focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:outline-none"
+        className="focus:ring-offset-navbar flex size-10 transform items-center justify-center rounded-full bg-linear-to-tr from-blue-500 to-purple-500 font-bold text-white shadow-md hover:scale-110 hover:shadow-lg focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:outline-none"
       >
         {getInitials()}
       </button>
@@ -165,7 +165,7 @@ export default function UserMenu() {
         {/* Menu Items */}
         <div>
           <Link
-            to="/profile"
+            to="/account"
             className="group hover:bg-bg-hover flex items-center gap-2 px-4 py-2"
             onClick={() => setIsOpen(false)}
           >
@@ -176,7 +176,7 @@ export default function UserMenu() {
             >
               <path d="M320 312C386.3 312 440 258.3 440 192C440 125.7 386.3 72 320 72C253.7 72 200 125.7 200 192C200 258.3 253.7 312 320 312zM290.3 368C191.8 368 112 447.8 112 546.3C112 562.7 125.3 576 141.7 576L498.3 576C514.7 576 528 562.7 528 546.3C528 447.8 448.2 368 349.7 368L290.3 368z" />
             </svg>
-            {t('menu.profile')}
+            {t('menu.account')}
           </Link>
 
           <div className="flex items-center justify-evenly px-4 py-2">
@@ -192,7 +192,7 @@ export default function UserMenu() {
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="mr-3 h-4 w-4"
+              className="mr-3 size-4"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"

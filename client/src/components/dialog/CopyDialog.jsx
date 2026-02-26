@@ -8,7 +8,7 @@ const CopyIcon = () => (
     aria-hidden="true"
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 24 24"
-    className="h-7 w-7 fill-none"
+    className="size-7 fill-none"
   >
     <path
       strokeLinejoin="round"

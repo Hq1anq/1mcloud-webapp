@@ -6,7 +6,7 @@ const en = {
 
   // UserMenu
   'menu.login': 'Login',
-  'menu.profile': 'Profile',
+  'menu.account': 'Account',
   'menu.theme': 'Theme',
   'menu.logout': 'Logout',
 
@@ -227,6 +227,19 @@ const en = {
   'buy.proxySuccess': 'proxy successfully!',
   'buy.purchaseFailed': 'Purchase failed',
   'buy.errorOccurred': 'Error occurred',
+
+  // Account Page
+  'account.title': 'My Account',
+  'account.subtitle': 'Manage your personal information and service balance',
+  'account.verified': 'Verified',
+  'account.unverified': 'Unverified',
+  'account.availableBalance': 'Available Balance',
+  'account.deposit': 'Add Funds',
+  'account.history': 'Transaction History',
+  'account.discountHeading': 'Current Discount Level',
+  'account.discountVps': 'VPS Discount',
+  'account.discountProxy': 'Proxy Discount',
+  'account.discountDedicate': 'Dedicate Discount',
 }
 
 export default en

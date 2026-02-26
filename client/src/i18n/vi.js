@@ -6,7 +6,7 @@ const vi = {
 
   // UserMenu
   'menu.login': 'Đăng nhập',
-  'menu.profile': 'Hồ sơ',
+  'menu.account': 'Tài khoản',
   'menu.theme': 'Theme',
   'menu.logout': 'Đăng xuất',
 
@@ -228,6 +228,19 @@ const vi = {
   'buy.proxySuccess': 'proxy!',
   'buy.purchaseFailed': 'Mua thất bại',
   'buy.errorOccurred': 'Đã xảy ra lỗi',
+
+  // Account Page
+  'account.title': 'Tài khoản của tôi',
+  'account.subtitle': 'Quản lý thông tin cá nhân và số dư dịch vụ',
+  'account.verified': 'Đã xác thực',
+  'account.unverified': 'Chưa xác thực',
+  'account.availableBalance': 'Số dư khả dụng',
+  'account.deposit': 'Nạp tiền',
+  'account.history': 'Lịch sử giao dịch',
+  'account.discountHeading': 'Mức chiết khấu hiện tại',
+  'account.discountVps': 'Ưu đãi VPS',
+  'account.discountProxy': 'Ưu đãi Proxy',
+  'account.discountDedicate': 'Ưu đãi Dedicate',
 }
 
 export default vi

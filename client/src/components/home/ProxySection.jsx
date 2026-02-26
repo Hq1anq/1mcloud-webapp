@@ -10,8 +10,7 @@ export default function ProxySection() {
           <path d="M480-80q-139-35-229.5-159.5T160-516v-244l320-120 320 120v244q0 152-90.5 276.5T480-80Zm0-84q97-30 162-118.5T718-480H480v-315l-240 90v207q0 7 2 18h238v316Z" />
         </svg>
       ),
-      iconColor: '#22c55e',
-      iconBg: 'rgba(34,197,94,0.1)',
+      iconColor: 'var(--green)',
       title: t('proxy.feat1.title'),
       desc: t('proxy.feat1.desc'),
     },
@@ -21,8 +20,7 @@ export default function ProxySection() {
           <path d="M324-111.5Q251-143 197-197t-85.5-127Q80-397 80-480t31.5-156Q143-709 197-763t127-85.5Q397-880 480-880t156 31.5Q709-817 763-763t85.5 127Q880-563 880-480t-31.5 156Q817-251 763-197t-127 85.5Q563-80 480-80t-156-31.5ZM440-162v-78q-33 0-56.5-23.5T360-320v-40L168-552q-3 18-5.5 36t-2.5 36q0 121 79.5 212T440-162Zm276-102q41-45 62.5-100.5T800-480q0-98-54.5-179T600-776v16q0 33-23.5 56.5T520-680h-80v80q0 17-11.5 28.5T400-560h-80v80h240q17 0 28.5 11.5T600-440v120h40q26 0 47 15.5t29 40.5Z" />
         </svg>
       ),
-      iconColor: '#3b82f6',
-      iconBg: 'rgba(59,130,246,0.1)',
+      iconColor: 'var(--primary)',
       title: t('proxy.feat2.title'),
       desc: t('proxy.feat2.desc'),
     },
@@ -32,8 +30,7 @@ export default function ProxySection() {
           <path d="M120-80v-280h120v-160h200v-80H320v-280h320v280H520v80h200v160h120v280H520v-280h120v-80H320v80h120v280H120Zm280-600h160v-120H400v120ZM200-160h160v-120H200v120Zm400 0h160v-120H600v120ZM480-680ZM360-280Zm240 0Z" />
         </svg>
       ),
-      iconColor: '#a855f7',
-      iconBg: 'rgba(168,85,247,0.1)',
+      iconColor: 'var(--purple)',
       title: t('proxy.feat3.title'),
       desc: t('proxy.feat3.desc'),
     },
@@ -73,8 +70,11 @@ export default function ProxySection() {
                   className="bg-navbar home-card-hover border-card-border flex items-start gap-4 rounded-xl border p-4 shadow-sm"
                 >
                   <div
-                    className="home-icon-hover flex h-10 w-10 shrink-0 items-center justify-center rounded-full p-1"
-                    style={{ background: feat.iconBg, color: feat.iconColor }}
+                    className="home-icon-hover flex size-10 shrink-0 items-center justify-center rounded-full p-1"
+                    style={{
+                      background: `color-mix(in srgb, ${feat.iconColor} 15%, transparent)`,
+                      color: feat.iconColor,
+                    }}
                   >
                     {feat.icon}
                   </div>
@@ -96,7 +96,7 @@ export default function ProxySection() {
               <div className="relative z-10 flex w-full items-center justify-between">
                 {/* User node */}
                 <div className="flex flex-col items-center gap-2">
-                  <div className="flex size-12 items-center justify-center rounded-full border border-blue-500 bg-blue-500/20 p-2 text-blue-400 sm:size-16">
+                  <div className="text-primary border-primary bg-primary/20 flex size-12 items-center justify-center rounded-full border p-2 sm:size-16">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 640 640"
@@ -113,12 +113,12 @@ export default function ProxySection() {
                   <div className="bg-terminal text-border absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-4 px-1 py-0 text-[10px] sm:-translate-y-1/2 sm:text-lg">
                     Request
                   </div>
-                  <div className="border-border absolute -top-1 -right-1 h-2 w-2 rotate-45 border-t border-r" />
+                  <div className="border-border absolute -top-1 -right-1 size-2 rotate-45 border-t border-r" />
                 </div>
 
                 {/* Proxy node */}
                 <div className="flex flex-col items-center gap-2">
-                  <div className="bg-home-card-icon-bg text-primary border-primary flex size-15 flex-col items-center justify-center rounded-lg border p-2 shadow-[0_0_15px_rgba(19,127,236,0.3)] sm:size-20">
+                  <div className="bg-primary/10 text-primary border-primary flex size-15 flex-col items-center justify-center rounded-lg border p-2 shadow-[0_0_15px_rgba(19,127,236,0.3)] sm:size-20">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 -960 960 960"
@@ -136,12 +136,12 @@ export default function ProxySection() {
                   <div className="bg-terminal text-border absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-4 px-1 py-0 text-[10px] sm:-translate-y-1/2 sm:text-lg">
                     Forward
                   </div>
-                  <div className="border-border absolute -top-1 -right-1 h-2 w-2 rotate-45 border-t border-r" />
+                  <div className="border-border absolute -top-1 -right-1 size-2 rotate-45 border-t border-r" />
                 </div>
 
                 {/* Internet node */}
                 <div className="flex flex-col items-center gap-2">
-                  <div className="flex size-12 items-center justify-center rounded-full border border-green-500 bg-green-500/20 p-2 text-green-400 sm:size-16">
+                  <div className="text-green border-green bg-green/20 flex size-12 items-center justify-center rounded-full border p-2 sm:size-16">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 -960 960 960"
@@ -158,11 +158,11 @@ export default function ProxySection() {
               <div className="border-card-border relative z-10 mt-4 w-full border-t pt-4 sm:mt-8">
                 <div className="flex justify-center gap-4">
                   <div className="flex items-center gap-2">
-                    <div className="h-2 w-2 rounded-full bg-green-500" />
+                    <div className="bg-green size-2 rounded-full" />
                     <span>IP: 192.168.1.x</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="h-2 w-2 rounded-full bg-green-500/50" />
+                    <div className="bg-green/50 size-2 rounded-full" />
                     <span>IP: 10.0.0.x</span>
                   </div>
                 </div>

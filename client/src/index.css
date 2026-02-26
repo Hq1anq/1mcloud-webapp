@@ -8,17 +8,21 @@
   --color-thead: var(--bg-thead);
   --color-navbar: var(--bg-navbar);
 
+  --color-green: var(--green);
+  --color-orange: var(--orange);
+  --color-red: var(--red);
+
   --color-primary: var(--primary);
   --color-dropdown: var(--bg-dropdown);
   --color-dialog: var(--bg-dialog);
   --color-terminal: var(--bg-terminal);
   --color-checkbox: var(--bg-checkbox);
 
+
   --color-toast: var(--bg-toast);
   --color-text-toast: var(--text-toast);
   --color-text-toast-success: var(--text-toast-success);
   --color-text-toast-error: var(--text-toast-error);
-
 
   --color-bg-hover: var(--bg-hover);
   --color-bg-selected: var(--bg-selected);
@@ -67,7 +71,17 @@
   --color-home-hero-to: var(--home-hero-gradient-to);
   --color-home-section-alt: var(--home-section-alt);
   --color-card-border: var(--card-border);
-  --color-home-card-icon-bg: var(--home-card-icon-bg);
+
+  /* Account Page */
+  --color-account-phone-bg: var(--account-phone-bg);
+  --color-account-verified-text: var(--account-verified-text);
+  --color-account-unverified-bg: var(--account-unverified-bg);
+  --color-account-unverified-text: var(--account-unverified-text);
+  --color-account-glow: var(--account-glow);
+  --color-account-discount-vps-icon: var(--account-discount-vps-icon);
+  --color-account-discount-proxy-icon: var(--account-discount-proxy-icon);
+  --color-account-discount-dedicate-icon: var(--account-discount-dedicate-icon);
+  --color-account-bar-track: var(--account-bar-track);
 
   --breakpoint-sm: 749px;
   --breakpoint-md: 883px;
@@ -117,6 +131,11 @@
   --bg-wrapper: var(--color-sky-300);
   --bg-thead: var(--color-sky-600);
   --bg-navbar: var(--color-cyan-50);
+
+  --purple: #9333ea;
+  --orange: #ea580c;
+  --green: #22c55e;
+  --red: #dc2626;
 
   --primary: #007bfc;
   --bg-dropdown: var(--color-amber-200);
@@ -185,7 +204,17 @@
   --home-hero-gradient-to: var(--color-blue-200);
   --home-section-alt: var(--color-blue-100);
   --card-border: var(--color-cyan-200);
-  --home-card-icon-bg: rgba(19, 127, 236, 0.1);
+
+  /* Account Page */
+  --account-phone-bg: #eff6ff;
+  --account-verified-text: #15803d;
+  --account-unverified-bg: #fef2f2;
+  --account-unverified-text: #b91c1c;
+  --account-glow: rgba(255, 255, 255, 0.1);
+  --account-discount-vps-icon: rgba(19, 127, 236, 0.1);
+  --account-discount-proxy-icon: rgba(147, 51, 234, 0.1);
+  --account-discount-dedicate-icon: rgba(234, 88, 12, 0.1);
+  --account-bar-track: #f1f5f9;
 }
 
 /* Dark Theme */
@@ -196,6 +225,11 @@
   --bg-wrapper: var(--dark-600);
   --bg-thead: var(--dark-700);
   --bg-navbar: #1e293b;
+
+  --purple: #a855f7;
+  --orange: #fb923c;
+  --green: #22c55e;
+  --red: #dc2626;
 
   --primary: #4aa3ff;
   --bg-dropdown: var(--dark-800);
@@ -259,12 +293,23 @@
   --bg-renew: #db2777;
   --bg-getInfo: #263edc;
 
+
   /* Home Page */
   --home-hero-gradient-from: var(--bg-body);
   --home-hero-gradient-to: #151B28;
   --home-section-alt: var(--dark-800);
   --card-border: #293347;
-  --home-card-icon-bg: rgba(59, 156, 255, 0.1);
+
+  /* Account Page */
+  --account-phone-bg: rgba(59, 130, 246, 0.15);
+  --account-verified-text: #4ade80;
+  --account-unverified-bg: rgba(239, 68, 68, 0.15);
+  --account-unverified-text: #f87171;
+  --account-glow: rgba(255, 255, 255, 0.08);
+  --account-discount-vps-icon: rgba(74, 163, 255, 0.15);
+  --account-discount-proxy-icon: rgba(168, 85, 247, 0.15);
+  --account-discount-dedicate-icon: rgba(251, 146, 60, 0.15);
+  --account-bar-track: var(--dark-700);
 }
 
 /* Base theme colors without transitions */
@@ -337,7 +382,7 @@
   textarea::-webkit-scrollbar,
   body::-webkit-scrollbar,
   .scroll-container::-webkit-scrollbar {
-    @apply h-2 w-2;
+    @apply size-2;
   }
 
   textarea::-webkit-scrollbar-corner,

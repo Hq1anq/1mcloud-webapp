@@ -34,7 +34,7 @@ export default function DropDown({ options, value, onChange, className }) {
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
-          className={`ml-2 h-4 w-4 ${open ? 'rotate-180' : ''}`}
+          className={`ml-2 size-4 ${open ? 'rotate-180' : ''}`}
         >
           <path
             strokeLinecap="round"

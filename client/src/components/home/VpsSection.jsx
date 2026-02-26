@@ -74,8 +74,7 @@ export default function VpsSection() {
           <path d="M360-360v-240h240v240H360Zm80-80h80v-80h-80v80Zm-80 320v-80h-80q-33 0-56.5-23.5T200-280v-80h-80v-80h80v-80h-80v-80h80v-80q0-33 23.5-56.5T280-760h80v-80h80v80h80v-80h80v80h80q33 0 56.5 23.5T760-680v80h80v80h-80v80h80v80h-80v80q0 33-23.5 56.5T680-200h-80v80h-80v-80h-80v80h-80Zm320-160v-400H280v400h400ZM480-480Z" />
         </svg>
       ),
-      iconColor: '#3b82f6',
-      iconBg: 'rgba(59,130,246,0.15)',
+      iconColor: 'var(--primary)',
       title: t('vps.spec1.title'),
       desc: t('vps.spec1.desc'),
       statLabel: t('vps.spec1.statLabel'),
@@ -87,8 +86,7 @@ export default function VpsSection() {
           <path d="M119.7 263.7L150.6 294.6C156.6 300.6 164.7 304 173.2 304L194.7 304C203.2 304 211.3 307.4 217.3 313.4L246.6 342.7C252.6 348.7 256 356.8 256 365.3L256 402.8C256 411.3 259.4 419.4 265.4 425.4L278.7 438.7C284.7 444.7 288.1 452.8 288.1 461.3L288.1 480C288.1 497.7 302.4 512 320.1 512C337.8 512 352.1 497.7 352.1 480L352.1 477.3C352.1 468.8 355.5 460.7 361.5 454.7L406.8 409.4C412.8 403.4 416.2 395.3 416.2 386.8L416.2 352.1C416.2 334.4 401.9 320.1 384.2 320.1L301.5 320.1C293 320.1 284.9 316.7 278.9 310.7L262.9 294.7C258.7 290.5 256.3 284.7 256.3 278.7C256.3 266.2 266.4 256.1 278.9 256.1L313.6 256.1C326.1 256.1 336.2 246 336.2 233.5C336.2 227.5 333.8 221.7 329.6 217.5L309.9 197.8C306 194 304 189.1 304 184C304 178.9 306 174 309.7 170.3L327 153C332.8 147.2 336.1 139.3 336.1 131.1C336.1 123.9 333.7 117.4 329.7 112.2C326.5 112.1 323.3 112 320.1 112C224.7 112 144.4 176.2 119.8 263.7zM528 320C528 285.4 519.6 252.8 504.6 224.2C498.2 225.1 491.9 228.1 486.7 233.3L473.3 246.7C467.3 252.7 463.9 260.8 463.9 269.3L463.9 304C463.9 321.7 478.2 336 495.9 336L520 336C522.5 336 525 335.7 527.3 335.2C527.7 330.2 527.8 325.1 527.8 320zM64 320C64 178.6 178.6 64 320 64C461.4 64 576 178.6 576 320C576 461.4 461.4 576 320 576C178.6 576 64 461.4 64 320z" />
         </svg>
       ),
-      iconColor: '#a855f7',
-      iconBg: 'rgba(168,85,247,0.15)',
+      iconColor: 'var(--purple)',
       title: t('vps.spec2.title'),
       desc: (
         <>
@@ -104,8 +102,7 @@ export default function VpsSection() {
           <path d="M160-160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h640q33 0 56.5 23.5T880-720v480q0 33-23.5 56.5T800-160H160Zm0-80h640v-400H160v400Zm140-40-56-56 103-104-104-104 57-56 160 160-160 160Zm180 0v-80h240v80H480Z" />
         </svg>
       ),
-      iconColor: 'var(--color-green-500)',
-      iconBg: 'rgba(0,201,81,0.15)',
+      iconColor: 'var(--green)',
       title: t('vps.spec3.title'),
       desc: t('vps.spec3.desc'),
       statLabel: t('vps.spec3.statLabel'),
@@ -152,9 +149,9 @@ export default function VpsSection() {
 
               {/* macOS-style window dots */}
               <div className="absolute top-4 left-4 z-20 flex items-center gap-2">
-                <div className="h-3 w-3 rounded-full bg-[#ff5f57]" />
-                <div className="h-3 w-3 rounded-full bg-[#febc2e]" />
-                <div className="h-3 w-3 rounded-full bg-[#28c840]" />
+                <div className="size-3 rounded-full bg-[#ff5f57]" />
+                <div className="size-3 rounded-full bg-[#febc2e]" />
+                <div className="size-3 rounded-full bg-[#28c840]" />
               </div>
 
               <h3 className="z-10 mb-4 text-sm font-bold tracking-widest uppercase sm:mb-6">
@@ -201,7 +198,7 @@ export default function VpsSection() {
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
               {features.map((feat) => (
                 <div key={feat.title} className="home-animate-fade-up-delay-1 flex gap-4">
-                  <div className="bg-home-card-icon-bg text-primary home-icon-hover flex h-12 w-12 shrink-0 items-center justify-center rounded-lg p-2">
+                  <div className="bg-primary/15 text-primary home-icon-hover flex size-12 shrink-0 items-center justify-center rounded-lg p-2">
                     {feat.icon}
                   </div>
                   <div>
@@ -227,7 +224,10 @@ export default function VpsSection() {
 
               <div
                 className="home-icon-hover mb-4 flex size-10 items-center justify-center rounded-lg p-1"
-                style={{ background: card.iconBg, color: card.iconColor }}
+                style={{
+                  background: `color-mix(in srgb, ${card.iconColor} 15%, transparent)`,
+                  color: card.iconColor,
+                }}
               >
                 {card.icon}
               </div>

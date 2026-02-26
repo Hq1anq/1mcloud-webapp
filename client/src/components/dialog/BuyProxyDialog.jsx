@@ -435,7 +435,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
             >
               <span>{t('buy.payNow')}</span>
               <svg
-                className="h-5 w-5 group-hover:translate-x-1"
+                className="size-5 group-hover:translate-x-1"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"

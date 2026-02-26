@@ -26,7 +26,7 @@ const ContactLink = ({ name, title, link, icon, colorClass }) => (
     rel="noopener noreferrer"
   >
     <div
-      className={`bg-home-card-icon-bg flex size-12 items-center justify-center text-blue-500 group-hover/item:bg-blue-500 group-hover/item:text-white ${colorClass}`}
+      className={`bg-primary/10 flex size-12 items-center justify-center text-blue-500 group-hover/item:bg-blue-500 group-hover/item:text-white ${colorClass}`}
     >
       {icon}
     </div>

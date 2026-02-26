@@ -14,10 +14,10 @@ export default function HeroSection() {
           <div className="home-animate-fade-up z-10 flex flex-1 flex-col text-center lg:text-left">
             <div className="flex flex-col gap-4">
               {/* Badge */}
-              <div className="bg-home-card-icon-bg text-primary inline-flex items-center gap-2 self-center rounded-full border border-[color-mix(in_srgb,var(--primary)_30%,transparent)] px-3 py-1 text-xs font-bold tracking-wider uppercase lg:self-start">
-                <span className="relative flex h-2 w-2">
+              <div className="bg-primary/10 text-primary inline-flex items-center gap-2 self-center rounded-full border border-[color-mix(in_srgb,var(--primary)_30%,transparent)] px-3 py-1 text-xs font-bold tracking-wider uppercase lg:self-start">
+                <span className="relative flex size-2">
                   <span className="bg-primary absolute inline-flex h-full w-full animate-ping rounded-full opacity-75" />
-                  <span className="bg-primary relative inline-flex h-2 w-2 rounded-full" />
+                  <span className="bg-primary relative inline-flex size-2 rounded-full" />
                 </span>
                 {t('hero.badge')}
               </div>
@@ -64,19 +64,19 @@ export default function HeroSection() {
                 {/* Server rows */}
                 {[
                   {
-                    bar1: 'bg-green-500 animate-pulse',
-                    bar2: 'bg-green-500/50',
-                    dots: ['bg-blue-500', 'bg-blue-500 animate-ping'],
+                    bar1: 'bg-green animate-pulse',
+                    bar2: 'bg-green/50',
+                    dots: ['bg-primary', 'bg-primary animate-ping'],
                   },
                   {
-                    bar1: 'bg-green-500',
-                    bar2: 'bg-green-500/50',
-                    dots: ['bg-amber-500', 'bg-slate-600'],
+                    bar1: 'bg-green',
+                    bar2: 'bg-green/50',
+                    dots: ['bg-orange', 'bg-slate-600'],
                   },
                   {
-                    bar1: 'bg-green-500',
-                    bar2: 'bg-green-500',
-                    dots: ['bg-blue-500', 'bg-blue-500'],
+                    bar1: 'bg-green',
+                    bar2: 'bg-green',
+                    dots: ['bg-primary', 'bg-primary'],
                   },
                   { bar1: 'bg-slate-700', bar2: 'bg-slate-700', dots: null },
                 ].map((row, i) => (
@@ -89,7 +89,7 @@ export default function HeroSection() {
                     <div className="flex flex-1 justify-end gap-1">
                       {row.dots ? (
                         row.dots.map((dot, j) => (
-                          <div key={j} className={`h-2 w-2 rounded-full ${dot}`} />
+                          <div key={j} className={`size-2 rounded-full ${dot}`} />
                         ))
                       ) : (
                         <div className="h-2 w-8 rounded bg-slate-700" />
@@ -101,7 +101,7 @@ export default function HeroSection() {
                 {/* Rack label */}
                 <div className="mt-auto flex justify-between font-mono text-[10px]">
                   <span>RACK-01</span>
-                  <span className="text-green-500">ONLINE</span>
+                  <span className="text-green">ONLINE</span>
                 </div>
               </div>
 
@@ -112,7 +112,7 @@ export default function HeroSection() {
               {/* Bottom stats bar */}
               <div className="border-border absolute right-6 bottom-6 left-6 z-20 flex items-center rounded-lg border p-2 shadow-2xl backdrop-blur-md sm:p-4">
                 <div className="flex items-center gap-3">
-                  <div className="bg-home-card-icon-bg rounded-md p-2">
+                  <div className="bg-primary/10 rounded-md p-2">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 -960 960 960"

@@ -1,6 +1,7 @@
 import DropDown from '../components/ui/DropDown'
 import Table from '../components/ui/Table'
 import BuyProxyDialog from '../components/dialog/BuyProxyDialog'
+import Checkbox from '../components/ui/Checkbox'
 import axiosInstance from '../lib/axios'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useToast } from '../context/ToastContext'
@@ -64,6 +65,7 @@ export default function ProxyManager() {
   const [ips, setIps] = useState('')
   const [amount, setAmount] = useState('')
   const [noteInput, setNoteInput] = useState('')
+  const [replaceNote, setReplaceNote] = useState(false)
   const [reinstallInput, setReinstallInput] = useState('')
   const [changeIpInput, setChangeIpInput] = useState('')
 
@@ -679,20 +681,10 @@ export default function ProxyManager() {
         <div className="mx-auto max-w-7xl px-4 py-4">
           {/* ========== FEATURE CONTROLS ========== */}
           <div className="bg-wrapper rounded-lg p-4">
-            <h3 className="text-text-secondary mb-3 flex items-center text-lg font-bold sm:text-2xl">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 640 640"
-                className="mr-2 h-6 w-6 shrink-0 fill-current sm:h-7 sm:w-7"
-              >
-                <path d="M415.9 274.5C428.1 271.2 440.9 277 446.4 288.3L465 325.9C475.3 327.3 485.4 330.1 494.9 334L529.9 310.7C540.4 303.7 554.3 305.1 563.2 314L582.4 333.2C591.3 342.1 592.7 356.1 585.7 366.5L562.4 401.4C564.3 406.1 566 411 567.4 416.1C568.8 421.2 569.7 426.2 570.4 431.3L608.1 449.9C619.4 455.5 625.2 468.3 621.9 480.4L614.9 506.6C611.6 518.7 600.3 526.9 587.7 526.1L545.7 523.4C539.4 531.5 532.1 539 523.8 545.4L526.5 587.3C527.3 599.9 519.1 611.3 507 614.5L480.8 621.5C468.6 624.8 455.9 619 450.3 607.7L431.7 570.1C421.4 568.7 411.3 565.9 401.8 562L366.8 585.3C356.3 592.3 342.4 590.9 333.5 582L314.3 562.8C305.4 553.9 304 540 311 529.5L334.3 494.5C332.4 489.8 330.7 484.9 329.3 479.8C327.9 474.7 327 469.6 326.3 464.6L288.6 446C277.3 440.4 271.6 427.6 274.8 415.5L281.8 389.3C285.1 377.2 296.4 369 309 369.8L350.9 372.5C357.2 364.4 364.5 356.9 372.8 350.5L370.1 308.7C369.3 296.1 377.5 284.7 389.6 281.5L415.8 274.5zM448.4 404C424.1 404 404.4 423.7 404.5 448.1C404.5 472.4 424.2 492 448.5 492C472.8 492 492.5 472.3 492.5 448C492.4 423.6 472.7 404 448.4 404zM224.9 18.5L251.1 25.5C263.2 28.8 271.4 40.2 270.6 52.7L267.9 94.5C276.2 100.9 283.5 108.3 289.8 116.5L331.8 113.8C344.3 113 355.7 121.2 359 133.3L366 159.5C369.2 171.6 363.5 184.4 352.2 190L314.5 208.6C313.8 213.7 312.8 218.8 311.5 223.8C310.2 228.8 308.4 233.8 306.5 238.5L329.8 273.5C336.8 284 335.4 297.9 326.5 306.8L307.3 326C298.4 334.9 284.5 336.3 274 329.3L239 306C229.5 309.9 219.4 312.7 209.1 314.1L190.5 351.7C184.9 363 172.1 368.7 160 365.5L133.8 358.5C121.6 355.2 113.5 343.8 114.3 331.3L117 289.4C108.7 283 101.4 275.6 95.1 267.4L53.1 270.1C40.6 270.9 29.2 262.7 25.9 250.6L18.9 224.4C15.7 212.3 21.4 199.5 32.7 193.9L70.4 175.3C71.1 170.2 72.1 165.2 73.4 160.1C74.8 155 76.4 150.1 78.4 145.4L55.1 110.5C48.1 100 49.5 86.1 58.4 77.2L77.6 58C86.5 49.1 100.4 47.7 110.9 54.7L145.9 78C155.4 74.1 165.5 71.3 175.8 69.9L194.4 32.3C200 21 212.7 15.3 224.9 18.5zM192.4 148C168.1 148 148.4 167.7 148.4 192C148.4 216.3 168.1 236 192.4 236C216.7 236 236.4 216.3 236.4 192C236.4 167.7 216.7 148 192.4 148z" />
-              </svg>
-              Actions
-            </h3>
             <div className="flex flex-col gap-4 sm:flex-row">
               {/* IPs Input */}
               <div className="relative flex flex-col sm:w-3/5">
-                <div className="flex items-center justify-between">
+                <div className="mb-2 flex items-center justify-between">
                   <label className="text-text-secondary flex items-center text-sm font-medium sm:text-base">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -705,7 +697,7 @@ export default function ProxyManager() {
                   </label>
                   <button
                     id="shuffleBtn"
-                    className="bg-bg-pause static right-0 bottom-[-8px] mb-2 flex items-center justify-center rounded-lg px-3 py-1 text-sm font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness) sm:absolute lg:static"
+                    className="bg-bg-pause static right-0 bottom-[-8px] flex items-center justify-center rounded-lg px-3 py-1 font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness) sm:absolute lg:static"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -719,7 +711,7 @@ export default function ProxyManager() {
                 </div>
                 <button
                   id="textCopyBtn"
-                  className="group text-text-muted absolute top-9 right-1 inline-flex cursor-pointer items-center justify-center rounded-lg hover:brightness-(--highlight-brightness)"
+                  className="group text-text-muted absolute top-12 right-1 inline-flex cursor-pointer items-center justify-center rounded-lg hover:brightness-(--highlight-brightness)"
                 >
                   <svg
                     aria-hidden="true"
@@ -810,32 +802,13 @@ export default function ProxyManager() {
                         Change Note
                       </button>
                       <div className="ml-1 flex items-center sm:ml-2">
-                        <label className="group inline-flex cursor-pointer items-center select-none">
-                          {/* Hidden native checkbox */}
-                          <input id="replaceCheckbox" type="checkbox" className="sr-only" />
-
-                          {/* Custom box */}
-                          <span className="text-text-secondary checkbox-transition border-border bg-checkbox group-hover:border-border-checkbox-hover relative flex h-5 w-5 items-center justify-center overflow-visible rounded border group-hover:brightness-125">
-                            {/* Big check */}
-                            <svg
-                              className="checkbox-transition absolute h-5 w-5 scale-0 opacity-0 group-has-[input:checked]:scale-100 group-has-[input:checked]:opacity-100"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="3"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M5 13l4 4L19 7"
-                              />
-                            </svg>
-                          </span>
-
-                          {/* Text */}
-                          <span className="text-text-secondary ml-1 text-xs sm:ml-2 sm:text-base">
-                            Replace
-                          </span>
+                        <label className="group text-text-secondary inline-flex cursor-pointer items-center gap-2 select-none">
+                          <Checkbox
+                            id="replaceCheckbox"
+                            checked={replaceNote}
+                            onChange={() => setReplaceNote(!replaceNote)}
+                          />
+                          Replace
                         </label>
                       </div>
                     </div>

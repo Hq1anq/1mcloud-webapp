@@ -4,7 +4,7 @@ import UserMenu from './UserMenu'
 
 export default function Navbar() {
   const linkBase = 'text-text-secondary py-2 px-3 rounded-sm md:p-0 flex items-center'
-  const active = 'bg-navbar-menu-selected md:bg-transparent text-[#cbd5e1] md:text-text-title'
+  const active = 'bg-text-title md:bg-transparent text-[#cbd5e1] md:text-text-title'
   const inactive = 'md:hover:text-text-title hover:bg-navbar-menu-hover md:hover:bg-transparent'
 
   const [isMenuOpen, setIsMenuOpen] = useState(false)

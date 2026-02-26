@@ -6,6 +6,8 @@
   --color-surface: var(--bg-surface);
   --color-wrapper: var(--bg-wrapper);
   --color-thead: var(--bg-thead);
+  --color-dropdown: var(--bg-dropdown);
+  --color-dialog: var(--bg-dialog);
   --color-checkbox: var(--bg-checkbox);
 
   --color-toast: var(--bg-toast);
@@ -13,21 +15,12 @@
   --color-text-toast-success: var(--text-toast-success);
   --color-text-toast-error: var(--text-toast-error);
 
-  --color-dropdown: var(--bg-dropdown);
-  --color-dropdown-selected: var(--bg-dropdown-selected);
-
   --color-navbar: var(--bg-navbar);
   --color-navbar-menu: var(--bg-navbar-menu);
-  --color-navbar-menu-selected: var(--bg-navbar-menu-selected);
   --color-navbar-menu-hover: var(--bg-navbar-menu-hover);
 
-  --color-toggle-theme: var(--bg-toggle-theme);
   --color-bg-hover: var(--bg-hover);
   --color-bg-selected: var(--bg-selected);
-
-  --color-dialog: var(--bg-dialog);
-  --color-dialog-thead: var(--bg-dialog-thead);
-  --color-dialog-td: var(--bg-dialog-td);
 
   --color-scrollbar-track: var(--scrollbar-track);
   --color-scrollbar-thumb: var(--scrollbar-thumb);
@@ -42,7 +35,6 @@
 
   /* Border */
   --color-border: var(--border);
-  --color-border-input: var(--border-input);
   --color-border-checkbox-hover: var(--border-checkbox-hover);
 
   --color-success-cell: var(--success-cell);
@@ -104,36 +96,32 @@
 
 /* Theme Variables */
 :root {
-  /* Dark Theme colors */
-  --dark-900: #14171c;
-  --dark-800: #282e38;
-  --dark-750: #323a45;
-  --dark-700: #3c4653;
-  --dark-600: #505d6f;
-  --dark-500: #64748b;
+  /* Dark Theme colors - Modern Premium Slate */
+  --dark-900: #0b0f19;
+  --dark-800: #1a2130;
+  --dark-700: #293347;
+  --dark-600: #39455d;
+  --dark-500: #485774;
+  --dark-400: #57698b;
   /* Light Theme Colors */
   --light-100: #f8fafc;
   --light-200: #e2e8f0;
   --light-300: #cbd5e1;
   --light-400: #94a3b8;
   --light-500: #64748b;
-
-  --blue-100: #eef5ff;
-  --blue-200: #bbfbff;
-  --blue-300: #8dd8ff;
-  --blue-400: #46a9fd;
-  --blue-500: #007bfc;
-  --blue-700: #053fe5;
 }
 
 [data-theme='light'] {
   /* Background Colors */
-  --bg-body: var(--blue-100);
-  --bg-surface: var(--color-slate-100);
-  --bg-wrapper: var(--blue-300);
-  --bg-thead: var(--blue-500);
-  --bg-dropdown: #fada7a;
-  --bg-checkbox: #f5f0cd;
+  --bg-body: var(--color-sky-50);
+  --bg-surface: var(--color-sky-100);
+  --bg-wrapper: var(--color-sky-300);
+  --bg-thead: var(--color-sky-600);
+  --bg-dropdown: var(--color-amber-200);
+  --bg-dialog: var(--light-100);
+  --bg-checkbox: var(--color-yellow-100);
+  --bg-oncheck: var(--color-yellow-300);
+  --bg-checkmark: var(--color-sky-900);
 
   --bg-toast: #1d3766;
   --text-toast: #f8fafc;
@@ -142,20 +130,14 @@
 
   --bg-navbar: var(--light-100);
   --bg-navbar-menu: var(--light-200);
-  --bg-navbar-menu-selected: var(--blue-300);
   --bg-navbar-menu-hover: var(--light-300);
 
-  --bg-toggle-theme: var(--blue-400);
-  --bg-hover: hsl(from var(--bg-thead) h calc(s - 10) calc(l + 40));
-  --bg-selected: hsl(from var(--bg-thead) h calc(s - 20) calc(l + 35));
-
-  --bg-dialog: var(--light-100);
-  --bg-dialog-thead: var(--blue-500);
-  --bg-dialog-td: var(--blue-200);
+  --bg-hover: hsl(from var(--bg-thead) h calc(s - 10) calc(l + 55));
+  --bg-selected: hsl(from var(--bg-thead) h calc(s - 20) calc(l + 45));
 
   --scrollbar-track: #f5f0cd;
-  --scrollbar-thumb: var(--blue-300);
-  --scrollbar-thumb-hover: var(--blue-400);
+  --scrollbar-thumb: var(--color-sky-400);
+  --scrollbar-thumb-hover: var(--color-sky-500);
 
   /* Text Colors */
   --text-title: #007bfc;
@@ -164,8 +146,7 @@
   --text-muted: var(--color-slate-500);
 
   /* Border Colors */
-  --border: var(--color-slate-500);
-  --border-input: #e3c00e;
+  --border: var(--color-sky-500);
   --border-checkbox-hover: var(--light-500);
 
   --logo-ring: #f9bb10;
@@ -190,16 +171,16 @@
   --bg-unknowed: #a2c7cc;
   --text-unknowed: #374151;
 
-  --bg-getData: #ed0ce2;
-  --bg-changeNote: #ff5555;
-  --bg-reinstall: #6080fa;
-  --bg-changeIp: #28be2b;
-  --bg-copyIp: #8e34d3;
-  --bg-reboot: #fba124;
-  --bg-pause: #f87171;
+  --bg-getData: #9c258e;
+  --bg-changeNote: #a95a5a;
+  --bg-reinstall: #0284c7;
+  --bg-changeIp: #16a34a;
+  --bg-copyIp: #9333ea;
+  --bg-reboot: #ea580c;
+  --bg-pause: #dc2626;
   --bg-refund: #f472b6;
-  --bg-renew: #e07211;
-  --bg-getInfo: #ef4646;
+  --bg-renew: #db2777;
+  --bg-getInfo: #4f46e5;
 }
 
 /* Dark Theme */
@@ -207,10 +188,13 @@
   /* Background Colors */
   --bg-body: var(--dark-900);
   --bg-surface: var(--dark-800);
-  --bg-wrapper: var(--dark-700);
+  --bg-wrapper: var(--dark-600);
   --bg-thead: var(--dark-700);
   --bg-dropdown: var(--dark-800);
-  --bg-checkbox: var(--dark-750);
+  --bg-dialog: var(--dark-600);
+  --bg-checkbox: var(--dark-600);
+  --bg-oncheck: #053fe5;
+  --bg-checkmark: #f3f4f6;
 
   --bg-toast: #0a1530;
   --text-toast: #f8fafc;
@@ -219,18 +203,12 @@
 
   --bg-navbar: #1e293b;
   --bg-navbar-menu: #253349;
-  --bg-navbar-menu-selected: var(--blue-700);
   --bg-navbar-menu-hover: #2c3c57;
 
-  --bg-toggle-theme: var(--dark-500);
   --bg-hover: hsl(from var(--bg-thead) h calc(s - 3) l);
   --bg-selected: hsl(from var(--bg-thead) h calc(s - 3) calc(l + 5));
 
-  --bg-dialog: var(--dark-700);
-  --bg-dialog-thead: var(--dark-600);
-  --bg-dialog-td: var(--dark-800);
-
-  --scrollbar-track: var(--dark-700);
+  --scrollbar-track: var(--dark-600);
   --scrollbar-thumb: var(--dark-800);
   --scrollbar-thumb-hover: var(--dark-900);
 
@@ -241,11 +219,10 @@
   --text-muted: #9ca3af;
 
   /* Border Colors */
-  --border: var(--dark-600);
-  --border-input: var(--dark-500);
-  --border-checkbox-hover: var(--dark-500);
+  --border: var(--dark-500);
+  --border-checkbox-hover: var(--dark-400);
 
-  --logo-ring: var(--blue-700);
+  --logo-ring: #053fe5;
   --logo-inner: #e2e2e4;
 
   --highlight-brightness: 120%;
@@ -324,7 +301,7 @@
   input[type='number'],
   input[type='password'],
   textarea {
-    @apply bg-navbar text-text-secondary border-border-input w-full rounded-lg border-2 px-3 py-2 placeholder-gray-400 focus:border-blue-500 focus:outline-none;
+    @apply bg-navbar text-text-secondary border-border w-full rounded-lg border-2 px-3 py-2 placeholder-gray-400 focus:border-(--logo-ring) focus:outline-none;
   }
 
   /* Hides the arrows in Chrome, Safari, Edge */

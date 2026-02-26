@@ -67,11 +67,11 @@ export default function ConfirmActionDialog({
         <p className="text-text-secondary font-medium">{infoText}</p>
 
         {fetchError ? (
-          <p className="text-text-error mb-4 font-medium">{fetchError}</p>
+          <p className="text-bg-pause mb-4 font-medium">abc</p>
         ) : (
           <div className="border-border scroll-container max-h-[50vh] overflow-auto rounded-lg border">
             <table className="min-w-full">
-              <thead className="bg-dialog-thead sticky top-0">
+              <thead className="bg-thead sticky top-0">
                 <tr>
                   {headers.map((header) => (
                     <th

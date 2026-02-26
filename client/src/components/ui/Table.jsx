@@ -312,7 +312,7 @@ const Table = forwardRef(function Table(
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 640 640"
-                        className="bg-border-input filter-operator fill-text-secondary absolute top-[-2px] right-[-6px] h-4 w-4 cursor-pointer rounded-full p-0.5 hover:brightness-(--highlight-brightness)"
+                        className="bg-border filter-operator fill-text-primary absolute top-[-2px] right-[-6px] h-4 w-4 cursor-pointer rounded-full p-0.5 hover:brightness-(--highlight-brightness)"
                         onClick={() => toggleOperator(header)}
                         title={`Filter: ${operator}`}
                       >
@@ -361,7 +361,7 @@ const Table = forwardRef(function Table(
           {/* Table Header */}
           <div
             id="container-header"
-            className="bg-thead top-0 z-30 rounded-t-lg border-b-[5px] border-[color-mix(in_srgb,var(--color-thead)_50%,white)] px-4 py-3"
+            className="bg-thead border-wrapper top-0 z-30 rounded-t-lg border-b-[5px] px-4 py-3"
           >
             <div className="flex items-center justify-between">
               <h2 className="flex items-center text-lg font-semibold sm:text-2xl">

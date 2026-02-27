@@ -183,7 +183,8 @@ export default function ProxyChecker() {
                       {t('checker.proxyList')}
                     </label>
                     <button
-                      className="bg-bg-pause flex items-center justify-center rounded-lg px-2 py-1 font-medium hover:brightness-(--highlight-brightness)"
+                      className="bg-action flex items-center justify-center rounded-lg px-2 py-1 font-medium hover:brightness-(--highlight-brightness)"
+                      style={{ '--action-color': 'var(--red)' }}
                       onClick={() => setProxyInput('')}
                     >
                       <svg
@@ -232,7 +233,8 @@ export default function ProxyChecker() {
                   <button
                     onClick={handleCheck}
                     disabled={isChecking}
-                    className="bg-bg-getData flex w-full items-center justify-center rounded-l-lg px-4 py-2 font-bold hover:brightness-(--highlight-brightness) disabled:opacity-50"
+                    className="bg-action flex w-full items-center justify-center rounded-l-lg px-4 py-2 font-bold hover:brightness-(--highlight-brightness) disabled:opacity-50"
+                    style={{ '--action-color': 'var(--purple)' }}
                   >
                     {isChecking ? (
                       <svg
@@ -281,7 +283,8 @@ export default function ProxyChecker() {
                   {/* Copy Buttons */}
                   <button
                     onClick={handleCopyIp}
-                    className="bg-bg-reinstall flex flex-1 items-center justify-center rounded-l-xl px-4 py-2 font-medium hover:brightness-(--highlight-brightness)"
+                    className="bg-action flex flex-1 items-center justify-center rounded-l-xl px-4 py-2 font-medium hover:brightness-(--highlight-brightness)"
+                    style={{ '--action-color': 'var(--primary)' }}
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -295,7 +298,8 @@ export default function ProxyChecker() {
 
                   <button
                     onClick={handleCopyFullProxy}
-                    className="bg-bg-changeNote flex flex-1 items-center justify-center rounded-r-xl px-4 py-2 font-medium hover:brightness-(--highlight-brightness)"
+                    className="bg-action flex flex-1 items-center justify-center rounded-r-xl px-4 py-2 font-medium hover:brightness-(--highlight-brightness)"
+                    style={{ '--action-color': 'var(--orange)' }}
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -310,7 +314,8 @@ export default function ProxyChecker() {
                   {/* Selection buttons*/}
                   <button
                     onClick={() => handleSelectByStatus('Active')}
-                    className="bg-bg-changeIp flex items-center justify-center rounded-l-xl px-4 py-2 font-medium hover:brightness-(--highlight-brightness)"
+                    className="bg-action flex items-center justify-center rounded-l-xl px-4 py-2 font-medium hover:brightness-(--highlight-brightness)"
+                    style={{ '--action-color': 'var(--green)' }}
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -324,7 +329,8 @@ export default function ProxyChecker() {
 
                   <button
                     onClick={() => handleSelectByStatus('Inactive')}
-                    className="bg-bg-pause flex items-center justify-center rounded-r-xl px-4 py-2 font-medium hover:brightness-(--highlight-brightness)"
+                    className="bg-action flex items-center justify-center rounded-r-xl px-4 py-2 font-medium hover:brightness-(--highlight-brightness)"
+                    style={{ '--action-color': 'var(--red)' }}
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -361,7 +367,8 @@ export default function ProxyChecker() {
           <button
             id="captureBtn"
             onClick={handleCapture}
-            className="bg-bg-reboot rounded-lg px-2 py-2 hover:brightness-(--highlight-brightness)"
+            className="bg-action rounded-lg px-2 py-2 hover:brightness-(--highlight-brightness)"
+            style={{ '--action-color': 'var(--orange)' }}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"

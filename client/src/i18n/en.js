@@ -143,7 +143,7 @@ const en = {
   'checker.enterAndClick': 'Enter your proxy and click',
 
   // Proxy Manager
-  'manager.enterIps': 'Enter IPs',
+  'manager.enterIps': 'Enter IP',
   'manager.onePerLine': '(one per line)',
   'manager.delete': 'Delete',
   'manager.enterAmount': 'Enter amount',

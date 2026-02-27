@@ -735,7 +735,8 @@ export default function ProxyManager() {
                   </label>
                   <button
                     onClick={() => setIps('')}
-                    className="bg-bg-pause static right-0 flex items-center justify-center rounded-lg px-3 py-1 text-sm font-medium transition-colors duration-200 hover:brightness-(--highlight-brightness) md:absolute lg:static"
+                    className="bg-action static right-0 flex items-center justify-center rounded-lg px-3 py-1 text-sm font-medium transition-colors duration-200 hover:brightness-(--highlight-brightness) md:absolute lg:static"
+                    style={{ '--action-color': 'var(--red)' }}
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -757,75 +758,54 @@ export default function ProxyManager() {
 
               {/* GetData & Change Note & Reinstall and Simple Action Buttons */}
               <div className="w-full flex-col">
-                <div className="grid w-full auto-rows-auto grid-cols-[1fr_1fr_1fr] items-start gap-1 p-0">
-                  {/* Get Data */}
-                  <div className="col-start-1 col-end-2 row-start-1 row-end-2 m-1 space-y-1 md:row-end-3">
-                    <input
-                      type="number"
-                      placeholder={t('manager.enterAmount')}
-                      min="1"
-                      value={amount}
-                      onChange={(e) => setAmount(e.target.value)}
-                    />
-                    <div className="flex items-center">
-                      <button
-                        className="bg-bg-getData flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
-                        onClick={handleGetData}
-                      >
-                        <svg
-                          aria-hidden="true"
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          className="mr-1 size-5 shrink-0 fill-none sm:mr-2 sm:h-7 sm:w-7"
+                <div className="flex w-full flex-col items-start gap-2 p-0 sm:gap-3">
+                  <div className="flex w-full flex-wrap gap-2 sm:gap-3">
+                    {/* Get Data */}
+                    <div className="flex grow flex-col gap-1 max-[496px]:flex-row">
+                      <input
+                        type="number"
+                        placeholder={t('manager.enterAmount')}
+                        min="1"
+                        value={amount}
+                        onChange={(e) => setAmount(e.target.value)}
+                      />
+                      <div className="flex items-center">
+                        <button
+                          className="bg-action flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
+                          style={{ '--action-color': 'var(--purple)' }}
+                          onClick={handleGetData}
                         >
-                          <path
-                            stroke="currentColor"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M12 13V4M7 14H5a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1h-2m-1-5-4 5-4-5m9 8h.01"
-                          />
-                        </svg>
-                        {t('manager.getData')}
-                      </button>
+                          <svg
+                            aria-hidden="true"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            className="mr-1 size-5 shrink-0 fill-none sm:mr-2 sm:h-7 sm:w-7"
+                          >
+                            <path
+                              stroke="currentColor"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M12 13V4M7 14H5a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1h-2m-1-5-4 5-4-5m9 8h.01"
+                            />
+                          </svg>
+                          {t('manager.getData')}
+                        </button>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Change Note */}
-                  <div className="col-start-2 col-end-4 row-start-1 row-end-2 m-1 flex-1 space-y-1 md:col-end-3 md:row-end-3">
-                    <input
-                      type="text"
-                      placeholder={t('manager.enterNote')}
-                      value={noteInput}
-                      onChange={(e) => setNoteInput(e.target.value)}
-                    />
-                    <button
-                      className="bg-bg-changeNote flex w-full items-center justify-center rounded-lg px-3 py-2 font-medium transition-colors duration-200 hover:brightness-(--highlight-brightness)"
-                      onClick={handleChangeNote}
-                      disabled={isProcessing}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 640 640"
-                        className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:h-7 sm:w-7"
-                      >
-                        <path d="M535.6 85.7C513.7 63.8 478.3 63.8 456.4 85.7L432 110.1L529.9 208L554.3 183.6C576.2 161.7 576.2 126.3 554.3 104.4L535.6 85.7zM236.4 305.7C230.3 311.8 225.6 319.3 222.9 327.6L193.3 416.4C190.4 425 192.7 434.5 199.1 441C205.5 447.5 215 449.7 223.7 446.8L312.5 417.2C320.7 414.5 328.2 409.8 334.4 403.7L496 241.9L398.1 144L236.4 305.7zM160 128C107 128 64 171 64 224L64 480C64 533 107 576 160 576L416 576C469 576 512 533 512 480L512 384C512 366.3 497.7 352 480 352C462.3 352 448 366.3 448 384L448 480C448 497.7 433.7 512 416 512L160 512C142.3 512 128 497.7 128 480L128 224C128 206.3 142.3 192 160 192L256 192C273.7 192 288 177.7 288 160C288 142.3 273.7 128 256 128L160 128z" />
-                      </svg>
-                      {t('manager.changeNote')}
-                    </button>
-                  </div>
-                  {/* Reinstall */}
-                  <div className="col-start-1 col-end-3 row-start-2 row-end-3 m-0.5 ml-1 space-y-1 sm:m-1 md:col-start-3 md:col-end-4 md:row-start-1">
-                    <input
-                      type="text"
-                      placeholder={t('manager.portUserPass')}
-                      value={reinstallInput}
-                      onChange={(e) => setReinstallInput(e.target.value)}
-                    />
-                    <div className="flex">
+                    {/* Change Note */}
+                    <div className="flex grow flex-col gap-1 max-[496px]:flex-row">
+                      <input
+                        type="text"
+                        placeholder={t('manager.enterNote')}
+                        value={noteInput}
+                        onChange={(e) => setNoteInput(e.target.value)}
+                      />
                       <button
-                        className="bg-bg-reinstall flex flex-1 items-center justify-center rounded-l-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
-                        onClick={handleReinstall}
+                        className="bg-action flex w-full items-center justify-center rounded-lg px-3 py-2 font-medium transition-colors duration-200 hover:brightness-(--highlight-brightness)"
+                        style={{ '--action-color': 'var(--orange)' }}
+                        onClick={handleChangeNote}
                         disabled={isProcessing}
                       >
                         <svg
@@ -833,45 +813,71 @@ export default function ProxyManager() {
                           viewBox="0 0 640 640"
                           className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:h-7 sm:w-7"
                         >
-                          <path d="M544.1 256L552 256C565.3 256 576 245.3 576 232L576 88C576 78.3 570.2 69.5 561.2 65.8C552.2 62.1 541.9 64.2 535 71L483.3 122.8C439 86.1 382 64 320 64C191 64 84.3 159.4 66.6 283.5C64.1 301 76.2 317.2 93.7 319.7C111.2 322.2 127.4 310 129.9 292.6C143.2 199.5 223.3 128 320 128C364.4 128 405.2 143 437.7 168.3L391 215C384.1 221.9 382.1 232.2 385.8 241.2C389.5 250.2 398.3 256 408 256L544.1 256zM573.5 356.5C576 339 563.8 322.8 546.4 320.3C529 317.8 512.7 330 510.2 347.4C496.9 440.4 416.8 511.9 320.1 511.9C275.7 511.9 234.9 496.9 202.4 471.6L249 425C255.9 418.1 257.9 407.8 254.2 398.8C250.5 389.8 241.7 384 232 384L88 384C74.7 384 64 394.7 64 408L64 552C64 561.7 69.8 570.5 78.8 574.2C87.8 577.9 98.1 575.8 105 569L156.8 517.2C201 553.9 258 576 320 576C449 576 555.7 480.6 573.4 356.5z" />
+                          <path d="M535.6 85.7C513.7 63.8 478.3 63.8 456.4 85.7L432 110.1L529.9 208L554.3 183.6C576.2 161.7 576.2 126.3 554.3 104.4L535.6 85.7zM236.4 305.7C230.3 311.8 225.6 319.3 222.9 327.6L193.3 416.4C190.4 425 192.7 434.5 199.1 441C205.5 447.5 215 449.7 223.7 446.8L312.5 417.2C320.7 414.5 328.2 409.8 334.4 403.7L496 241.9L398.1 144L236.4 305.7zM160 128C107 128 64 171 64 224L64 480C64 533 107 576 160 576L416 576C469 576 512 533 512 480L512 384C512 366.3 497.7 352 480 352C462.3 352 448 366.3 448 384L448 480C448 497.7 433.7 512 416 512L160 512C142.3 512 128 497.7 128 480L128 224C128 206.3 142.3 192 160 192L256 192C273.7 192 288 177.7 288 160C288 142.3 273.7 128 256 128L160 128z" />
                         </svg>
-                        {t('manager.reinstall')}
+                        {t('manager.changeNote')}
                       </button>
-                      <DropDown
-                        options={['HTTPS', 'SOCKS5']}
-                        value={reinstallType}
-                        onChange={setReinstallType}
-                        className="rounded-r-lg"
+                    </div>
+                    {/* Reinstall */}
+                    <div className="grow space-y-1">
+                      <input
+                        type="text"
+                        placeholder={t('manager.portUserPass')}
+                        value={reinstallInput}
+                        onChange={(e) => setReinstallInput(e.target.value)}
                       />
+                      <div className="flex">
+                        <button
+                          className="bg-action flex flex-1 items-center justify-center rounded-l-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
+                          style={{ '--action-color': 'var(--primary)' }}
+                          onClick={handleReinstall}
+                          disabled={isProcessing}
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 640 640"
+                            className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:h-7 sm:w-7"
+                          >
+                            <path d="M544.1 256L552 256C565.3 256 576 245.3 576 232L576 88C576 78.3 570.2 69.5 561.2 65.8C552.2 62.1 541.9 64.2 535 71L483.3 122.8C439 86.1 382 64 320 64C191 64 84.3 159.4 66.6 283.5C64.1 301 76.2 317.2 93.7 319.7C111.2 322.2 127.4 310 129.9 292.6C143.2 199.5 223.3 128 320 128C364.4 128 405.2 143 437.7 168.3L391 215C384.1 221.9 382.1 232.2 385.8 241.2C389.5 250.2 398.3 256 408 256L544.1 256zM573.5 356.5C576 339 563.8 322.8 546.4 320.3C529 317.8 512.7 330 510.2 347.4C496.9 440.4 416.8 511.9 320.1 511.9C275.7 511.9 234.9 496.9 202.4 471.6L249 425C255.9 418.1 257.9 407.8 254.2 398.8C250.5 389.8 241.7 384 232 384L88 384C74.7 384 64 394.7 64 408L64 552C64 561.7 69.8 570.5 78.8 574.2C87.8 577.9 98.1 575.8 105 569L156.8 517.2C201 553.9 258 576 320 576C449 576 555.7 480.6 573.4 356.5z" />
+                          </svg>
+                          {t('manager.reinstall')}
+                        </button>
+                        <DropDown
+                          options={['HTTPS', 'SOCKS5']}
+                          value={reinstallType}
+                          onChange={setReinstallType}
+                          className="rounded-r-lg"
+                        />
+                      </div>
                     </div>
                   </div>
 
-                  {/* Change IP */}
-                  <div className="col-start-1 col-end-3 row-start-3 row-end-4 m-1 mb-0 flex self-start md:col-end-2">
-                    <button
-                      className="bg-bg-changeIp flex w-full items-center justify-center rounded-l-lg px-3 py-2 font-medium transition-colors duration-200 hover:brightness-(--highlight-brightness)"
-                      onClick={handleChangeIp}
-                      disabled={isProcessing}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 640 640"
-                        className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:h-7 sm:w-7"
+                  <div className="flex w-full flex-wrap justify-center gap-2 sm:gap-3">
+                    {/* Change IP */}
+                    <div className="flex grow">
+                      <button
+                        className="bg-action flex w-full items-center justify-center rounded-l-lg px-3 py-2 font-medium whitespace-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
+                        style={{ '--action-color': 'var(--red)' }}
+                        onClick={handleChangeIp}
+                        disabled={isProcessing}
                       >
-                        <path d="M566.6 214.6L470.6 310.6C461.4 319.8 447.7 322.5 435.7 317.5C423.7 312.5 416 300.9 416 288L416 224L96 224C78.3 224 64 209.7 64 192C64 174.3 78.3 160 96 160L416 160L416 96C416 83.1 423.8 71.4 435.8 66.4C447.8 61.4 461.5 64.2 470.7 73.3L566.7 169.3C579.2 181.8 579.2 202.1 566.7 214.6zM169.3 566.6L73.3 470.6C60.8 458.1 60.8 437.8 73.3 425.3L169.3 329.3C178.5 320.1 192.2 317.4 204.2 322.4C216.2 327.4 224 339.1 224 352L224 416L544 416C561.7 416 576 430.3 576 448C576 465.7 561.7 480 544 480L224 480L224 544C224 556.9 216.2 568.6 204.2 573.6C192.2 578.6 178.5 575.8 169.3 566.7z" />
-                      </svg>
-                      {t('manager.changeIp')}
-                    </button>
-                    <DropDown
-                      options={['HTTPS', 'SOCKS5']}
-                      value={changeIpType}
-                      onChange={setChangeIpType}
-                      className="rounded-r-lg"
-                    />
-                  </div>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 640 640"
+                          className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:h-7 sm:w-7"
+                        >
+                          <path d="M566.6 214.6L470.6 310.6C461.4 319.8 447.7 322.5 435.7 317.5C423.7 312.5 416 300.9 416 288L416 224L96 224C78.3 224 64 209.7 64 192C64 174.3 78.3 160 96 160L416 160L416 96C416 83.1 423.8 71.4 435.8 66.4C447.8 61.4 461.5 64.2 470.7 73.3L566.7 169.3C579.2 181.8 579.2 202.1 566.7 214.6zM169.3 566.6L73.3 470.6C60.8 458.1 60.8 437.8 73.3 425.3L169.3 329.3C178.5 320.1 192.2 317.4 204.2 322.4C216.2 327.4 224 339.1 224 352L224 416L544 416C561.7 416 576 430.3 576 448C576 465.7 561.7 480 544 480L224 480L224 544C224 556.9 216.2 568.6 204.2 573.6C192.2 578.6 178.5 575.8 169.3 566.7z" />
+                        </svg>
+                        {t('manager.changeIp')}
+                      </button>
+                      <DropDown
+                        options={['HTTPS', 'SOCKS5']}
+                        value={changeIpType}
+                        onChange={setChangeIpType}
+                        className="rounded-r-lg"
+                      />
+                    </div>
 
-                  {/* Simple button */}
-                  <div className="col-start-3 col-end-4 row-start-2 row-end-4 mr-1 grid flex-1 grid-cols-1 gap-1 sm:mr-0 md:col-start-2 md:row-start-3 md:grid-cols-3">
                     <button
                       onClick={() => {
                         const rows = selectedRowsRef.current
@@ -894,7 +900,8 @@ export default function ProxyManager() {
                             )
                         )
                       }}
-                      className="bg-bg-copyIp m-0.5 flex items-center justify-center rounded-lg px-3 py-2 font-medium transition-colors duration-200 hover:brightness-(--highlight-brightness) sm:m-1"
+                      className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
+                      style={{ '--action-color': 'var(--purple)' }}
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -906,7 +913,8 @@ export default function ProxyManager() {
                       {t('manager.copyIp')}
                     </button>
                     <button
-                      className="bg-bg-pause m-0.5 flex items-center justify-center rounded-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness) sm:m-1"
+                      className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap hover:brightness-(--highlight-brightness)"
+                      style={{ '--action-color': 'var(--red)' }}
                       onClick={handlePause}
                       disabled={isProcessing}
                     >
@@ -921,7 +929,8 @@ export default function ProxyManager() {
                     </button>
 
                     <button
-                      className="bg-bg-renew m-0.5 flex items-center justify-center rounded-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness) sm:m-1"
+                      className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap hover:brightness-(--highlight-brightness)"
+                      style={{ '--action-color': 'var(--yellow)' }}
                       onClick={handleRenew}
                       disabled={isProcessing}
                     >
@@ -934,73 +943,79 @@ export default function ProxyManager() {
                       </svg>
                       {t('manager.renew')}
                     </button>
+
+                    <button
+                      id="getInfoBtn"
+                      className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap hover:brightness-(--highlight-brightness)"
+                      style={{ '--action-color': 'var(--primary)' }}
+                      onClick={() => {
+                        const rows = selectedRowsRef.current
+                        if (rows.length === 0)
+                          return addToast(t('manager.noRowsSelected'), 'warning')
+                        const text = rows
+                          .map((r) => {
+                            const [ip, port] = (r.ip_port || '').split(':')
+                            const [user, pass] = (r.user_pass || '').split(':')
+                            return [ip, port, user, pass].filter(Boolean).join(':')
+                          })
+                          .join('\n')
+                        safeCopy(text).then(
+                          (ok) =>
+                            ok &&
+                            addToast(
+                              <>
+                                {t('manager.copied')}{' '}
+                                <span className="text-text-toast-success">{rows.length}</span>{' '}
+                                {t('manager.copiedProxy')}
+                              </>,
+                              'success'
+                            )
+                        )
+                      }}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 448 512"
+                        className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:h-6 sm:w-6"
+                      >
+                        <path d="M384 32H64C28.654 32 0 60.652 0 96V416C0 451.344 28.654 480 64 480H384C419.346 480 448 451.344 448 416V96C448 60.652 419.346 32 384 32ZM224 128C241.674 128 256 142.326 256 160C256 177.672 241.674 192 224 192S192 177.672 192 160C192 142.326 206.326 128 224 128ZM264 384H184C170.75 384 160 373.25 160 360S170.75 336 184 336H200V272H192C178.75 272 168 261.25 168 248S178.75 224 192 224H224C237.25 224 248 234.75 248 248V336H264C277.25 336 288 346.75 288 360S277.25 384 264 384Z" />
+                      </svg>
+                      {t('manager.getInfo')}
+                    </button>
+
+                    <button
+                      className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap hover:brightness-(--highlight-brightness)"
+                      style={{ '--action-color': 'var(--orange)' }}
+                      onClick={handleReboot}
+                      disabled={isProcessing}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 16 16"
+                        className="mr-1 h-[18px] w-[18px] shrink-0 fill-current sm:mr-2 sm:h-6 sm:w-6"
+                      >
+                        <path d="m 8 0 c -0.550781 0 -1 0.449219 -1 1 v 5 c 0 0.550781 0.449219 1 1 1 s 1 -0.449219 1 -1 v -5 c 0 -0.550781 -0.449219 -1 -1 -1 z m -7 1 l 2.050781 2.050781 c -2.117187 2.117188 -2.652343 5.355469 -1.332031 8.039063 c 1.324219 2.683594 4.214844 4.238281 7.179688 3.851562 c 2.96875 -0.386718 5.367187 -2.625 5.960937 -5.554687 c 0.59375 -2.933594 -0.75 -5.929688 -3.335937 -7.433594 c -0.476563 -0.28125 -1.089844 -0.117187 -1.367188 0.359375 s -0.117188 1.089844 0.359375 1.367188 c 1.851563 1.078124 2.808594 3.207031 2.382813 5.3125 c -0.421876 2.101562 -2.128907 3.691406 -4.253907 3.96875 c -2.128906 0.273437 -4.183593 -0.828126 -5.128906 -2.753907 s -0.566406 -4.226562 0.949219 -5.742187 l 1.535156 1.535156 v -4.003906 c 0 -0.519532 -0.449219 -0.996094 -1 -0.996094 z m 0 0" />
+                      </svg>
+                      {t('manager.reboot')}
+                    </button>
+
+                    <button
+                      className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap hover:brightness-(--highlight-brightness)"
+                      style={{ '--action-color': 'var(--green)' }}
+                      onClick={() => setBuyDialogOpen(true)}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 640 640"
+                        className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:h-6 sm:w-6"
+                      >
+                        <path d="M0 72C0 58.7 10.7 48 24 48L69.3 48C96.4 48 119.6 67.4 124.4 94L124.8 96L537.5 96C557.5 96 572.6 114.2 568.9 133.9L537.8 299.8C532.1 330.1 505.7 352 474.9 352L171.3 352L176.4 380.3C178.5 391.7 188.4 400 200 400L456 400C469.3 400 480 410.7 480 424C480 437.3 469.3 448 456 448L200.1 448C165.3 448 135.5 423.1 129.3 388.9L77.2 102.6C76.5 98.8 73.2 96 69.3 96L24 96C10.7 96 0 85.3 0 72zM160 528C160 501.5 181.5 480 208 480C234.5 480 256 501.5 256 528C256 554.5 234.5 576 208 576C181.5 576 160 554.5 160 528zM384 528C384 501.5 405.5 480 432 480C458.5 480 480 501.5 480 528C480 554.5 458.5 576 432 576C405.5 576 384 554.5 384 528zM336 142.4C322.7 142.4 312 153.1 312 166.4L312 200L278.4 200C265.1 200 254.4 210.7 254.4 224C254.4 237.3 265.1 248 278.4 248L312 248L312 281.6C312 294.9 322.7 305.6 336 305.6C349.3 305.6 360 294.9 360 281.6L360 248L393.6 248C406.9 248 417.6 237.3 417.6 224C417.6 210.7 406.9 200 393.6 200L360 200L360 166.4C360 153.1 349.3 142.4 336 142.4z" />
+                      </svg>
+                      {t('manager.buyMore')}
+                    </button>
                   </div>
                 </div>
-                <div className="mt-1 flex flex-wrap">
-                  <button
-                    id="getInfoBtn"
-                    className="bg-bg-getInfo m-1 flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
-                    onClick={() => {
-                      const rows = selectedRowsRef.current
-                      if (rows.length === 0) return addToast(t('manager.noRowsSelected'), 'warning')
-                      const text = rows
-                        .map((r) => {
-                          const [ip, port] = (r.ip_port || '').split(':')
-                          const [user, pass] = (r.user_pass || '').split(':')
-                          return [ip, port, user, pass].filter(Boolean).join(':')
-                        })
-                        .join('\n')
-                      safeCopy(text).then(
-                        (ok) =>
-                          ok &&
-                          addToast(
-                            <>
-                              {t('manager.copied')}{' '}
-                              <span className="text-text-toast-success">{rows.length}</span>{' '}
-                              {t('manager.copiedProxy')}
-                            </>,
-                            'success'
-                          )
-                      )
-                    }}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 448 512"
-                      className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:h-6 sm:w-6"
-                    >
-                      <path d="M384 32H64C28.654 32 0 60.652 0 96V416C0 451.344 28.654 480 64 480H384C419.346 480 448 451.344 448 416V96C448 60.652 419.346 32 384 32ZM224 128C241.674 128 256 142.326 256 160C256 177.672 241.674 192 224 192S192 177.672 192 160C192 142.326 206.326 128 224 128ZM264 384H184C170.75 384 160 373.25 160 360S170.75 336 184 336H200V272H192C178.75 272 168 261.25 168 248S178.75 224 192 224H224C237.25 224 248 234.75 248 248V336H264C277.25 336 288 346.75 288 360S277.25 384 264 384Z" />
-                    </svg>
-                    {t('manager.getInfo')}
-                  </button>
-                  <button
-                    className="bg-bg-reboot m-1 flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
-                    onClick={handleReboot}
-                    disabled={isProcessing}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 16 16"
-                      className="mr-1 h-[18px] w-[18px] shrink-0 fill-current sm:mr-2 sm:h-6 sm:w-6"
-                    >
-                      <path d="m 8 0 c -0.550781 0 -1 0.449219 -1 1 v 5 c 0 0.550781 0.449219 1 1 1 s 1 -0.449219 1 -1 v -5 c 0 -0.550781 -0.449219 -1 -1 -1 z m -7 1 l 2.050781 2.050781 c -2.117187 2.117188 -2.652343 5.355469 -1.332031 8.039063 c 1.324219 2.683594 4.214844 4.238281 7.179688 3.851562 c 2.96875 -0.386718 5.367187 -2.625 5.960937 -5.554687 c 0.59375 -2.933594 -0.75 -5.929688 -3.335937 -7.433594 c -0.476563 -0.28125 -1.089844 -0.117187 -1.367188 0.359375 s -0.117188 1.089844 0.359375 1.367188 c 1.851563 1.078124 2.808594 3.207031 2.382813 5.3125 c -0.421876 2.101562 -2.128907 3.691406 -4.253907 3.96875 c -2.128906 0.273437 -4.183593 -0.828126 -5.128906 -2.753907 s -0.566406 -4.226562 0.949219 -5.742187 l 1.535156 1.535156 v -4.003906 c 0 -0.519532 -0.449219 -0.996094 -1 -0.996094 z m 0 0" />
-                    </svg>
-                    {t('manager.reboot')}
-                  </button>
-                  <button
-                    className="bg-bg-changeIp m-1 flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
-                    onClick={() => setBuyDialogOpen(true)}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 640 640"
-                      className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:h-6 sm:w-6"
-                    >
-                      <path d="M0 72C0 58.7 10.7 48 24 48L69.3 48C96.4 48 119.6 67.4 124.4 94L124.8 96L537.5 96C557.5 96 572.6 114.2 568.9 133.9L537.8 299.8C532.1 330.1 505.7 352 474.9 352L171.3 352L176.4 380.3C178.5 391.7 188.4 400 200 400L456 400C469.3 400 480 410.7 480 424C480 437.3 469.3 448 456 448L200.1 448C165.3 448 135.5 423.1 129.3 388.9L77.2 102.6C76.5 98.8 73.2 96 69.3 96L24 96C10.7 96 0 85.3 0 72zM160 528C160 501.5 181.5 480 208 480C234.5 480 256 501.5 256 528C256 554.5 234.5 576 208 576C181.5 576 160 554.5 160 528zM384 528C384 501.5 405.5 480 432 480C458.5 480 480 501.5 480 528C480 554.5 458.5 576 432 576C405.5 576 384 554.5 384 528zM336 142.4C322.7 142.4 312 153.1 312 166.4L312 200L278.4 200C265.1 200 254.4 210.7 254.4 224C254.4 237.3 265.1 248 278.4 248L312 248L312 281.6C312 294.9 322.7 305.6 336 305.6C349.3 305.6 360 294.9 360 281.6L360 248L393.6 248C406.9 248 417.6 237.3 417.6 224C417.6 210.7 406.9 200 393.6 200L360 200L360 166.4C360 153.1 349.3 142.4 336 142.4z" />
-                    </svg>
-                    {t('manager.buyMore')}
-                  </button>
-                </div>
+                <div className="mt-1 flex flex-wrap"></div>
               </div>
             </div>
           </div>
@@ -1033,7 +1048,8 @@ export default function ProxyManager() {
         extraBtn={
           <button
             id="reloadBtn"
-            className="bg-bg-reboot rounded-lg px-2 py-2 hover:brightness-(--highlight-brightness)"
+            className="bg-action rounded-lg px-2 py-2 hover:brightness-(--highlight-brightness)"
+            style={{ '--action-color': 'var(--orange)' }}
             onClick={() => {
               setReceivedData([...data])
               setRenderingReceived(true)

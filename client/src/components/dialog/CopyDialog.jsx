@@ -107,7 +107,7 @@ export default function CopyDialog({ isOpen, onClose, text }) {
       <textarea readOnly value={text} className="min-h-48" onClick={(e) => e.target.select()} />
       <button
         onClick={handleClose}
-        className="bg-bg-pause mt-3 self-end rounded-lg px-4 py-2 font-medium hover:brightness-(--highlight-brightness)"
+        className="bg-red mt-3 self-end rounded-lg px-4 py-2 font-medium hover:brightness-(--highlight-brightness)"
       >
         {t('dialog.close')}
       </button>

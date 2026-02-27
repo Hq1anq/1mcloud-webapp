@@ -144,7 +144,7 @@ const vi = {
   'checker.enterAndClick': 'Nhập proxy và nhấn',
 
   // Proxy Manager
-  'manager.enterIps': 'Nhập IPs',
+  'manager.enterIps': 'Nhập IP',
   'manager.onePerLine': '(mỗi dòng một IP)',
   'manager.delete': 'Xóa',
   'manager.enterAmount': 'Nhập số lượng',

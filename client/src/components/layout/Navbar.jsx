@@ -63,7 +63,9 @@ export default function Navbar() {
   )
 
   return (
-    <nav className="bg-navbar border-b-card-border z-50 flex flex-col items-center justify-between gap-1 border-b-2 px-3 py-1 shadow-md select-none sm:px-5 md:flex-row md:py-3">
+    <nav
+      className={`bg-navbar border-b-card-border z-50 flex items-center justify-between gap-1 border-b-2 px-3 py-1 shadow-md select-none md:px-5 md:py-3 ${isAuthenticated ? 'flex-row flex-wrap md:flex-nowrap' : 'flex-col md:flex-row'}`}
+    >
       {isAuthenticated ? (
         <>
           {Logo}

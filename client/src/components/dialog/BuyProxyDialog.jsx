@@ -430,7 +430,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
               className={`group flex h-12 w-full items-center justify-center gap-2 rounded-lg font-semibold text-white shadow-sm transition-all ${
                 !agreeTerms || summary.warning === 'Tài khoản không đủ'
                   ? 'cursor-not-allowed bg-gray-500 opacity-50'
-                  : 'bg-bg-getInfo hover:brightness-(--highlight-brightness)'
+                  : 'bg-blue hover:brightness-(--highlight-brightness)'
               }`}
             >
               <span>{t('buy.payNow')}</span>

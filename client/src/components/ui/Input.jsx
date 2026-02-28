@@ -16,7 +16,7 @@ export default function Input({
   return (
     <div className={`mb-4 w-full ${className}`}>
       {label && (
-        <label htmlFor={id} className="text-text-secondary mb-1 block text-sm font-medium">
+        <label htmlFor={id} className="text-text-primary mb-1 block text-sm font-medium">
           {label}
         </label>
       )}
@@ -24,7 +24,7 @@ export default function Input({
         <input
           type={inputType}
           id={id}
-          className={`bg-navbar text-text-secondary placeholder-text-muted w-full rounded-lg border px-3 py-2 transition-all focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none ${
+          className={`bg-navbar text-text-primary placeholder-text-muted w-full rounded-lg border px-3 py-2 transition-all focus:border-transparent focus:ring-2 focus:ring-blue-500 focus:outline-none ${
             error ? 'border-error-cell focus:ring-error-cell' : 'border-border-input'
           }`}
           {...props}

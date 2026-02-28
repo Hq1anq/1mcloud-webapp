@@ -3,9 +3,9 @@ import { NavLink } from 'react-router-dom'
 import UserMenu from './UserMenu'
 
 export default function Navbar() {
-  const linkBase = 'text-text-secondary py-2 px-3 rounded-sm md:p-0 flex items-center'
-  const active = 'bg-text-title md:bg-transparent text-[#cbd5e1] md:text-text-title'
-  const inactive = 'md:hover:text-text-title hover:bg-navbar-menu-hover md:hover:bg-transparent'
+  const linkBase = 'text-text-primary py-2 px-3 rounded-sm md:p-0 flex items-center'
+  const active = 'bg-wrapper md:bg-transparent text-[#cbd5e1] md:text-text-title'
+  const inactive = 'md:hover:text-text-title hover:bg-bg-hover md:hover:bg-transparent'
 
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const toggleMenu = () => {
@@ -15,7 +15,7 @@ export default function Navbar() {
   const navLinkClass = ({ isActive }) => `${linkBase} ${isActive ? active : inactive}`
 
   return (
-    <nav className="bg-navbar border-b-border sticky top-0 z-50 flex flex-wrap items-center justify-between border-b-2 px-5 py-3 shadow-md select-none">
+    <nav className="bg-navbar border-b-card-border z-50 flex flex-wrap items-center justify-between border-b-2 px-3 py-3 shadow-md select-none sm:px-5">
       {/* Logo and Title */}
       <div className="flex items-center space-x-4">
         <svg
@@ -46,7 +46,7 @@ export default function Navbar() {
         <button
           id="menu-toggle"
           type="button"
-          className="hover:bg-navbar-menu-hover text-text-muted inline-flex h-10 w-10 items-center justify-center rounded-lg p-2 md:hidden"
+          className="hover:bg-bg-hover text-text-muted inline-flex h-10 w-10 items-center justify-center rounded-lg p-2 md:hidden"
           onClick={toggleMenu}
         >
           <svg
@@ -70,10 +70,10 @@ export default function Navbar() {
 
       {/* Menu Items */}
       <ul
-        className={`bg-navbar-menu flex w-full flex-col justify-end overflow-hidden rounded-lg font-medium md:mr-8 md:max-h-none md:w-auto md:flex-1 md:flex-row md:items-center md:space-x-8 md:bg-transparent ${isMenuOpen ? 'mt-4 max-h-[500px] p-4' : 'max-h-0'}`}
+        className={`bg-surface flex w-full flex-col justify-end overflow-hidden rounded-lg font-medium md:mr-8 md:max-h-none md:w-auto md:flex-1 md:flex-row md:items-center md:space-x-8 md:bg-transparent ${isMenuOpen ? 'mt-4 max-h-[500px] p-4' : 'max-h-0'}`}
       >
         <li>
-          <NavLink to="/" className={navLinkClass}>
+          <NavLink to="/" className={navLinkClass} onClick={() => setIsMenuOpen(false)}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 640 640"
@@ -85,7 +85,7 @@ export default function Navbar() {
           </NavLink>
         </li>
         <li>
-          <NavLink to="/proxyChecker" className={navLinkClass}>
+          <NavLink to="/proxyChecker" className={navLinkClass} onClick={() => setIsMenuOpen(false)}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 640 640"
@@ -97,7 +97,7 @@ export default function Navbar() {
           </NavLink>
         </li>
         <li>
-          <NavLink to="/proxyManager" className={navLinkClass}>
+          <NavLink to="/proxyManager" className={navLinkClass} onClick={() => setIsMenuOpen(false)}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 640 640"

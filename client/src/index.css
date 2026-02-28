@@ -6,8 +6,12 @@
   --color-surface: var(--bg-surface);
   --color-wrapper: var(--bg-wrapper);
   --color-thead: var(--bg-thead);
+  --color-navbar: var(--bg-navbar);
+
+  --color-primary: var(--primary);
   --color-dropdown: var(--bg-dropdown);
   --color-dialog: var(--bg-dialog);
+  --color-terminal: var(--bg-terminal);
   --color-checkbox: var(--bg-checkbox);
 
   --color-toast: var(--bg-toast);
@@ -15,9 +19,6 @@
   --color-text-toast-success: var(--text-toast-success);
   --color-text-toast-error: var(--text-toast-error);
 
-  --color-navbar: var(--bg-navbar);
-  --color-navbar-menu: var(--bg-navbar-menu);
-  --color-navbar-menu-hover: var(--bg-navbar-menu-hover);
 
   --color-bg-hover: var(--bg-hover);
   --color-bg-selected: var(--bg-selected);
@@ -35,7 +36,6 @@
 
   /* Border */
   --color-border: var(--border);
-  --color-border-checkbox-hover: var(--border-checkbox-hover);
 
   --color-success-cell: var(--success-cell);
   --color-error-cell: var(--error-cell);
@@ -62,6 +62,13 @@
   --color-bg-refund: var(--bg-refund);
   --color-bg-renew: var(--bg-renew);
   --color-bg-getInfo: var(--bg-getInfo);
+
+  /* Home Page */
+  --color-home-hero-from: var(--home-hero-gradient-from);
+  --color-home-hero-to: var(--home-hero-gradient-to);
+  --color-home-section-alt: var(--home-section-alt);
+  --color-card-border: var(--card-border);
+  --color-home-card-icon-bg: var(--home-card-icon-bg);
 
   --breakpoint-sm: 749px;
   --breakpoint-md: 883px;
@@ -96,19 +103,12 @@
 
 /* Theme Variables */
 :root {
-  /* Dark Theme colors - Modern Premium Slate */
   --dark-900: #0b0f19;
   --dark-800: #1a2130;
   --dark-700: #293347;
   --dark-600: #39455d;
   --dark-500: #485774;
   --dark-400: #57698b;
-  /* Light Theme Colors */
-  --light-100: #f8fafc;
-  --light-200: #e2e8f0;
-  --light-300: #cbd5e1;
-  --light-400: #94a3b8;
-  --light-500: #64748b;
 }
 
 [data-theme='light'] {
@@ -117,8 +117,12 @@
   --bg-surface: var(--color-sky-100);
   --bg-wrapper: var(--color-sky-300);
   --bg-thead: var(--color-sky-600);
+  --bg-navbar: var(--color-cyan-50);
+
+  --primary: #007bfc;
   --bg-dropdown: var(--color-amber-200);
-  --bg-dialog: var(--light-100);
+  --bg-dialog: var(--color-cyan-50);
+  --bg-terminal: var(--color-sky-100);
   --bg-checkbox: var(--color-yellow-100);
   --bg-oncheck: var(--color-yellow-300);
   --bg-checkmark: var(--color-sky-900);
@@ -128,9 +132,6 @@
   --text-toast-success: #86efac;
   --text-toast-error: #fca5a5;
 
-  --bg-navbar: var(--light-100);
-  --bg-navbar-menu: var(--light-200);
-  --bg-navbar-menu-hover: var(--light-300);
 
   --bg-hover: hsl(from var(--bg-thead) h calc(s - 10) calc(l + 55));
   --bg-selected: hsl(from var(--bg-thead) h calc(s - 20) calc(l + 45));
@@ -141,13 +142,12 @@
 
   /* Text Colors */
   --text-title: #007bfc;
-  --text-primary: var(--light-100);
-  --text-secondary: var(--dark-800);
+  --text-primary: var(--dark-800);
+  --text-secondary: #f8fafc;
   --text-muted: var(--color-slate-500);
 
   /* Border Colors */
   --border: var(--color-sky-500);
-  --border-checkbox-hover: var(--light-500);
 
   --logo-ring: #f9bb10;
   --logo-inner: #000000;
@@ -181,6 +181,13 @@
   --bg-refund: #f472b6;
   --bg-renew: #db2777;
   --bg-getInfo: #4f46e5;
+
+  /* Home Page */
+  --home-hero-gradient-from: var(--bg-body);
+  --home-hero-gradient-to: var(--color-blue-200);
+  --home-section-alt: var(--color-blue-100);
+  --card-border: var(--color-cyan-200);
+  --home-card-icon-bg: rgba(19, 127, 236, 0.1);
 }
 
 /* Dark Theme */
@@ -190,8 +197,12 @@
   --bg-surface: var(--dark-800);
   --bg-wrapper: var(--dark-600);
   --bg-thead: var(--dark-700);
+  --bg-navbar: #1e293b;
+
+  --primary: #4aa3ff;
   --bg-dropdown: var(--dark-800);
   --bg-dialog: var(--dark-600);
+  --bg-terminal: #0f172a;
   --bg-checkbox: var(--dark-600);
   --bg-oncheck: #053fe5;
   --bg-checkmark: #f3f4f6;
@@ -201,9 +212,6 @@
   --text-toast-success: #4ade80;
   --text-toast-error: #f87171;
 
-  --bg-navbar: #1e293b;
-  --bg-navbar-menu: #253349;
-  --bg-navbar-menu-hover: #2c3c57;
 
   --bg-hover: hsl(from var(--bg-thead) h calc(s - 3) l);
   --bg-selected: hsl(from var(--bg-thead) h calc(s - 3) calc(l + 5));
@@ -220,7 +228,6 @@
 
   /* Border Colors */
   --border: var(--dark-500);
-  --border-checkbox-hover: var(--dark-400);
 
   --logo-ring: #053fe5;
   --logo-inner: #e2e2e4;
@@ -254,6 +261,13 @@
   --bg-refund: #db2777;
   --bg-renew: #a1520c;
   --bg-getInfo: #263edc;
+
+  /* Home Page */
+  --home-hero-gradient-from: var(--bg-body);
+  --home-hero-gradient-to: #151B28;
+  --home-section-alt: var(--dark-800);
+  --card-border: #293347;
+  --home-card-icon-bg: rgba(59, 156, 255, 0.1);
 }
 
 /* Base theme colors without transitions */
@@ -294,14 +308,14 @@
 /* Custom base styles */
 @layer base {
   body {
-    @apply bg-body text-text-primary;
+    @apply bg-body text-text-secondary;
   }
 
   input[type='text'],
   input[type='number'],
   input[type='password'],
   textarea {
-    @apply bg-navbar text-text-secondary border-border w-full rounded-lg border-2 px-3 py-2 placeholder-gray-400 focus:border-(--logo-ring) focus:outline-none;
+    @apply bg-navbar text-text-primary border-border w-full rounded-lg border-2 px-3 py-2 placeholder-gray-400 focus:border-(--logo-ring) focus:outline-none;
   }
 
   /* Hides the arrows in Chrome, Safari, Edge */

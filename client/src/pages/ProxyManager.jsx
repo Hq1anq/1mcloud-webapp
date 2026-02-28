@@ -685,7 +685,7 @@ export default function ProxyManager() {
               {/* IPs Input */}
               <div className="relative flex flex-col sm:w-3/5">
                 <div className="mb-2 flex items-center justify-between">
-                  <label className="text-text-secondary flex items-center text-sm font-medium sm:text-base">
+                  <label className="text-text-primary flex items-center font-medium">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 24 24"

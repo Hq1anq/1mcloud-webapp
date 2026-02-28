@@ -23,7 +23,7 @@ export default function DropDown({ options, value, onChange, className }) {
   }
 
   return (
-    <div className="text-text-secondary relative flex" ref={containerRef}>
+    <div className="text-text-primary relative flex" ref={containerRef}>
       {/* Trigger */}
       <button
         className={`bg-dropdown flex w-full items-center justify-between border-0 px-3 py-2 focus:outline-none ${className || ''}`}

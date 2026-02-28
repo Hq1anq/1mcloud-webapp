@@ -96,7 +96,6 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
     if (isOpen) {
       fetchSupport('VN')
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen])
 
   // Calculate effect
@@ -200,7 +199,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
 
   return (
     <Dialog isOpen={isOpen} onClose={onClose} className="p-0!">
-      <div className="scroll-container text-text-secondary flex h-full max-h-[85vh] flex-col overflow-y-auto md:flex-row">
+      <div className="scroll-container text-text-primary flex h-full max-h-[85vh] flex-col overflow-y-auto md:flex-row">
         {/* Left Form Panel */}
         <div className="flex flex-1 flex-col gap-6 p-6 md:p-8 lg:p-10">
           <div className="flex flex-col gap-2">
@@ -228,7 +227,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
               </div>
 
               <label className="flex flex-1 flex-col gap-2">
-                <span className="text-text-secondary text-sm font-medium">Amount</span>
+                <span className="text-text-primary text-sm font-medium">Amount</span>
                 <input
                   type="number"
                   min="1"
@@ -241,12 +240,12 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
 
             <div className="flex flex-wrap items-center gap-5">
               <div className="flex min-w-56 flex-1 flex-col gap-2">
-                <span className="text-text-secondary text-sm font-medium">Nation</span>
+                <span className="text-text-primary text-sm font-medium">Nation</span>
                 {renderSelect(selectedNation, handleNationChange, supportData.nation?.option || {})}
               </div>
 
               <div className="flex flex-1 flex-col gap-2">
-                <span className="text-text-secondary text-sm font-medium">Range IP</span>
+                <span className="text-text-primary text-sm font-medium">Range IP</span>
                 {renderSelect(
                   selectedRangeIp,
                   (e) => setSelectedRangeIp(e.target.value),
@@ -257,14 +256,14 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
 
               {isps.length > 0 && (
                 <div className="flex flex-1 flex-col gap-2">
-                  <span className="text-text-secondary text-sm font-medium">Provider</span>
+                  <span className="text-text-primary text-sm font-medium">Provider</span>
                   {renderSelect(selectedIsp, (e) => setSelectedIsp(e.target.value), isps, true)}
                 </div>
               )}
 
               {states.length > 0 && (
                 <div className="flex flex-1 flex-col gap-2">
-                  <span className="text-text-secondary text-sm font-medium">State</span>
+                  <span className="text-text-primary text-sm font-medium">State</span>
                   {renderSelect(
                     selectedState,
                     (e) => setSelectedState(e.target.value),
@@ -282,7 +281,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
                     checked={randomUsername}
                     onChange={(e) => setRandomUsername(e.target.checked)}
                   />
-                  <span className="text-text-secondary text-sm font-medium">Random Username</span>
+                  <span className="text-text-primary text-sm font-medium">Random Username</span>
                 </div>
                 {!randomUsername && (
                   <input
@@ -300,7 +299,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
                     checked={randomPassword}
                     onChange={(e) => setRandomPassword(e.target.checked)}
                   />
-                  <span className="text-text-secondary text-sm font-medium">Random Password</span>
+                  <span className="text-text-primary text-sm font-medium">Random Password</span>
                 </div>
                 {!randomPassword && (
                   <input
@@ -318,7 +317,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
                     checked={randomPort}
                     onChange={(e) => setRandomPort(e.target.checked)}
                   />
-                  <span className="text-text-secondary text-sm font-medium">Random Port</span>
+                  <span className="text-text-primary text-sm font-medium">Random Port</span>
                 </div>
                 {!randomPort && (
                   <input
@@ -332,7 +331,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
             </div>
 
             <label className="flex flex-1 flex-col gap-2">
-              <span className="text-text-secondary text-sm font-medium">Note</span>
+              <span className="text-text-primary text-sm font-medium">Note</span>
               <textarea
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
@@ -398,7 +397,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
                 <Checkbox checked={autoRenew} onChange={(e) => setAutoRenew(e.target.checked)} />
                 <span
                   onClick={() => setAutoRenew(!autoRenew)}
-                  className="text-text-secondary cursor-pointer text-sm font-medium select-none"
+                  className="text-text-primary cursor-pointer text-sm font-medium select-none"
                 >
                   Auto Renew
                 </span>
@@ -407,7 +406,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
                 <Checkbox checked={agreeTerms} onChange={(e) => setAgreeTerms(e.target.checked)} />
                 <span
                   onClick={() => setAgreeTerms(!agreeTerms)}
-                  className="text-text-secondary cursor-pointer text-sm font-medium select-none"
+                  className="text-text-primary cursor-pointer text-sm font-medium select-none"
                 >
                   Agree to our terms of service.
                 </span>
@@ -442,7 +441,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
             </button>
             <button
               onClick={onClose}
-              className="text-text-muted hover:text-text-secondary h-12 w-full rounded-lg bg-transparent font-medium transition-colors"
+              className="text-text-muted hover:text-text-primary h-12 w-full rounded-lg bg-transparent font-medium transition-colors"
             >
               Cancel
             </button>

@@ -3,14 +3,17 @@ import { useEffect } from 'react'
 import { ToastProvider } from './context/ToastContext.jsx'
 import { SafeCopyProvider } from './context/SafeCopyContext.jsx'
 import { ConfirmProvider } from './context/ConfirmContext.jsx'
+import Navbar from './components/layout/Navbar.jsx'
+import Footer from './components/layout/Footer.jsx'
+import ScrollToTop from './components/layout/ScrollToTop.jsx'
+import useAuthStore from './store/useAuthStore'
+import useThemeStore from './store/useThemeStore'
+import Home from './pages/Home.jsx'
 import ProxyManager from './pages/ProxyManager.jsx'
 import ProxyChecker from './pages/ProxyChecker.jsx'
 import LoginPage from './pages/LoginPage.jsx'
 import SignupPage from './pages/SignupPage.jsx'
-import Navbar from './components/layout/Navbar.jsx'
-import Footer from './components/layout/Footer.jsx'
-import useAuthStore from './store/useAuthStore'
-import useThemeStore from './store/useThemeStore'
+import Contact from './pages/Contact.jsx'
 
 function App() {
   const { checkAuth, isAuthenticated } = useAuthStore()
@@ -30,51 +33,55 @@ function App() {
   }, [theme])
 
   return (
-    <div className="bg-body text-text-primary min-h-screen font-sans text-base sm:text-lg">
+    <div className="bg-body text-text-secondary flex h-screen flex-col overflow-hidden font-sans text-base sm:text-lg">
       <BrowserRouter>
+        <ScrollToTop />
         <Navbar />
-        <Routes>
-          <Route path="/" element={<Navigate to="/proxyManager" replace />} />
+        <div id="main-scroll-container" className="scroll-container w-full flex-1 overflow-y-auto">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/contact" element={<Contact />} />
 
-          <Route
-            path="/proxyManager"
-            element={
-              isAuthenticated ? (
+            <Route
+              path="/proxyManager"
+              element={
+                isAuthenticated ? (
+                  <ToastProvider>
+                    <SafeCopyProvider>
+                      <ConfirmProvider>
+                        <ProxyManager />
+                      </ConfirmProvider>
+                    </SafeCopyProvider>
+                  </ToastProvider>
+                ) : (
+                  <Navigate to="/login" replace />
+                )
+              }
+            />
+
+            <Route
+              path="/proxyChecker"
+              element={
                 <ToastProvider>
                   <SafeCopyProvider>
-                    <ConfirmProvider>
-                      <ProxyManager />
-                    </ConfirmProvider>
+                    <ProxyChecker />
                   </SafeCopyProvider>
                 </ToastProvider>
-              ) : (
-                <Navigate to="/login" replace />
-              )
-            }
-          />
+              }
+            />
 
-          <Route
-            path="/proxyChecker"
-            element={
-              <ToastProvider>
-                <SafeCopyProvider>
-                  <ProxyChecker />
-                </SafeCopyProvider>
-              </ToastProvider>
-            }
-          />
+            <Route
+              path="/login"
+              element={isAuthenticated ? <Navigate to="/" replace /> : <LoginPage />}
+            />
 
-          <Route
-            path="/login"
-            element={isAuthenticated ? <Navigate to="/" replace /> : <LoginPage />}
-          />
-
-          <Route
-            path="/signup"
-            element={isAuthenticated ? <Navigate to="/" replace /> : <SignupPage />}
-          />
-        </Routes>
-        <Footer />
+            <Route
+              path="/signup"
+              element={isAuthenticated ? <Navigate to="/" replace /> : <SignupPage />}
+            />
+          </Routes>
+          <Footer />
+        </div>
       </BrowserRouter>
     </div>
   )

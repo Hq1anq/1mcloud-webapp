@@ -108,7 +108,7 @@ export default function LoginPage() {
                 disabled={isLoading}
               />
               <span
-                className="text-text-secondary cursor-pointer text-sm"
+                className="text-text-primary cursor-pointer text-sm"
                 onClick={() =>
                   !isLoading && setFormData((prev) => ({ ...prev, remember: !prev.remember }))
                 }
@@ -134,7 +134,7 @@ export default function LoginPage() {
             {isLoading ? 'Logging in...' : 'Login'}
           </button>
 
-          <div className="text-text-secondary mt-4 text-center text-sm">
+          <div className="text-text-primary mt-4 text-center text-sm">
             Don't have an account?{' '}
             <Link
               to="/signup"

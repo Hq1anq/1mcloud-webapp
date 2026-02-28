@@ -234,12 +234,23 @@ const en = {
   'account.verified': 'Verified',
   'account.unverified': 'Unverified',
   'account.availableBalance': 'Available Balance',
-  'account.deposit': 'Add Funds',
+  'account.addfunds': 'Add Funds',
   'account.history': 'Transaction History',
   'account.discountHeading': 'Current Discount Level',
   'account.discountVps': 'VPS Discount',
   'account.discountProxy': 'Proxy Discount',
   'account.discountDedicate': 'Dedicate Discount',
+
+  // Add Funds Dialog
+  'addfunds.title': 'Add Funds',
+  'addfunds.transferInfo': 'Transfer Information',
+  'addfunds.bankName': 'Bank Name',
+  'addfunds.accountHolder': 'Account Holder',
+  'addfunds.accountNumber': 'Account Number',
+  'addfunds.transferContent': 'Transfer Content',
+  'addfunds.note': 'Note',
+  'addfunds.noteContent':
+    'Please transfer a minimum of 50,000 VND (fifty thousand Vietnamese Dong) for the system to process.',
 }
 
 export default en

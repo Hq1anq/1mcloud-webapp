@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import axiosInstance from '../lib/axios'
 import useAuthStore from '../store/useAuthStore'
 import { useTranslation } from '../i18n'
+import AddFundsDialog from '../components/dialog/AddFundsDialog'
 
 const PROFILE_CACHE_KEY = 'account-profile-cache'
 
@@ -41,6 +42,7 @@ export default function AccountPage() {
 
   const [profile, setProfile] = useState(getCachedProfile() || DEFAULT_PROFILE)
   const profileRef = useRef(profile)
+  const [showAddFunds, setShowAddFunds] = useState(false)
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -112,7 +114,7 @@ export default function AccountPage() {
                   </span>
                   {/* Verification badge */}
                   {profile?.is_verified ? (
-                    <span className="bg-green/15 text-account-verified-text inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium ring-1 ring-green-600/20 ring-inset">
+                    <span className="bg-green/15 text-green inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium ring-1 ring-green-600/20 ring-inset">
                       <svg className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
                         <path
                           fillRule="evenodd"
@@ -138,7 +140,7 @@ export default function AccountPage() {
           style={{ animationFillMode: 'both', animationDelay: '100ms' }}
         >
           {/* Background decoration */}
-          <div className="bg-account-glow absolute -top-10 -right-10 size-64 rounded-full blur-3xl" />
+          <div className="absolute -top-10 -right-10 size-64 rounded-full bg-white/15 blur-3xl" />
           <div className="relative z-10 flex flex-col gap-4">
             <div className="flex items-center gap-2 text-blue-100">
               <svg
@@ -164,7 +166,10 @@ export default function AccountPage() {
               </p>
             </div>
             <div className="mt-4 flex gap-3">
-              <button className="flex items-center gap-2 rounded-lg bg-white px-5 py-2.5 text-sm font-bold text-blue-600 shadow-sm transition-colors hover:bg-blue-50">
+              <button
+                onClick={() => setShowAddFunds(true)}
+                className="flex items-center gap-2 rounded-lg bg-white px-5 py-2.5 text-sm font-bold text-blue-600 shadow-sm transition-colors hover:bg-blue-50"
+              >
                 <svg
                   className="size-5 fill-none"
                   viewBox="0 0 24 24"
@@ -173,7 +178,7 @@ export default function AccountPage() {
                 >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                 </svg>
-                {t('account.deposit')}
+                {t('account.addfunds')}
               </button>
               <button className="flex items-center gap-2 rounded-lg border border-white/10 bg-blue-700/50 px-5 py-2.5 text-sm font-semibold text-white backdrop-blur-sm transition-colors hover:bg-blue-700/70">
                 <svg
@@ -281,6 +286,7 @@ export default function AccountPage() {
           />
         </div>
       </div>
+      <AddFundsDialog isOpen={showAddFunds} onClose={() => setShowAddFunds(false)} />
     </div>
   )
 }
@@ -319,7 +325,7 @@ function DiscountCard({ icon, colorVar, label, value }) {
         <p className="text-text-muted mb-1 text-sm font-medium">{label}</p>
         <p className="text-text-primary text-3xl font-bold tracking-tight">{value}%</p>
       </div>
-      <div className="bg-account-bar-track mt-2 h-1 w-full overflow-hidden rounded-full">
+      <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--color-surface)_80%,var(--border))]">
         <div
           className="h-full rounded-full transition-all duration-500"
           style={{ width: `${Math.min(value, 100)}%`, backgroundColor: 'var(--card-accent)' }}

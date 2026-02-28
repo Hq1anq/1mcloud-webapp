@@ -235,12 +235,23 @@ const vi = {
   'account.verified': 'Đã xác thực',
   'account.unverified': 'Chưa xác thực',
   'account.availableBalance': 'Số dư khả dụng',
-  'account.deposit': 'Nạp tiền',
+  'account.addfunds': 'Nạp tiền',
   'account.history': 'Lịch sử giao dịch',
   'account.discountHeading': 'Mức chiết khấu hiện tại',
   'account.discountVps': 'Ưu đãi VPS',
   'account.discountProxy': 'Ưu đãi Proxy',
   'account.discountDedicate': 'Ưu đãi Dedicate',
+
+  // Add Funds Dialog
+  'addfunds.title': 'Nạp tiền',
+  'addfunds.transferInfo': 'Thông tin chuyển khoản',
+  'addfunds.bankName': 'Tên ngân hàng',
+  'addfunds.accountHolder': 'Chủ tài khoản',
+  'addfunds.accountNumber': 'Số tài khoản',
+  'addfunds.transferContent': 'Nội dung chuyển khoản',
+  'addfunds.note': 'Lưu ý',
+  'addfunds.noteContent':
+    'Vui lòng chuyển khoản tối thiểu 50.000 VNĐ (năm mươi nghìn Việt Nam Đồng) để hệ thống có thể xử lý.',
 }
 
 export default vi

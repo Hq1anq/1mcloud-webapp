@@ -21,7 +21,6 @@
   --color-terminal: var(--bg-terminal);
   --color-checkbox: var(--bg-checkbox);
 
-
   --color-toast: var(--bg-toast);
   --color-text-toast: var(--text-toast);
   --color-text-toast-success: var(--text-toast-success);
@@ -59,23 +58,11 @@
   --color-bg-unknowed: var(--bg-unknowed);
   --color-text-unknowed: var(--text-unknowed);
 
-
   /* Home Page */
   --color-home-hero-from: var(--home-hero-gradient-from);
   --color-home-hero-to: var(--home-hero-gradient-to);
   --color-home-section-alt: var(--home-section-alt);
   --color-card-border: var(--card-border);
-
-  /* Account Page */
-  --color-account-phone-bg: var(--account-phone-bg);
-  --color-account-verified-text: var(--account-verified-text);
-  --color-account-unverified-bg: var(--account-unverified-bg);
-  --color-account-unverified-text: var(--account-unverified-text);
-  --color-account-glow: var(--account-glow);
-  --color-account-discount-vps-icon: var(--account-discount-vps-icon);
-  --color-account-discount-proxy-icon: var(--account-discount-proxy-icon);
-  --color-account-discount-dedicate-icon: var(--account-discount-dedicate-icon);
-  --color-account-bar-track: var(--account-bar-track);
 
   --breakpoint-sm: 749px;
   --breakpoint-md: 883px;
@@ -147,7 +134,6 @@
   --text-toast-success: #86efac;
   --text-toast-error: #fca5a5;
 
-
   --bg-hover: hsl(from var(--bg-thead) h calc(s - 10) calc(l + 55));
   --bg-selected: hsl(from var(--bg-thead) h calc(s - 20) calc(l + 45));
 
@@ -193,17 +179,6 @@
   --home-hero-gradient-to: var(--color-blue-200);
   --home-section-alt: var(--color-blue-100);
   --card-border: var(--color-cyan-200);
-
-  /* Account Page */
-  --account-phone-bg: #eff6ff;
-  --account-verified-text: #15803d;
-  --account-unverified-bg: #fef2f2;
-  --account-unverified-text: #b91c1c;
-  --account-glow: rgba(255, 255, 255, 0.1);
-  --account-discount-vps-icon: rgba(19, 127, 236, 0.1);
-  --account-discount-proxy-icon: rgba(147, 51, 234, 0.1);
-  --account-discount-dedicate-icon: rgba(234, 88, 12, 0.1);
-  --account-bar-track: #f1f5f9;
 }
 
 /* Dark Theme */
@@ -282,17 +257,6 @@
   --home-hero-gradient-to: #151B28;
   --home-section-alt: var(--dark-800);
   --card-border: #293347;
-
-  /* Account Page */
-  --account-phone-bg: rgba(59, 130, 246, 0.15);
-  --account-verified-text: #4ade80;
-  --account-unverified-bg: rgba(239, 68, 68, 0.15);
-  --account-unverified-text: #f87171;
-  --account-glow: rgba(255, 255, 255, 0.08);
-  --account-discount-vps-icon: rgba(74, 163, 255, 0.15);
-  --account-discount-proxy-icon: rgba(168, 85, 247, 0.15);
-  --account-discount-dedicate-icon: rgba(251, 146, 60, 0.15);
-  --account-bar-track: var(--dark-700);
 }
 
 /* Base theme colors without transitions */

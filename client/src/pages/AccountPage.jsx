@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
 import axiosInstance from '../lib/axios'
 import useAuthStore from '../store/useAuthStore'
 import { useTranslation } from '../i18n'
@@ -35,7 +34,6 @@ const DEFAULT_PROFILE = {
 
 export default function AccountPage() {
   const t = useTranslation()
-  const navigate = useNavigate()
   const { user } = useAuthStore()
   const username = user?.username || 'User'
   const avatarLetter = username.charAt(0).toUpperCase()

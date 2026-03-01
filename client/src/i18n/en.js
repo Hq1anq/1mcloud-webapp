@@ -201,7 +201,6 @@ const en = {
   'buy.type': 'Type',
   'buy.duration': 'Duration',
   'buy.amount': 'Amount',
-  'buy.enterQuantity': 'Enter quantity',
   'buy.nation': 'Nation',
   'buy.rangeIp': 'Range IP',
   'buy.provider': 'Provider',

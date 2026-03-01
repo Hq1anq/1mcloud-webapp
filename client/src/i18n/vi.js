@@ -202,7 +202,6 @@ const vi = {
   'buy.type': 'Loại',
   'buy.duration': 'Thời hạn',
   'buy.amount': 'Số lượng',
-  'buy.enterQuantity': 'Nhập số lượng',
   'buy.nation': 'Quốc gia',
   'buy.rangeIp': 'Dải IP',
   'buy.provider': 'Nhà cung cấp',

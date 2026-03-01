@@ -63,42 +63,42 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
     must_pay: '',
   })
 
-  const fetchSupport = async (nation) => {
-    try {
-      const res = await axiosInstance.get(`/server/proxy/support?nation=${nation}`)
-      if (res.data?.success) {
-        const info = res.data.info
-        setSupportData(info)
-
-        // Initialize Defaults
-        const types = Object.keys(info.type?.option || {})
-        if (types.length > 0) setSelectedType((prev) => (types.includes(prev) ? prev : types[1]))
-
-        const durations = Object.keys(info.duration?.option || {})
-        if (durations.length > 0)
-          setSelectedDuration((prev) => (durations.includes(prev) ? prev : durations[0]))
-
-        const rangeIps = Array.isArray(info.range_ip?.option) ? info.range_ip.option : []
-        if (rangeIps.length > 0)
-          setSelectedRangeIp((prev) => (rangeIps.includes(prev) ? prev : rangeIps[0]))
-
-        const isps = Array.isArray(info.isp?.option) ? info.isp.option : []
-        setSelectedIsp(isps.length > 0 ? isps[0] : '')
-
-        const states = Array.isArray(info.state?.option) ? info.state.option : []
-        setSelectedState(states.length > 0 ? states[0] : '')
-      }
-    } catch (err) {
-      console.error(err)
-    }
-  }
-
-  // Fetch init data
+  // Fetch support data whenever dialog is open and selectedNation changes
   useEffect(() => {
-    if (isOpen) {
-      fetchSupport('VN')
+    if (!isOpen) return
+
+    const fetchSupportData = async () => {
+      try {
+        const res = await axiosInstance.get(`/server/proxy/support?nation=${selectedNation}`)
+        if (res.data?.success) {
+          const info = res.data.info
+          setSupportData(info)
+
+          // Initialize Defaults
+          const types = Object.keys(info.type?.option || {})
+          if (types.length > 0) setSelectedType((prev) => (types.includes(prev) ? prev : types[1]))
+
+          const durations = Object.keys(info.duration?.option || {})
+          if (durations.length > 0)
+            setSelectedDuration((prev) => (durations.includes(prev) ? prev : durations[0]))
+
+          const rangeIps = Array.isArray(info.range_ip?.option) ? info.range_ip.option : []
+          if (rangeIps.length > 0)
+            setSelectedRangeIp((prev) => (rangeIps.includes(prev) ? prev : rangeIps[0]))
+
+          const isps = Array.isArray(info.isp?.option) ? info.isp.option : []
+          setSelectedIsp(isps.length > 0 ? isps[0] : '')
+
+          const states = Array.isArray(info.state?.option) ? info.state.option : []
+          setSelectedState(states.length > 0 ? states[0] : '')
+        }
+      } catch (err) {
+        console.error(err)
+      }
     }
-  }, [isOpen])
+
+    fetchSupportData()
+  }, [isOpen, selectedNation])
 
   // Calculate effect
   useEffect(() => {
@@ -121,9 +121,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
   }, [isOpen, supportData, amount, selectedNation, selectedDuration, appliedDiscount])
 
   const handleNationChange = (e) => {
-    const nationCode = e.target.value
-    setSelectedNation(nationCode)
-    fetchSupport(nationCode)
+    setSelectedNation(e.target.value)
   }
 
   const handlePay = async () => {
@@ -210,8 +208,8 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
           </div>
 
           <div className="flex flex-1 flex-col gap-5">
-            <div className="flex flex-wrap items-center gap-5">
-              <div className="flex flex-1 flex-col gap-2">
+            <div className="flex max-w-2xl flex-wrap items-center gap-5">
+              <div className="flex grow flex-col gap-2">
                 <span className="text-sm font-medium">{t('buy.type')}</span>
                 {renderSelect(
                   selectedType,
@@ -220,7 +218,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
                 )}
               </div>
 
-              <div className="flex flex-1 flex-col gap-2">
+              <div className="flex grow flex-col gap-2">
                 <span className="text-sm font-medium">{t('buy.duration')}</span>
                 {renderSelect(
                   selectedDuration,
@@ -229,25 +227,25 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
                 )}
               </div>
 
-              <label className="flex flex-1 flex-col gap-2">
+              <label className="flex flex-col gap-2">
                 <span className="text-text-primary text-sm font-medium">{t('buy.amount')}</span>
                 <input
+                  className="max-w-20"
                   type="number"
                   min="1"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  placeholder={t('buy.enterQuantity')}
                 />
               </label>
-            </div>
 
-            <div className="flex flex-wrap items-center gap-5">
-              <div className="flex min-w-56 flex-1 flex-col gap-2">
+              <div className="m-0 w-full border-0 p-0 max-[416px]:hidden"></div>
+
+              <div className="flex grow flex-col gap-2">
                 <span className="text-text-primary text-sm font-medium">{t('buy.nation')}</span>
                 {renderSelect(selectedNation, handleNationChange, supportData.nation?.option || {})}
               </div>
 
-              <div className="flex flex-1 flex-col gap-2">
+              <div className="flex grow flex-col gap-2">
                 <span className="text-text-primary text-sm font-medium">{t('buy.rangeIp')}</span>
                 {renderSelect(
                   selectedRangeIp,
@@ -258,7 +256,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
               </div>
 
               {isps.length > 0 && (
-                <div className="flex flex-1 flex-col gap-2">
+                <div className="flex grow flex-col gap-2">
                   <span className="text-text-primary text-sm font-medium">{t('buy.provider')}</span>
                   {renderSelect(selectedIsp, (e) => setSelectedIsp(e.target.value), isps, true)}
                 </div>

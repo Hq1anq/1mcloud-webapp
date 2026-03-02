@@ -1,9 +1,12 @@
 import { Link } from 'react-router-dom'
+import { useTranslation } from '../../i18n'
 
 export default function Footer() {
+  const t = useTranslation()
+
   return (
-    <div class="text-text-muted border-text-muted mt-16 w-full border-t px-4 pt-12">
-      <div class="mx-auto flex max-w-[1280px] flex-wrap gap-10">
+    <div className="text-text-muted border-border mt-16 w-full border-t px-4 pt-12">
+      <div className="mx-auto flex max-w-[1280px] flex-wrap gap-10">
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
             <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" className="size-12">
@@ -22,14 +25,11 @@ export default function Footer() {
             </svg>
             <h1 className="text-3xl font-bold">1mcloud</h1>
           </div>
-          <div className="max-w-lg">
-            Cung cấp giải pháp hạ tầng linh hoạt, bảo mật với toàn quyền quản trị và kết nối tốc độ
-            cao toàn cầu.
-          </div>
+          <div className="max-w-lg">{t('footer.desc')}</div>
         </div>
-        <div class="m-auto flex flex-wrap gap-20">
-          <div class="flex flex-col gap-4">
-            <h4 class="text-text-primary font-bold">Dịch vụ</h4>
+        <div className="m-auto flex flex-wrap gap-20">
+          <div className="flex flex-col gap-4">
+            <h4 className="text-text-primary font-bold">{t('footer.services')}</h4>
             <Link to="/#vps" className="social-link cursor-pointer">
               VPS
             </Link>
@@ -37,31 +37,27 @@ export default function Footer() {
               VPS GPU
             </Link>
             <Link to="/#proxy" className="social-link cursor-pointer">
-              Proxy dân cư
+              {t('footer.residentialProxy')}
             </Link>
             <Link to="/#proxy" className="social-link cursor-pointer">
               Proxy Datacenter
             </Link>
           </div>
-          <div class="flex flex-col gap-4">
-            <h4 class="text-text-primary font-bold">Thông tin</h4>
+          <div className="flex flex-col gap-4">
+            <h4 className="text-text-primary font-bold">{t('footer.info')}</h4>
             <Link to="/#hero" className="social-link cursor-pointer">
-              Về chúng tôi
+              {t('footer.aboutUs')}
             </Link>
             <a href="/contact" className="social-link cursor-pointer">
-              Liên hệ
+              {t('footer.contact')}
             </a>
-            <a href="/terms" className="social-link cursor-pointer">
-              Điều khoản sử dụng
-            </a>
-            <a href="/privacy" className="social-link cursor-pointer">
-              Chính sách bảo mật
-            </a>
+            <a className="social-link cursor-pointer">{t('footer.terms')}</a>
+            <a className="social-link cursor-pointer">{t('footer.privacy')}</a>
           </div>
         </div>
       </div>
-      <div class="border-text-muted mx-auto mt-12 max-w-[1280px] border-t text-center">
-        © 2023 1mcloud. Bảo lưu mọi quyền.
+      <div className="border-border mx-auto mt-12 max-w-[1280px] border-t text-center">
+        {t('footer.copyright')}
       </div>
     </div>
   )

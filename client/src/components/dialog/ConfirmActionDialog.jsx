@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { getStatusClasses } from '../../lib/utils'
 import Dialog from '../../components/ui/Dialog'
 import axiosInstance from '../../lib/axios'
+import { useTranslation } from '../../i18n'
 
 export default function ConfirmActionDialog({
   isOpen,
@@ -16,6 +17,7 @@ export default function ConfirmActionDialog({
   const [renewData, setRenewData] = useState(null)
   const [isFetchingRenew, setIsFetchingRenew] = useState(false)
   const [fetchError, setFetchError] = useState('')
+  const t = useTranslation()
 
   useEffect(() => {
     if (isOpen && isRenew) {
@@ -29,10 +31,10 @@ export default function ConfirmActionDialog({
           if (res.data?.success) {
             setRenewData(res.data.result)
           } else {
-            setFetchError('Failed to calculate renew data.')
+            setFetchError(t('manager.renewCalcError'))
           }
         } catch {
-          setFetchError('Failed to calculate renew data.')
+          setFetchError(t('manager.renewCalcError'))
         } finally {
           setIsFetchingRenew(false)
         }
@@ -43,7 +45,7 @@ export default function ConfirmActionDialog({
       setIsFetchingRenew(false)
       setFetchError('')
     }
-  }, [isOpen, isRenew, selectedRows])
+  }, [isOpen, isRenew, selectedRows, t])
 
   // Expose renewData to paremt dialog on confirm
   const handleConfirmClick = () => {
@@ -67,7 +69,7 @@ export default function ConfirmActionDialog({
         <p className="text-text-primary font-medium">{infoText}</p>
 
         {fetchError ? (
-          <p className="text-bg-pause mb-4 font-medium">abc</p>
+          <p className="text-bg-pause mb-4 font-medium">{fetchError}</p>
         ) : (
           <div className="border-border scroll-container max-h-[50vh] overflow-auto rounded-lg border">
             <table className="min-w-full">
@@ -149,7 +151,7 @@ export default function ConfirmActionDialog({
             disabled={isProcessing}
             className="rounded-lg bg-gray-500 px-4 py-2 font-medium transition-colors hover:bg-gray-600 disabled:opacity-50"
           >
-            Cancel
+            {t('dialog.cancel')}
           </button>
           <button
             onClick={handleConfirmClick}
@@ -158,7 +160,7 @@ export default function ConfirmActionDialog({
           >
             {isProcessing && (
               <svg
-                className="mr-2 -ml-1 h-4 w-4 animate-spin"
+                className="mr-2 -ml-1 size-4 animate-spin"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -178,7 +180,7 @@ export default function ConfirmActionDialog({
                 ></path>
               </svg>
             )}
-            Confirm
+            {t('dialog.confirm')}
           </button>
         </div>
       </div>

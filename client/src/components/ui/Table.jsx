@@ -100,6 +100,7 @@ const Table = forwardRef(function Table(
     selectedIds = new Set(),
     title,
     headers,
+    headerLabels,
     operatorConfig,
     extraBtn,
     emptyMessage,
@@ -214,8 +215,8 @@ const Table = forwardRef(function Table(
   // Deselect effect removed; controlled via selectedIds parent state.
 
   const virtuosoContext = useMemo(() => {
-    return { selectedIds, headers, rowClassMap, handleSelectRow }
-  }, [selectedIds, headers, rowClassMap, handleSelectRow])
+    return { selectedIds, headers, headerLabels, rowClassMap, handleSelectRow }
+  }, [selectedIds, headers, headerLabels, rowClassMap, handleSelectRow])
 
   const fixedHeader = useMemo(() => {
     const toggleOperator = (header) => {
@@ -310,7 +311,7 @@ const Table = forwardRef(function Table(
                 <span
                   className={['ip_port', 'note'].includes(header) ? 'text-left' : 'text-center'}
                 >
-                  {header.replace(/_/g, ' ')}
+                  {headerLabels?.[header] || header.replace(/_/g, ' ')}
                 </span>
                 {useFilter && (
                   <div className="relative">
@@ -319,7 +320,7 @@ const Table = forwardRef(function Table(
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 640 640"
-                        className="bg-border filter-operator fill-text-primary absolute top-[-2px] right-[-6px] h-4 w-4 cursor-pointer rounded-full p-0.5 hover:brightness-(--highlight-brightness)"
+                        className="bg-border filter-operator fill-text-primary absolute top-[-2px] right-[-6px] size-4 cursor-pointer rounded-full p-0.5 hover:brightness-(--highlight-brightness)"
                         onClick={() => toggleOperator(header)}
                         title={`Filter: ${operator}`}
                       >
@@ -347,6 +348,7 @@ const Table = forwardRef(function Table(
   }, [
     title,
     headers,
+    headerLabels,
     useFilter,
     operatorConfig,
     selectedIds.size,
@@ -375,7 +377,7 @@ const Table = forwardRef(function Table(
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
-                  className="mr-2 h-7 w-7 shrink-0 fill-none stroke-current stroke-2 sm:h-10 sm:w-10"
+                  className="mr-2 size-7 shrink-0 fill-none stroke-current stroke-2 sm:h-10 sm:w-10"
                 >
                   <path
                     strokeLinecap="round"
@@ -389,10 +391,14 @@ const Table = forwardRef(function Table(
               <div className="flex items-center gap-3 sm:gap-5">
                 <div className="flex flex-col gap-1 sm:flex-row sm:gap-5">
                   <span className="text-right whitespace-nowrap">
-                    Selected: <span id="selectedCount">{selectedIds.size}</span> rows
+                    {headerLabels?._selected || 'Selected'}:{' '}
+                    <span id="selectedCount">{selectedIds.size}</span>{' '}
+                    {headerLabels?._rows || 'rows'}
                   </span>
                   <span className="text-right whitespace-nowrap">
-                    Total: <span id="totalCount">{filteredData.length}</span> rows
+                    {headerLabels?._total || 'Total'}:{' '}
+                    <span id="totalCount">{filteredData.length}</span>{' '}
+                    {headerLabels?._rows || 'rows'}
                   </span>
                 </div>
                 {extraBtn && <span data-capture-ignore>{extraBtn}</span>}

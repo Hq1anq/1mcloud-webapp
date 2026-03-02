@@ -14,6 +14,7 @@ import ProxyChecker from './pages/ProxyChecker.jsx'
 import LoginPage from './pages/LoginPage.jsx'
 import SignupPage from './pages/SignupPage.jsx'
 import Contact from './pages/Contact.jsx'
+import AccountPage from './pages/AccountPage.jsx'
 
 function App() {
   const { checkAuth, isAuthenticated } = useAuthStore()
@@ -41,6 +42,10 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/contact" element={<Contact />} />
+            <Route
+              path="/account"
+              element={isAuthenticated ? <AccountPage /> : <Navigate to="/login" replace />}
+            />
 
             <Route
               path="/proxyManager"

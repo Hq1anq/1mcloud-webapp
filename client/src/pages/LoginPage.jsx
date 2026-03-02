@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import Input from '../components/ui/Input'
 import Checkbox from '../components/ui/Checkbox'
 import useAuthStore from '../store/useAuthStore'
+import { useTranslation } from '../i18n'
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -13,6 +14,7 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [isLoadedPassword, setIsLoadedPassword] = useState(false)
   const navigate = useNavigate()
+  const t = useTranslation()
 
   useEffect(() => {
     const savedPasswordEncoded = localStorage.getItem('rememberedPassword')
@@ -71,7 +73,7 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-[calc(100vh-130px)] items-center justify-center p-4">
       <div className="bg-surface w-full max-w-md rounded-xl p-8 shadow-2xl">
-        <h2 className="text-text-title mb-6 text-center text-2xl font-bold">Login</h2>
+        <h2 className="text-text-title mb-6 text-center text-2xl font-bold">{t('login.title')}</h2>
 
         {error && (
           <div className="mb-4 rounded-lg bg-red-100 p-3 text-sm text-red-700">{error}</div>
@@ -80,7 +82,7 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
             id="email"
-            label="Email"
+            label={t('login.email')}
             type="email"
             placeholder="your@email.com"
             value={formData.email}
@@ -90,7 +92,7 @@ export default function LoginPage() {
           />
           <Input
             id="password"
-            label="Password"
+            label={t('login.password')}
             type="password"
             placeholder="••••••••"
             value={formData.password}
@@ -113,14 +115,14 @@ export default function LoginPage() {
                   !isLoading && setFormData((prev) => ({ ...prev, remember: !prev.remember }))
                 }
               >
-                Remember me
+                {t('login.remember')}
               </span>
             </div>
             <Link
               to="/forgot-password"
               className="text-sm font-medium text-blue-500 hover:text-blue-400"
             >
-              Forgot Password?
+              {t('login.forgot')}
             </Link>
           </div>
 
@@ -131,16 +133,16 @@ export default function LoginPage() {
               isLoading ? 'cursor-not-allowed opacity-70' : ''
             }`}
           >
-            {isLoading ? 'Logging in...' : 'Login'}
+            {isLoading ? t('login.loading') : t('login.submit')}
           </button>
 
           <div className="text-text-primary mt-4 text-center text-sm">
-            Don't have an account?{' '}
+            {t('login.noAccount')}{' '}
             <Link
               to="/signup"
               className="font-medium text-blue-500 hover:text-blue-400 focus:outline-none"
             >
-              Sign up
+              {t('login.signup')}
             </Link>
           </div>
         </form>

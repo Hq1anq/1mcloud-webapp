@@ -35,7 +35,7 @@ const statusStyles = {
   },
   loading: {
     icon: (
-      <svg className="h-8 w-8 animate-spin fill-none" viewBox="0 0 50 50">
+      <svg className="size-8 animate-spin fill-none" viewBox="0 0 50 50">
         <circle
           cx="25"
           cy="25"
@@ -96,7 +96,7 @@ const Toast = ({ id, message, type, removeToast, style }) => {
       onClick={handleDismiss}
     >
       <div id="toast-content" className="flex w-full items-center">
-        <div className={`${bg} flex h-8 w-8 shrink-0 items-center justify-center rounded-lg`}>
+        <div className={`${bg} flex size-8 shrink-0 items-center justify-center rounded-lg`}>
           {icon}
         </div>
         <div id="toast-message" className="mx-3 flex-1 text-sm font-bold">
@@ -104,13 +104,13 @@ const Toast = ({ id, message, type, removeToast, style }) => {
         </div>
         <button
           type="button"
-          className="bg-toast -mx-1.5 -my-1.5 ms-auto inline-flex h-8 w-8 items-center justify-center rounded-lg p-1.5 group-hover:brightness-125"
+          className="bg-toast -mx-1.5 -my-1.5 ms-auto inline-flex size-8 items-center justify-center rounded-lg p-1.5 group-hover:brightness-125"
           onClick={(e) => {
             e.stopPropagation() // Prevent triggering parent click
             handleDismiss()
           }}
         >
-          <svg className="h-3 w-3" fill="none" viewBox="0 0 14 14">
+          <svg className="size-3" fill="none" viewBox="0 0 14 14">
             <path
               stroke="currentColor"
               strokeLinecap="round"

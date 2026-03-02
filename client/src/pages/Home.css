@@ -2,11 +2,7 @@
 .home-grid-bg {
   background-size: 40px 40px;
 
-  --grid-color: color-mix(
-    in srgb,
-    var(--color-border) 50%,
-    var(--color-terminal)
-  );
+  --grid-color: color-mix(in srgb, var(--color-border) 50%, var(--color-terminal));
 
   background-image:
     linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
@@ -25,7 +21,6 @@
     transform: translateY(0);
   }
 }
-
 
 @keyframes home-fill-bar-cpu {
   from {

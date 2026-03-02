@@ -211,7 +211,6 @@
   --text-toast-success: #4ade80;
   --text-toast-error: #f87171;
 
-
   --bg-hover: hsl(from var(--bg-thead) h calc(s - 3) l);
   --bg-selected: hsl(from var(--bg-thead) h calc(s - 3) calc(l + 5));
 
@@ -254,7 +253,7 @@
 
   /* Home Page */
   --home-hero-gradient-from: var(--bg-body);
-  --home-hero-gradient-to: #151B28;
+  --home-hero-gradient-to: #151b28;
   --home-section-alt: var(--dark-800);
   --card-border: #293347;
 }
@@ -370,7 +369,11 @@
 /* Toast Animations */
 @layer utilities {
   .bg-action {
-    background-color: color-mix(in srgb, var(--action-color) var(--btn-mix, 100%), var(--bg-surface));
+    background-color: color-mix(
+      in srgb,
+      var(--action-color) var(--btn-mix, 100%),
+      var(--bg-surface)
+    );
   }
 
   @keyframes fade-in {

@@ -226,6 +226,7 @@ const en = {
   'buy.proxySuccess': 'proxy successfully!',
   'buy.purchaseFailed': 'Purchase failed',
   'buy.errorOccurred': 'Error occurred',
+  'buy.processing': 'Processing...',
 
   // Account Page
   'account.title': 'My Account',

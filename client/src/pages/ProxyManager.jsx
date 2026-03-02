@@ -8,6 +8,7 @@ import { extractIP, randomDelay } from '../lib/utils'
 import { useSafeCopy } from '../context/SafeCopyContext'
 import { useConfirm } from '../context/ConfirmContext'
 import { useTranslation } from '../i18n'
+import useAuthStore from '../store/useAuthStore'
 
 const OPERATOR_CONFIG = {
   sid: ['greater-equal', 'less-equal', 'equal', 'contain'],
@@ -83,6 +84,46 @@ export default function ProxyManager() {
     selectedRowsRef.current = selectedRows
   }, [selectedRows])
 
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+
+  // --- DB sync helpers ---
+  const syncToDb = useCallback(
+    async (proxiesToSync) => {
+      if (!isAuthenticated || !proxiesToSync || proxiesToSync.length === 0) return
+      try {
+        await axiosInstance.post('/proxy', { proxies: proxiesToSync })
+      } catch (err) {
+        console.error('[DB Sync] Save failed:', err.message)
+      }
+    },
+    [isAuthenticated]
+  )
+  // Load from DB on mount (merge with localStorage, DB wins)
+  useEffect(() => {
+    if (!isAuthenticated) return
+    let cancelled = false
+
+    async function loadFromDb() {
+      try {
+        const res = await axiosInstance.get('/proxy')
+        if (cancelled) return
+        const dbData = res.data?.data || []
+        if (dbData.length > 0) {
+          setData((prev) => mergeResIntoData(prev, dbData))
+          setReceivedData(dbData)
+          setRenderingReceived(true)
+        }
+      } catch (err) {
+        console.error('[DB Sync] Load failed:', err.message)
+      }
+    }
+
+    loadFromDb()
+    return () => {
+      cancelled = true
+    }
+  }, [isAuthenticated])
+
   // Save data to localStorage whenever it changes
   useEffect(() => {
     saveData(data)
@@ -125,17 +166,30 @@ export default function ProxyManager() {
       )
       setRenderingReceived(true)
       setSelectedIds(new Set())
+
+      // Sync MERGED (new) data to DB directly
+      syncToDb(resData)
     } catch (err) {
       console.error('[GetData] Error:', err.message)
       removeToast(loadingId)
       addToast(`${t('manager.failedGetData')}: ${err.message}`, 'error')
     }
-  }, [ips, amount, addToast, removeToast, t])
+  }, [ips, amount, addToast, removeToast, t, syncToDb])
 
-  // --- Helper: update a single row in both receivedData and data by sid ---
+  // Helper: update a single row in both receivedData and data by sid, and return the mutated row object
   const updateRowBySid = useCallback((sid, updater) => {
-    setReceivedData((prev) => prev.map((r) => (r.sid === sid ? { ...r, ...updater(r) } : r)))
+    let updatedRow = null
+    setReceivedData((prev) =>
+      prev.map((r) => {
+        if (r.sid === sid) {
+          updatedRow = { ...r, ...updater(r) }
+          return updatedRow
+        }
+        return r
+      })
+    )
     setData((prev) => prev.map((r) => (r.sid === sid ? { ...r, ...updater(r) } : r)))
+    return updatedRow
   }, [])
 
   // --- Sequential processor with per-row feedback ---
@@ -256,6 +310,7 @@ export default function ProxyManager() {
 
     const type = changeIpType === 'HTTPS' ? 'proxy_https' : 'proxy_sock_5'
     const proxyResults = []
+    const updatedRows = []
 
     await processSequential(
       rows,
@@ -264,18 +319,24 @@ export default function ProxyManager() {
         const res = await axiosInstance.post('/server/change-ip', { ip, type })
         if (res.data?.success) {
           const [newIp, port, user, pass] = res.data.proxyInfo
-          updateRowBySid(row.sid, () => ({
+          const updated = updateRowBySid(row.sid, () => ({
             ip_port: `${newIp}:${port}`,
             user_pass: `${user}:${pass}`,
             type: changeIpType + ' Proxy',
             status: 'Running',
           }))
+          if (updated) updatedRows.push(updated)
           proxyResults.push(`${newIp}:${port}:${user}:${pass}`)
         }
         return res
       },
       t('manager.changeIp').toUpperCase()
     )
+
+    // Sync only the updated rows to DB
+    if (updatedRows.length > 0) {
+      syncToDb(updatedRows)
+    }
 
     if (proxyResults.length > 0) {
       const text = proxyResults.join('\n')
@@ -292,7 +353,16 @@ export default function ProxyManager() {
           )
       )
     }
-  }, [changeIpType, confirmAction, safeCopy, addToast, processSequential, updateRowBySid, t])
+  }, [
+    changeIpType,
+    confirmAction,
+    safeCopy,
+    addToast,
+    processSequential,
+    updateRowBySid,
+    t,
+    syncToDb,
+  ])
 
   // --- Reinstall handler ---
   const handleReinstall = useCallback(async () => {
@@ -346,6 +416,7 @@ export default function ProxyManager() {
 
     const type = reinstallType === 'HTTPS' ? 'proxy_https' : 'proxy_sock_5'
     const proxyResults = []
+    const updatedRows = []
 
     await processSequential(
       rows,
@@ -357,18 +428,24 @@ export default function ProxyManager() {
         })
         if (res.data?.success) {
           const [ip, port, user, pass] = res.data.proxyInfo
-          updateRowBySid(row.sid, () => ({
+          const updated = updateRowBySid(row.sid, () => ({
             ip_port: `${ip}:${port}`,
             user_pass: `${user}:${pass}`,
             type: reinstallType + ' Proxy',
             status: 'Running',
           }))
+          if (updated) updatedRows.push(updated)
           proxyResults.push(`${ip}:${port}:${user}:${pass}`)
         }
         return res
       },
       t('manager.reinstall').toUpperCase()
     )
+
+    // Sync only the updated rows to DB
+    if (updatedRows.length > 0) {
+      syncToDb(updatedRows)
+    }
 
     if (proxyResults.length > 0) {
       const text = proxyResults.join('\n')
@@ -394,12 +471,14 @@ export default function ProxyManager() {
     safeCopy,
     addToast,
     t,
+    syncToDb,
   ])
 
   // --- Change Note handler ---
   const handleChangeNote = useCallback(async () => {
     const rows = [...selectedRowsRef.current]
     const newNote = noteInput
+    const updatedRows = []
 
     await processSequential(
       rows,
@@ -409,13 +488,19 @@ export default function ProxyManager() {
           newNote,
         })
         if (res.data?.success) {
-          updateRowBySid(row.sid, () => ({ note: newNote }))
+          const updated = updateRowBySid(row.sid, () => ({ note: newNote }))
+          if (updated) updatedRows.push(updated)
         }
         return res
       },
       t('manager.changeNote').toUpperCase()
     )
-  }, [noteInput, processSequential, updateRowBySid, t])
+
+    // Sync only the updated rows to DB
+    if (updatedRows.length > 0) {
+      syncToDb(updatedRows)
+    }
+  }, [noteInput, processSequential, updateRowBySid, t, syncToDb])
 
   // --- Pause handler (batch) ---
   const handlePause = useCallback(async () => {
@@ -433,10 +518,15 @@ export default function ProxyManager() {
       const res = await axiosInstance.post('/server/pause', { sids })
       if (res.data?.success) {
         const classUpdates = {}
+        const updatedRows = []
         for (const row of rows) {
-          updateRowBySid(row.sid, () => ({ status: 'Paused' }))
+          const updated = updateRowBySid(row.sid, () => ({ status: 'Paused' }))
+          if (updated) updatedRows.push(updated)
           classUpdates[row.sid] = 'bg-success-cell'
         }
+
+        if (updatedRows.length > 0) syncToDb(updatedRows)
+
         setRowClassMap(classUpdates)
         setSelectedIds((prev) => {
           const newSet = new Set(prev)
@@ -490,7 +580,7 @@ export default function ProxyManager() {
     }
     removeToast(pausingId)
     setIsProcessing(false)
-  }, [addToast, removeToast, updateRowBySid, t])
+  }, [addToast, removeToast, updateRowBySid, t, syncToDb])
 
   // --- Reboot handler (batch) ---
   const handleReboot = useCallback(async () => {
@@ -508,10 +598,15 @@ export default function ProxyManager() {
       const res = await axiosInstance.post('/server/reboot', { sids })
       if (res.data?.success) {
         const classUpdates = {}
+        const updatedRows = []
         for (const row of rows) {
-          updateRowBySid(row.sid, () => ({ status: 'Running' }))
+          const updated = updateRowBySid(row.sid, () => ({ status: 'Running' }))
+          if (updated) updatedRows.push(updated)
           classUpdates[row.sid] = 'bg-success-cell'
         }
+
+        if (updatedRows.length > 0) syncToDb(updatedRows)
+
         setRowClassMap(classUpdates)
         setSelectedIds((prev) => {
           const newSet = new Set(prev)
@@ -567,7 +662,7 @@ export default function ProxyManager() {
     }
     removeToast(rebootingId)
     setIsProcessing(false)
-  }, [addToast, removeToast, updateRowBySid, t])
+  }, [addToast, removeToast, updateRowBySid, t, syncToDb])
 
   const handleRenew = useCallback(async () => {
     const rows = [...selectedRowsRef.current]
@@ -632,15 +727,17 @@ export default function ProxyManager() {
       let failCount = invalidRows.length
 
       const classUpdates = {}
+      const updatedRows = []
       for (const row of validRows) {
         const cleanIp = row.ip_port?.split(':')[0]
 
         if (resSuccess[cleanIp]) {
           const newExpiredDay = renewData.success[cleanIp].new_expired_day
-          updateRowBySid(row.sid, () => ({
+          const updated = updateRowBySid(row.sid, () => ({
             status: 'Running',
             expired: newExpiredDay,
           }))
+          if (updated) updatedRows.push(updated)
           classUpdates[row.sid] = 'bg-success-cell'
           successCount++
         } else {
@@ -648,6 +745,8 @@ export default function ProxyManager() {
           failCount++
         }
       }
+
+      if (updatedRows.length > 0) syncToDb(updatedRows)
 
       setRowClassMap((prev) => ({ ...prev, ...classUpdates }))
 
@@ -707,7 +806,7 @@ export default function ProxyManager() {
       setIsProcessing(false)
       removeToast(toastId)
     }
-  }, [confirmAction, addToast, removeToast, updateRowBySid, t])
+  }, [confirmAction, addToast, removeToast, updateRowBySid, t, syncToDb])
 
   return (
     <div>
@@ -1096,6 +1195,9 @@ export default function ProxyManager() {
           if (Array.isArray(newData) && newData.length > 0) {
             // Merge into local persistent data using the helper
             setData((prev) => mergeResIntoData(prev, newData))
+
+            // Sync to DB immediately with the fully formed new rows
+            syncToDb(newData)
 
             // Push into the view immediately, similar to handleGetData
             setReceivedData(newData)

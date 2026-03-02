@@ -82,7 +82,7 @@ export default function Navbar() {
             <div className="flex items-center gap-3 md:hidden">
               <Link
                 to="/login"
-                className="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white shadow-sm hover:bg-blue-700"
+                className="bg-blue rounded-lg px-4 py-2 font-medium text-white shadow-sm hover:brightness-(--highlight-brightness)"
               >
                 {t('menu.login')}
               </Link>

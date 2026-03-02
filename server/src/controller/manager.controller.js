@@ -127,7 +127,7 @@ export async function create(req, res) {
     random_remote_port: Boolean(random_remote_port),
     install_chrome: Boolean(install_chrome),
     install_firefox: Boolean(install_firefox),
-    note: note || "",
+    note: note || undefined,
     range_ip: range_ip || "Ngẫu nhiên",
     nation: nation || "VN",
     coupon: coupon || undefined,
@@ -135,7 +135,7 @@ export async function create(req, res) {
     username: random_username ? undefined : username,
     password: random_password ? undefined : password,
     state: state || undefined,
-    isp: isp || undefined,
+    provider: isp || undefined,
     proxy_type: proxy_type || "proxy_https",
     is_proxy: true,
   };

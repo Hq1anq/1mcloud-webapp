@@ -227,6 +227,7 @@ const vi = {
   'buy.proxySuccess': 'proxy!',
   'buy.purchaseFailed': 'Mua thất bại',
   'buy.errorOccurred': 'Đã xảy ra lỗi',
+  'buy.processing': 'Đang xử lý...',
 
   // Account Page
   'account.title': 'Tài khoản của tôi',

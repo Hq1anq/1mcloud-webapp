@@ -149,9 +149,12 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
       is_proxy: true,
     }
 
+    const loadingId = addToast(t('buy.processing'), 'loading')
+
     try {
       const res = await axiosInstance.post('/server/create', proxyDataBuying)
-      if (res.data?.success || res.status === 200) {
+      if (res.data.success) {
+        removeToast(loadingId)
         addToast(
           <>
             {t('buy.purchased')}{' '}

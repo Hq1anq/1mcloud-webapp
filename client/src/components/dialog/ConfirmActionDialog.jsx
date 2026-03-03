@@ -69,7 +69,7 @@ export default function ConfirmActionDialog({
         <p className="text-text-primary font-medium">{infoText}</p>
 
         {fetchError ? (
-          <p className="text-red mb-4 font-medium">{fetchError}</p>
+          <p className="text-orange mb-4 font-medium">{fetchError}</p>
         ) : (
           <div className="border-border scroll-container max-h-[50vh] overflow-auto rounded-lg border">
             <table className="min-w-full">

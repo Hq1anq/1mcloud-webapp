@@ -110,14 +110,14 @@ export async function saveProxies(req, res) {
             ON target.user_id = source.user_id AND target.sid = source.sid
             WHEN MATCHED THEN
               UPDATE SET
-                ip_port = @ip_port,
-                user_pass = @user_pass,
-                country = @country,
-                type = @type,
-                created = @created,
-                expired = @expired,
-                status = @status,
-                note = @note
+                ip_port = COALESCE(@ip_port, target.ip_port),
+                user_pass = COALESCE(@user_pass, target.user_pass),
+                country = COALESCE(@country, target.country),
+                type = COALESCE(@type, target.type),
+                created = COALESCE(@created, target.created),
+                expired = COALESCE(@expired, target.expired),
+                status = COALESCE(@status, target.status),
+                note = COALESCE(@note, target.note)
             WHEN NOT MATCHED THEN
               INSERT (user_id, sid, ip_port, user_pass, country, type, created, expired, status, note)
               VALUES (@userId, @sid, @ip_port, @user_pass, @country, @type, @created, @expired, @status, @note);

@@ -7,7 +7,7 @@ import Checkbox from '../ui/Checkbox'
 import { useTranslation } from '../../i18n'
 
 export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
-  const { addToast } = useToast()
+  const { addToast, removeToast } = useToast()
   const t = useTranslation()
 
   const [supportData, setSupportData] = useState({
@@ -63,42 +63,42 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
     must_pay: '',
   })
 
-  const fetchSupport = async (nation) => {
-    try {
-      const res = await axiosInstance.get(`/server/proxy/support?nation=${nation}`)
-      if (res.data?.success) {
-        const info = res.data.info
-        setSupportData(info)
-
-        // Initialize Defaults
-        const types = Object.keys(info.type?.option || {})
-        if (types.length > 0) setSelectedType((prev) => (types.includes(prev) ? prev : types[1]))
-
-        const durations = Object.keys(info.duration?.option || {})
-        if (durations.length > 0)
-          setSelectedDuration((prev) => (durations.includes(prev) ? prev : durations[0]))
-
-        const rangeIps = Array.isArray(info.range_ip?.option) ? info.range_ip.option : []
-        if (rangeIps.length > 0)
-          setSelectedRangeIp((prev) => (rangeIps.includes(prev) ? prev : rangeIps[0]))
-
-        const isps = Array.isArray(info.isp?.option) ? info.isp.option : []
-        setSelectedIsp(isps.length > 0 ? isps[0] : '')
-
-        const states = Array.isArray(info.state?.option) ? info.state.option : []
-        setSelectedState(states.length > 0 ? states[0] : '')
-      }
-    } catch (err) {
-      console.error(err)
-    }
-  }
-
-  // Fetch init data
+  // Fetch support data whenever dialog is open and selectedNation changes
   useEffect(() => {
-    if (isOpen) {
-      fetchSupport('VN')
+    if (!isOpen) return
+
+    const fetchSupportData = async () => {
+      try {
+        const res = await axiosInstance.get(`/server/proxy/support?nation=${selectedNation}`)
+        if (res.data?.success) {
+          const info = res.data.info
+          setSupportData(info)
+
+          // Initialize Defaults
+          const types = Object.keys(info.type?.option || {})
+          if (types.length > 0) setSelectedType((prev) => (types.includes(prev) ? prev : types[1]))
+
+          const durations = Object.keys(info.duration?.option || {})
+          if (durations.length > 0)
+            setSelectedDuration((prev) => (durations.includes(prev) ? prev : durations[0]))
+
+          const rangeIps = Array.isArray(info.range_ip?.option) ? info.range_ip.option : []
+          if (rangeIps.length > 0)
+            setSelectedRangeIp((prev) => (rangeIps.includes(prev) ? prev : rangeIps[0]))
+
+          const isps = Array.isArray(info.isp?.option) ? info.isp.option : []
+          setSelectedIsp(isps.length > 0 ? isps[0] : '')
+
+          const states = Array.isArray(info.state?.option) ? info.state.option : []
+          setSelectedState(states.length > 0 ? states[0] : '')
+        }
+      } catch (err) {
+        console.error(err)
+      }
     }
-  }, [isOpen])
+
+    fetchSupportData()
+  }, [isOpen, selectedNation])
 
   // Calculate effect
   useEffect(() => {
@@ -121,12 +121,25 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
   }, [isOpen, supportData, amount, selectedNation, selectedDuration, appliedDiscount])
 
   const handleNationChange = (e) => {
-    const nationCode = e.target.value
-    setSelectedNation(nationCode)
-    fetchSupport(nationCode)
+    setSelectedNation(e.target.value)
   }
 
   const handlePay = async () => {
+    // Validate inputs
+    if (!randomUsername && usernameInput && !/^[a-z0-9]+$/.test(usernameInput)) {
+      addToast(t('buy.invalidUsername'), 'error')
+      return
+    }
+
+    if (
+      !randomPassword &&
+      passwordInput &&
+      !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{10,}$/.test(passwordInput)
+    ) {
+      addToast(t('buy.invalidPassword'), 'error')
+      return
+    }
+
     const proxyDataBuying = {
       plan_id: 0,
       duration: Number(selectedDuration),
@@ -151,9 +164,12 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
       is_proxy: true,
     }
 
+    const loadingId = addToast(t('buy.processing'), 'loading')
+
     try {
       const res = await axiosInstance.post('/server/create', proxyDataBuying)
-      if (res.data?.success || res.status === 200) {
+      if (res.data.success) {
+        removeToast(loadingId)
         addToast(
           <>
             {t('buy.purchased')}{' '}
@@ -165,9 +181,11 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
         if (onSuccess) onSuccess(res.data?.data)
         onClose()
       } else {
+        removeToast(loadingId)
         addToast(res.data?.message || t('buy.purchaseFailed'), 'error')
       }
     } catch (err) {
+      removeToast(loadingId)
       addToast(err.response?.data?.message || err.message || t('buy.errorOccurred'), 'error')
     }
   }
@@ -210,8 +228,8 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
           </div>
 
           <div className="flex flex-1 flex-col gap-5">
-            <div className="flex flex-wrap items-center gap-5">
-              <div className="flex flex-1 flex-col gap-2">
+            <div className="flex max-w-2xl flex-wrap items-center gap-5">
+              <div className="flex grow flex-col gap-2">
                 <span className="text-sm font-medium">{t('buy.type')}</span>
                 {renderSelect(
                   selectedType,
@@ -220,7 +238,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
                 )}
               </div>
 
-              <div className="flex flex-1 flex-col gap-2">
+              <div className="flex grow flex-col gap-2">
                 <span className="text-sm font-medium">{t('buy.duration')}</span>
                 {renderSelect(
                   selectedDuration,
@@ -229,25 +247,25 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
                 )}
               </div>
 
-              <label className="flex flex-1 flex-col gap-2">
+              <label className="flex flex-col gap-2">
                 <span className="text-text-primary text-sm font-medium">{t('buy.amount')}</span>
                 <input
+                  className="max-w-20"
                   type="number"
                   min="1"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  placeholder={t('buy.enterQuantity')}
                 />
               </label>
-            </div>
 
-            <div className="flex flex-wrap items-center gap-5">
-              <div className="flex min-w-56 flex-1 flex-col gap-2">
+              <div className="m-0 w-full border-0 p-0 max-[416px]:hidden"></div>
+
+              <div className="flex grow flex-col gap-2">
                 <span className="text-text-primary text-sm font-medium">{t('buy.nation')}</span>
                 {renderSelect(selectedNation, handleNationChange, supportData.nation?.option || {})}
               </div>
 
-              <div className="flex flex-1 flex-col gap-2">
+              <div className="flex grow flex-col gap-2">
                 <span className="text-text-primary text-sm font-medium">{t('buy.rangeIp')}</span>
                 {renderSelect(
                   selectedRangeIp,
@@ -258,7 +276,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
               </div>
 
               {isps.length > 0 && (
-                <div className="flex flex-1 flex-col gap-2">
+                <div className="flex grow flex-col gap-2">
                   <span className="text-text-primary text-sm font-medium">{t('buy.provider')}</span>
                   {renderSelect(selectedIsp, (e) => setSelectedIsp(e.target.value), isps, true)}
                 </div>
@@ -289,12 +307,22 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
                   </span>
                 </div>
                 {!randomUsername && (
-                  <input
-                    type="text"
-                    value={usernameInput}
-                    onChange={(e) => setUsernameInput(e.target.value)}
-                    placeholder={t('buy.customUsername')}
-                  />
+                  <div className="flex flex-col gap-1">
+                    <input
+                      type="text"
+                      className={`${
+                        usernameInput && !/^[a-z0-9]+$/.test(usernameInput)
+                          ? 'border-orange focus:border-orange focus:ring-orange/20'
+                          : ''
+                      }`}
+                      value={usernameInput}
+                      onChange={(e) => setUsernameInput(e.target.value)}
+                      placeholder={t('buy.customUsername')}
+                    />
+                    {usernameInput && !/^[a-z0-9]+$/.test(usernameInput) && (
+                      <span className="text-orange text-xs">{t('buy.invalidUsername')}</span>
+                    )}
+                  </div>
                 )}
               </label>
 
@@ -309,12 +337,24 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
                   </span>
                 </div>
                 {!randomPassword && (
-                  <input
-                    type="text"
-                    value={passwordInput}
-                    onChange={(e) => setPasswordInput(e.target.value)}
-                    placeholder={t('buy.customPassword')}
-                  />
+                  <div className="flex flex-col gap-1">
+                    <input
+                      type="text"
+                      className={`${
+                        passwordInput &&
+                        !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{10,}$/.test(passwordInput)
+                          ? 'border-orange focus:border-orange focus:ring-orange/20'
+                          : ''
+                      }`}
+                      value={passwordInput}
+                      onChange={(e) => setPasswordInput(e.target.value)}
+                      placeholder={t('buy.customPassword')}
+                    />
+                    {passwordInput &&
+                      !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{10,}$/.test(passwordInput) && (
+                        <span className="text-orange text-xs">{t('buy.invalidPassword')}</span>
+                      )}
+                  </div>
                 )}
               </label>
 
@@ -430,7 +470,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
               className={`group flex h-12 w-full items-center justify-center gap-2 rounded-lg font-semibold text-white shadow-sm transition-all ${
                 !agreeTerms || summary.warning === 'Tài khoản không đủ'
                   ? 'cursor-not-allowed bg-gray-500 opacity-50'
-                  : 'bg-bg-getInfo hover:brightness-(--highlight-brightness)'
+                  : 'bg-blue hover:brightness-(--highlight-brightness)'
               }`}
             >
               <span>{t('buy.payNow')}</span>

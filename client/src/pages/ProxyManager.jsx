@@ -9,6 +9,7 @@ import { extractIP, randomDelay } from '../lib/utils'
 import { useSafeCopy } from '../context/SafeCopyContext'
 import { useConfirm } from '../context/ConfirmContext'
 import { useTranslation } from '../i18n'
+import useAuthStore from '../store/useAuthStore'
 
 const OPERATOR_CONFIG = {
   sid: ['greater-equal', 'less-equal', 'equal', 'contain'],
@@ -86,6 +87,46 @@ export default function ProxyManager() {
     selectedRowsRef.current = selectedRows
   }, [selectedRows])
 
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+
+  // --- DB sync helpers ---
+  const syncToDb = useCallback(
+    async (proxiesToSync) => {
+      if (!isAuthenticated || !proxiesToSync || proxiesToSync.length === 0) return
+      try {
+        await axiosInstance.post('/proxy', { proxies: proxiesToSync })
+      } catch (err) {
+        console.error('[DB Sync] Save failed:', err.message)
+      }
+    },
+    [isAuthenticated]
+  )
+  // Load from DB on mount (merge with localStorage, DB wins)
+  useEffect(() => {
+    if (!isAuthenticated) return
+    let cancelled = false
+
+    async function loadFromDb() {
+      try {
+        const res = await axiosInstance.get('/proxy')
+        if (cancelled) return
+        const dbData = res.data?.data || []
+        if (dbData.length > 0) {
+          setData((prev) => mergeResIntoData(prev, dbData))
+          setReceivedData(dbData)
+          setRenderingReceived(true)
+        }
+      } catch (err) {
+        console.error('[DB Sync] Load failed:', err.message)
+      }
+    }
+
+    loadFromDb()
+    return () => {
+      cancelled = true
+    }
+  }, [isAuthenticated])
+
   // Save data to localStorage whenever it changes
   useEffect(() => {
     saveData(data)
@@ -109,36 +150,54 @@ export default function ProxyManager() {
 
       const resData = res.data?.data || []
 
-      // Render resData in the table
-      setReceivedData(resData)
+      setData((prevData) => {
+        // Use the helper to merge resData into the existing prevData (which keeps user_pass)
+        const mergedData = mergeResIntoData(prevData, resData)
 
-      // Merge resData into data and persist
-      setData((prev) => {
-        const merged = mergeResIntoData(prev, resData)
-        return merged
+        // Find the specific rows we just fetched to use for receivedData / syncing
+        const finalResData = mergedData.filter((row) => resData.some((r) => r.sid === row.sid))
+        // Render finalResData in the table
+        setReceivedData(finalResData)
+        setRenderingReceived(true)
+        setSelectedIds(new Set())
+
+        // Sync updated data to DB directly
+        syncToDb(finalResData)
+
+        removeToast(loadingId)
+        addToast(
+          <>
+            {t('manager.loadedRows')}{' '}
+            <span className="text-text-toast-success">{finalResData.length}</span>{' '}
+            {t('manager.rows')}
+          </>,
+          'success'
+        )
+
+        // Return full mergedData to persist in state and localStorage
+        return mergedData
       })
-
-      removeToast(loadingId)
-      addToast(
-        <>
-          {t('manager.loadedRows')}{' '}
-          <span className="text-text-toast-success">{resData.length}</span> {t('manager.rows')}
-        </>,
-        'success'
-      )
-      setRenderingReceived(true)
-      setSelectedIds(new Set())
     } catch (err) {
       console.error('[GetData] Error:', err.message)
       removeToast(loadingId)
       addToast(`${t('manager.failedGetData')}: ${err.message}`, 'error')
     }
-  }, [ips, amount, addToast, removeToast, t])
+  }, [ips, amount, addToast, removeToast, t, syncToDb])
 
-  // --- Helper: update a single row in both receivedData and data by sid ---
+  // Helper: update a single row in both receivedData and data by sid, and return the mutated row object
   const updateRowBySid = useCallback((sid, updater) => {
-    setReceivedData((prev) => prev.map((r) => (r.sid === sid ? { ...r, ...updater(r) } : r)))
+    let updatedRow = null
+    setReceivedData((prev) =>
+      prev.map((r) => {
+        if (r.sid === sid) {
+          updatedRow = { ...r, ...updater(r) }
+          return updatedRow
+        }
+        return r
+      })
+    )
     setData((prev) => prev.map((r) => (r.sid === sid ? { ...r, ...updater(r) } : r)))
+    return updatedRow
   }, [])
 
   // --- Sequential processor with per-row feedback ---
@@ -259,6 +318,7 @@ export default function ProxyManager() {
 
     const type = changeIpType === 'HTTPS' ? 'proxy_https' : 'proxy_sock_5'
     const proxyResults = []
+    const updatedRows = []
 
     await processSequential(
       rows,
@@ -267,18 +327,24 @@ export default function ProxyManager() {
         const res = await axiosInstance.post('/server/change-ip', { ip, type })
         if (res.data?.success) {
           const [newIp, port, user, pass] = res.data.proxyInfo
-          updateRowBySid(row.sid, () => ({
+          const updated = updateRowBySid(row.sid, () => ({
             ip_port: `${newIp}:${port}`,
             user_pass: `${user}:${pass}`,
             type: changeIpType + ' Proxy',
             status: 'Running',
           }))
+          if (updated) updatedRows.push(updated)
           proxyResults.push(`${newIp}:${port}:${user}:${pass}`)
         }
         return res
       },
       t('manager.changeIp').toUpperCase()
     )
+
+    // Sync only the updated rows to DB
+    if (updatedRows.length > 0) {
+      syncToDb(updatedRows)
+    }
 
     if (proxyResults.length > 0) {
       const text = proxyResults.join('\n')
@@ -295,7 +361,16 @@ export default function ProxyManager() {
           )
       )
     }
-  }, [changeIpType, confirmAction, safeCopy, addToast, processSequential, updateRowBySid, t])
+  }, [
+    changeIpType,
+    confirmAction,
+    safeCopy,
+    addToast,
+    processSequential,
+    updateRowBySid,
+    t,
+    syncToDb,
+  ])
 
   // --- Reinstall handler ---
   const handleReinstall = useCallback(async () => {
@@ -318,6 +393,20 @@ export default function ProxyManager() {
       else if (parts.length === 2) [user, pass] = parts
       else {
         addToast(t('manager.invalidReinstall'), 'error')
+        return
+      }
+
+      // Username validation: lowercase a-z and 0-9
+      const usernameRegex = /^[a-z0-9]+$/
+      if (user && user !== '__' && !usernameRegex.test(user)) {
+        addToast(`Username ${t('buy.invalidUsername')}`, 'error')
+        return
+      }
+
+      // Password validation: at least 10 chars, uppercase, lowercase, and number
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{10,}$/
+      if (pass && pass !== '__' && !passwordRegex.test(pass)) {
+        addToast(`Password ${t('buy.invalidPassword')}`, 'error')
         return
       }
       infoTextNode = (
@@ -349,6 +438,7 @@ export default function ProxyManager() {
 
     const type = reinstallType === 'HTTPS' ? 'proxy_https' : 'proxy_sock_5'
     const proxyResults = []
+    const updatedRows = []
 
     await processSequential(
       rows,
@@ -360,18 +450,24 @@ export default function ProxyManager() {
         })
         if (res.data?.success) {
           const [ip, port, user, pass] = res.data.proxyInfo
-          updateRowBySid(row.sid, () => ({
+          const updated = updateRowBySid(row.sid, () => ({
             ip_port: `${ip}:${port}`,
             user_pass: `${user}:${pass}`,
             type: reinstallType + ' Proxy',
             status: 'Running',
           }))
+          if (updated) updatedRows.push(updated)
           proxyResults.push(`${ip}:${port}:${user}:${pass}`)
         }
         return res
       },
       t('manager.reinstall').toUpperCase()
     )
+
+    // Sync only the updated rows to DB
+    if (updatedRows.length > 0) {
+      syncToDb(updatedRows)
+    }
 
     if (proxyResults.length > 0) {
       const text = proxyResults.join('\n')
@@ -397,12 +493,14 @@ export default function ProxyManager() {
     safeCopy,
     addToast,
     t,
+    syncToDb,
   ])
 
   // --- Change Note handler ---
   const handleChangeNote = useCallback(async () => {
     const rows = [...selectedRowsRef.current]
     const newNote = noteInput
+    const updatedRows = []
 
     await processSequential(
       rows,
@@ -412,13 +510,19 @@ export default function ProxyManager() {
           newNote,
         })
         if (res.data?.success) {
-          updateRowBySid(row.sid, () => ({ note: newNote }))
+          const updated = updateRowBySid(row.sid, () => ({ note: newNote }))
+          if (updated) updatedRows.push(updated)
         }
         return res
       },
       t('manager.changeNote').toUpperCase()
     )
-  }, [noteInput, processSequential, updateRowBySid, t])
+
+    // Sync only the updated rows to DB
+    if (updatedRows.length > 0) {
+      syncToDb(updatedRows)
+    }
+  }, [noteInput, processSequential, updateRowBySid, t, syncToDb])
 
   // --- Pause handler (batch) ---
   const handlePause = useCallback(async () => {
@@ -436,10 +540,15 @@ export default function ProxyManager() {
       const res = await axiosInstance.post('/server/pause', { sids })
       if (res.data?.success) {
         const classUpdates = {}
+        const updatedRows = []
         for (const row of rows) {
-          updateRowBySid(row.sid, () => ({ status: 'Paused' }))
+          const updated = updateRowBySid(row.sid, () => ({ status: 'Paused' }))
+          if (updated) updatedRows.push(updated)
           classUpdates[row.sid] = 'bg-success-cell'
         }
+
+        if (updatedRows.length > 0) syncToDb(updatedRows)
+
         setRowClassMap(classUpdates)
         setSelectedIds((prev) => {
           const newSet = new Set(prev)
@@ -493,7 +602,7 @@ export default function ProxyManager() {
     }
     removeToast(pausingId)
     setIsProcessing(false)
-  }, [addToast, removeToast, updateRowBySid, t])
+  }, [addToast, removeToast, updateRowBySid, t, syncToDb])
 
   // --- Reboot handler (batch) ---
   const handleReboot = useCallback(async () => {
@@ -511,10 +620,15 @@ export default function ProxyManager() {
       const res = await axiosInstance.post('/server/reboot', { sids })
       if (res.data?.success) {
         const classUpdates = {}
+        const updatedRows = []
         for (const row of rows) {
-          updateRowBySid(row.sid, () => ({ status: 'Running' }))
+          const updated = updateRowBySid(row.sid, () => ({ status: 'Running' }))
+          if (updated) updatedRows.push(updated)
           classUpdates[row.sid] = 'bg-success-cell'
         }
+
+        if (updatedRows.length > 0) syncToDb(updatedRows)
+
         setRowClassMap(classUpdates)
         setSelectedIds((prev) => {
           const newSet = new Set(prev)
@@ -570,7 +684,7 @@ export default function ProxyManager() {
     }
     removeToast(rebootingId)
     setIsProcessing(false)
-  }, [addToast, removeToast, updateRowBySid, t])
+  }, [addToast, removeToast, updateRowBySid, t, syncToDb])
 
   const handleRenew = useCallback(async () => {
     const rows = [...selectedRowsRef.current]
@@ -635,15 +749,17 @@ export default function ProxyManager() {
       let failCount = invalidRows.length
 
       const classUpdates = {}
+      const updatedRows = []
       for (const row of validRows) {
         const cleanIp = row.ip_port?.split(':')[0]
 
         if (resSuccess[cleanIp]) {
           const newExpiredDay = renewData.success[cleanIp].new_expired_day
-          updateRowBySid(row.sid, () => ({
+          const updated = updateRowBySid(row.sid, () => ({
             status: 'Running',
             expired: newExpiredDay,
           }))
+          if (updated) updatedRows.push(updated)
           classUpdates[row.sid] = 'bg-success-cell'
           successCount++
         } else {
@@ -651,6 +767,8 @@ export default function ProxyManager() {
           failCount++
         }
       }
+
+      if (updatedRows.length > 0) syncToDb(updatedRows)
 
       setRowClassMap((prev) => ({ ...prev, ...classUpdates }))
 
@@ -710,7 +828,7 @@ export default function ProxyManager() {
       setIsProcessing(false)
       removeToast(toastId)
     }
-  }, [confirmAction, addToast, removeToast, updateRowBySid, t])
+  }, [confirmAction, addToast, removeToast, updateRowBySid, t, syncToDb])
 
   return (
     <div>
@@ -737,8 +855,9 @@ export default function ProxyManager() {
                     </label>
                   </label>
                   <button
-                    id="shuffleBtn"
-                    className="bg-bg-pause static right-0 bottom-[-8px] flex items-center justify-center rounded-lg px-3 py-1 font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness) sm:absolute lg:static"
+                    onClick={() => setIps('')}
+                    className="bg-action static right-0 flex items-center justify-center rounded-lg px-3 py-1 text-sm font-medium transition-colors duration-200 hover:brightness-(--highlight-brightness) md:absolute lg:static"
+                    style={{ '--action-color': 'var(--red)' }}
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -781,7 +900,7 @@ export default function ProxyManager() {
                 {/* Getdata & Change Note */}
                 <div className="flex flex-wrap gap-3 sm:gap-4">
                   {/* Get Data */}
-                  <div className="flex-1 space-y-1">
+                  <div className="flex grow flex-col gap-1 max-[496px]:flex-row">
                     <input
                       type="number"
                       placeholder={t('manager.enterAmount')}
@@ -791,30 +910,25 @@ export default function ProxyManager() {
                     />
                     <div className="flex items-center">
                       <button
-                        className="bg-bg-copyIp flex flex-1 items-center justify-center rounded-l-lg px-3 py-2 font-medium text-nowrap hover:brightness-(--highlight-brightness)"
+                        className="bg-action flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
+                        style={{ '--action-color': 'var(--purple)' }}
                         onClick={handleGetData}
                       >
                         <svg
+                          aria-hidden="true"
                           xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 640 640"
-                          className="h-5 w-5 shrink-0 fill-current sm:h-7 sm:w-7"
+                          viewBox="0 0 24 24"
+                          className="mr-1 size-5 shrink-0 fill-none sm:mr-2 sm:h-7 sm:w-7"
                         >
-                          <path d="M352 96C352 78.3 337.7 64 320 64C302.3 64 288 78.3 288 96L288 306.7L246.6 265.3C234.1 252.8 213.8 252.8 201.3 265.3C188.8 277.8 188.8 298.1 201.3 310.6L297.3 406.6C309.8 419.1 330.1 419.1 342.6 406.6L438.6 310.6C451.1 298.1 451.1 277.8 438.6 265.3C426.1 252.8 405.8 252.8 393.3 265.3L352 306.7L352 96zM160 384C124.7 384 96 412.7 96 448L96 480C96 515.3 124.7 544 160 544L480 544C515.3 544 544 515.3 544 480L544 448C544 412.7 515.3 384 480 384L433.1 384L376.5 440.6C345.3 471.8 294.6 471.8 263.4 440.6L206.9 384L160 384zM464 440C477.3 440 488 450.7 488 464C488 477.3 477.3 488 464 488C450.7 488 440 477.3 440 464C440 450.7 450.7 440 464 440z" />
+                          <path
+                            stroke="currentColor"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M12 13V4M7 14H5a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1h-2m-1-5-4 5-4-5m9 8h.01"
+                          />
                         </svg>
-                        Down Sync
-                      </button>
-                      <button
-                        id="upSyncBtn"
-                        className="bg-bg-getData flex flex-1 items-center justify-center rounded-r-lg px-3 py-2 font-medium text-nowrap hover:brightness-(--highlight-brightness)"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 640 640"
-                          className="h-5 w-5 shrink-0 fill-current sm:h-7 sm:w-7"
-                        >
-                          <path d="M352 173.3L352 384C352 401.7 337.7 416 320 416C302.3 416 288 401.7 288 384L288 173.3L246.6 214.7C234.1 227.2 213.8 227.2 201.3 214.7C188.8 202.2 188.8 181.9 201.3 169.4L297.3 73.4C309.8 60.9 330.1 60.9 342.6 73.4L438.6 169.4C451.1 181.9 451.1 202.2 438.6 214.7C426.1 227.2 405.8 227.2 393.3 214.7L352 173.3zM320 464C364.2 464 400 428.2 400 384L480 384C515.3 384 544 412.7 544 448L544 480C544 515.3 515.3 544 480 544L160 544C124.7 544 96 515.3 96 480L96 448C96 412.7 124.7 384 160 384L240 384C240 428.2 275.8 464 320 464zM464 488C477.3 488 488 477.3 488 464C488 450.7 477.3 440 464 440C450.7 440 440 450.7 440 464C440 477.3 450.7 488 464 488z" />
-                        </svg>
-                        Up Sync
+                        {t('manager.getData')}
                       </button>
                     </div>
                   </div>
@@ -829,7 +943,8 @@ export default function ProxyManager() {
                     />
                     <div className="flex items-center space-x-2">
                       <button
-                        className="bg-bg-changeNote flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
+                        className="bg-action flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
+                        style={{ '--action-color': 'var(--orange)' }}
                         onClick={handleChangeNote}
                         disabled={isProcessing}
                       >
@@ -866,7 +981,8 @@ export default function ProxyManager() {
                     />
                     <div className="flex">
                       <button
-                        className="bg-bg-reinstall flex flex-1 items-center justify-center rounded-l-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
+                        className="bg-action flex flex-1 items-center justify-center rounded-l-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
+                        style={{ '--action-color': 'var(--primary)' }}
                         onClick={handleReinstall}
                         disabled={isProcessing}
                       >
@@ -898,7 +1014,8 @@ export default function ProxyManager() {
                     />
                     <div className="flex">
                       <button
-                        className="bg-bg-changeIp flex flex-1 items-center justify-center rounded-l-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
+                        className="bg-action flex flex-1 items-center justify-center rounded-l-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
+                        style={{ '--action-color': 'var(--red)' }}
                         onClick={handleChangeIp}
                         disabled={isProcessing}
                       >
@@ -924,7 +1041,8 @@ export default function ProxyManager() {
                 <div className="flex flex-col gap-2 md:flex-row lg:gap-3">
                   <div className="flex gap-2 lg:gap-3">
                     <button
-                      className="bg-bg-reboot flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
+                      className="bg-action flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
+                      style={{ '--action-color': 'var(--orange)' }}
                       onClick={handleReboot}
                       disabled={isProcessing}
                     >
@@ -940,7 +1058,8 @@ export default function ProxyManager() {
                     </button>
                     <button
                       id="refundBtn"
-                      className="bg-bg-refund flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium transition-colors duration-200 hover:brightness-(--highlight-brightness)"
+                      className="bg-action flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium transition-colors duration-200 hover:brightness-(--highlight-brightness)"
+                      style={{ '--action-color': 'var(--brown)' }}
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -952,7 +1071,8 @@ export default function ProxyManager() {
                       Refund
                     </button>
                     <button
-                      className="bg-bg-renew flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium transition-colors duration-200 hover:brightness-(--highlight-brightness)"
+                      className="bg-action flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium transition-colors duration-200 hover:brightness-(--highlight-brightness)"
+                      style={{ '--action-color': 'var(--yellow)' }}
                       onClick={handleRenew}
                       disabled={isProcessing}
                     >
@@ -968,7 +1088,8 @@ export default function ProxyManager() {
                   </div>
                   <div className="flex gap-2 sm:gap-3">
                     <button
-                      className="bg-bg-copyIp flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
+                      className="bg-action flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
+                      style={{ '--action-color': 'var(--purple)' }}
                       onClick={() => {
                         const rows = selectedRowsRef.current
                         if (rows.length === 0)
@@ -1001,7 +1122,8 @@ export default function ProxyManager() {
                       {t('manager.copyIp')}
                     </button>
                     <button
-                      className="bg-bg-pause flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
+                      className="bg-action flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
+                      style={{ '--action-color': 'var(--red)' }}
                       onClick={handlePause}
                       disabled={isProcessing}
                     >
@@ -1015,7 +1137,8 @@ export default function ProxyManager() {
                       {t('manager.pause')}
                     </button>
                     <button
-                      className="bg-bg-changeIp flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
+                      className="bg-action flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
+                      style={{ '--action-color': 'var(--green)' }}
                       onClick={() => setBuyDialogOpen(true)}
                     >
                       <svg
@@ -1032,25 +1155,29 @@ export default function ProxyManager() {
                 <div className="grid grid-cols-3 gap-2 sm:gap-3">
                   <button
                     id="giaHan1"
-                    className="bg-bg-changeNote flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
+                    className="bg-action flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
+                    style={{ '--action-color': 'var(--orange)' }}
                   >
                     Gia hạn tuần
                   </button>
                   <button
                     id="giaHan"
-                    className="bg-bg-getData flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium text-nowrap hover:brightness-(--highlight-brightness)"
+                    className="bg-action flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
+                    style={{ '--action-color': 'var(--purple)' }}
                   >
                     Gia hạn
                   </button>
                   <button
                     id="giaHan2"
-                    className="bg-bg-reinstall flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
+                    className="bg-action flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
+                    style={{ '--action-color': 'var(--primary)' }}
                   >
                     Gia hạn 2 tuần
                   </button>
                   <button
                     id="getInfoBtn"
-                    className="bg-bg-getInfo flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
+                    className="bg-action flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
+                    style={{ '--action-color': 'var(--primary)' }}
                     onClick={() => {
                       const rows = selectedRowsRef.current
                       if (rows.length === 0) return addToast(t('manager.noRowsSelected'), 'warning')
@@ -1083,32 +1210,6 @@ export default function ProxyManager() {
                       <path d="M384 32H64C28.654 32 0 60.652 0 96V416C0 451.344 28.654 480 64 480H384C419.346 480 448 451.344 448 416V96C448 60.652 419.346 32 384 32ZM224 128C241.674 128 256 142.326 256 160C256 177.672 241.674 192 224 192S192 177.672 192 160C192 142.326 206.326 128 224 128ZM264 384H184C170.75 384 160 373.25 160 360S170.75 336 184 336H200V272H192C178.75 272 168 261.25 168 248S178.75 224 192 224H224C237.25 224 248 234.75 248 248V336H264C277.25 336 288 346.75 288 360S277.25 384 264 384Z" />
                     </svg>
                     {t('manager.getInfo')}
-                  </button>
-                  <button
-                    id="loadBtn"
-                    className="bg-bg-copyIp flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium text-nowrap hover:brightness-(--highlight-brightness)"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 640 640"
-                      className="size05 shrink-0 fill-current sm:h-7 sm:w-7"
-                    >
-                      <path d="M352 96C352 78.3 337.7 64 320 64C302.3 64 288 78.3 288 96L288 306.7L246.6 265.3C234.1 252.8 213.8 252.8 201.3 265.3C188.8 277.8 188.8 298.1 201.3 310.6L297.3 406.6C309.8 419.1 330.1 419.1 342.6 406.6L438.6 310.6C451.1 298.1 451.1 277.8 438.6 265.3C426.1 252.8 405.8 252.8 393.3 265.3L352 306.7L352 96zM160 384C124.7 384 96 412.7 96 448L96 480C96 515.3 124.7 544 160 544L480 544C515.3 544 544 515.3 544 480L544 448C544 412.7 515.3 384 480 384L433.1 384L376.5 440.6C345.3 471.8 294.6 471.8 263.4 440.6L206.9 384L160 384zM464 440C477.3 440 488 450.7 488 464C488 477.3 477.3 488 464 488C450.7 488 440 477.3 440 464C440 450.7 450.7 440 464 440z" />
-                    </svg>
-                    Load
-                  </button>
-                  <button
-                    id="saveBtn"
-                    className="bg-bg-getData flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium text-nowrap hover:brightness-(--highlight-brightness)"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 640 640"
-                      className="h-5 w-5 shrink-0 fill-current sm:h-7 sm:w-7"
-                    >
-                      <path d="M352 173.3L352 384C352 401.7 337.7 416 320 416C302.3 416 288 401.7 288 384L288 173.3L246.6 214.7C234.1 227.2 213.8 227.2 201.3 214.7C188.8 202.2 188.8 181.9 201.3 169.4L297.3 73.4C309.8 60.9 330.1 60.9 342.6 73.4L438.6 169.4C451.1 181.9 451.1 202.2 438.6 214.7C426.1 227.2 405.8 227.2 393.3 214.7L352 173.3zM320 464C364.2 464 400 428.2 400 384L480 384C515.3 384 544 412.7 544 448L544 480C544 515.3 515.3 544 480 544L160 544C124.7 544 96 515.3 96 480L96 448C96 412.7 124.7 384 160 384L240 384C240 428.2 275.8 464 320 464zM464 488C477.3 488 488 477.3 488 464C488 450.7 477.3 440 464 440C450.7 440 440 450.7 440 464C440 477.3 450.7 488 464 488z" />
-                    </svg>
-                    Save
                   </button>
                 </div>
               </div>
@@ -1143,7 +1244,8 @@ export default function ProxyManager() {
         extraBtn={
           <button
             id="reloadBtn"
-            className="bg-bg-reboot rounded-lg px-2 py-2 hover:brightness-(--highlight-brightness)"
+            className="bg-action rounded-lg px-2 py-2 hover:brightness-(--highlight-brightness)"
+            style={{ '--action-color': 'var(--orange)' }}
             onClick={() => {
               setReceivedData([...data])
               setRenderingReceived(true)
@@ -1190,6 +1292,9 @@ export default function ProxyManager() {
           if (Array.isArray(newData) && newData.length > 0) {
             // Merge into local persistent data using the helper
             setData((prev) => mergeResIntoData(prev, newData))
+
+            // Sync to DB immediately with the fully formed new rows
+            syncToDb(newData)
 
             // Push into the view immediately, similar to handleGetData
             setReceivedData(newData)

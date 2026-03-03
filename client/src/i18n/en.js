@@ -143,7 +143,7 @@ const en = {
   'checker.enterAndClick': 'Enter your proxy and click',
 
   // Proxy Manager
-  'manager.enterIps': 'Enter IPs',
+  'manager.enterIps': 'Enter IP',
   'manager.onePerLine': '(one per line)',
   'manager.delete': 'Delete',
   'manager.enterAmount': 'Enter amount',
@@ -201,7 +201,6 @@ const en = {
   'buy.type': 'Type',
   'buy.duration': 'Duration',
   'buy.amount': 'Amount',
-  'buy.enterQuantity': 'Enter quantity',
   'buy.nation': 'Nation',
   'buy.rangeIp': 'Range IP',
   'buy.provider': 'Provider',
@@ -227,6 +226,9 @@ const en = {
   'buy.proxySuccess': 'proxy successfully!',
   'buy.purchaseFailed': 'Purchase failed',
   'buy.errorOccurred': 'Error occurred',
+  'buy.processing': 'Processing...',
+  'buy.invalidUsername': 'Only lowercase letters (a-z) and numbers (0-9) are allowed',
+  'buy.invalidPassword': 'Uppercase, lowercase, number, min length 10',
 
   // Account Page
   'account.title': 'My Account',
@@ -234,12 +236,23 @@ const en = {
   'account.verified': 'Verified',
   'account.unverified': 'Unverified',
   'account.availableBalance': 'Available Balance',
-  'account.deposit': 'Add Funds',
+  'account.addfunds': 'Add Funds',
   'account.history': 'Transaction History',
   'account.discountHeading': 'Current Discount Level',
   'account.discountVps': 'VPS Discount',
   'account.discountProxy': 'Proxy Discount',
   'account.discountDedicate': 'Dedicate Discount',
+
+  // Add Funds Dialog
+  'addfunds.title': 'Add Funds',
+  'addfunds.transferInfo': 'Transfer Information',
+  'addfunds.bankName': 'Bank Name',
+  'addfunds.accountHolder': 'Account Holder',
+  'addfunds.accountNumber': 'Account Number',
+  'addfunds.transferContent': 'Transfer Content',
+  'addfunds.note': 'Note',
+  'addfunds.noteContent':
+    'Please transfer a minimum of 50,000 VND (fifty thousand Vietnamese Dong) for the system to process.',
 }
 
 export default en

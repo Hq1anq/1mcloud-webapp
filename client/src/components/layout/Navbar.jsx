@@ -63,7 +63,9 @@ export default function Navbar() {
   )
 
   return (
-    <nav className="bg-navbar border-b-card-border z-50 flex flex-col items-center justify-between gap-1 border-b-2 px-3 py-1 shadow-md select-none sm:px-5 md:flex-row md:py-3">
+    <nav
+      className={`bg-navbar border-b-card-border z-50 flex items-center justify-between gap-1 border-b-2 px-3 py-1 shadow-md select-none md:px-5 md:py-3 ${isAuthenticated ? 'flex-row flex-wrap md:flex-nowrap' : 'flex-col md:flex-row'}`}
+    >
       {isAuthenticated ? (
         <>
           {Logo}
@@ -80,7 +82,7 @@ export default function Navbar() {
             <div className="flex items-center gap-3 md:hidden">
               <Link
                 to="/login"
-                className="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white shadow-sm hover:bg-blue-700"
+                className="bg-blue rounded-lg px-4 py-2 font-medium text-white shadow-sm hover:brightness-(--highlight-brightness)"
               >
                 {t('menu.login')}
               </Link>

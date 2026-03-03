@@ -149,9 +149,9 @@ export default function VpsSection() {
 
               {/* macOS-style window dots */}
               <div className="absolute top-4 left-4 z-20 flex items-center gap-2">
-                <div className="size-3 rounded-full bg-[#ff5f57]" />
-                <div className="size-3 rounded-full bg-[#febc2e]" />
-                <div className="size-3 rounded-full bg-[#28c840]" />
+                <div className="bg-red size-3 rounded-full" />
+                <div className="bg-yellow size-3 rounded-full" />
+                <div className="bg-green size-3 rounded-full" />
               </div>
 
               <h3 className="z-10 mb-4 text-sm font-bold tracking-widest uppercase sm:mb-6">

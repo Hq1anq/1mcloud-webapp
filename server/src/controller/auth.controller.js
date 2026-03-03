@@ -1,3 +1,5 @@
+import { getPool } from "../lib/db.js";
+
 export const login = async (req, res) => {
   const url = `${process.env.BASE_URL}/token`;
   try {
@@ -31,9 +33,47 @@ export const login = async (req, res) => {
       });
     }
 
+    const token = rawData.access_token;
+
+    // Fetch phone from /user/profile using the new token
+    let phone = null;
+    try {
+      const profileRes = await fetch(`${process.env.BASE_URL}/user/profile`, {
+        method: "GET",
+        headers: {
+          accept: "application/json, text/plain, */*",
+          "content-type": "application/json",
+          authorization: `Bearer ${token}`,
+        },
+      });
+      if (profileRes.ok) {
+        const profileData = await profileRes.json();
+        phone = profileData.phone || null;
+      }
+    } catch (err) {
+      console.log("⚠️ Failed to fetch profile for phone:", err.message);
+    }
+
+    // Upsert user into Users table (email + phone)
+    try {
+      const pool = await getPool();
+      await pool
+        .request()
+        .input("email", email)
+        .input("phone", phone)
+        .query(
+          `IF NOT EXISTS (SELECT 1 FROM Users WHERE email = @email)
+             INSERT INTO Users (email, phone) VALUES (@email, @phone)
+           ELSE
+             UPDATE Users SET phone = @phone WHERE email = @email`,
+        );
+    } catch (err) {
+      console.log("⚠️ Failed to upsert user:", err.message);
+    }
+
     return res.json({
       success: true,
-      token: rawData.access_token,
+      token,
       user: rawData.user,
     });
   } catch (error) {

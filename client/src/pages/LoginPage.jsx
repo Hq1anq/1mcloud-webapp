@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Input from '../components/ui/Input'
 import Checkbox from '../components/ui/Checkbox'
@@ -6,32 +6,24 @@ import useAuthStore from '../store/useAuthStore'
 import { useTranslation } from '../i18n'
 
 export default function LoginPage() {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    remember: false,
-  })
-  const [error, setError] = useState('')
-  const [isLoadedPassword, setIsLoadedPassword] = useState(false)
-  const navigate = useNavigate()
-  const t = useTranslation()
-
-  useEffect(() => {
+  const [formData, setFormData] = useState(() => {
     const savedPasswordEncoded = localStorage.getItem('rememberedPassword')
     if (savedPasswordEncoded) {
       try {
         const savedPassword = atob(savedPasswordEncoded)
-        setFormData((prev) => ({
-          ...prev,
-          password: savedPassword,
-          remember: true,
-        }))
-        setIsLoadedPassword(true)
+        return { email: '', password: savedPassword, remember: true }
       } catch (e) {
         console.error(e)
       }
     }
-  }, [])
+    return { email: '', password: '', remember: false }
+  })
+  const [error, setError] = useState('')
+  const [isLoadedPassword, setIsLoadedPassword] = useState(() => {
+    return !!localStorage.getItem('rememberedPassword')
+  })
+  const navigate = useNavigate()
+  const t = useTranslation()
 
   const login = useAuthStore((state) => state.login)
   const isLoading = useAuthStore((state) => state.isLoading)

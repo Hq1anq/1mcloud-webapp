@@ -35,7 +35,7 @@ export default function CaptureViewer({ dataUrl, onClose }) {
       />
       <button
         onClick={handleDownload}
-        className="mt-4 cursor-pointer rounded-lg bg-blue-600 px-5 py-2 text-base font-semibold hover:brightness-(--highlight-brightness)"
+        className="bg-blue mt-4 cursor-pointer rounded-lg px-5 py-2 text-base font-semibold hover:brightness-(--highlight-brightness)"
       >
         {t('dialog.download')}
       </button>

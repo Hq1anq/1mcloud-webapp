@@ -34,7 +34,7 @@ function App() {
   }, [theme])
 
   return (
-    <div className="bg-body text-text-secondary flex h-screen flex-col overflow-hidden font-sans text-base sm:text-lg">
+    <div className="bg-body text-text-secondary flex h-full flex-col overflow-hidden font-sans text-base sm:text-lg">
       <BrowserRouter>
         <ScrollToTop />
         <Navbar />

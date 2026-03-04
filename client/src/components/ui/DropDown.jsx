@@ -47,7 +47,7 @@ export default function DropDown({ options, value, onChange, className }) {
 
       {/* Dropdown Menu */}
       <div
-        className={`scroll-container absolute top-full right-0 z-50 mt-1 max-h-60 w-full overflow-y-auto rounded-lg border-0 shadow-lg ${open ? 'translate-y-0 scale-100 opacity-100' : 'pointer-events-none -translate-y-3 scale-95 opacity-0'}`}
+        className={`scroll-container absolute top-full right-0 z-50 mt-1 w-full rounded-lg border-0 shadow-lg ${open ? 'max-h-60 translate-y-0 scale-100 overflow-y-auto opacity-100' : 'pointer-events-none max-h-0 -translate-y-3 scale-95 overflow-hidden opacity-0'}`}
       >
         {options.map((option) => (
           <div

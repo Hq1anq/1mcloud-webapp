@@ -152,8 +152,7 @@ export default function ProxyChecker() {
         addToast(
           <>
             {t('manager.copied')}{' '}
-            <span className="text-text-toast-success">{selectedRows.length}</span>{' '}
-            {t('checker.copiedProxy')}
+            <span className="text-text-toast-success">{selectedRows.length}</span> Proxy
           </>,
           'success'
         )

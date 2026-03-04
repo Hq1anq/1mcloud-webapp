@@ -9,7 +9,7 @@ export default function Checkbox({ checked, indeterminate, onChange }) {
   }, [indeterminate])
 
   return (
-    <label className="inline-flex cursor-pointer items-center">
+    <label className="relative inline-flex cursor-pointer items-center">
       {/* Hidden native checkbox */}
       <input
         ref={inputRef}

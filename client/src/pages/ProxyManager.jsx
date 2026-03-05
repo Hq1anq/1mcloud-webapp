@@ -1,6 +1,5 @@
 import DropDown from '../components/ui/DropDown'
 import Table from '../components/ui/Table'
-import BuyProxyDialog from '../components/dialog/BuyProxyDialog'
 import axiosInstance from '../lib/axios'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useToast } from '../context/ToastContext'
@@ -53,14 +52,13 @@ function mergeResIntoData(data, res) {
   return Array.from(dataMap.values())
 }
 
-export default function ProxyManager() {
+export default function ProxyManager({ onBuySuccessRef }) {
   const [reinstallType, setReinstallType] = useState('HTTPS')
   const [changeIpType, setChangeIpType] = useState('HTTPS')
   const [selectedRows, setSelectedRows] = useState([])
   const { addToast, updateToast, removeToast } = useToast()
   const { safeCopy } = useSafeCopy()
   const { confirmAction } = useConfirm()
-  const [buyDialogOpen, setBuyDialogOpen] = useState(false)
   const t = useTranslation()
 
   // Controlled input state
@@ -201,6 +199,35 @@ export default function ProxyManager() {
       addToast(`${t('manager.failedGetData')}: ${err.message}`, 'error')
     }
   }, [ips, amount, addToast, removeToast, t, syncToDb])
+
+  // Register buy success handler on parent ref
+  useEffect(() => {
+    if (onBuySuccessRef) {
+      onBuySuccessRef.current = (newData) => {
+        if (Array.isArray(newData) && newData.length > 0) {
+          setData((prev) => mergeResIntoData(prev, newData))
+          syncToDb(newData)
+          setReceivedData(newData)
+          setRenderingReceived(true)
+          setSelectedIds(new Set())
+          const proxies = newData.map((item) => `${item.ip_port}:${item.user_pass}`).join('\n')
+          safeCopy(proxies).then(
+            (ok) =>
+              ok &&
+              addToast(
+                <>
+                  {t('manager.copied')}{' '}
+                  <span className="text-text-toast-success">{newData.length}</span> Proxy
+                </>,
+                'success'
+              )
+          )
+        } else {
+          handleGetData()
+        }
+      }
+    }
+  }, [onBuySuccessRef, syncToDb, safeCopy, addToast, t, handleGetData])
 
   // Helper: update a single row in both receivedData and data by sid, and return the mutated row object
   const updateRowBySid = useCallback((sid, updater) => {
@@ -372,8 +399,7 @@ export default function ProxyManager() {
           addToast(
             <>
               {t('manager.copied')}{' '}
-              <span className="text-text-toast-success">{proxyResults.length}</span>{' '}
-              {t('manager.copiedProxy')}
+              <span className="text-text-toast-success">{proxyResults.length}</span> Proxy
             </>,
             'success'
           )
@@ -495,8 +521,7 @@ export default function ProxyManager() {
           addToast(
             <>
               {t('manager.copied')}{' '}
-              <span className="text-text-toast-success">{proxyResults.length}</span>{' '}
-              {t('manager.copiedProxy')}
+              <span className="text-text-toast-success">{proxyResults.length}</span> Proxy
             </>,
             'success'
           )
@@ -852,7 +877,7 @@ export default function ProxyManager() {
     <div>
       {/* ========== TOP CONTROLS ========== */}
       <div className="bg-surface border-border z-40 border-b select-none">
-        <div className="mx-auto max-w-7xl px-4 py-4">
+        <div className="mx-auto max-w-7xl px-4">
           {/* ========== FEATURE CONTROLS ========== */}
           <div className="bg-wrapper rounded-lg p-4">
             <div className="flex flex-col gap-4 sm:flex-row">
@@ -1040,7 +1065,7 @@ export default function ProxyManager() {
                         )
                       }}
                       className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
-                      style={{ '--action-color': 'var(--purple)' }}
+                      style={{ '--action-color': 'var(--green)' }}
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -1104,8 +1129,7 @@ export default function ProxyManager() {
                             addToast(
                               <>
                                 {t('manager.copied')}{' '}
-                                <span className="text-text-toast-success">{rows.length}</span>{' '}
-                                {t('manager.copiedProxy')}
+                                <span className="text-text-toast-success">{rows.length}</span> Proxy
                               </>,
                               'success'
                             )
@@ -1136,21 +1160,6 @@ export default function ProxyManager() {
                         <path d="m 8 0 c -0.550781 0 -1 0.449219 -1 1 v 5 c 0 0.550781 0.449219 1 1 1 s 1 -0.449219 1 -1 v -5 c 0 -0.550781 -0.449219 -1 -1 -1 z m -7 1 l 2.050781 2.050781 c -2.117187 2.117188 -2.652343 5.355469 -1.332031 8.039063 c 1.324219 2.683594 4.214844 4.238281 7.179688 3.851562 c 2.96875 -0.386718 5.367187 -2.625 5.960937 -5.554687 c 0.59375 -2.933594 -0.75 -5.929688 -3.335937 -7.433594 c -0.476563 -0.28125 -1.089844 -0.117187 -1.367188 0.359375 s -0.117188 1.089844 0.359375 1.367188 c 1.851563 1.078124 2.808594 3.207031 2.382813 5.3125 c -0.421876 2.101562 -2.128907 3.691406 -4.253907 3.96875 c -2.128906 0.273437 -4.183593 -0.828126 -5.128906 -2.753907 s -0.566406 -4.226562 0.949219 -5.742187 l 1.535156 1.535156 v -4.003906 c 0 -0.519532 -0.449219 -0.996094 -1 -0.996094 z m 0 0" />
                       </svg>
                       {t('manager.reboot')}
-                    </button>
-
-                    <button
-                      className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap hover:brightness-(--highlight-brightness)"
-                      style={{ '--action-color': 'var(--green)' }}
-                      onClick={() => setBuyDialogOpen(true)}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 640 640"
-                        className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:h-6 sm:w-6"
-                      >
-                        <path d="M0 72C0 58.7 10.7 48 24 48L69.3 48C96.4 48 119.6 67.4 124.4 94L124.8 96L537.5 96C557.5 96 572.6 114.2 568.9 133.9L537.8 299.8C532.1 330.1 505.7 352 474.9 352L171.3 352L176.4 380.3C178.5 391.7 188.4 400 200 400L456 400C469.3 400 480 410.7 480 424C480 437.3 469.3 448 456 448L200.1 448C165.3 448 135.5 423.1 129.3 388.9L77.2 102.6C76.5 98.8 73.2 96 69.3 96L24 96C10.7 96 0 85.3 0 72zM160 528C160 501.5 181.5 480 208 480C234.5 480 256 501.5 256 528C256 554.5 234.5 576 208 576C181.5 576 160 554.5 160 528zM384 528C384 501.5 405.5 480 432 480C458.5 480 480 501.5 480 528C480 554.5 458.5 576 432 576C405.5 576 384 554.5 384 528zM336 142.4C322.7 142.4 312 153.1 312 166.4L312 200L278.4 200C265.1 200 254.4 210.7 254.4 224C254.4 237.3 265.1 248 278.4 248L312 248L312 281.6C312 294.9 322.7 305.6 336 305.6C349.3 305.6 360 294.9 360 281.6L360 248L393.6 248C406.9 248 417.6 237.3 417.6 224C417.6 210.7 406.9 200 393.6 200L360 200L360 166.4C360 153.1 349.3 142.4 336 142.4z" />
-                      </svg>
-                      {t('manager.buyMore')}
                     </button>
                   </div>
                 </div>
@@ -1225,42 +1234,6 @@ export default function ProxyManager() {
         onSelectionChange={(rows, ids) => {
           setSelectedRows(rows)
           setSelectedIds(ids)
-        }}
-      />
-
-      <BuyProxyDialog
-        isOpen={buyDialogOpen}
-        onClose={() => setBuyDialogOpen(false)}
-        onSuccess={(newData) => {
-          if (Array.isArray(newData) && newData.length > 0) {
-            // Merge into local persistent data using the helper
-            setData((prev) => mergeResIntoData(prev, newData))
-
-            // Sync to DB immediately with the fully formed new rows
-            syncToDb(newData)
-
-            // Push into the view immediately, similar to handleGetData
-            setReceivedData(newData)
-            setRenderingReceived(true)
-            setSelectedIds(new Set())
-
-            const proxies = newData.map((item) => `${item.ip_port}:${item.user_pass}`).join('\n')
-            safeCopy(proxies).then(
-              (ok) =>
-                ok &&
-                addToast(
-                  <>
-                    {t('manager.copied')}{' '}
-                    <span className="text-text-toast-success">{newData.length}</span>{' '}
-                    {t('manager.copiedProxy')}
-                  </>,
-                  'success'
-                )
-            )
-          } else {
-            // Fallback to fetch from ground up if payload is missing or invalid
-            handleGetData()
-          }
         }}
       />
     </div>

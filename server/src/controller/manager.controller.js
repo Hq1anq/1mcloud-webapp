@@ -100,6 +100,7 @@ export async function support(req, res) {
 
 export async function create(req, res) {
   const {
+    plan_id,
     duration,
     quantity,
     os_id,
@@ -119,13 +120,14 @@ export async function create(req, res) {
     state,
     coupon,
     auto_renew,
+    is_proxy,
   } = req.body;
 
   const url = `${process.env.BASE_URL}/server/create`;
   const headers = { ...HEADERS, authorization: `Bearer ${req.token}` };
 
   const payload = {
-    plan_id: 0,
+    plan_id: Number(plan_id),
     duration: Number(duration) || 1,
     quantity: Number(quantity) || 1,
     auto_renew: Boolean(auto_renew),
@@ -145,7 +147,7 @@ export async function create(req, res) {
     state: state || undefined,
     provider: isp || undefined,
     proxy_type: proxy_type || "proxy_https",
-    is_proxy: true,
+    is_proxy: is_proxy,
   };
 
   try {
@@ -156,10 +158,10 @@ export async function create(req, res) {
     });
 
     if (!response.ok) {
-      console.error(`Failed to BUY PROXY:`, response.status);
+      console.error(`Failed to BUY:`, response.status);
       return res.status(response.status).json({
         success: false,
-        error: "BUY PROXY request failed",
+        error: "BUY request failed",
       });
     }
 
@@ -182,14 +184,15 @@ export async function create(req, res) {
     const tableData = servers.map((server) => ({
       sid: server.id,
       ip_port: `${server.ip}:${server.remote_port}`,
-      country: nation,
-      type: serverType,
+      ...(is_proxy && { country: nation }),
+      ...(is_proxy && { type: serverType }),
       created: formatDate(today),
       expired: formatDate(expiredDate),
       ip_changed: 0,
       status: "Running",
       note: note,
-      user_pass: `${server.username}:${server.password}`,
+      ...(is_proxy && { user_pass: `${server.username}:${server.password}` }),
+      ...(!is_proxy && { user_pass: `${server.username}/${server.password}` }),
     }));
 
     return res.json({
@@ -206,7 +209,7 @@ export async function create(req, res) {
 }
 
 export async function calculate(req, res) {
-  const { quantity, duration, nation } = req.body;
+  const { plan_id, is_proxy, quantity, duration, nation, coupon } = req.body;
   const url = `${process.env.BASE_URL}/server/create/calculate`;
   const headers = { ...HEADERS, authorization: `Bearer ${req.token}` };
 
@@ -215,11 +218,12 @@ export async function calculate(req, res) {
       method: "POST",
       headers,
       body: JSON.stringify({
-        plan_id: 0,
-        nation: nation,
+        plan_id: plan_id,
+        nation: is_proxy ? nation : undefined,
         quantity: quantity,
         duration: duration,
-        is_proxy: true,
+        is_proxy: is_proxy || false,
+        coupon: coupon,
       }),
     });
 

@@ -7,6 +7,84 @@ const HEADERS = {
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
 };
 
+export async function getVpsPlan(req, res) {
+  const { plan } = req.query;
+  if (!plan) {
+    return res.status(400).json({
+      success: false,
+      error: "Plan is required",
+    });
+  }
+  const url = `${process.env.BASE_URL}/plan/vps`;
+  const headers = { ...HEADERS, authorization: `Bearer ${req.token}` };
+
+  const params = new URLSearchParams({
+    region: plan,
+  });
+
+  try {
+    const response = await fetch(
+      `${plan === "gpu" ? `${process.env.BASE_URL}/plan/gpu` : url + "?" + params.toString()}`,
+      {
+        method: "GET",
+        headers,
+      },
+    );
+
+    if (!response.ok) {
+      console.error(`Failed to GET VPS PLAN:`, response.status);
+      return res.status(response.status).json({
+        success: false,
+        error: "GET VPS PLAN request failed",
+      });
+    }
+
+    const data = await response.json();
+    return res.json({ success: true, info: data });
+  } catch (error) {
+    console.error("Failed to GET VPS PLAN", error.message);
+    return res
+      .status(500)
+      .json({ success: false, error: "Internal server error" });
+  }
+}
+
+export async function support(req, res) {
+  const url = `${process.env.BASE_URL}/server/vps/support`;
+  const { plan_id } = req.query;
+  const headers = { ...HEADERS, authorization: `Bearer ${req.token}` };
+
+  const params = new URLSearchParams({
+    plan_id: plan_id,
+  });
+
+  try {
+    const response = await fetch(
+      `${plan_id === "gpu" ? `${process.env.BASE_URL}/server/gpu/support` : url + "?" + params.toString()}`,
+      {
+        method: "GET",
+        headers,
+      },
+    );
+
+    if (!response.ok) {
+      console.error(`Failed to GET SUPPORT:`, response.status);
+      return res.status(response.status).json({
+        success: false,
+        error: "GET SUPPORT request failed",
+      });
+    }
+
+    const data = await response.json();
+    return res.json({ success: true, info: data });
+  } catch (error) {
+    console.error("Failed to GET SUPPORT", error.message);
+    return res
+      .status(500)
+      .json({ success: false, error: "Internal server error" });
+  }
+}
+
 /**
  * Resolve the user_id from the Bearer token.
  */

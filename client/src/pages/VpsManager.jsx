@@ -67,7 +67,7 @@ function mergeResIntoData(data, res) {
   return Array.from(dataMap.values())
 }
 
-export default function VpsManager() {
+export default function VpsManager({ onBuySuccessRef }) {
   const [selectedRows, setSelectedRows] = useState([])
   const { addToast, updateToast, removeToast } = useToast()
   const { safeCopy } = useSafeCopy()
@@ -205,6 +205,35 @@ export default function VpsManager() {
       addToast(`${t('manager.failedGetData')}: ${err.message}`, 'error')
     }
   }, [ips, amount, addToast, removeToast, t, syncToDb])
+
+  // Register buy success handler on parent ref
+  useEffect(() => {
+    if (onBuySuccessRef) {
+      onBuySuccessRef.current = (newData) => {
+        if (Array.isArray(newData) && newData.length > 0) {
+          setData((prev) => mergeResIntoData(prev, newData))
+          syncToDb(newData)
+          setReceivedData(newData)
+          setRenderingReceived(true)
+          setSelectedIds(new Set())
+          const vps = newData.map((item) => `${item.ip_port}/${item.user_pass}`).join('\n')
+          safeCopy(vps).then(
+            (ok) =>
+              ok &&
+              addToast(
+                <>
+                  {t('manager.copied')}{' '}
+                  <span className="text-text-toast-success">{newData.length}</span> VPS
+                </>,
+                'success'
+              )
+          )
+        } else {
+          handleGetData()
+        }
+      }
+    }
+  }, [onBuySuccessRef, syncToDb, safeCopy, addToast, t, handleGetData])
 
   // Helper: update a single row in both receivedData and data by sid
   const updateRowBySid = useCallback((sid, updater) => {
@@ -627,7 +656,7 @@ export default function VpsManager() {
     <div>
       {/* ========== TOP CONTROLS ========== */}
       <div className="bg-surface border-border z-40 border-b select-none">
-        <div className="mx-auto max-w-7xl px-4 py-4">
+        <div className="mx-auto max-w-7xl px-4">
           {/* ========== FEATURE CONTROLS ========== */}
           <div className="bg-wrapper rounded-lg p-4">
             <div className="flex flex-col gap-4 sm:flex-row">
@@ -784,6 +813,23 @@ export default function VpsManager() {
                       {t('manager.reboot')}
                     </button>
 
+                    {/* Pause */}
+                    <button
+                      className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap hover:brightness-(--highlight-brightness)"
+                      style={{ '--action-color': 'var(--red)' }}
+                      onClick={handlePause}
+                      disabled={isProcessing}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 640 640"
+                        className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:h-6 sm:w-6"
+                      >
+                        <path d="M176 96C149.5 96 128 117.5 128 144L128 496C128 522.5 149.5 544 176 544L240 544C266.5 544 288 522.5 288 496L288 144C288 117.5 266.5 96 240 96L176 96zM400 96C373.5 96 352 117.5 352 144L352 496C352 522.5 373.5 544 400 544L464 544C490.5 544 512 522.5 512 496L512 144C512 117.5 490.5 96 464 96L400 96z" />
+                      </svg>
+                      {t('manager.pause')}
+                    </button>
+
                     {/* Get Info */}
                     <button
                       className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap hover:brightness-(--highlight-brightness)"
@@ -804,8 +850,7 @@ export default function VpsManager() {
                             addToast(
                               <>
                                 {t('manager.copied')}{' '}
-                                <span className="text-text-toast-success">{rows.length}</span>{' '}
-                                {t('manager.copiedVps')}
+                                <span className="text-text-toast-success">{rows.length}</span> VPS
                               </>,
                               'success'
                             )
@@ -839,23 +884,6 @@ export default function VpsManager() {
                       {t('manager.renew')}
                     </button>
 
-                    {/* Pause */}
-                    <button
-                      className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap hover:brightness-(--highlight-brightness)"
-                      style={{ '--action-color': 'var(--red)' }}
-                      onClick={handlePause}
-                      disabled={isProcessing}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 640 640"
-                        className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:h-6 sm:w-6"
-                      >
-                        <path d="M176 96C149.5 96 128 117.5 128 144L128 496C128 522.5 149.5 544 176 544L240 544C266.5 544 288 522.5 288 496L288 144C288 117.5 266.5 96 240 96L176 96zM400 96C373.5 96 352 117.5 352 144L352 496C352 522.5 373.5 544 400 544L464 544C490.5 544 512 522.5 512 496L512 144C512 117.5 490.5 96 464 96L400 96z" />
-                      </svg>
-                      {t('manager.pause')}
-                    </button>
-
                     {/* Reset Password */}
                     <button
                       className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap hover:brightness-(--highlight-brightness)"
@@ -882,7 +910,6 @@ export default function VpsManager() {
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        xmlns:xlink="http://www.w3.org/1999/xlink"
                         viewBox="0 0 231.233 231.233"
                         className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:size-7"
                       >

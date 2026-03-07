@@ -334,7 +334,7 @@ export default function VpsManager({ onBuySuccessRef }) {
       removeToast(loadingId)
       setIsProcessing(false)
     },
-    [addToast, removeToast, updateRowBySid, t]
+    [addToast, removeToast, syncToDb, updateRowBySid, t]
   )
 
   // --- Sequential processor with per-row feedback ---

@@ -15,10 +15,11 @@ export const parseProxy = (raw) => {
     const parts = line.split(":");
     if (parts.length === 4) [ip, port, username, password] = parts;
     else if (parts.length === 2) [ip, port] = parts;
+    else if (parts.length === 1) [ip] = parts;
     else return null;
   }
 
-  if (!ip || !port) return null;
+  if (!ip) return null;
 
   return {
     ip,

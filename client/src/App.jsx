@@ -9,7 +9,7 @@ import ScrollToTop from './components/layout/ScrollToTop.jsx'
 import useAuthStore from './store/useAuthStore'
 import useThemeStore from './store/useThemeStore'
 import Home from './pages/Home.jsx'
-import ProxyManager from './pages/ProxyManager.jsx'
+import ManagerPage from './pages/ManagerPage.jsx'
 import ProxyChecker from './pages/ProxyChecker.jsx'
 import LoginPage from './pages/LoginPage.jsx'
 import SignupPage from './pages/SignupPage.jsx'
@@ -48,13 +48,13 @@ function App() {
             />
 
             <Route
-              path="/proxyManager"
+              path="/manager"
               element={
                 isAuthenticated ? (
                   <ToastProvider>
                     <SafeCopyProvider>
                       <ConfirmProvider>
-                        <ProxyManager />
+                        <ManagerPage />
                       </ConfirmProvider>
                     </SafeCopyProvider>
                   </ToastProvider>
@@ -63,6 +63,8 @@ function App() {
                 )
               }
             />
+            <Route path="/proxyManager" element={<Navigate to="/manager" replace />} />
+            <Route path="/vpsManager" element={<Navigate to="/manager" replace />} />
 
             <Route
               path="/proxyChecker"

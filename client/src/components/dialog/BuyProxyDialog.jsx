@@ -106,6 +106,8 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
       const delayFn = setTimeout(() => {
         axiosInstance
           .post('/server/create/calculate', {
+            plan_id: 0,
+            is_proxy: true,
             quantity: Number(amount),
             nation: selectedNation,
             duration: Number(selectedDuration),
@@ -442,24 +444,18 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
             </div>
 
             <div className="flex flex-col gap-3 pt-2">
-              <div className="flex items-center gap-2">
+              <label className="flex items-center gap-2">
                 <Checkbox checked={autoRenew} onChange={(e) => setAutoRenew(e.target.checked)} />
-                <span
-                  onClick={() => setAutoRenew(!autoRenew)}
-                  className="text-text-primary cursor-pointer text-sm font-medium select-none"
-                >
+                <span className="text-text-primary cursor-pointer text-sm font-medium select-none">
                   {t('buy.autoRenew')}
                 </span>
-              </div>
-              <div className="flex items-start gap-2">
+              </label>
+              <label className="flex items-center gap-2">
                 <Checkbox checked={agreeTerms} onChange={(e) => setAgreeTerms(e.target.checked)} />
-                <span
-                  onClick={() => setAgreeTerms(!agreeTerms)}
-                  className="text-text-primary cursor-pointer text-sm font-medium select-none"
-                >
+                <span className="text-text-primary cursor-pointer text-sm font-medium select-none">
                   {t('buy.agreeTerms')}
                 </span>
-              </div>
+              </label>
             </div>
           </div>
 

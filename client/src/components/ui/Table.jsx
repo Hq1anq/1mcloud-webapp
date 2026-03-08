@@ -304,7 +304,7 @@ const Table = forwardRef(function Table(
           return (
             <th key={header} className="px-2 py-3 font-medium tracking-wider uppercase sm:px-4">
               <div
-                className={`flex min-w-15 flex-col gap-1 font-bold ${
+                className={`flex min-w-15 flex-col gap-1 font-bold whitespace-nowrap ${
                   title === 'Proxy Status' ? 'text-base sm:text-lg' : 'text-sm sm:text-base'
                 }`}
               >
@@ -360,7 +360,7 @@ const Table = forwardRef(function Table(
   ])
 
   return (
-    <div className={`flex-1 overflow-hidden ${className}`}>
+    <div className={`flex-1 ${className}`}>
       <div id="table-wrapper" className="mx-auto max-w-7xl px-4 py-3">
         <div
           id="table-container"
@@ -411,11 +411,12 @@ const Table = forwardRef(function Table(
               <TableVirtuoso
                 data={filteredData}
                 customScrollParent={scrollParent}
-                overscan={1000}
                 context={virtuosoContext}
                 components={VIRTUOSO_COMPONENTS}
                 fixedHeaderContent={fixedHeader}
                 itemContent={itemContent}
+                overscan={150}
+                increaseViewportBy={{ top: 80, bottom: 80 }}
               />
             )}
           </div>

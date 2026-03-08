@@ -7,7 +7,7 @@ const HEADERS = {
 
 export async function list(req, res) {
   const url = `${process.env.BASE_URL}/server/list`;
-  const { ips, amount } = req.query;
+  const { ips, amount, proxy } = req.query;
 
   const headers = { ...HEADERS, authorization: `Bearer ${req.token}` };
 
@@ -19,8 +19,13 @@ export async function list(req, res) {
     by_created: "",
     keyword: "",
     ips: ips || "",
-    proxy: "true",
   });
+
+  const isProxy = proxy === "true";
+
+  if (isProxy) {
+    params.set("proxy", "true");
+  }
 
   try {
     const response = await fetch(`${url}?${params.toString()}`, {
@@ -40,9 +45,12 @@ export async function list(req, res) {
 
     const data = servers.map((server) => ({
       sid: server.server_id,
+      ...(!isProxy && { plan_number: server.plan_number }),
       ip_port: server.ip_port,
       country: server.country,
       type: server.he_dieu_hanh,
+      ...(!isProxy && { he_dieu_hanh: server.he_dieu_hanh }),
+      ...(!isProxy && { price_vnd: server.price_vnd }),
       created: server.ngay_mua,
       expired: server.het_han,
       ip_changed: server.change_ip_time,
@@ -92,6 +100,7 @@ export async function support(req, res) {
 
 export async function create(req, res) {
   const {
+    plan_id,
     duration,
     quantity,
     os_id,
@@ -111,13 +120,14 @@ export async function create(req, res) {
     state,
     coupon,
     auto_renew,
+    is_proxy,
   } = req.body;
 
   const url = `${process.env.BASE_URL}/server/create`;
   const headers = { ...HEADERS, authorization: `Bearer ${req.token}` };
 
   const payload = {
-    plan_id: 0,
+    plan_id: Number(plan_id),
     duration: Number(duration) || 1,
     quantity: Number(quantity) || 1,
     auto_renew: Boolean(auto_renew),
@@ -137,7 +147,7 @@ export async function create(req, res) {
     state: state || undefined,
     provider: isp || undefined,
     proxy_type: proxy_type || "proxy_https",
-    is_proxy: true,
+    is_proxy: is_proxy,
   };
 
   try {
@@ -148,10 +158,10 @@ export async function create(req, res) {
     });
 
     if (!response.ok) {
-      console.error(`Failed to BUY PROXY:`, response.status);
+      console.error(`Failed to BUY:`, response.status);
       return res.status(response.status).json({
         success: false,
-        error: "BUY PROXY request failed",
+        error: "BUY request failed",
       });
     }
 
@@ -174,14 +184,15 @@ export async function create(req, res) {
     const tableData = servers.map((server) => ({
       sid: server.id,
       ip_port: `${server.ip}:${server.remote_port}`,
-      country: nation,
-      type: serverType,
+      ...(is_proxy && { country: nation }),
+      ...(is_proxy && { type: serverType }),
       created: formatDate(today),
       expired: formatDate(expiredDate),
       ip_changed: 0,
       status: "Running",
       note: note,
-      user_pass: `${server.username}:${server.password}`,
+      ...(is_proxy && { user_pass: `${server.username}:${server.password}` }),
+      ...(!is_proxy && { user_pass: `${server.username}/${server.password}` }),
     }));
 
     return res.json({
@@ -198,7 +209,7 @@ export async function create(req, res) {
 }
 
 export async function calculate(req, res) {
-  const { quantity, duration, nation } = req.body;
+  const { plan_id, is_proxy, quantity, duration, nation, coupon } = req.body;
   const url = `${process.env.BASE_URL}/server/create/calculate`;
   const headers = { ...HEADERS, authorization: `Bearer ${req.token}` };
 
@@ -207,11 +218,12 @@ export async function calculate(req, res) {
       method: "POST",
       headers,
       body: JSON.stringify({
-        plan_id: 0,
-        nation: nation,
+        plan_id: plan_id,
+        nation: is_proxy ? nation : undefined,
         quantity: quantity,
         duration: duration,
-        is_proxy: true,
+        is_proxy: is_proxy || false,
+        coupon: coupon,
       }),
     });
 
@@ -530,5 +542,70 @@ export async function updateNote(req, res) {
     res
       .status(500)
       .json({ success: false, error: "Internal server error", sid });
+  }
+}
+
+export async function resetPassword(req, res) {
+  const { sids } = req.body;
+  const url = `${process.env.BASE_URL}/server/reset-password`;
+  const headers = { ...HEADERS, authorization: `Bearer ${req.token}` };
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ sid: sids }),
+    });
+
+    if (!response.ok) {
+      console.error(
+        `Failed to RESET PASSWORD for sids: ${sids}:`,
+        response.status,
+      );
+      return res.status(response.status).json({
+        success: false,
+        error: "Request failed",
+        sids,
+      });
+    }
+
+    const data = await response.json();
+    res.json({ success: true, result: data.result });
+  } catch (error) {
+    console.error(`Failed to RESET PASSWORD for sid: ${sids}`, error.message);
+    res
+      .status(500)
+      .json({ success: false, error: "Internal server error", sids });
+  }
+}
+
+export async function autoFix(req, res) {
+  const { sids } = req.body;
+  const url = `${process.env.BASE_URL}/server/auto-fix`;
+  const headers = { ...HEADERS, authorization: `Bearer ${req.token}` };
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ sid: sids }),
+    });
+
+    if (!response.ok) {
+      console.error(`Failed to AUTO FIX for sids: ${sids}:`, response.status);
+      return res.status(response.status).json({
+        success: false,
+        error: "Request failed",
+        sids,
+      });
+    }
+
+    const data = await response.json();
+    res.json({ success: true, result: data.result });
+  } catch (error) {
+    console.error(`Failed to AUTO FIX for sid: ${sids}`, error.message);
+    res
+      .status(500)
+      .json({ success: false, error: "Internal server error", sids });
   }
 }

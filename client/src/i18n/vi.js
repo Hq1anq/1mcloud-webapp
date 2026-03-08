@@ -3,6 +3,8 @@ const vi = {
   'nav.home': 'Home',
   'nav.proxyChecker': 'Proxy Checker',
   'nav.proxyManager': 'Proxy Manager',
+  'nav.vpsManager': 'VPS Manager',
+  'nav.manager': 'Manager',
 
   // UserMenu
   'menu.login': 'Đăng nhập',
@@ -138,8 +140,7 @@ const vi = {
   'checker.active': 'hoạt động',
   'checker.inactive': 'không hoạt động',
   'checker.checkFailed': 'Kiểm tra proxy thất bại',
-  'checker.copiedIp': 'IP vào bộ nhớ tạm',
-  'checker.copiedProxy': 'proxy vào bộ nhớ tạm',
+  'checker.copiedIp': 'IP',
   'checker.noProxyToCheck': 'Chưa có proxy để kiểm tra',
   'checker.enterAndClick': 'Nhập proxy và nhấn',
 
@@ -166,8 +167,7 @@ const vi = {
   'manager.rows': 'dòng',
   'manager.failedGetData': 'Lấy dữ liệu thất bại',
   'manager.noRowsSelected': 'Chưa chọn dòng nào',
-  'manager.copiedIps': 'IP vào bộ nhớ tạm',
-  'manager.copiedProxy': 'proxy vào bộ nhớ tạm',
+  'manager.copiedIps': 'IP',
   'manager.pausing': 'Đang tạm dừng...',
   'manager.rebooting': 'Đang khởi động lại...',
   'manager.renewing': 'Đang gia hạn...',
@@ -231,6 +231,50 @@ const vi = {
   'buy.invalidUsername': 'Chỉ được phép dùng kí tự thường (a-z) và số 0-9',
   'buy.invalidPassword': 'Chữ hoa + chữ thường + số, tối thiểu 10',
 
+  // Buy VPS Dialog
+  'buyVps.title': 'Mua VPS',
+  'buyVps.subtitle': 'Chọn plan',
+  'buyVps.os': 'Hệ điều hành',
+  'buyVps.plan': 'Gói cấu hình',
+  'buyVps.duration': 'Thời hạn',
+  'buyVps.amount': 'Số lượng',
+  'buyVps.provider': 'Nhà cung cấp',
+  'buyVps.randomPassword': 'Mật khẩu ngẫu nhiên',
+  'buyVps.note': 'Ghi chú',
+  'buyVps.enterNote': 'Nhập ghi chú',
+  'buyVps.orderSummary': 'Tóm tắt đơn hàng',
+  'buyVps.originalPrice': 'Giá gốc',
+  'buyVps.discount': 'Giảm giá',
+  'buyVps.coupon': 'Mã giảm giá',
+  'buyVps.totalToPay': 'Tổng thanh toán',
+  'buyVps.discountCode': 'Mã giảm giá',
+  'buyVps.autoRenew': 'Tự động gia hạn',
+  'buyVps.agreeTerms': 'Đồng ý với điều khoản dịch vụ.',
+  'buyVps.payNow': 'Thanh toán',
+  'buyVps.cancel': 'Huỷ',
+  'buyVps.processing': 'Đang xử lý...',
+  'buyVps.purchaseSuccess': 'Mua VPS thành công!',
+  'buyVps.purchaseFailed': 'Mua VPS thất bại',
+  'buyVps.errorOccurred': 'Đã xảy ra lỗi',
+  'buyVps.configureInstance': 'Cấu hình máy chủ ảo',
+  'buyVps.availablePlans': 'Gói khả dụng',
+  'buyVps.tiersAvailable': 'gói',
+  'buyVps.planName': 'Tên gói',
+  'buyVps.price': 'Giá',
+  'buyVps.loadingPlans': 'Đang tải danh sách gói...',
+  'buyVps.noPlans': 'Không có gói khả dụng',
+  'buyVps.fetchPlanError': 'Không thể tải danh sách gói',
+  'buyVps.selectPlanFirst': 'Vui lòng chọn gói trước',
+  'buyVps.selectedPlan': 'Gói đã chọn',
+  'buyVps.rangeIp': 'Dải IP',
+  'buyVps.location': 'Bang',
+  'buyVps.software': 'Cài đặt tiện ích',
+  'buyVps.none': 'Không',
+  'buyVps.randomPort': 'Port ngẫu nhiên',
+  'buyVps.soldOut': 'Hết hàng',
+  'buyVps.soldOutMessage':
+    'Gói dịch vụ này hiện đã hết. Vui lòng kiểm tra lại sau hoặc liên hệ bộ phận hỗ trợ.',
+
   // Account Page
   'account.title': 'Tài khoản của tôi',
   'account.subtitle': 'Quản lý thông tin cá nhân và số dư dịch vụ',
@@ -254,6 +298,17 @@ const vi = {
   'addfunds.note': 'Lưu ý',
   'addfunds.noteContent':
     'Vui lòng chuyển khoản tối thiểu 50.000 VNĐ (năm mươi nghìn Việt Nam Đồng) để hệ thống có thể xử lý.',
+
+  // VPS Manager
+  'vpsManager.title': 'Quản lý VPS',
+  'vpsManager.resetPassword': 'Đặt lại mật khẩu',
+  'vpsManager.autoFix': 'Tự động sửa',
+  'vpsManager.comingSoon': 'Sắp ra mắt',
+
+  // Additional Table Headers
+  'table.planNumber': 'Dịch vụ',
+  'table.os': 'OS',
+  'table.priceVnd': 'Giá (VNĐ)',
 }
 
 export default vi

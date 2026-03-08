@@ -3,6 +3,8 @@ const en = {
   'nav.home': 'Home',
   'nav.proxyChecker': 'Proxy Checker',
   'nav.proxyManager': 'Proxy Manager',
+  'nav.vpsManager': 'VPS Manager',
+  'nav.manager': 'Manager',
 
   // UserMenu
   'menu.login': 'Login',
@@ -138,7 +140,6 @@ const en = {
   'checker.inactive': 'inactive',
   'checker.checkFailed': 'Proxy check failed',
   'checker.copiedIp': 'IP to clipboard',
-  'checker.copiedProxy': 'proxy to clipboard',
   'checker.noProxyToCheck': 'No proxy to check',
   'checker.enterAndClick': 'Enter your proxy and click',
 
@@ -166,7 +167,6 @@ const en = {
   'manager.failedGetData': 'Failed to get data',
   'manager.noRowsSelected': 'No rows selected',
   'manager.copiedIps': 'IPs to clipboard',
-  'manager.copiedProxy': 'proxy to clipboard',
   'manager.pausing': 'Pausing...',
   'manager.rebooting': 'Rebooting...',
   'manager.renewing': 'Renewing...',
@@ -230,6 +230,50 @@ const en = {
   'buy.invalidUsername': 'Only lowercase letters (a-z) and numbers (0-9) are allowed',
   'buy.invalidPassword': 'Uppercase, lowercase, number, min length 10',
 
+  // Buy VPS Dialog
+  'buyVps.title': 'Buy VPS',
+  'buyVps.subtitle': 'Select a plan',
+  'buyVps.os': 'Operating System',
+  'buyVps.plan': 'Plan',
+  'buyVps.duration': 'Duration',
+  'buyVps.amount': 'Amount',
+  'buyVps.provider': 'Provider',
+  'buyVps.randomPassword': 'Random Password',
+  'buyVps.note': 'Note',
+  'buyVps.enterNote': 'Enter note',
+  'buyVps.orderSummary': 'Order Summary',
+  'buyVps.originalPrice': 'Original Price',
+  'buyVps.discount': 'Discount',
+  'buyVps.coupon': 'Coupon',
+  'buyVps.totalToPay': 'Total to Pay',
+  'buyVps.discountCode': 'Discount Code',
+  'buyVps.autoRenew': 'Auto Renew',
+  'buyVps.agreeTerms': 'Agree to our terms of service.',
+  'buyVps.payNow': 'Pay Now',
+  'buyVps.cancel': 'Cancel',
+  'buyVps.processing': 'Processing...',
+  'buyVps.purchaseSuccess': 'VPS purchased successfully!',
+  'buyVps.purchaseFailed': 'VPS purchase failed',
+  'buyVps.errorOccurred': 'An error occurred',
+  'buyVps.configureInstance': 'Configure your high-performance instance',
+  'buyVps.availablePlans': 'Available Plans',
+  'buyVps.tiersAvailable': 'tiers',
+  'buyVps.planName': 'Plan Name',
+  'buyVps.price': 'Price',
+  'buyVps.loadingPlans': 'Loading plans...',
+  'buyVps.noPlans': 'No plans available',
+  'buyVps.fetchPlanError': 'Failed to load plans',
+  'buyVps.selectPlanFirst': 'Please select a plan first',
+  'buyVps.selectedPlan': 'Selected Plan',
+  'buyVps.rangeIp': 'IP Range',
+  'buyVps.location': 'State',
+  'buyVps.software': 'Install Extension',
+  'buyVps.none': 'None',
+  'buyVps.randomPort': 'Random port',
+  'buyVps.soldOut': 'Sold Out',
+  'buyVps.soldOutMessage':
+    'This plan is currently sold out. Please check back later or contact support.',
+
   // Account Page
   'account.title': 'My Account',
   'account.subtitle': 'Manage your personal information and service balance',
@@ -253,6 +297,17 @@ const en = {
   'addfunds.note': 'Note',
   'addfunds.noteContent':
     'Please transfer a minimum of 50,000 VND (fifty thousand Vietnamese Dong) for the system to process.',
+
+  // VPS Manager
+  'vpsManager.title': 'VPS Manager',
+  'vpsManager.resetPassword': 'Reset Password',
+  'vpsManager.autoFix': 'Auto Fix',
+  'vpsManager.comingSoon': 'Coming Soon',
+
+  // Additional Table Headers
+  'table.planNumber': 'Plan',
+  'table.os': 'OS',
+  'table.priceVnd': 'Price (VNĐ)',
 }
 
 export default en

@@ -1,6 +1,5 @@
 import DropDown from '../components/ui/DropDown'
 import Table from '../components/ui/Table'
-import BuyProxyDialog from '../components/dialog/BuyProxyDialog'
 import Checkbox from '../components/ui/Checkbox'
 import axiosInstance from '../lib/axios'
 import { useState, useEffect, useCallback, useRef } from 'react'
@@ -54,14 +53,13 @@ function mergeResIntoData(data, res) {
   return Array.from(dataMap.values())
 }
 
-export default function ProxyManager() {
+export default function ProxyManager({ onBuySuccessRef }) {
   const [reinstallType, setReinstallType] = useState('HTTPS')
   const [changeIpType, setChangeIpType] = useState('HTTPS')
   const [selectedRows, setSelectedRows] = useState([])
   const { addToast, updateToast, removeToast } = useToast()
   const { safeCopy } = useSafeCopy()
   const { confirmAction } = useConfirm()
-  const [buyDialogOpen, setBuyDialogOpen] = useState(false)
   const t = useTranslation()
 
   // Controlled input state
@@ -102,6 +100,7 @@ export default function ProxyManager() {
     [isAuthenticated]
   )
   // Load from DB on mount (merge with localStorage, DB wins)
+  // If DB is empty (first-time user), auto-fetch from /server/list and sync to DB
   useEffect(() => {
     if (!isAuthenticated) return
     let cancelled = false
@@ -111,10 +110,30 @@ export default function ProxyManager() {
         const res = await axiosInstance.get('/proxy')
         if (cancelled) return
         const dbData = res.data?.data || []
+
         if (dbData.length > 0) {
+          // Returning user — load from DB
           setData((prev) => mergeResIntoData(prev, dbData))
           setReceivedData(dbData)
           setRenderingReceived(true)
+        } else {
+          // First-time user — DB empty, auto-fetch from API
+          try {
+            const listRes = await axiosInstance.get('/server/list', {
+              params: { proxy: 'true' },
+            })
+            if (cancelled) return
+            const listData = listRes.data?.data || []
+            if (listData.length > 0) {
+              setData((prev) => mergeResIntoData(prev, listData))
+              setReceivedData(listData)
+              setRenderingReceived(true)
+              // Sync fetched data to DB so next visit loads from DB
+              syncToDb(listData)
+            }
+          } catch (listErr) {
+            console.error('[DB Sync] Initial fetch failed:', listErr.message)
+          }
         }
       } catch (err) {
         console.error('[DB Sync] Load failed:', err.message)
@@ -125,7 +144,7 @@ export default function ProxyManager() {
     return () => {
       cancelled = true
     }
-  }, [isAuthenticated])
+  }, [isAuthenticated, syncToDb])
 
   // Save data to localStorage whenever it changes
   useEffect(() => {
@@ -139,7 +158,7 @@ export default function ProxyManager() {
       .filter(Boolean)
       .join(',')
 
-    const params = {}
+    const params = { proxy: 'true' }
     if (parsedIps) params.ips = parsedIps
     if (amount) params.amount = +amount
 
@@ -183,6 +202,35 @@ export default function ProxyManager() {
       addToast(`${t('manager.failedGetData')}: ${err.message}`, 'error')
     }
   }, [ips, amount, addToast, removeToast, t, syncToDb])
+
+  // Register buy success handler on parent ref
+  useEffect(() => {
+    if (onBuySuccessRef) {
+      onBuySuccessRef.current = (newData) => {
+        if (Array.isArray(newData) && newData.length > 0) {
+          setData((prev) => mergeResIntoData(prev, newData))
+          syncToDb(newData)
+          setReceivedData(newData)
+          setRenderingReceived(true)
+          setSelectedIds(new Set())
+          const proxies = newData.map((item) => `${item.ip_port}:${item.user_pass}`).join('\n')
+          safeCopy(proxies).then(
+            (ok) =>
+              ok &&
+              addToast(
+                <>
+                  {t('manager.copied')}{' '}
+                  <span className="text-text-toast-success">{newData.length}</span> Proxy
+                </>,
+                'success'
+              )
+          )
+        } else {
+          handleGetData()
+        }
+      }
+    }
+  }, [onBuySuccessRef, syncToDb, safeCopy, addToast, t, handleGetData])
 
   // Helper: update a single row in both receivedData and data by sid, and return the mutated row object
   const updateRowBySid = useCallback((sid, updater) => {
@@ -354,8 +402,7 @@ export default function ProxyManager() {
           addToast(
             <>
               {t('manager.copied')}{' '}
-              <span className="text-text-toast-success">{proxyResults.length}</span>{' '}
-              {t('manager.copiedProxy')}
+              <span className="text-text-toast-success">{proxyResults.length}</span> Proxy
             </>,
             'success'
           )
@@ -477,8 +524,7 @@ export default function ProxyManager() {
           addToast(
             <>
               {t('manager.copied')}{' '}
-              <span className="text-text-toast-success">{proxyResults.length}</span>{' '}
-              {t('manager.copiedProxy')}
+              <span className="text-text-toast-success">{proxyResults.length}</span> Proxy
             </>,
             'success'
           )
@@ -834,7 +880,7 @@ export default function ProxyManager() {
     <div>
       {/* ========== TOP CONTROLS ========== */}
       <div className="bg-surface border-border z-40 border-b select-none">
-        <div className="mx-auto max-w-7xl px-4 py-4">
+        <div className="mx-auto max-w-7xl px-4">
           {/* ========== FEATURE CONTROLS ========== */}
           <div className="bg-wrapper rounded-lg p-4">
             <div className="flex flex-col gap-4 sm:flex-row">
@@ -910,7 +956,7 @@ export default function ProxyManager() {
                     />
                     <div className="flex items-center">
                       <button
-                        className="bg-action flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
+                        className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
                         style={{ '--action-color': 'var(--purple)' }}
                         onClick={handleGetData}
                       >
@@ -934,7 +980,7 @@ export default function ProxyManager() {
                   </div>
 
                   {/* Change Note */}
-                  <div className="flex-1 space-y-1">
+                  <div className="grow space-y-1">
                     <input
                       type="text"
                       placeholder={t('manager.enterNote')}
@@ -943,7 +989,7 @@ export default function ProxyManager() {
                     />
                     <div className="flex items-center space-x-2">
                       <button
-                        className="bg-action flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
+                        className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
                         style={{ '--action-color': 'var(--orange)' }}
                         onClick={handleChangeNote}
                         disabled={isProcessing}
@@ -972,7 +1018,7 @@ export default function ProxyManager() {
                 </div>
                 <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
                   {/* Reinstall */}
-                  <div className="flex-1 space-y-1">
+                  <div className="grow space-y-1">
                     <input
                       type="text"
                       placeholder={t('manager.portUserPass')}
@@ -981,7 +1027,7 @@ export default function ProxyManager() {
                     />
                     <div className="flex">
                       <button
-                        className="bg-action flex flex-1 items-center justify-center rounded-l-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
+                        className="bg-action flex grow items-center justify-center rounded-l-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
                         style={{ '--action-color': 'var(--primary)' }}
                         onClick={handleReinstall}
                         disabled={isProcessing}
@@ -1005,7 +1051,7 @@ export default function ProxyManager() {
                   </div>
 
                   {/* ChangeIP */}
-                  <div className="flex-1 space-y-1">
+                  <div className="grow space-y-1">
                     <input
                       type="text"
                       placeholder="ip:port:username:password"
@@ -1014,7 +1060,7 @@ export default function ProxyManager() {
                     />
                     <div className="flex">
                       <button
-                        className="bg-action flex flex-1 items-center justify-center rounded-l-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
+                        className="bg-action flex grow items-center justify-center rounded-l-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
                         style={{ '--action-color': 'var(--red)' }}
                         onClick={handleChangeIp}
                         disabled={isProcessing}
@@ -1039,9 +1085,50 @@ export default function ProxyManager() {
                 </div>
                 {/* Simple Action Buttons (bottom) */}
                 <div className="flex flex-col gap-2 md:flex-row lg:gap-3">
-                  <div className="flex gap-2 lg:gap-3">
+                  <div className="flex flex-wrap gap-2 lg:gap-3">
+                    {/* Get Info */}
                     <button
-                      className="bg-action flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
+                      id="getInfoBtn"
+                      className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
+                      style={{ '--action-color': 'var(--primary)' }}
+                      onClick={() => {
+                        const rows = selectedRowsRef.current
+                        if (rows.length === 0)
+                          return addToast(t('manager.noRowsSelected'), 'warning')
+                        const text = rows
+                          .map((r) => {
+                            const [ip, port] = (r.ip_port || '').split(':')
+                            const [user, pass] = (r.user_pass || '').split(':')
+                            return [ip, port, user, pass].filter(Boolean).join(':')
+                          })
+                          .join('\n')
+                        safeCopy(text).then(
+                          (ok) =>
+                            ok &&
+                            addToast(
+                              <>
+                                {t('manager.copied')}{' '}
+                                <span className="text-text-toast-success">{rows.length}</span>{' '}
+                                {t('manager.copiedProxy')}
+                              </>,
+                              'success'
+                            )
+                        )
+                      }}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 448 512"
+                        className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:h-6 sm:w-6"
+                      >
+                        <path d="M384 32H64C28.654 32 0 60.652 0 96V416C0 451.344 28.654 480 64 480H384C419.346 480 448 451.344 448 416V96C448 60.652 419.346 32 384 32ZM224 128C241.674 128 256 142.326 256 160C256 177.672 241.674 192 224 192S192 177.672 192 160C192 142.326 206.326 128 224 128ZM264 384H184C170.75 384 160 373.25 160 360S170.75 336 184 336H200V272H192C178.75 272 168 261.25 168 248S178.75 224 192 224H224C237.25 224 248 234.75 248 248V336H264C277.25 336 288 346.75 288 360S277.25 384 264 384Z" />
+                      </svg>
+                      {t('manager.getInfo')}
+                    </button>
+
+                    {/* Reboot */}
+                    <button
+                      className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
                       style={{ '--action-color': 'var(--orange)' }}
                       onClick={handleReboot}
                       disabled={isProcessing}
@@ -1056,9 +1143,11 @@ export default function ProxyManager() {
                       </svg>
                       {t('manager.reboot')}
                     </button>
+
+                    {/* Refund */}
                     <button
                       id="refundBtn"
-                      className="bg-action flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium transition-colors duration-200 hover:brightness-(--highlight-brightness)"
+                      className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium transition-colors duration-200 hover:brightness-(--highlight-brightness)"
                       style={{ '--action-color': 'var(--brown)' }}
                     >
                       <svg
@@ -1070,8 +1159,10 @@ export default function ProxyManager() {
                       </svg>
                       Refund
                     </button>
+
+                    {/* Renew */}
                     <button
-                      className="bg-action flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium transition-colors duration-200 hover:brightness-(--highlight-brightness)"
+                      className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium transition-colors duration-200 hover:brightness-(--highlight-brightness)"
                       style={{ '--action-color': 'var(--yellow)' }}
                       onClick={handleRenew}
                       disabled={isProcessing}
@@ -1085,11 +1176,11 @@ export default function ProxyManager() {
                       </svg>
                       {t('manager.renew')}
                     </button>
-                  </div>
-                  <div className="flex gap-2 sm:gap-3">
+
+                    {/* Copy IP */}
                     <button
-                      className="bg-action flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
-                      style={{ '--action-color': 'var(--purple)' }}
+                      className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
+                      style={{ '--action-color': 'var(--green)' }}
                       onClick={() => {
                         const rows = selectedRowsRef.current
                         if (rows.length === 0)
@@ -1121,8 +1212,10 @@ export default function ProxyManager() {
                       </svg>
                       {t('manager.copyIp')}
                     </button>
+
+                    {/* Pause */}
                     <button
-                      className="bg-action flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
+                      className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
                       style={{ '--action-color': 'var(--red)' }}
                       onClick={handlePause}
                       disabled={isProcessing}
@@ -1136,81 +1229,34 @@ export default function ProxyManager() {
                       </svg>
                       {t('manager.pause')}
                     </button>
+
+                    {/* Renew 1 week */}
                     <button
-                      className="bg-action flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
-                      style={{ '--action-color': 'var(--green)' }}
-                      onClick={() => setBuyDialogOpen(true)}
+                      id="giaHan1"
+                      className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
+                      style={{ '--action-color': 'var(--orange)' }}
                     >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 640 640"
-                        className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:h-6 sm:w-6"
-                      >
-                        <path d="M0 72C0 58.7 10.7 48 24 48L69.3 48C96.4 48 119.6 67.4 124.4 94L124.8 96L537.5 96C557.5 96 572.6 114.2 568.9 133.9L537.8 299.8C532.1 330.1 505.7 352 474.9 352L171.3 352L176.4 380.3C178.5 391.7 188.4 400 200 400L456 400C469.3 400 480 410.7 480 424C480 437.3 469.3 448 456 448L200.1 448C165.3 448 135.5 423.1 129.3 388.9L77.2 102.6C76.5 98.8 73.2 96 69.3 96L24 96C10.7 96 0 85.3 0 72zM160 528C160 501.5 181.5 480 208 480C234.5 480 256 501.5 256 528C256 554.5 234.5 576 208 576C181.5 576 160 554.5 160 528zM384 528C384 501.5 405.5 480 432 480C458.5 480 480 501.5 480 528C480 554.5 458.5 576 432 576C405.5 576 384 554.5 384 528zM336 142.4C322.7 142.4 312 153.1 312 166.4L312 200L278.4 200C265.1 200 254.4 210.7 254.4 224C254.4 237.3 265.1 248 278.4 248L312 248L312 281.6C312 294.9 322.7 305.6 336 305.6C349.3 305.6 360 294.9 360 281.6L360 248L393.6 248C406.9 248 417.6 237.3 417.6 224C417.6 210.7 406.9 200 393.6 200L360 200L360 166.4C360 153.1 349.3 142.4 336 142.4z" />
-                      </svg>
-                      {t('manager.buyMore')}
+                      Gia hạn tuần
+                    </button>
+
+                    {/* Renew */}
+                    <button
+                      id="giaHan"
+                      className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
+                      style={{ '--action-color': 'var(--purple)' }}
+                    >
+                      Gia hạn
+                    </button>
+
+                    {/* Renew 2 weeks */}
+                    <button
+                      id="giaHan2"
+                      className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
+                      style={{ '--action-color': 'var(--primary)' }}
+                    >
+                      Gia hạn 2 tuần
                     </button>
                   </div>
-                </div>
-                <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                  <button
-                    id="giaHan1"
-                    className="bg-action flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
-                    style={{ '--action-color': 'var(--orange)' }}
-                  >
-                    Gia hạn tuần
-                  </button>
-                  <button
-                    id="giaHan"
-                    className="bg-action flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
-                    style={{ '--action-color': 'var(--purple)' }}
-                  >
-                    Gia hạn
-                  </button>
-                  <button
-                    id="giaHan2"
-                    className="bg-action flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
-                    style={{ '--action-color': 'var(--primary)' }}
-                  >
-                    Gia hạn 2 tuần
-                  </button>
-                  <button
-                    id="getInfoBtn"
-                    className="bg-action flex flex-1 items-center justify-center rounded-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
-                    style={{ '--action-color': 'var(--primary)' }}
-                    onClick={() => {
-                      const rows = selectedRowsRef.current
-                      if (rows.length === 0) return addToast(t('manager.noRowsSelected'), 'warning')
-                      const text = rows
-                        .map((r) => {
-                          const [ip, port] = (r.ip_port || '').split(':')
-                          const [user, pass] = (r.user_pass || '').split(':')
-                          return [ip, port, user, pass].filter(Boolean).join(':')
-                        })
-                        .join('\n')
-                      safeCopy(text).then(
-                        (ok) =>
-                          ok &&
-                          addToast(
-                            <>
-                              {t('manager.copied')}{' '}
-                              <span className="text-text-toast-success">{rows.length}</span>{' '}
-                              {t('manager.copiedProxy')}
-                            </>,
-                            'success'
-                          )
-                      )
-                    }}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 448 512"
-                      className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:h-6 sm:w-6"
-                    >
-                      <path d="M384 32H64C28.654 32 0 60.652 0 96V416C0 451.344 28.654 480 64 480H384C419.346 480 448 451.344 448 416V96C448 60.652 419.346 32 384 32ZM224 128C241.674 128 256 142.326 256 160C256 177.672 241.674 192 224 192S192 177.672 192 160C192 142.326 206.326 128 224 128ZM264 384H184C170.75 384 160 373.25 160 360S170.75 336 184 336H200V272H192C178.75 272 168 261.25 168 248S178.75 224 192 224H224C237.25 224 248 234.75 248 248V336H264C277.25 336 288 346.75 288 360S277.25 384 264 384Z" />
-                    </svg>
-                    {t('manager.getInfo')}
-                  </button>
                 </div>
               </div>
             </div>
@@ -1282,42 +1328,6 @@ export default function ProxyManager() {
         onSelectionChange={(rows, ids) => {
           setSelectedRows(rows)
           setSelectedIds(ids)
-        }}
-      />
-
-      <BuyProxyDialog
-        isOpen={buyDialogOpen}
-        onClose={() => setBuyDialogOpen(false)}
-        onSuccess={(newData) => {
-          if (Array.isArray(newData) && newData.length > 0) {
-            // Merge into local persistent data using the helper
-            setData((prev) => mergeResIntoData(prev, newData))
-
-            // Sync to DB immediately with the fully formed new rows
-            syncToDb(newData)
-
-            // Push into the view immediately, similar to handleGetData
-            setReceivedData(newData)
-            setRenderingReceived(true)
-            setSelectedIds(new Set())
-
-            const proxies = newData.map((item) => `${item.ip_port}:${item.user_pass}`).join('\n')
-            safeCopy(proxies).then(
-              (ok) =>
-                ok &&
-                addToast(
-                  <>
-                    {t('manager.copied')}{' '}
-                    <span className="text-text-toast-success">{newData.length}</span>{' '}
-                    {t('manager.copiedProxy')}
-                  </>,
-                  'success'
-                )
-            )
-          } else {
-            // Fallback to fetch from ground up if payload is missing or invalid
-            handleGetData()
-          }
         }}
       />
     </div>

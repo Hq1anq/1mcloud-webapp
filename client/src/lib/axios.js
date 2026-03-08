@@ -1,10 +1,9 @@
 import axios from 'axios'
 import useAuthStore from '../store/useAuthStore'
 
-const BASE_URL = import.meta.env.VITE_SERVER_URL
 const axiosInstance = axios.create({
-  baseURL: `${BASE_URL}/api`,
-  timeout: 10000,
+  baseURL: `${import.meta.env.VITE_SERVER_URL || ''}/api`,
+  timeout: 20000,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',

@@ -29,7 +29,6 @@ export default function ProxyChecker() {
     }
 
     const proxies = trimmed.split('\n').map(parseProxy).filter(Boolean)
-    console.log(proxies)
     if (proxies.length === 0) {
       addToast(t('checker.noProxyFound'), 'warning')
       return
@@ -153,8 +152,7 @@ export default function ProxyChecker() {
         addToast(
           <>
             {t('manager.copied')}{' '}
-            <span className="text-text-toast-success">{selectedRows.length}</span>{' '}
-            {t('checker.copiedProxy')}
+            <span className="text-text-toast-success">{selectedRows.length}</span> Proxy
           </>,
           'success'
         )

@@ -22,14 +22,18 @@ async function resolveUser(token) {
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch profile: ${response.status}`);
+    const error = new Error(`Failed to fetch profile: ${response.status}`);
+    error.status = response.status;
+    throw error;
   }
 
   const profile = await response.json();
   const phone = profile.phone;
 
   if (!phone) {
-    throw new Error("No phone found in profile");
+    const error = new Error("No phone found in profile");
+    error.status = 401;
+    throw error;
   }
 
   const pool = await getPool();
@@ -41,7 +45,9 @@ async function resolveUser(token) {
     .query(`SELECT user_id FROM Users WHERE phone = @phone`);
 
   if (!result.recordset || result.recordset.length === 0) {
-    throw new Error("User not found. Please login again.");
+    const error = new Error("User not found. Please login again.");
+    error.status = 401;
+    throw error;
   }
 
   return result.recordset[0].user_id;
@@ -66,7 +72,7 @@ export async function getProxies(req, res) {
     return res.json({ success: true, data: result.recordset });
   } catch (error) {
     console.error("❌ getProxies error:", error.message);
-    return res.status(500).json({ success: false, error: error.message });
+    return res.status(error.status || 500).json({ success: false, error: error.message });
   }
 }
 
@@ -132,7 +138,7 @@ export async function saveProxies(req, res) {
     }
   } catch (error) {
     console.error("❌ saveProxies error:", error.message);
-    return res.status(500).json({ success: false, error: error.message });
+    return res.status(error.status || 500).json({ success: false, error: error.message });
   }
 }
 
@@ -165,6 +171,6 @@ export async function deleteProxies(req, res) {
     return res.json({ success: true });
   } catch (error) {
     console.error("❌ deleteProxies error:", error.message);
-    return res.status(500).json({ success: false, error: error.message });
+    return res.status(error.status || 500).json({ success: false, error: error.message });
   }
 }

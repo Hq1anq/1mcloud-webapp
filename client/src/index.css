@@ -136,8 +136,8 @@
   --text-toast-success: #86efac;
   --text-toast-error: #fca5a5;
 
-  --bg-hover: hsl(from var(--bg-thead) h calc(s - 10) calc(l + 55));
-  --bg-selected: hsl(from var(--bg-thead) h calc(s - 20) calc(l + 45));
+  --bg-hover: color-mix(in srgb, var(--bg-thead), white 80%);
+  --bg-selected: color-mix(in srgb, var(--bg-thead), white 70%);
 
   --scrollbar-track: #f5f0cd;
   --scrollbar-thumb: var(--color-sky-400);
@@ -216,8 +216,8 @@
   --text-toast-success: #4ade80;
   --text-toast-error: #f87171;
 
-  --bg-hover: hsl(from var(--bg-thead) h calc(s - 3) l);
-  --bg-selected: hsl(from var(--bg-thead) h calc(s - 3) calc(l + 5));
+  --bg-hover: color-mix(in srgb, var(--bg-thead), var(--border) 2%);
+  --bg-selected: color-mix(in srgb, var(--bg-thead), var(--border) 20%);
 
   --scrollbar-track: var(--dark-600);
   --scrollbar-thumb: var(--dark-800);

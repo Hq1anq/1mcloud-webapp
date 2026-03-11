@@ -27,10 +27,10 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
-    const originalRequest = error.config
-
-    // If 401 and not already retrying (to prevent infinite loops)
-    if (error.response?.status === 401 && !originalRequest._retry) useAuthStore.getState().logout()
+    // If 401 Unauthorized, automatically log out
+    if (error.response?.status === 401) {
+      useAuthStore.getState().logout()
+    }
 
     return Promise.reject(error)
   }

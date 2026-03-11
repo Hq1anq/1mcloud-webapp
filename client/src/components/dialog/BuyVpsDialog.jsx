@@ -149,7 +149,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
     }
 
     fetchData()
-  }, [selectedNation, step])
+  }, [selectedNation, step, addToast, t])
 
   // Calculate pricing
   useEffect(() => {

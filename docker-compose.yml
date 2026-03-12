@@ -1,14 +1,14 @@
 services:
   1mcloud:
     build: .
-    container_name: 1mcloud_app
+    container_name: 1mcloud_dev
     restart: unless-stopped
     env_file:
       - .env
     networks:
       - shared_infra
     ports:
-      - "3001:3001"
+      - "3002:3002"
 
 networks:
   shared_infra:

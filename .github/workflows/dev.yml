@@ -1,4 +1,4 @@
-name: 1mcloud tools web
+name: 1mcloud web dev
 
 on:
   push:
@@ -20,5 +20,4 @@ jobs:
           git fetch origin
           git checkout dev
           git pull
-          npm run build
-          pm2 reload dev-web
+          docker compose up -d --build

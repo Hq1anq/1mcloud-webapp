@@ -30,8 +30,8 @@ COPY server/ .
 COPY --from=client-build /app/client/dist ../client/dist
 
 ENV NODE_ENV=production
-ENV PORT=3001
+ENV PORT=3002
 
-EXPOSE 3001
+EXPOSE 3002
 
 CMD ["node", "src/server.js"]

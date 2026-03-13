@@ -233,6 +233,9 @@ export default function VpsManager({ onBuySuccessRef }) {
         }
       }
     }
+    return () => {
+      if (onBuySuccessRef) onBuySuccessRef.current = null
+    }
   }, [onBuySuccessRef, syncToDb, safeCopy, addToast, t, handleGetData])
 
   // Helper: update a single row in both receivedData and data by sid

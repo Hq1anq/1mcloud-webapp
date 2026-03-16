@@ -804,6 +804,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
                   <button
                     className="bg-action flex flex-1 items-center justify-center rounded-lg rounded-l-none px-3 py-2 font-medium"
                     style={{ '--action-color': 'var(--purple)' }}
+                    disabled={isProcessing}
                     onClick={handleGetData}
                   >
                     <svg
@@ -918,6 +919,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
                   }}
                   className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap transition-colors duration-200"
                   style={{ '--action-color': 'var(--green)' }}
+                  disabled={isProcessing}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -934,6 +936,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
                   id="getInfoBtn"
                   className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap"
                   style={{ '--action-color': 'var(--blue)' }}
+                  disabled={isProcessing}
                   onClick={() => {
                     const rows = selectedRowsRef.current
                     if (rows.length === 0) return addToast(t('manager.noRowsSelected'), 'warning')
@@ -1044,7 +1047,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
                   />
                   <div className="flex">
                     <button
-                      className="bg-action flex flex-1 items-center justify-center rounded-bl-lg px-3 py-2 font-medium"
+                      className="bg-action border-border flex flex-1 items-center justify-center rounded-bl-lg border-l-2 px-3 py-2 font-medium"
                       style={{ '--action-color': 'var(--blue)' }}
                       onClick={handleReinstall}
                       disabled={isProcessing}
@@ -1062,7 +1065,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
                       options={['HTTPS', 'SOCKS5']}
                       value={reinstallType}
                       onChange={setReinstallType}
-                      className="rounded-br-lg"
+                      className="border-border rounded-br-lg border-r-2"
                     />
                   </div>
                 </div>

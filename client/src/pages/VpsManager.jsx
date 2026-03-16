@@ -552,6 +552,7 @@ export default function VpsManager({ onBuySuccessRef }) {
                   <button
                     className="bg-action flex flex-1 items-center justify-center rounded-lg rounded-l-none px-3 py-2 font-medium"
                     style={{ '--action-color': 'var(--purple)' }}
+                    disabled={isProcessing}
                     onClick={handleGetData}
                   >
                     <svg
@@ -647,6 +648,7 @@ export default function VpsManager({ onBuySuccessRef }) {
                   onClick={handleCopyIp}
                   className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap transition-colors duration-200"
                   style={{ '--action-color': 'var(--green)' }}
+                  disabled={isProcessing}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -662,6 +664,7 @@ export default function VpsManager({ onBuySuccessRef }) {
                 <button
                   className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap"
                   style={{ '--action-color': 'var(--blue)' }}
+                  disabled={isProcessing}
                   onClick={() => {
                     const rows = selectedRowsRef.current
                     if (rows.length === 0) return addToast(t('manager.noRowsSelected'), 'warning')

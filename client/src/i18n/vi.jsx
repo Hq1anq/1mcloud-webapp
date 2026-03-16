@@ -281,7 +281,6 @@ const vi = {
   'buyVps.autoRenew': 'Tự động gia hạn',
   'buyVps.agreeTerms': 'Đồng ý với điều khoản dịch vụ.',
   'buyVps.payNow': 'Thanh toán',
-  'buyVps.processing': 'Đang xử lý...',
   'buyVps.purchaseSuccess': 'Mua VPS thành công!',
   'buyVps.purchaseFailed': 'Mua VPS thất bại',
   'buyVps.errorOccurred': 'Đã xảy ra lỗi',

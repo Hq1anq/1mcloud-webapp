@@ -185,8 +185,7 @@ export default function VpsManager({ onBuySuccessRef }) {
           const trashSids = prevData
             .filter(
               (row) =>
-                !resData.some((r) => r.sid === row.sid) &&
-                row.status?.toLowerCase() !== 'refunded'
+                !resData.some((r) => r.sid === row.sid) && row.status?.toLowerCase() !== 'refunded'
             )
             .map((row) => row.sid)
 
@@ -218,7 +217,7 @@ export default function VpsManager({ onBuySuccessRef }) {
           'success'
         )
 
-        return mergedData
+        return finalResData
       })
     } catch (err) {
       console.error('[GetData] Error:', err.message)

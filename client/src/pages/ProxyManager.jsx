@@ -176,8 +176,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
           const trashSids = prevData
             .filter(
               (row) =>
-                !resData.some((r) => r.sid === row.sid) &&
-                row.status?.toLowerCase() !== 'refunded'
+                !resData.some((r) => r.sid === row.sid) && row.status?.toLowerCase() !== 'refunded'
             )
             .map((row) => row.sid)
 
@@ -211,7 +210,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
         )
 
         // Return full mergedData to persist in state and localStorage
-        return mergedData
+        return finalResData
       })
     } catch (err) {
       console.error('[GetData] Error:', err.message)

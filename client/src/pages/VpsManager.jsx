@@ -181,7 +181,8 @@ export default function VpsManager({ onBuySuccessRef }) {
 
         // Trash data cleanup: if full fetch (no IPs) and returned results are within limit,
         // it means we got all current resources. Anything in prevData NOT in resData and NOT refunded is trash.
-        if (!parsedIps && resData.length <= params.amount) {
+        let override = false
+        if (!parsedIps && resData.length <= (params.amount || 200)) {
           const trashSids = prevData
             .filter(
               (row) =>
@@ -196,6 +197,7 @@ export default function VpsManager({ onBuySuccessRef }) {
 
             mergedData = mergedData.filter((row) => !trashSids.includes(row.sid))
           }
+          override = true
         }
 
         const finalResData = mergedData.filter((row) => resData.some((r) => r.sid === row.sid))
@@ -217,7 +219,7 @@ export default function VpsManager({ onBuySuccessRef }) {
           'success'
         )
 
-        return finalResData
+        return override ? finalResData : mergedData
       })
     } catch (err) {
       console.error('[GetData] Error:', err.message)

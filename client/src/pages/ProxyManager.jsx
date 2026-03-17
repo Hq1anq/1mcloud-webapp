@@ -172,6 +172,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
 
         // Trash data cleanup: if full fetch (no IPs) and returned results are within limit,
         // it means we got all current resources. Anything in prevData NOT in resData and NOT refunded is trash.
+        let override = false
         if (!parsedIps && resData.length <= (params.amount || 200)) {
           const trashSids = prevData
             .filter(
@@ -187,6 +188,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
 
             mergedData = mergedData.filter((row) => !trashSids.includes(row.sid))
           }
+          override = true
         }
 
         // Find the specific rows we just fetched to use for receivedData / syncing
@@ -209,8 +211,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
           'success'
         )
 
-        // Return full mergedData to persist in state and localStorage
-        return finalResData
+        return override ? finalResData : mergedData
       })
     } catch (err) {
       console.error('[GetData] Error:', err.message)
@@ -920,7 +921,12 @@ export default function ProxyManager({ onBuySuccessRef }) {
                     </label>
                   </label>
                   <button
-                    onClick={() => setIps('')}
+                    onClick={() => {
+                      addToast(t('manager.delete'), 'success')
+                      addToast(t('manager.delete'), 'warning')
+                      addToast(t('manager.delete'), 'error')
+                      addToast(t('manager.delete'), 'info')
+                    }}
                     className="bg-action static right-0 flex items-center justify-center rounded-lg px-3 py-1 text-sm font-medium transition-colors duration-200 hover:brightness-(--highlight-brightness) md:absolute lg:static"
                     style={{ '--action-color': 'var(--red)' }}
                   >

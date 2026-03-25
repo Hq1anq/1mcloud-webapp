@@ -128,7 +128,9 @@ export default function VpsManager({ onBuySuccessRef }) {
         } else {
           // First-time user — DB empty, auto-fetch from API
           try {
-            const listRes = await axiosInstance.get('/server/list')
+            const listRes = await axiosInstance.get('/server/list', {
+              params: { proxy: 'false' },
+            })
             if (cancelled) return
             const listData = listRes.data?.data || []
             if (listData.length > 0) {
@@ -165,7 +167,7 @@ export default function VpsManager({ onBuySuccessRef }) {
       .filter(Boolean)
       .join(',')
 
-    const params = {}
+    const params = { proxy: 'false' }
     if (parsedIps) params.ips = parsedIps
     params.amount = amount ? +amount : 200
 
@@ -181,12 +183,12 @@ export default function VpsManager({ onBuySuccessRef }) {
 
         // Trash data cleanup: if full fetch (no IPs) and returned results are within limit,
         // it means we got all current resources. Anything in prevData NOT in resData and NOT refunded is trash.
-        if (!parsedIps && resData.length <= params.amount) {
+        let override = false
+        if (!parsedIps && resData.length <= (params.amount || 200)) {
           const trashSids = prevData
             .filter(
               (row) =>
-                !resData.some((r) => r.sid === row.sid) &&
-                row.status?.toLowerCase() !== 'refunded'
+                !resData.some((r) => r.sid === row.sid) && row.status?.toLowerCase() !== 'refunded'
             )
             .map((row) => row.sid)
 
@@ -197,6 +199,7 @@ export default function VpsManager({ onBuySuccessRef }) {
 
             mergedData = mergedData.filter((row) => !trashSids.includes(row.sid))
           }
+          override = true
         }
 
         const finalResData = mergedData.filter((row) => resData.some((r) => r.sid === row.sid))
@@ -218,7 +221,7 @@ export default function VpsManager({ onBuySuccessRef }) {
           'success'
         )
 
-        return mergedData
+        return override ? finalResData : mergedData
       })
     } catch (err) {
       console.error('[GetData] Error:', err.message)
@@ -230,11 +233,16 @@ export default function VpsManager({ onBuySuccessRef }) {
   // Register buy success handler on parent ref
   useEffect(() => {
     if (onBuySuccessRef) {
-      onBuySuccessRef.current = (newData) => {
+      onBuySuccessRef.current = (newData, extraConfig) => {
+        console.log('VPSSSSSS')
         if (Array.isArray(newData) && newData.length > 0) {
-          setData((prev) => mergeResIntoData(prev, newData))
-          syncToDb(newData)
-          setReceivedData(newData)
+          const enrichedData = newData.map((item) => ({
+            ...item,
+            ...extraConfig,
+          }))
+          setData((prev) => mergeResIntoData(prev, enrichedData))
+          syncToDb(enrichedData)
+          setReceivedData(enrichedData)
           setRenderingReceived(true)
           setSelectedIds(new Set())
           const vps = newData.map((item) => `${item.ip_port}/${item.user_pass}`).join('\n')

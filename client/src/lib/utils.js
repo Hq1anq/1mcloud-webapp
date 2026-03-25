@@ -9,15 +9,15 @@ export const getStatusClasses = (status) => {
   switch (status) {
     case 'Running':
     case 'Active':
-      return 'bg-bg-success text-text-success'
+      return 'bg-status-green/20 border border-status-green/30 text-status-green'
     case 'Off':
     case 'Inactive':
     case 'Stopped':
-      return 'bg-bg-error text-text-error'
+      return 'bg-status-red/20 border border-status-red/30 text-status-red'
     case 'Paused':
-      return 'bg-bg-warning text-text-warning'
+      return 'bg-status-yellow/20 border border-status-yellow/30 text-status-yellow'
     case 'Unknown':
-      return 'bg-bg-unknowed text-text-unknowed'
+      return 'bg-status-gray/20 border border-status-gray/30 text-status-gray'
     default:
       return ''
   }

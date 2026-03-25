@@ -228,7 +228,14 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
           </>,
           'success'
         )
-        if (onSuccess) onSuccess(res.data?.data)
+        const extraConfig = {
+          plan_number: selectedPlanObj?.name,
+          country: selectedNation,
+          he_dieu_hanh: supportData?.os?.option?.[selectedOs],
+          price_vnd: selectedPlanObj?.price,
+          note: note,
+        }
+        if (onSuccess) onSuccess(res.data?.data, extraConfig)
         onClose()
       } else {
         removeToast(loadingId)

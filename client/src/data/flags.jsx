@@ -186,6 +186,7 @@ export const flagsIcons = {
 
 export const flagAliases = {
   GB: 'UK',
+  VNR: 'VN',
 }
 
 export const getFlagIcon = (nationCode) => {

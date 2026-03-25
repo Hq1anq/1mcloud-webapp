@@ -15,11 +15,11 @@ export default function ManagerPage() {
   const proxyBuySuccessRef = useRef(null)
   const vpsBuySuccessRef = useRef(null)
 
-  const handleBuySuccess = useCallback((newData, type) => {
+  const handleBuySuccess = useCallback((newData, type, extraConfig) => {
     if (type === 'PROXY' && proxyBuySuccessRef.current) {
-      proxyBuySuccessRef.current(newData)
+      proxyBuySuccessRef.current(newData, extraConfig)
     } else if (type === 'VPS' && vpsBuySuccessRef.current) {
-      vpsBuySuccessRef.current(newData)
+      vpsBuySuccessRef.current(newData, extraConfig)
     }
   }, [])
 
@@ -104,12 +104,12 @@ export default function ManagerPage() {
       <BuyProxyDialog
         isOpen={buyProxyDialogOpen}
         onClose={() => setBuyProxyDialogOpen(false)}
-        onSuccess={(newData) => handleBuySuccess(newData, 'PROXY')}
+        onSuccess={(newData, extraConfig) => handleBuySuccess(newData, 'PROXY', extraConfig)}
       />
       <BuyVpsDialog
         isOpen={buyVpsDialogOpen}
         onClose={() => setBuyVpsDialogOpen(false)}
-        onSuccess={(newData) => handleBuySuccess(newData, 'VPS')}
+        onSuccess={(newData, extraConfig) => handleBuySuccess(newData, 'VPS', extraConfig)}
       />
     </div>
   )

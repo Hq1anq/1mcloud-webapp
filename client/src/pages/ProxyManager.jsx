@@ -223,11 +223,15 @@ export default function ProxyManager({ onBuySuccessRef }) {
   // Register buy success handler on parent ref
   useEffect(() => {
     if (onBuySuccessRef) {
-      onBuySuccessRef.current = (newData) => {
+      onBuySuccessRef.current = (newData, extraConfig) => {
         if (Array.isArray(newData) && newData.length > 0) {
-          setData((prev) => mergeResIntoData(prev, newData))
-          syncToDb(newData)
-          setReceivedData(newData)
+          const enrichedData = newData.map((item) => ({
+            ...item,
+            ...extraConfig,
+          }))
+          setData((prev) => mergeResIntoData(prev, enrichedData))
+          syncToDb(enrichedData)
+          setReceivedData(enrichedData)
           setRenderingReceived(true)
           setSelectedIds(new Set())
           const proxies = newData.map((item) => `${item.ip_port}:${item.user_pass}`).join('\n')

@@ -172,7 +172,7 @@ export async function create(req, res) {
 
     const today = new Date();
     const expiredDate = new Date(today);
-    expiredDate.setDate(today.getDate() + 30);
+    expiredDate.setDate(today.getDate() + Number(duration) * 30);
 
     const formatDate = (date) => {
       const day = String(date.getDate()).padStart(2, "0");

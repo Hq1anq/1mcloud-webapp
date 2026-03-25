@@ -180,7 +180,12 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
           </>,
           'success'
         )
-        if (onSuccess) onSuccess(res.data?.data)
+        const extraConfig = {
+          country: selectedNation,
+          type: selectedType === 'HTTPS' ? 'HTTPS Proxy' : 'SOCKS5 Proxy',
+          note: note,
+        }
+        if (onSuccess) onSuccess(res.data?.data, extraConfig)
         onClose()
       } else {
         removeToast(loadingId)

@@ -126,26 +126,29 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
               .get(`/vps/support?plan_id=${firstSelectedPlanId}`)
               .then((suppRes) => {
                 if (suppRes.data?.success) {
-                  const info = suppRes.data.info
-                  setSupportData(info)
+                  const { os, ...restInfo } = suppRes.data.info
+                  setSupportData((prev) => ({
+                    ...prev,
+                    ...restInfo,
+                  }))
 
                   // Initialize Defaults
-                  const osKeys = Object.keys(info.os?.option || {})
-                  if (osKeys.length > 0)
-                    setSelectedOs((prev) => (osKeys.includes(prev) ? prev : osKeys[0]))
-
-                  const durations = Object.keys(info.duration?.option || {})
+                  const durations = Object.keys(restInfo.duration?.option || {})
                   if (durations.length > 0)
                     setSelectedDuration((prev) => (durations.includes(prev) ? prev : durations[0]))
 
-                  const ips = Array.isArray(info.ip?.option) ? info.ip.option : []
+                  const ips = Array.isArray(restInfo.ip?.option) ? restInfo.ip.option : []
                   if (ips.length > 0) setSelectedIp((prev) => (ips.includes(prev) ? prev : ips[0]))
 
-                  const providers = Array.isArray(info.provider?.option) ? info.provider.option : []
+                  const providers = Array.isArray(restInfo.provider?.option)
+                    ? restInfo.provider.option
+                    : []
                   if (providers.length > 0)
                     setSelectedProvider((prev) => (providers.includes(prev) ? prev : providers[0]))
 
-                  const locations = Array.isArray(info.location?.option) ? info.location.option : []
+                  const locations = Array.isArray(restInfo.location?.option)
+                    ? restInfo.location.option
+                    : []
                   if (locations.length > 0)
                     setSelectedLocation((prev) => (locations.includes(prev) ? prev : locations[0]))
                 }

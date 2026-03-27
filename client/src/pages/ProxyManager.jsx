@@ -367,13 +367,28 @@ export default function ProxyManager({ onBuySuccessRef }) {
       return
     }
 
-    const confirmed = await confirmAction({
-      title: t('manager.confirmChangeIp'),
-      infoText: (
+    let infoTextNode
+    let targetIP
+    if (changeIpInput) {
+      const parts = changeIpInput.split(':')
+      targetIP = parts[0]
+      infoTextNode = (
+        <>
+          {t('manager.type')} <span className="text-highlight font-bold">{changeIpType} </span>
+          <br />
+          {t('manager.info')} <span className="text-highlight font-bold">{targetIP}</span>
+        </>
+      )
+    } else
+      infoTextNode = (
         <>
           {t('manager.type')} <span className="text-highlight font-bold">{changeIpType}</span>
         </>
-      ),
+      )
+
+    const confirmed = await confirmAction({
+      title: t('manager.confirmChangeIp'),
+      infoText: infoTextNode,
       isRenew: false,
       selectedRows: rows,
     })
@@ -388,7 +403,11 @@ export default function ProxyManager({ onBuySuccessRef }) {
       rows,
       async (row) => {
         const ip = row.ip_port?.split(':')[0]
-        const res = await axiosInstance.post('/server/change-ip', { ip, type })
+        const res = await axiosInstance.post('/server/change-ip', {
+          ip,
+          type,
+          range_ip: targetIP,
+        })
         if (res.data?.success) {
           const [newIp, port, user, pass] = res.data.proxyInfo
           const updates = {
@@ -427,6 +446,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
     }
   }, [
     changeIpType,
+    changeIpInput,
     confirmAction,
     safeCopy,
     addToast,
@@ -444,7 +464,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
       return
     }
 
-    let infoTextNode = t('manager.reinstallTarget')
+    let infoTextNode
     let ip = '__',
       port = '__',
       user = '__',
@@ -483,13 +503,12 @@ export default function ProxyManager({ onBuySuccessRef }) {
           </span>
         </>
       )
-    } else {
+    } else
       infoTextNode = (
         <>
           {t('manager.type')} <span className="text-highlight font-bold">{reinstallType}</span>
         </>
       )
-    }
 
     const confirmed = await confirmAction({
       title: t('manager.confirmReinstall'),
@@ -1078,7 +1097,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
                   <div className="grow space-y-1">
                     <input
                       type="text"
-                      placeholder="ip:port:username:password"
+                      placeholder="ip"
                       value={changeIpInput}
                       onChange={(e) => setChangeIpInput(e.target.value)}
                     />

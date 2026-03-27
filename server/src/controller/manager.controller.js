@@ -246,7 +246,7 @@ export async function calculate(req, res) {
 }
 
 export async function changeIp(req, res) {
-  const { ip, type = "proxy_https" } = req.body;
+  const { ip, type = "proxy_https", range_ip = "Ngẫu nhiên" } = req.body;
   const url = `${process.env.BASE_URL}/server/change-ip`;
   const headers = { ...HEADERS, authorization: `Bearer ${req.token}` };
 
@@ -254,7 +254,7 @@ export async function changeIp(req, res) {
     ip: ip,
     os_id: 0,
     proxy_type: type,
-    range_ip: "Ngẫu nhiên",
+    range_ip: range_ip,
     random_password: true,
     random_remote_port: true,
     isp: "Ngẫu nhiên",

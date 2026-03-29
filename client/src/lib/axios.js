@@ -17,6 +17,12 @@ axiosInstance.interceptors.request.use(
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`
     }
+
+    // Set custom timeout for specific endpoints
+    if (config.url?.endsWith('/server/create')) {
+      config.timeout = 60000
+    }
+
     return config
   },
   (error) => {

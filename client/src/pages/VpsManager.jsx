@@ -89,9 +89,11 @@ export default function VpsManager({ onBuySuccessRef }) {
   const [selectedIds, setSelectedIds] = useState(new Set())
   const [isProcessing, setIsProcessing] = useState(false)
   const selectedRowsRef = useRef(selectedRows)
+  const dataRef = useRef(data)
   useEffect(() => {
     selectedRowsRef.current = selectedRows
-  }, [selectedRows])
+    dataRef.current = data
+  }, [selectedRows, data])
 
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
 
@@ -178,12 +180,16 @@ export default function VpsManager({ onBuySuccessRef }) {
 
       const resData = res.data?.data || []
 
+      // Merge resData into current state locally for rendering and syncing
+      const localMerged = mergeResIntoData(dataRef.current, resData)
+      const finalResData = localMerged.filter((row) => resData.some((r) => r.sid === row.sid))
+
       setData((prevData) => {
         let mergedData = mergeResIntoData(prevData, resData)
 
         // Trash data cleanup: if full fetch (no IPs) and returned results are within limit,
         // it means we got all current resources. Anything in prevData NOT in resData and NOT refunded is trash.
-        let override = false
+        let finalMergedData = mergedData
         if (!parsedIps && resData.length <= (params.amount || 200)) {
           const trashSids = prevData
             .filter(
@@ -197,32 +203,28 @@ export default function VpsManager({ onBuySuccessRef }) {
               .delete('/vps', { data: { sids: trashSids } })
               .catch((err) => console.error('[Cleanup] Delete failed:', err.message))
 
-            mergedData = mergedData.filter((row) => !trashSids.includes(row.sid))
+            finalMergedData = mergedData.filter((row) => !trashSids.includes(row.sid))
           }
-          override = true
         }
-
-        const finalResData = mergedData.filter((row) => resData.some((r) => r.sid === row.sid))
-
-        setReceivedData(finalResData)
-        setRenderingReceived(true)
-        setSelectedIds(new Set())
-
-        // Sync updated data to DB
-        syncToDb(finalResData)
-
-        removeToast(loadingId)
-        addToast(
-          <>
-            {t('manager.loadedRows')}{' '}
-            <span className="text-text-toast-success">{finalResData.length}</span>{' '}
-            {t('manager.rows')}
-          </>,
-          'success'
-        )
-
-        return override ? finalResData : mergedData
+        return finalMergedData
       })
+
+      // Update renderer state using merged data (important for keeping user_pass)
+      setReceivedData(finalResData)
+      setRenderingReceived(true)
+      setSelectedIds(new Set())
+
+      // Sync updated data to DB in background
+      syncToDb(finalResData)
+
+      removeToast(loadingId)
+      addToast(
+        <>
+          {t('manager.loadedRows')}{' '}
+          <span className="text-text-toast-success">{finalResData.length}</span> {t('manager.rows')}
+        </>,
+        'success'
+      )
     } catch (err) {
       console.error('[GetData] Error:', err.message)
       removeToast(loadingId)
@@ -298,7 +300,6 @@ export default function VpsManager({ onBuySuccessRef }) {
             }
             classUpdates[row.sid] = 'bg-success-cell'
           }
-          if (updatedRows.length > 0) syncToDb(updatedRows)
 
           setRowClassMap(classUpdates)
           setSelectedIds((prev) => {
@@ -315,6 +316,8 @@ export default function VpsManager({ onBuySuccessRef }) {
             </>,
             'success'
           )
+          // Sync in background after feedback
+          if (updatedRows.length > 0) syncToDb(updatedRows)
         } else {
           const classUpdates = {}
           for (const row of rows) classUpdates[row.sid] = 'bg-error-cell'
@@ -616,7 +619,6 @@ export default function VpsManager({ onBuySuccessRef }) {
           failCount++
         }
       }
-      if (validRowsToSync.length > 0) syncToDb(validRowsToSync)
 
       setRowClassMap((prev) => ({ ...prev, ...classUpdates }))
 
@@ -661,6 +663,8 @@ export default function VpsManager({ onBuySuccessRef }) {
           'warning'
         )
       }
+      // Sync in background after feedback
+      if (validRowsToSync.length > 0) syncToDb(validRowsToSync)
     } catch {
       const classUpdates = {}
       for (const row of validRows) classUpdates[row.sid] = 'bg-error-cell'

@@ -78,9 +78,11 @@ export default function ProxyManager({ onBuySuccessRef }) {
   const [selectedIds, setSelectedIds] = useState(new Set())
   const [isProcessing, setIsProcessing] = useState(false)
   const selectedRowsRef = useRef(selectedRows)
+  const dataRef = useRef(data)
   useEffect(() => {
     selectedRowsRef.current = selectedRows
-  }, [selectedRows])
+    dataRef.current = data
+  }, [selectedRows, data])
 
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
 
@@ -166,13 +168,15 @@ export default function ProxyManager({ onBuySuccessRef }) {
 
       const resData = res.data?.data || []
 
+      // Merge resData into current state locally for rendering and syncing
+      const localMerged = mergeResIntoData(dataRef.current, resData)
+      const finalResData = localMerged.filter((row) => resData.some((r) => r.sid === row.sid))
+
       setData((prevData) => {
-        // Use the helper to merge resData into the existing prevData (which keeps user_pass)
         let mergedData = mergeResIntoData(prevData, resData)
 
-        // Trash data cleanup: if full fetch (no IPs) and returned results are within limit,
-        // it means we got all current resources. Anything in prevData NOT in resData and NOT refunded is trash.
-        let override = false
+        // Trash data cleanup
+        let finalMergedData = mergedData
         if (!parsedIps && resData.length <= (params.amount || 200)) {
           const trashSids = prevData
             .filter(
@@ -186,33 +190,28 @@ export default function ProxyManager({ onBuySuccessRef }) {
               .delete('/proxy', { data: { sids: trashSids } })
               .catch((err) => console.error('[Cleanup] Delete failed:', err.message))
 
-            mergedData = mergedData.filter((row) => !trashSids.includes(row.sid))
+            finalMergedData = mergedData.filter((row) => !trashSids.includes(row.sid))
           }
-          override = true
         }
-
-        // Find the specific rows we just fetched to use for receivedData / syncing
-        const finalResData = mergedData.filter((row) => resData.some((r) => r.sid === row.sid))
-        // Render finalResData in the table
-        setReceivedData(finalResData)
-        setRenderingReceived(true)
-        setSelectedIds(new Set())
-
-        // Sync updated data to DB directly
-        syncToDb(finalResData)
-
-        removeToast(loadingId)
-        addToast(
-          <>
-            {t('manager.loadedRows')}{' '}
-            <span className="text-text-toast-success">{finalResData.length}</span>{' '}
-            {t('manager.rows')}
-          </>,
-          'success'
-        )
-
-        return override ? finalResData : mergedData
+        return finalMergedData
       })
+
+      // Update renderer state using merged data (important for keeping user_pass)
+      setReceivedData(finalResData)
+      setRenderingReceived(true)
+      setSelectedIds(new Set())
+
+      // Sync updated data to DB in background
+      syncToDb(finalResData)
+
+      removeToast(loadingId)
+      addToast(
+        <>
+          {t('manager.loadedRows')}{' '}
+          <span className="text-text-toast-success">{finalResData.length}</span> {t('manager.rows')}
+        </>,
+        'success'
+      )
     } catch (err) {
       console.error('[GetData] Error:', err.message)
       removeToast(loadingId)
@@ -580,7 +579,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
       t('manager.changeNote').toUpperCase()
     )
 
-    // Sync only the updated rows to DB
+    // Sync in background
     if (updatedRows.length > 0) {
       syncToDb(updatedRows)
     }
@@ -609,14 +608,13 @@ export default function ProxyManager({ onBuySuccessRef }) {
           classUpdates[row.sid] = 'bg-success-cell'
         }
 
-        if (updatedRows.length > 0) syncToDb(updatedRows)
-
         setRowClassMap(classUpdates)
         setSelectedIds((prev) => {
           const newSet = new Set(prev)
           for (const row of rows) newSet.delete(row._index)
           return newSet
         })
+
         addToast(
           <>
             {t('manager.pause').toUpperCase()} {t('manager.completed')} <br />
@@ -626,6 +624,8 @@ export default function ProxyManager({ onBuySuccessRef }) {
           </>,
           'success'
         )
+        // Sync in background after feedback
+        if (updatedRows.length > 0) syncToDb(updatedRows)
       } else {
         const classUpdates = {}
         for (const row of rows) classUpdates[row.sid] = 'bg-error-cell'
@@ -689,14 +689,13 @@ export default function ProxyManager({ onBuySuccessRef }) {
           classUpdates[row.sid] = 'bg-success-cell'
         }
 
-        if (updatedRows.length > 0) syncToDb(updatedRows)
-
         setRowClassMap(classUpdates)
         setSelectedIds((prev) => {
           const newSet = new Set(prev)
           for (const row of rows) newSet.delete(row._index)
           return newSet
         })
+
         addToast(
           <>
             {t('manager.reboot').toUpperCase()} {t('manager.completed')} <br />
@@ -706,6 +705,8 @@ export default function ProxyManager({ onBuySuccessRef }) {
           </>,
           'success'
         )
+        // Sync in background after feedback
+        if (updatedRows.length > 0) syncToDb(updatedRows)
       } else {
         const classUpdates = {}
         for (const row of rows) classUpdates[row.sid] = 'bg-error-cell'
@@ -806,10 +807,8 @@ export default function ProxyManager({ onBuySuccessRef }) {
       const res = await axiosInstance.post('/server/renew', { sids: sids, month: 1 })
 
       const resSuccess = res.data?.result?.success || {}
-
       let successCount = 0
       let failCount = invalidRows.length
-
       const classUpdates = {}
       const updatedRows = []
       for (const row of validRows) {
@@ -817,11 +816,12 @@ export default function ProxyManager({ onBuySuccessRef }) {
 
         if (resSuccess[cleanIp]) {
           const newExpiredDay = renewData.success[cleanIp].new_expired_day
-          const updated = updateRowBySid(row.sid, () => ({
+          const updates = {
             status: 'Running',
             expired: newExpiredDay,
-          }))
-          if (updated) updatedRows.push(updated)
+          }
+          updateRowBySid(row.sid, () => updates)
+          updatedRows.push({ ...row, ...updates })
           classUpdates[row.sid] = 'bg-success-cell'
           successCount++
         } else {
@@ -829,8 +829,6 @@ export default function ProxyManager({ onBuySuccessRef }) {
           failCount++
         }
       }
-
-      if (updatedRows.length > 0) syncToDb(updatedRows)
 
       setRowClassMap((prev) => ({ ...prev, ...classUpdates }))
 
@@ -876,6 +874,8 @@ export default function ProxyManager({ onBuySuccessRef }) {
           'warning'
         )
       }
+      // Sync in background after feedback
+      if (updatedRows.length > 0) syncToDb(updatedRows)
     } catch {
       const classUpdates = {}
       for (const row of validRows) classUpdates[row.sid] = 'bg-error-cell'

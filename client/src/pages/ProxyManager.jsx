@@ -256,20 +256,10 @@ export default function ProxyManager({ onBuySuccessRef }) {
     }
   }, [onBuySuccessRef, syncToDb, safeCopy, addToast, t, handleGetData])
 
-  // Helper: update a single row in both receivedData and data by sid, and return the mutated row object
+  // Helper: update a single row in both receivedData and data by sid
   const updateRowBySid = useCallback((sid, updater) => {
-    let updatedRow = null
-    setReceivedData((prev) =>
-      prev.map((r) => {
-        if (r.sid === sid) {
-          updatedRow = { ...r, ...updater(r) }
-          return updatedRow
-        }
-        return r
-      })
-    )
+    setReceivedData((prev) => prev.map((r) => (r.sid === sid ? { ...r, ...updater(r) } : r)))
     setData((prev) => prev.map((r) => (r.sid === sid ? { ...r, ...updater(r) } : r)))
-    return updatedRow
   }, [])
 
   // --- Sequential processor with per-row feedback ---
@@ -399,13 +389,14 @@ export default function ProxyManager({ onBuySuccessRef }) {
         const res = await axiosInstance.post('/server/change-ip', { ip, type })
         if (res.data?.success) {
           const [newIp, port, user, pass] = res.data.proxyInfo
-          const updated = updateRowBySid(row.sid, () => ({
+          const updates = {
             ip_port: `${newIp}:${port}`,
             user_pass: `${user}:${pass}`,
             type: changeIpType + ' Proxy',
             status: 'Running',
-          }))
-          if (updated) updatedRows.push(updated)
+          }
+          updateRowBySid(row.sid, () => updates)
+          updatedRows.push({ ...row, ...updates })
           proxyResults.push(`${newIp}:${port}:${user}:${pass}`)
         }
         return res
@@ -521,13 +512,14 @@ export default function ProxyManager({ onBuySuccessRef }) {
         })
         if (res.data?.success) {
           const [ip, port, user, pass] = res.data.proxyInfo
-          const updated = updateRowBySid(row.sid, () => ({
+          const updates = {
             ip_port: `${ip}:${port}`,
             user_pass: `${user}:${pass}`,
             type: reinstallType + ' Proxy',
             status: 'Running',
-          }))
-          if (updated) updatedRows.push(updated)
+          }
+          updateRowBySid(row.sid, () => updates)
+          updatedRows.push({ ...row, ...updates })
           proxyResults.push(`${ip}:${port}:${user}:${pass}`)
         }
         return res
@@ -580,8 +572,8 @@ export default function ProxyManager({ onBuySuccessRef }) {
           newNote,
         })
         if (res.data?.success) {
-          const updated = updateRowBySid(row.sid, () => ({ note: newNote }))
-          if (updated) updatedRows.push(updated)
+          updateRowBySid(row.sid, () => ({ note: newNote }))
+          updatedRows.push({ ...row, note: newNote })
         }
         return res
       },
@@ -612,8 +604,8 @@ export default function ProxyManager({ onBuySuccessRef }) {
         const classUpdates = {}
         const updatedRows = []
         for (const row of rows) {
-          const updated = updateRowBySid(row.sid, () => ({ status: 'Paused' }))
-          if (updated) updatedRows.push(updated)
+          updateRowBySid(row.sid, () => ({ status: 'Paused' }))
+          updatedRows.push({ ...row, status: 'Paused' })
           classUpdates[row.sid] = 'bg-success-cell'
         }
 
@@ -692,8 +684,8 @@ export default function ProxyManager({ onBuySuccessRef }) {
         const classUpdates = {}
         const updatedRows = []
         for (const row of rows) {
-          const updated = updateRowBySid(row.sid, () => ({ status: 'Running' }))
-          if (updated) updatedRows.push(updated)
+          updateRowBySid(row.sid, () => ({ status: 'Running' }))
+          updatedRows.push({ ...row, status: 'Running' })
           classUpdates[row.sid] = 'bg-success-cell'
         }
 

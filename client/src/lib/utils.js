@@ -74,3 +74,29 @@ export function str2date(str) {
   const [d, m, y] = str.split('-')
   return new Date(y, m - 1, d)
 }
+
+export function formatInputDate(inputValue) {
+  const filterVal = inputValue.trim()
+  const now = new Date()
+  const currentMonth = String(now.getMonth() + 1).padStart(2, '0')
+  const currentYear = String(now.getFullYear())
+
+  if (filterVal.length <= 2) {
+    const day = filterVal.padStart(2, '0')
+    return `${day}-${currentMonth}-${currentYear}`
+  } else if (filterVal.length <= 4) {
+    const day = filterVal.slice(0, 2).padStart(2, '0')
+    const month = filterVal.slice(2).padStart(2, '0')
+    return `${day}-${month}-${currentYear}`
+  } else if (filterVal.length <= 6) {
+    const day = filterVal.slice(0, 2)
+    const month = filterVal.slice(2, 4)
+    const year = filterVal.slice(4).padStart(2, '0')
+    return `${day}-${month}-20${year}`
+  } else if (filterVal.length <= 8) {
+    const day = filterVal.slice(0, 2)
+    const month = filterVal.slice(2, 4)
+    const year = filterVal.slice(4)
+    return `${day}-${month}-${year}`
+  }
+}

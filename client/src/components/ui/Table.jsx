@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, forwardRef, useEffect } from 'react'
 import { TableVirtuoso } from 'react-virtuoso'
-import { handleCopy, getStatusClasses } from '../../lib/utils.js'
+import { handleCopy, getStatusClasses, formatInputDate, str2date } from '../../lib/utils.js'
 import { getFlagIcon } from '../../data/flags.jsx'
 import Checkbox from './Checkbox.jsx'
 
@@ -145,6 +145,29 @@ const Table = forwardRef(function Table(
         const cellValue = row[key]
         const filterValue = filter.value
 
+        if (['created', 'expired'].includes(key) && cellValue && filterValue) {
+          try {
+            const dateCell = str2date(String(cellValue)).getTime()
+            const dateFilter = str2date(String(filterValue)).getTime()
+
+            if (!isNaN(dateCell) && !isNaN(dateFilter)) {
+              switch (operator) {
+                case 'greater-equal':
+                  return dateCell >= dateFilter
+                case 'less-equal':
+                  return dateCell <= dateFilter
+                case 'equal':
+                  return dateCell === dateFilter
+                case 'contain':
+                default:
+                  return String(cellValue).toLowerCase().includes(String(filterValue).toLowerCase())
+              }
+            }
+          } catch (e) {
+            // Fallback for parsing errors
+          }
+        }
+
         // Check if both values are valid numbers for numeric comparison
         const isNumeric =
           !isNaN(parseFloat(cellValue)) &&
@@ -264,6 +287,13 @@ const Table = forwardRef(function Table(
       if (e.key === 'Enter') {
         const inputValue =
           filterInputs[header] !== undefined ? filterInputs[header] : filters[header]?.value || ''
+
+        if (['created', 'expired'].includes(header) && /^\d+$/.test(inputValue.trim()))
+          setFilterInputs((prev) => ({
+            ...prev,
+            [header]: formatInputDate(inputValue),
+          }))
+
         setFilters((prev) => ({
           ...prev,
           [header]: { ...(prev[header] || { operator: 'contain' }), value: inputValue },

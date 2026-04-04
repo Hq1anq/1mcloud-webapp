@@ -33,7 +33,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
   })
   const [selectedNation, setSelectedNation] = useState('VN')
   const [amount, setAmount] = useState('1')
-  const [selectedType, setSelectedType] = useState('HTTPS')
+  const [selectedType, setSelectedType] = useState('proxy_https')
   const [selectedDuration, setSelectedDuration] = useState('1')
   const [selectedRangeIp, setSelectedRangeIp] = useState('Ngẫu nhiên')
   const [selectedIsp, setSelectedIsp] = useState('Ngẫu nhiên')
@@ -182,7 +182,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
         )
         const extraConfig = {
           country: selectedNation,
-          type: selectedType === 'HTTPS' ? 'HTTPS Proxy' : 'SOCKS5 Proxy',
+          type: selectedType === 'proxy_https' ? 'HTTPS Proxy' : 'SOCKS5 Proxy',
           note: note,
         }
         if (onSuccess) onSuccess(res.data?.data, extraConfig)
@@ -239,7 +239,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
               <div className="flex grow flex-col gap-2">
                 <span className="text-sm font-medium">{t('buy.type')}</span>
                 {renderSelect(
-                  selectedType,
+                  selectedType === 'proxy_https' ? 'HTTPS' : 'SOCKS5',
                   (e) => setSelectedType(e.target.value),
                   supportData.type?.option || {}
                 )}

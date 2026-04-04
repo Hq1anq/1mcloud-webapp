@@ -89,9 +89,11 @@ export default function VpsManager({ onBuySuccessRef }) {
   const [selectedIds, setSelectedIds] = useState(new Set())
   const [isProcessing, setIsProcessing] = useState(false)
   const selectedRowsRef = useRef(selectedRows)
+  const dataRef = useRef(data)
   useEffect(() => {
     selectedRowsRef.current = selectedRows
-  }, [selectedRows])
+    dataRef.current = data
+  }, [selectedRows, data])
 
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
 
@@ -178,12 +180,16 @@ export default function VpsManager({ onBuySuccessRef }) {
 
       const resData = res.data?.data || []
 
+      // Merge resData into current state locally for rendering and syncing
+      const localMerged = mergeResIntoData(dataRef.current, resData)
+      const finalResData = localMerged.filter((row) => resData.some((r) => r.sid === row.sid))
+
       setData((prevData) => {
         let mergedData = mergeResIntoData(prevData, resData)
 
         // Trash data cleanup: if full fetch (no IPs) and returned results are within limit,
         // it means we got all current resources. Anything in prevData NOT in resData and NOT refunded is trash.
-        let override = false
+        let finalMergedData = mergedData
         if (!parsedIps && resData.length <= (params.amount || 200)) {
           const trashSids = prevData
             .filter(
@@ -197,32 +203,28 @@ export default function VpsManager({ onBuySuccessRef }) {
               .delete('/vps', { data: { sids: trashSids } })
               .catch((err) => console.error('[Cleanup] Delete failed:', err.message))
 
-            mergedData = mergedData.filter((row) => !trashSids.includes(row.sid))
+            finalMergedData = mergedData.filter((row) => !trashSids.includes(row.sid))
           }
-          override = true
         }
-
-        const finalResData = mergedData.filter((row) => resData.some((r) => r.sid === row.sid))
-
-        setReceivedData(finalResData)
-        setRenderingReceived(true)
-        setSelectedIds(new Set())
-
-        // Sync updated data to DB
-        syncToDb(finalResData)
-
-        removeToast(loadingId)
-        addToast(
-          <>
-            {t('manager.loadedRows')}{' '}
-            <span className="text-text-toast-success">{finalResData.length}</span>{' '}
-            {t('manager.rows')}
-          </>,
-          'success'
-        )
-
-        return override ? finalResData : mergedData
+        return finalMergedData
       })
+
+      // Update renderer state using merged data (important for keeping user_pass)
+      setReceivedData(finalResData)
+      setRenderingReceived(true)
+      setSelectedIds(new Set())
+
+      // Sync updated data to DB in background
+      syncToDb(finalResData)
+
+      removeToast(loadingId)
+      addToast(
+        <>
+          {t('manager.loadedRows')}{' '}
+          <span className="text-text-toast-success">{finalResData.length}</span> {t('manager.rows')}
+        </>,
+        'success'
+      )
     } catch (err) {
       console.error('[GetData] Error:', err.message)
       removeToast(loadingId)
@@ -234,7 +236,6 @@ export default function VpsManager({ onBuySuccessRef }) {
   useEffect(() => {
     if (onBuySuccessRef) {
       onBuySuccessRef.current = (newData, extraConfig) => {
-        console.log('VPSSSSSS')
         if (Array.isArray(newData) && newData.length > 0) {
           const enrichedData = newData.map((item) => ({
             ...item,
@@ -269,18 +270,8 @@ export default function VpsManager({ onBuySuccessRef }) {
 
   // Helper: update a single row in both receivedData and data by sid
   const updateRowBySid = useCallback((sid, updater) => {
-    let updatedRow = null
-    setReceivedData((prev) =>
-      prev.map((r) => {
-        if (r.sid === sid) {
-          updatedRow = { ...r, ...updater(r) }
-          return updatedRow
-        }
-        return r
-      })
-    )
+    setReceivedData((prev) => prev.map((r) => (r.sid === sid ? { ...r, ...updater(r) } : r)))
     setData((prev) => prev.map((r) => (r.sid === sid ? { ...r, ...updater(r) } : r)))
-    return updatedRow
   }, [])
 
   // --- Batch handler helper ---
@@ -303,12 +294,12 @@ export default function VpsManager({ onBuySuccessRef }) {
           const updatedRows = []
           for (const row of rows) {
             if (statusUpdater) {
-              const updated = updateRowBySid(row.sid, statusUpdater)
-              if (updated) updatedRows.push(updated)
+              const updates = statusUpdater(row)
+              updateRowBySid(row.sid, () => updates)
+              updatedRows.push({ ...row, ...updates })
             }
             classUpdates[row.sid] = 'bg-success-cell'
           }
-          if (updatedRows.length > 0) syncToDb(updatedRows)
 
           setRowClassMap(classUpdates)
           setSelectedIds((prev) => {
@@ -325,6 +316,8 @@ export default function VpsManager({ onBuySuccessRef }) {
             </>,
             'success'
           )
+          // Sync in background after feedback
+          if (updatedRows.length > 0) syncToDb(updatedRows)
         } else {
           const classUpdates = {}
           for (const row of rows) classUpdates[row.sid] = 'bg-error-cell'
@@ -525,7 +518,6 @@ export default function VpsManager({ onBuySuccessRef }) {
   // --- Change Note handler ---
   const handleChangeNote = useCallback(async () => {
     const rows = [...selectedRowsRef.current]
-    const newNote = noteInput
     const updatedRowsToSync = []
 
     await processSequential(
@@ -533,11 +525,11 @@ export default function VpsManager({ onBuySuccessRef }) {
       async (row) => {
         const res = await axiosInstance.put('/server/info/note', {
           sid: row.sid.toString(),
-          newNote,
+          newNote: noteInput,
         })
         if (res.data?.success) {
-          const updated = updateRowBySid(row.sid, () => ({ note: newNote }))
-          if (updated) updatedRowsToSync.push(updated)
+          updateRowBySid(row.sid, () => ({ note: noteInput }))
+          updatedRowsToSync.push({ ...row, note: noteInput })
         }
         return res
       },
@@ -608,15 +600,18 @@ export default function VpsManager({ onBuySuccessRef }) {
       let failCount = invalidRows.length
 
       const classUpdates = {}
+      const validRowsToSync = []
       for (const row of validRows) {
         const cleanIp = row.ip_port?.split(':')[0]
 
         if (resSuccess[cleanIp]) {
           const newExpiredDay = renewData.success[cleanIp].new_expired_day
-          updateRowBySid(row.sid, () => ({
+          const updates = {
             status: 'Running',
             expired: newExpiredDay,
-          }))
+          }
+          updateRowBySid(row.sid, () => updates)
+          validRowsToSync.push({ ...row, ...updates })
           classUpdates[row.sid] = 'bg-success-cell'
           successCount++
         } else {
@@ -668,6 +663,8 @@ export default function VpsManager({ onBuySuccessRef }) {
           'warning'
         )
       }
+      // Sync in background after feedback
+      if (validRowsToSync.length > 0) syncToDb(validRowsToSync)
     } catch {
       const classUpdates = {}
       for (const row of validRows) classUpdates[row.sid] = 'bg-error-cell'
@@ -682,7 +679,7 @@ export default function VpsManager({ onBuySuccessRef }) {
       setIsProcessing(false)
       removeToast(toastId)
     }
-  }, [confirmAction, addToast, removeToast, updateRowBySid, t])
+  }, [confirmAction, addToast, removeToast, updateRowBySid, t, syncToDb])
 
   return (
     <div>

@@ -1082,26 +1082,89 @@ export default function ProxyManager({ onBuySuccessRef }) {
                       <span>{t('manager.onePerLine')}</span>
                     </label>
                   </label>
-                  <button
-                    onClick={() => {
-                      setIps('')
-                    }}
-                    className="bg-action static right-0 flex items-center justify-center rounded-lg px-3 py-1 text-sm font-medium transition-colors duration-200 hover:brightness-(--highlight-brightness) md:absolute lg:static"
-                    style={{ '--action-color': 'var(--red)' }}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 640 640"
-                      className="mr-1 size-5 shrink-0 fill-current"
+                  <div className="flex flex-wrap justify-end gap-2">
+                    <button
+                      onClick={() => {
+                        setIps('')
+                      }}
+                      className="bg-action static right-0 flex items-center justify-center rounded-lg px-3 py-1 text-sm font-medium transition-colors duration-200 hover:brightness-(--highlight-brightness) md:absolute lg:static"
+                      style={{ '--action-color': 'var(--red)' }}
                     >
-                      <path d="M544.1 256L552 256C565.3 256 576 245.3 576 232L576 88C576 78.3 570.2 69.5 561.2 65.8C552.2 62.1 541.9 64.2 535 71L483.3 122.8C439 86.1 382 64 320 64C191 64 84.3 159.4 66.6 283.5C64.1 301 76.2 317.2 93.7 319.7C111.2 322.2 127.4 310 129.9 292.6C143.2 199.5 223.3 128 320 128C364.4 128 405.2 143 437.7 168.3L391 215C384.1 221.9 382.1 232.2 385.8 241.2C389.5 250.2 398.3 256 408 256L544.1 256zM573.5 356.5C576 339 563.8 322.8 546.4 320.3C529 317.8 512.7 330 510.2 347.4C496.9 440.4 416.8 511.9 320.1 511.9C275.7 511.9 234.9 496.9 202.4 471.6L249 425C255.9 418.1 257.9 407.8 254.2 398.8C250.5 389.8 241.7 384 232 384L88 384C74.7 384 64 394.7 64 408L64 552C64 561.7 69.8 570.5 78.8 574.2C87.8 577.9 98.1 575.8 105 569L156.8 517.2C201 553.9 258 576 320 576C449 576 555.7 480.6 573.4 356.5z" />
-                    </svg>
-                    {t('manager.delete')}
-                  </button>
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 640 640"
+                        className="mr-1 size-5 shrink-0 fill-current"
+                      >
+                        <path d="M232.7 69.9L224 96L128 96C110.3 96 96 110.3 96 128C96 145.7 110.3 160 128 160L512 160C529.7 160 544 145.7 544 128C544 110.3 529.7 96 512 96L416 96L407.3 69.9C402.9 56.8 390.7 48 376.9 48L263.1 48C249.3 48 237.1 56.8 232.7 69.9zM512 208L128 208L149.1 531.1C150.7 556.4 171.7 576 197 576L443 576C468.3 576 489.3 556.4 490.9 531.1L512 208z" />
+                      </svg>
+                      {t('manager.delete')}
+                    </button>
+                    <button
+                      onClick={() => {
+                        let allLines = []
+                        const rawBlocks = ips.split(/\n\s*\n/)
+                        if (rawBlocks.length === 2) {
+                          const block1 = rawBlocks[0]
+                            .split('\n')
+                            .map((ip) => ip.trim())
+                            .filter(Boolean)
+                            .map((ip) => ({ ip, block: 1 }))
+                          const block2 = rawBlocks[1]
+                            .split('\n')
+                            .map((ip) => ip.trim())
+                            .filter(Boolean)
+                            .map((ip) => ({ ip: '  ' + ip, block: 2 }))
+                          allLines = [...block1, ...block2]
+                        } else {
+                          allLines = rawBlocks[0]
+                            .split('\n')
+                            .filter((ip) => ip.length > 0)
+                            .map((ip) => ({ ip, block: 1 }))
+                        }
+
+                        for (let i = allLines.length - 1; i > 0; i--) {
+                          const j = Math.floor(Math.random() * (i + 1))
+                          ;[allLines[i], allLines[j]] = [allLines[j], allLines[i]]
+                        }
+
+                        setIps(allLines.map((line) => line.ip).join('\n'))
+                      }}
+                      className="bg-action static right-0 flex items-center justify-center rounded-lg px-3 py-1 text-sm font-medium transition-colors duration-200 hover:brightness-(--highlight-brightness) md:absolute lg:static"
+                      style={{ '--action-color': 'var(--red)' }}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 640 640"
+                        className="mr-1 size-5 shrink-0 fill-current"
+                      >
+                        <path d="M544.1 256L552 256C565.3 256 576 245.3 576 232L576 88C576 78.3 570.2 69.5 561.2 65.8C552.2 62.1 541.9 64.2 535 71L483.3 122.8C439 86.1 382 64 320 64C191 64 84.3 159.4 66.6 283.5C64.1 301 76.2 317.2 93.7 319.7C111.2 322.2 127.4 310 129.9 292.6C143.2 199.5 223.3 128 320 128C364.4 128 405.2 143 437.7 168.3L391 215C384.1 221.9 382.1 232.2 385.8 241.2C389.5 250.2 398.3 256 408 256L544.1 256zM573.5 356.5C576 339 563.8 322.8 546.4 320.3C529 317.8 512.7 330 510.2 347.4C496.9 440.4 416.8 511.9 320.1 511.9C275.7 511.9 234.9 496.9 202.4 471.6L249 425C255.9 418.1 257.9 407.8 254.2 398.8C250.5 389.8 241.7 384 232 384L88 384C74.7 384 64 394.7 64 408L64 552C64 561.7 69.8 570.5 78.8 574.2C87.8 577.9 98.1 575.8 105 569L156.8 517.2C201 553.9 258 576 320 576C449 576 555.7 480.6 573.4 356.5z" />
+                      </svg>
+                      Shuffle
+                    </button>
+                  </div>
                 </div>
                 <button
+                  onClick={() => {
+                    const listIp = ips
+                      .split('\n')
+                      .map((ip) => ip.trim())
+                      .filter((ip) => ip.length > 0)
+                    const numIp = listIp.length
+                    const textToCopy = listIp.join('\n')
+                    safeCopy(textToCopy).then(
+                      (ok) =>
+                        ok &&
+                        addToast(
+                          <>
+                            {t('manager.copied')}{' '}
+                            <span className="text-text-toast-success">{numIp}</span> Proxy
+                          </>,
+                          'success'
+                        )
+                    )
+                  }}
                   id="textCopyBtn"
-                  className="group text-text-muted absolute top-12 right-1 inline-flex cursor-pointer items-center justify-center rounded-lg hover:brightness-(--highlight-brightness)"
+                  className="group text-text-muted absolute right-2 bottom-2 inline-flex cursor-pointer items-center justify-center rounded-lg hover:brightness-(--highlight-brightness)"
                 >
                   <svg
                     aria-hidden="true"
@@ -1123,6 +1186,80 @@ export default function ProxyManager({ onBuySuccessRef }) {
                   placeholder="192.168.1.1&#10;10.0.0.1&#10;172.16.0.1"
                   value={ips}
                   onChange={(e) => setIps(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.altKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+                      e.preventDefault()
+                      const textarea = e.target
+                      const { selectionStart, selectionEnd, value } = textarea
+                      const lines = value.split('\n')
+
+                      // Get line start offsets
+                      const lineOffsets = [0]
+                      for (let i = 0; i < lines.length - 1; i++) {
+                        lineOffsets.push(lineOffsets[i] + lines[i].length + 1)
+                      }
+
+                      // Find which lines are selected
+                      let startLineIndex = 0
+                      let endLineIndex = 0
+                      for (let i = 0; i < lineOffsets.length; i++) {
+                        if (lineOffsets[i] <= selectionStart) startLineIndex = i
+                        if (lineOffsets[i] <= selectionEnd) endLineIndex = i
+                      }
+
+                      // If selection ends at the very beginning of a line, don't include that line
+                      if (
+                        selectionEnd > selectionStart &&
+                        selectionEnd === lineOffsets[endLineIndex] &&
+                        endLineIndex > startLineIndex
+                      ) {
+                        endLineIndex--
+                      }
+
+                      const selectedLinesCount = endLineIndex - startLineIndex + 1
+                      const startOfFirstSelectedLine = lineOffsets[startLineIndex]
+                      const relativeSelectionStart = selectionStart - startOfFirstSelectedLine
+                      const relativeSelectionEnd = selectionEnd - startOfFirstSelectedLine
+
+                      if (e.key === 'ArrowUp' && startLineIndex > 0) {
+                        const newLines = [...lines]
+                        const segment = newLines.splice(startLineIndex, selectedLinesCount)
+                        newLines.splice(startLineIndex - 1, 0, ...segment)
+                        const newValue = newLines.join('\n')
+                        setIps(newValue)
+
+                        // Calculate new offset
+                        const newStartOfSegment = newLines
+                          .slice(0, startLineIndex - 1)
+                          .reduce((acc, curr) => acc + curr.length + 1, 0)
+
+                        setTimeout(() => {
+                          textarea.setSelectionRange(
+                            newStartOfSegment + relativeSelectionStart,
+                            newStartOfSegment + relativeSelectionEnd
+                          )
+                        }, 0)
+                      } else if (e.key === 'ArrowDown' && endLineIndex < lines.length - 1) {
+                        const newLines = [...lines]
+                        const segment = newLines.splice(startLineIndex, selectedLinesCount)
+                        newLines.splice(startLineIndex + 1, 0, ...segment)
+                        const newValue = newLines.join('\n')
+                        setIps(newValue)
+
+                        // Calculate new offset
+                        const newStartOfSegment = newLines
+                          .slice(0, startLineIndex + 1)
+                          .reduce((acc, curr) => acc + curr.length + 1, 0)
+
+                        setTimeout(() => {
+                          textarea.setSelectionRange(
+                            newStartOfSegment + relativeSelectionStart,
+                            newStartOfSegment + relativeSelectionEnd
+                          )
+                        }, 0)
+                      }
+                    }
+                  }}
                 />
               </div>
               {/* GetData & Change Note & Reinstall and Simple Action Buttons */}
@@ -1292,8 +1429,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
                             addToast(
                               <>
                                 {t('manager.copied')}{' '}
-                                <span className="text-text-toast-success">{rows.length}</span>{' '}
-                                {t('manager.copiedProxy')}
+                                <span className="text-text-toast-success">{rows.length}</span> Proxy
                               </>,
                               'success'
                             )

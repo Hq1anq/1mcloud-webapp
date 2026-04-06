@@ -2,7 +2,7 @@ import DropDown from '../components/ui/DropDown'
 import Table from '../components/ui/Table'
 import Checkbox from '../components/ui/Checkbox'
 import axiosInstance from '../lib/axios'
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useToast } from '../context/ToastContext'
 import { extractIP, randomDelay } from '../lib/utils'
 import { useSafeCopy } from '../context/SafeCopyContext'
@@ -88,6 +88,15 @@ export default function ProxyManager({ onBuySuccessRef }) {
   }, [selectedRows, data])
 
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+
+  const profile = useMemo(() => {
+    try {
+      const cached = localStorage.getItem('account-profile')
+      return cached ? JSON.parse(cached) : {}
+    } catch {
+      return {}
+    }
+  }, [])
 
   // --- DB sync helpers ---
   const syncToDb = useCallback(
@@ -817,7 +826,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
     })
 
     if (validRows.length === 0) {
-      addToast(t('manager.noValidProxies'), 'warning')
+      addToast(t('manager.noValidProxyRenew'), 'warning')
       return
     }
 
@@ -914,6 +923,141 @@ export default function ProxyManager({ onBuySuccessRef }) {
     }
   }, [confirmAction, addToast, removeToast, updateRowBySid, t, syncToDb])
 
+  const handleRefund = useCallback(async () => {
+    const rows = [...selectedRowsRef.current]
+    if (rows.length === 0) {
+      addToast(t('manager.noRowsSelected'), 'warning')
+      return
+    }
+
+    const refundDataOrConfirmed = await confirmAction({
+      title: t('manager.confirmRefund'),
+      isRefund: true,
+      selectedRows: rows,
+    })
+
+    if (!refundDataOrConfirmed) return
+
+    // confirmAction resolves with truthy (the refundData payload if successful fetching occurred).
+    // If somehow it's just TRUE, we default to whatever we can.
+    const refundData = typeof refundDataOrConfirmed === 'object' ? refundDataOrConfirmed : null
+
+    const validRows = []
+    const invalidRows = []
+
+    rows.forEach((row) => {
+      const cleanIp = row.ip_port?.split(':')[0]
+      if (refundData && refundData.success && refundData.success[cleanIp]) {
+        validRows.push(row)
+      } else {
+        invalidRows.push(row)
+      }
+    })
+
+    setRowClassMap((prev) => {
+      const updates = { ...prev }
+      invalidRows.forEach((r) => {
+        updates[r.sid] = 'bg-error-cell'
+      })
+      return updates
+    })
+
+    if (validRows.length === 0) {
+      addToast(t('manager.noValidProxyRefund'), 'warning')
+      return
+    }
+
+    const sids = validRows.map((r) => r.sid).join(',')
+    setIsProcessing(true)
+    const toastId = addToast(t('manager.refunding'), 'loading')
+
+    try {
+      const res = await axiosInstance.post('/server/refund', { sid: sids })
+
+      const resSuccess = res.data?.result?.success || {}
+      let successCount = 0
+      let failCount = invalidRows.length
+      const classUpdates = {}
+      const updatedRows = []
+      for (const row of validRows) {
+        const cleanIp = row.ip_port?.split(':')[0]
+
+        if (resSuccess[cleanIp]) {
+          const updates = {
+            status: 'Refunded',
+          }
+          updateRowBySid(row.sid, () => updates)
+          updatedRows.push({ ...row, ...updates })
+          classUpdates[row.sid] = 'bg-success-cell'
+          successCount++
+        } else {
+          classUpdates[row.sid] = 'bg-error-cell'
+          failCount++
+        }
+      }
+
+      setRowClassMap((prev) => ({ ...prev, ...classUpdates }))
+
+      // Deselect all processed rows
+      setSelectedIds((prev) => {
+        const newSet = new Set(prev)
+        for (const row of rows) newSet.delete(row._index)
+        return newSet
+      })
+
+      if (successCount > 0 && failCount === 0) {
+        addToast(
+          <>
+            {t('manager.refund').toUpperCase()} {t('manager.completed')} <br />
+            <span className="text-text-toast-success">
+              {successCount} {t('manager.success')}
+            </span>
+          </>,
+          'success'
+        )
+      } else if (successCount === 0 && failCount > 0) {
+        addToast(
+          <>
+            {t('manager.refund').toUpperCase()} {t('manager.completed')} <br />
+            <span className="text-text-toast-error">
+              {failCount} {t('manager.failed')}
+            </span>
+          </>,
+          'error'
+        )
+      } else {
+        addToast(
+          <>
+            {t('manager.refund').toUpperCase()} {t('manager.completed')} <br />
+            <span className="text-text-toast-success">
+              {successCount} {t('manager.success')}
+            </span>
+            ,{' '}
+            <span className="text-text-toast-error">
+              {failCount} {t('manager.failed')}
+            </span>
+          </>,
+          'warning'
+        )
+      }
+      // Sync in background after feedback
+      if (updatedRows.length > 0) syncToDb(updatedRows)
+    } catch {
+      const classUpdates = {}
+      for (const row of validRows) classUpdates[row.sid] = 'bg-error-cell'
+      setRowClassMap((prev) => ({ ...prev, ...classUpdates }))
+      setSelectedIds((prev) => {
+        const newSet = new Set(prev)
+        for (const row of rows) newSet.delete(row._index)
+        return newSet
+      })
+      addToast(t('manager.refundError'), 'error')
+    } finally {
+      setIsProcessing(false)
+      removeToast(toastId)
+    }
+  }, [confirmAction, addToast, removeToast, updateRowBySid, t, syncToDb])
+
   return (
     <div>
       {/* ========== TOP CONTROLS ========== */}
@@ -940,10 +1084,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
                   </label>
                   <button
                     onClick={() => {
-                      addToast(t('manager.delete'), 'success')
-                      addToast(t('manager.delete'), 'warning')
-                      addToast(t('manager.delete'), 'error')
-                      addToast(t('manager.delete'), 'info')
+                      setIps('')
                     }}
                     className="bg-action static right-0 flex items-center justify-center rounded-lg px-3 py-1 text-sm font-medium transition-colors duration-200 hover:brightness-(--highlight-brightness) md:absolute lg:static"
                     style={{ '--action-color': 'var(--red)' }}
@@ -1187,22 +1328,6 @@ export default function ProxyManager({ onBuySuccessRef }) {
                       {t('manager.reboot')}
                     </button>
 
-                    {/* Refund */}
-                    <button
-                      id="refundBtn"
-                      className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium transition-colors duration-200 hover:brightness-(--highlight-brightness)"
-                      style={{ '--action-color': 'var(--brown)' }}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 448 512"
-                        className="mr-1 h-5 w-5 shrink-0 fill-current sm:mr-2 sm:h-6 sm:w-6"
-                      >
-                        <path d="M384 32H64C28.654 32 0 60.652 0 96V416C0 451.346 28.654 480 64 480H384C419.346 480 448 451.346 448 416V96C448 60.652 419.346 32 384 32ZM310.764 314.281C305.451 342.701 281.738 361.422 248.045 366.818V384C248.045 397.25 237.295 408 224.045 408S200.045 397.25 200.045 384V365.939C185.955 363.51 171.59 359 158.795 354.734L152.514 352.656C139.92 348.531 133.045 334.969 137.17 322.375S154.92 302.922 167.451 307.031L173.951 309.187C186.076 313.219 199.795 317.781 210.951 319.344C238.826 323.359 261.326 317.359 263.576 305.437C265.389 295.828 261.732 290.766 217.795 279.156L209.201 276.875C184.482 270.156 126.576 254.469 137.201 197.719C142.523 169.283 166.266 150.521 200.045 145.156V128C200.045 114.75 210.795 104 224.045 104S248.045 114.75 248.045 128V146.002C256.998 147.568 266.891 149.984 279.264 153.937C291.889 157.953 298.889 171.469 294.857 184.094C290.857 196.719 277.326 203.75 264.701 199.656C253.139 195.969 244.014 193.672 236.857 192.641C209.295 188.703 186.607 194.625 184.389 206.562C183.045 213.625 181.92 219.734 221.764 230.547L230.045 232.75C264.264 241.781 321.514 256.906 310.764 314.281Z" />
-                      </svg>
-                      Refund
-                    </button>
-
                     {/* Renew */}
                     <button
                       className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium transition-colors duration-200 hover:brightness-(--highlight-brightness)"
@@ -1219,6 +1344,25 @@ export default function ProxyManager({ onBuySuccessRef }) {
                       </svg>
                       {t('manager.renew')}
                     </button>
+
+                    {/* Refund */}
+                    {profile?.is_refund && (
+                      <button
+                        className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap hover:brightness-(--highlight-brightness)"
+                        style={{ '--action-color': 'var(--purple)' }}
+                        onClick={handleRefund}
+                        disabled={isProcessing}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 448 512"
+                          className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:h-6 sm:w-6"
+                        >
+                          <path d="M384 32H64C28.654 32 0 60.652 0 96V416C0 451.346 28.654 480 64 480H384C419.346 480 448 451.346 448 416V96C448 60.652 419.346 32 384 32ZM310.764 314.281C305.451 342.701 281.738 361.422 248.045 366.818V384C248.045 397.25 237.295 408 224.045 408S200.045 397.25 200.045 384V365.939C185.955 363.51 171.59 359 158.795 354.734L152.514 352.656C139.92 348.531 133.045 334.969 137.17 322.375S154.92 302.922 167.451 307.031L173.951 309.187C186.076 313.219 199.795 317.781 210.951 319.344C238.826 323.359 261.326 317.359 263.576 305.437C265.389 295.828 261.732 290.766 217.795 279.156L209.201 276.875C184.482 270.156 126.576 254.469 137.201 197.719C142.523 169.283 166.266 150.521 200.045 145.156V128C200.045 114.75 210.795 104 224.045 104S248.045 114.75 248.045 128V146.002C256.998 147.568 266.891 149.984 279.264 153.937C291.889 157.953 298.889 171.469 294.857 184.094C290.857 196.719 277.326 203.75 264.701 199.656C253.139 195.969 244.014 193.672 236.857 192.641C209.295 188.703 186.607 194.625 184.389 206.562C183.045 213.625 181.92 219.734 221.764 230.547L230.045 232.75C264.264 241.781 321.514 256.906 310.764 314.281Z" />
+                        </svg>
+                        {t('manager.refund')}
+                      </button>
+                    )}
 
                     {/* Copy IP */}
                     <button
@@ -1271,33 +1415,6 @@ export default function ProxyManager({ onBuySuccessRef }) {
                         <path d="M176 96C149.5 96 128 117.5 128 144L128 496C128 522.5 149.5 544 176 544L240 544C266.5 544 288 522.5 288 496L288 144C288 117.5 266.5 96 240 96L176 96zM400 96C373.5 96 352 117.5 352 144L352 496C352 522.5 373.5 544 400 544L464 544C490.5 544 512 522.5 512 496L512 144C512 117.5 490.5 96 464 96L400 96z" />
                       </svg>
                       {t('manager.pause')}
-                    </button>
-
-                    {/* Renew 1 week */}
-                    <button
-                      id="giaHan1"
-                      className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
-                      style={{ '--action-color': 'var(--orange)' }}
-                    >
-                      Gia hạn tuần
-                    </button>
-
-                    {/* Renew */}
-                    <button
-                      id="giaHan"
-                      className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
-                      style={{ '--action-color': 'var(--purple)' }}
-                    >
-                      Gia hạn
-                    </button>
-
-                    {/* Renew 2 weeks */}
-                    <button
-                      id="giaHan2"
-                      className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
-                      style={{ '--action-color': 'var(--primary)' }}
-                    >
-                      Gia hạn 2 tuần
                     </button>
                   </div>
                 </div>

@@ -1,6 +1,6 @@
 import Table from '../components/ui/Table'
 import axiosInstance from '../lib/axios'
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useToast } from '../context/ToastContext'
 import { extractIP, randomDelay } from '../lib/utils'
 import { useSafeCopy } from '../context/SafeCopyContext'
@@ -96,6 +96,15 @@ export default function VpsManager({ onBuySuccessRef }) {
   }, [selectedRows, data])
 
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+
+  const profile = useMemo(() => {
+    try {
+      const cached = localStorage.getItem('account-profile')
+      return cached ? JSON.parse(cached) : {}
+    } catch {
+      return {}
+    }
+  }, [])
 
   // --- DB sync helpers ---
   const syncToDb = useCallback(
@@ -583,7 +592,7 @@ export default function VpsManager({ onBuySuccessRef }) {
     })
 
     if (validRows.length === 0) {
-      addToast(t('manager.noValidProxies'), 'warning')
+      addToast(t('manager.noValidVpsRenew'), 'warning')
       return
     }
 
@@ -675,6 +684,146 @@ export default function VpsManager({ onBuySuccessRef }) {
         return newSet
       })
       addToast(t('manager.renewError'), 'error')
+    } finally {
+      setIsProcessing(false)
+      removeToast(toastId)
+    }
+  }, [confirmAction, addToast, removeToast, updateRowBySid, t, syncToDb])
+
+  const handleRefund = useCallback(async () => {
+    const rows = [...selectedRowsRef.current]
+    if (rows.length === 0) {
+      addToast(t('manager.noRowsSelected'), 'warning')
+      return
+    }
+
+    const refundDataOrConfirmed = await confirmAction({
+      title: t('manager.confirmRefund'),
+      isRefund: true,
+      selectedRows: rows,
+    })
+
+    if (!refundDataOrConfirmed) return
+
+    const refundData = typeof refundDataOrConfirmed === 'object' ? refundDataOrConfirmed : null
+
+    const validRows = []
+    const invalidRows = []
+
+    rows.forEach((row) => {
+      const cleanIp = row.ip_port?.split(':')[0]
+      if (
+        refundData &&
+        refundData.success &&
+        refundData.success[cleanIp] &&
+        refundData.success[cleanIp].new_expired_day &&
+        refundData.success[cleanIp].new_expired_day !== '-'
+      ) {
+        validRows.push(row)
+      } else {
+        invalidRows.push(row)
+      }
+    })
+
+    setRowClassMap((prev) => {
+      const updates = { ...prev }
+      invalidRows.forEach((r) => {
+        updates[r.sid] = 'bg-error-cell'
+      })
+      return updates
+    })
+
+    if (validRows.length === 0) {
+      addToast(t('manager.noValidVpsRefund'), 'warning')
+      return
+    }
+
+    const sids = validRows.map((r) => r.sid).join(',')
+    setIsProcessing(true)
+    const toastId = addToast(t('manager.refunding'), 'loading')
+
+    try {
+      const res = await axiosInstance.post('/server/refund', { sid: sids })
+
+      const resSuccess = res.data?.result?.success || {}
+
+      let successCount = 0
+      let failCount = invalidRows.length
+
+      const classUpdates = {}
+      const validRowsToSync = []
+      for (const row of validRows) {
+        const cleanIp = row.ip_port?.split(':')[0]
+
+        if (resSuccess[cleanIp]) {
+          const updates = {
+            status: 'Refunded',
+          }
+          updateRowBySid(row.sid, () => updates)
+          validRowsToSync.push({ ...row, ...updates })
+          classUpdates[row.sid] = 'bg-success-cell'
+          successCount++
+        } else {
+          classUpdates[row.sid] = 'bg-error-cell'
+          failCount++
+        }
+      }
+
+      setRowClassMap((prev) => ({ ...prev, ...classUpdates }))
+
+      setSelectedIds((prev) => {
+        const newSet = new Set(prev)
+        for (const row of rows) newSet.delete(row._index)
+        return newSet
+      })
+
+      if (successCount > 0 && failCount === 0) {
+        addToast(
+          <>
+            {t('manager.refund').toUpperCase()} {t('manager.completed')} <br />
+            <span className="text-text-toast-success">
+              {successCount} {t('manager.success')}
+            </span>
+          </>,
+          'success'
+        )
+      } else if (successCount === 0 && failCount > 0) {
+        addToast(
+          <>
+            {t('manager.refund').toUpperCase()} {t('manager.completed')} <br />
+            <span className="text-text-toast-error">
+              {failCount} {t('manager.failed')}
+            </span>
+          </>,
+          'error'
+        )
+      } else {
+        addToast(
+          <>
+            {t('manager.refund').toUpperCase()} {t('manager.completed')} <br />
+            <span className="text-text-toast-success">
+              {successCount} {t('manager.success')}
+            </span>
+            ,{' '}
+            <span className="text-text-toast-error">
+              {failCount} {t('manager.failed')}
+            </span>
+          </>,
+          'warning'
+        )
+      }
+      // Sync in background after feedback
+      if (validRowsToSync.length > 0) syncToDb(validRowsToSync)
+    } catch {
+      const classUpdates = {}
+      for (const row of validRows) classUpdates[row.sid] = 'bg-error-cell'
+      setRowClassMap((prev) => ({ ...prev, ...classUpdates }))
+      setSelectedIds((prev) => {
+        const newSet = new Set(prev)
+        for (const row of rows) newSet.delete(row._index)
+        return newSet
+      })
+      addToast(t('manager.refundError'), 'error')
     } finally {
       setIsProcessing(false)
       removeToast(toastId)
@@ -913,22 +1062,43 @@ export default function VpsManager({ onBuySuccessRef }) {
                       {t('manager.renew')}
                     </button>
 
-                    {/* Reset Password */}
-                    <button
-                      className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap hover:brightness-(--highlight-brightness)"
-                      style={{ '--action-color': 'var(--blue)' }}
-                      onClick={handleResetPassword}
-                      disabled={isProcessing}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 512 512"
-                        className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:h-6 sm:w-6"
+                    {/* Refund */}
+                    {profile?.is_refund && (
+                      <button
+                        className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap hover:brightness-(--highlight-brightness)"
+                        style={{ '--action-color': 'var(--purple)' }}
+                        onClick={handleRefund}
+                        disabled={isProcessing}
                       >
-                        <path d="M336 352c97.2 0 176-78.8 176-176S433.2 0 336 0S160 78.8 160 176c0 18.7 2.9 36.8 8.3 53.7L7 391c-4.5 4.5-7 10.6-7 17l0 80c0 13.3 10.7 24 24 24l80 0c13.3 0 24-10.7 24-24l0-40 40 0c13.3 0 24-10.7 24-24l0-40 40 0c6.4 0 12.5-2.5 17-7l33.3-33.3c16.9 5.4 35 8.3 53.7 8.3zM376 96a40 40 0 1 1 0 80 40 40 0 1 1 0-80z" />
-                      </svg>
-                      {t('vpsManager.resetPassword')}
-                    </button>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 448 512"
+                          className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:h-6 sm:w-6"
+                        >
+                          <path d="M384 32H64C28.654 32 0 60.652 0 96V416C0 451.346 28.654 480 64 480H384C419.346 480 448 451.346 448 416V96C448 60.652 419.346 32 384 32ZM310.764 314.281C305.451 342.701 281.738 361.422 248.045 366.818V384C248.045 397.25 237.295 408 224.045 408S200.045 397.25 200.045 384V365.939C185.955 363.51 171.59 359 158.795 354.734L152.514 352.656C139.92 348.531 133.045 334.969 137.17 322.375S154.92 302.922 167.451 307.031L173.951 309.187C186.076 313.219 199.795 317.781 210.951 319.344C238.826 323.359 261.326 317.359 263.576 305.437C265.389 295.828 261.732 290.766 217.795 279.156L209.201 276.875C184.482 270.156 126.576 254.469 137.201 197.719C142.523 169.283 166.266 150.521 200.045 145.156V128C200.045 114.75 210.795 104 224.045 104S248.045 114.75 248.045 128V146.002C256.998 147.568 266.891 149.984 279.264 153.937C291.889 157.953 298.889 171.469 294.857 184.094C290.857 196.719 277.326 203.75 264.701 199.656C253.139 195.969 244.014 193.672 236.857 192.641C209.295 188.703 186.607 194.625 184.389 206.562C183.045 213.625 181.92 219.734 221.764 230.547L230.045 232.75C264.264 241.781 321.514 256.906 310.764 314.281Z" />
+                        </svg>
+                        {t('manager.refund')}
+                      </button>
+                    )}
+
+                    {/* Reset Password */}
+                    {profile?.is_reset_pass && (
+                      <button
+                        className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap hover:brightness-(--highlight-brightness)"
+                        style={{ '--action-color': 'var(--blue)' }}
+                        onClick={handleResetPassword}
+                        disabled={isProcessing}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 512 512"
+                          className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:h-6 sm:w-6"
+                        >
+                          <path d="M336 352c97.2 0 176-78.8 176-176S433.2 0 336 0S160 78.8 160 176c0 18.7 2.9 36.8 8.3 53.7L7 391c-4.5 4.5-7 10.6-7 17l0 80c0 13.3 10.7 24 24 24l80 0c13.3 0 24-10.7 24-24l0-40 40 0c13.3 0 24-10.7 24-24l0-40 40 0c6.4 0 12.5-2.5 17-7l33.3-33.3c16.9 5.4 35 8.3 53.7 8.3zM376 96a40 40 0 1 1 0 80 40 40 0 1 1 0-80z" />
+                        </svg>
+                        {t('vpsManager.resetPassword')}
+                      </button>
+                    )}
 
                     {/* Auto Fix */}
                     <button

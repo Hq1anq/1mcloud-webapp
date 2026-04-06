@@ -40,6 +40,7 @@ export const ConfirmProvider = ({ children }) => {
         title={config.title}
         infoText={config.infoText}
         isRenew={config.isRenew}
+        isRefund={config.isRefund}
         selectedRows={config.selectedRows || []}
       />
     </ConfirmContext.Provider>

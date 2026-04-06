@@ -4,11 +4,11 @@ import useAuthStore from '../store/useAuthStore'
 import { useTranslation } from '../i18n'
 import AddFundsDialog from '../components/dialog/AddFundsDialog'
 
-const PROFILE_CACHE_KEY = 'account-profile-cache'
+const PROFILE_KEY = 'account-profile'
 
 function getCachedProfile() {
   try {
-    const cached = localStorage.getItem(PROFILE_CACHE_KEY)
+    const cached = localStorage.getItem(PROFILE_KEY)
     return cached ? JSON.parse(cached) : null
   } catch {
     return null
@@ -17,7 +17,7 @@ function getCachedProfile() {
 
 function setCachedProfile(data) {
   try {
-    localStorage.setItem(PROFILE_CACHE_KEY, JSON.stringify(data))
+    localStorage.setItem(PROFILE_KEY, JSON.stringify(data))
   } catch {
     /* ignore quota errors */
   }

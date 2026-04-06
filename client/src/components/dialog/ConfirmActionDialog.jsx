@@ -11,11 +11,14 @@ export default function ConfirmActionDialog({
   title,
   infoText,
   isRenew,
+  isRefund,
   selectedRows,
   isProcessing: externalProcessing,
 }) {
   const [renewData, setRenewData] = useState(null)
+  const [refundData, setRefundData] = useState(null)
   const [isFetchingRenew, setIsFetchingRenew] = useState(false)
+  const [isFetchingRefund, setIsFetchingRefund] = useState(false)
   const [fetchError, setFetchError] = useState('')
   const t = useTranslation()
 
@@ -45,22 +48,50 @@ export default function ConfirmActionDialog({
       setIsFetchingRenew(false)
       setFetchError('')
     }
+    if (isOpen && isRefund) {
+      const fetchRefundData = async () => {
+        setIsFetchingRefund(true)
+        setFetchError('')
+        setRefundData(null)
+        try {
+          const sids = selectedRows.map((r) => r.sid).join(',')
+          const res = await axiosInstance.post('/server/refund/calculate', { sid: sids })
+          if (res.data?.success) {
+            setRefundData(res.data.result)
+          } else {
+            setFetchError(t('manager.refundCalcError'))
+          }
+        } catch {
+          setFetchError(t('manager.refundCalcError'))
+        } finally {
+          setIsFetchingRefund(false)
+        }
+      }
+      fetchRefundData()
+    } else {
+      setRefundData(null)
+      setIsFetchingRefund(false)
+      setFetchError('')
+    }
   }, [isOpen, isRenew, selectedRows, t])
 
-  // Expose renewData to paremt dialog on confirm
+  // Expose renewData to parent dialog on confirm
   const handleConfirmClick = () => {
-    onConfirm(isRenew ? renewData : true)
+    onConfirm(isRenew ? renewData : isRefund ? refundData : true)
   }
 
   if (!isOpen) return null
 
-  const isProcessing = externalProcessing || isFetchingRenew
+  const isProcessing = externalProcessing || isFetchingRenew || isFetchingRefund
 
   // Base headers excluding sid and created
   let headers = ['ip_port', 'country', 'type', 'expired', 'status', 'note']
 
   if (isRenew) {
     headers = [...headers, 'new_expired_day', 'expense']
+  }
+  if (isRefund) {
+    headers = [...headers, 'refund']
   }
 
   return (
@@ -88,9 +119,14 @@ export default function ConfirmActionDialog({
               <tbody className="text-text-primary">
                 {selectedRows.map((row, idx) => {
                   let rowRenewData = null
+                  let rowRefundData = null
                   if (isRenew && renewData) {
                     const cleanIp = row.ip_port?.split(':')[0]
                     rowRenewData = renewData.success[cleanIp]
+                  }
+                  if (isRefund && refundData) {
+                    const cleanIp = row.ip_port?.split(':')[0]
+                    rowRefundData = refundData.success[cleanIp]
                   }
 
                   return (
@@ -107,6 +143,18 @@ export default function ConfirmActionDialog({
                         } else if (header === 'expense') {
                           const expenseVal = rowRenewData?.expense
                           content = isFetchingRenew ? (
+                            'Loading...'
+                          ) : expenseVal && expenseVal !== '-' ? (
+                            <span className="text-highlight font-semibold">
+                              {expenseVal}{' '}
+                              <span className="text-sm font-medium opacity-80">VNĐ</span>
+                            </span>
+                          ) : (
+                            '-'
+                          )
+                        } else if (header === 'refund') {
+                          const expenseVal = rowRefundData?.split(' VNĐ')[0]
+                          content = isFetchingRefund ? (
                             'Loading...'
                           ) : expenseVal && expenseVal !== '-' ? (
                             <span className="text-highlight font-semibold">

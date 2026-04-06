@@ -504,6 +504,71 @@ export async function renewCalculate(req, res) {
   }
 }
 
+export async function refund(req, res) {
+  const { sid } = req.body;
+  const url = `${process.env.BASE_URL}/server/refund`;
+  const headers = { ...HEADERS, authorization: `Bearer ${req.token}` };
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ sid: sid }),
+    });
+
+    if (!response.ok) {
+      console.error(`Failed to REFUND for sids: ${sid}:`, response.status);
+      return res.status(response.status).json({
+        success: false,
+        error: "Request failed",
+        sid,
+      });
+    }
+
+    const data = await response.json();
+    res.json({ success: true, result: data.result });
+  } catch (error) {
+    console.error(`Failed to REFUND for sids: ${sid}`, error.message);
+    res
+      .status(500)
+      .json({ success: false, error: "Internal server error", sid });
+  }
+}
+
+export async function refundCalculate(req, res) {
+  const { sid } = req.body;
+  const url = `${process.env.BASE_URL}/server/refund/calculate`;
+  const headers = { ...HEADERS, authorization: `Bearer ${req.token}` };
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ sid: sid }),
+    });
+
+    if (!response.ok) {
+      console.error(
+        `Failed to REFUND CALCULATE for sids: ${sid}:`,
+        response.status,
+      );
+      return res.status(response.status).json({
+        success: false,
+        error: "Request failed",
+        sid,
+      });
+    }
+
+    const data = await response.json();
+    res.json({ success: true, result: data.result });
+  } catch (error) {
+    console.error(`Failed to REFUND CALCULATE for sids: ${sid}`, error.message);
+    res
+      .status(500)
+      .json({ success: false, error: "Internal server error", sids });
+  }
+}
+
 export async function updateNote(req, res) {
   const { sid, newNote } = req.body;
   const url = `${process.env.BASE_URL}/server/info/note`;

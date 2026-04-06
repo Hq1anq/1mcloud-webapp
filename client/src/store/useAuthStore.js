@@ -29,6 +29,9 @@ const useAuthStore = create(
               isLoading: false,
               error: null,
             })
+            // Background fetch profile info
+            get().fetchUserProfile()
+
             return true
           } else {
             console.error('Login failed:', error)
@@ -51,6 +54,18 @@ const useAuthStore = create(
         }
       },
 
+      fetchUserProfile: async () => {
+        try {
+          const response = await axiosInstance.get('/user/profile')
+          if (response.data.success) {
+            const profile = response.data.user
+            localStorage.setItem('account-profile', JSON.stringify(profile))
+          }
+        } catch (err) {
+          console.error('Failed to fetch profile in background:', err)
+        }
+      },
+
       logout: () => {
         set({
           user: null,
@@ -58,6 +73,7 @@ const useAuthStore = create(
           isAuthenticated: false,
           error: null,
         })
+        localStorage.removeItem('account-profile')
       },
 
       // Helper to check if token exists and is valid (basic check)

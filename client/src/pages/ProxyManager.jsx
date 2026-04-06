@@ -918,10 +918,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
                   </label>
                   <button
                     onClick={() => {
-                      addToast(t('manager.delete'), 'success')
-                      addToast(t('manager.delete'), 'warning')
-                      addToast(t('manager.delete'), 'error')
-                      addToast(t('manager.delete'), 'info')
+                      setIps('')
                     }}
                     className="bg-action static right-0 flex items-center justify-center rounded-lg px-3 py-1 text-sm font-medium transition-colors duration-200 hover:brightness-(--highlight-brightness) md:absolute lg:static"
                     style={{ '--action-color': 'var(--red)' }}

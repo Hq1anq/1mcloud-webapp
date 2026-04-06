@@ -1,6 +1,6 @@
 import Table from '../components/ui/Table'
 import axiosInstance from '../lib/axios'
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useToast } from '../context/ToastContext'
 import { extractIP, randomDelay } from '../lib/utils'
 import { useSafeCopy } from '../context/SafeCopyContext'
@@ -96,6 +96,15 @@ export default function VpsManager({ onBuySuccessRef }) {
   }, [selectedRows, data])
 
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+
+  const profile = useMemo(() => {
+    try {
+      const cached = localStorage.getItem('account-profile')
+      return cached ? JSON.parse(cached) : {}
+    } catch {
+      return {}
+    }
+  }, [])
 
   // --- DB sync helpers ---
   const syncToDb = useCallback(
@@ -914,21 +923,23 @@ export default function VpsManager({ onBuySuccessRef }) {
                     </button>
 
                     {/* Reset Password */}
-                    <button
-                      className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap hover:brightness-(--highlight-brightness)"
-                      style={{ '--action-color': 'var(--blue)' }}
-                      onClick={handleResetPassword}
-                      disabled={isProcessing}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 512 512"
-                        className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:h-6 sm:w-6"
+                    {profile?.is_reset_pass && (
+                      <button
+                        className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap hover:brightness-(--highlight-brightness)"
+                        style={{ '--action-color': 'var(--blue)' }}
+                        onClick={handleResetPassword}
+                        disabled={isProcessing}
                       >
-                        <path d="M336 352c97.2 0 176-78.8 176-176S433.2 0 336 0S160 78.8 160 176c0 18.7 2.9 36.8 8.3 53.7L7 391c-4.5 4.5-7 10.6-7 17l0 80c0 13.3 10.7 24 24 24l80 0c13.3 0 24-10.7 24-24l0-40 40 0c13.3 0 24-10.7 24-24l0-40 40 0c6.4 0 12.5-2.5 17-7l33.3-33.3c16.9 5.4 35 8.3 53.7 8.3zM376 96a40 40 0 1 1 0 80 40 40 0 1 1 0-80z" />
-                      </svg>
-                      {t('vpsManager.resetPassword')}
-                    </button>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 512 512"
+                          className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:h-6 sm:w-6"
+                        >
+                          <path d="M336 352c97.2 0 176-78.8 176-176S433.2 0 336 0S160 78.8 160 176c0 18.7 2.9 36.8 8.3 53.7L7 391c-4.5 4.5-7 10.6-7 17l0 80c0 13.3 10.7 24 24 24l80 0c13.3 0 24-10.7 24-24l0-40 40 0c13.3 0 24-10.7 24-24l0-40 40 0c6.4 0 12.5-2.5 17-7l33.3-33.3c16.9 5.4 35 8.3 53.7 8.3zM376 96a40 40 0 1 1 0 80 40 40 0 1 1 0-80z" />
+                        </svg>
+                        {t('vpsManager.resetPassword')}
+                      </button>
+                    )}
 
                     {/* Auto Fix */}
                     <button

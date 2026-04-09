@@ -16,8 +16,10 @@ export const getStatusClasses = (status) => {
       return 'bg-status-red/20 border border-status-red/30 text-status-red'
     case 'Paused':
       return 'bg-status-yellow/20 border border-status-yellow/30 text-status-yellow'
-    case 'Unknown':
+    case 'Refunded':
       return 'bg-status-gray/20 border border-status-gray/30 text-status-gray'
+    case 'Unknown':
+      return 'bg-purple/20 border border-purple/30 text-purple'
     default:
       return ''
   }

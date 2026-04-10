@@ -32,12 +32,14 @@ const TableRow = ({ context, ...props }) => {
   // Check for row-level class override (e.g. success/error background)
   const row = props.item // = filteredData[index]
   const overrideClass = row && rowClassMap?.[row.sid]
+  const isRefunded = row?.status?.toLowerCase() === 'refunded'
 
   return (
     <tr
       {...props}
-      className={`hover:bg-bg-hover text-text-primary ${isSelected ? 'bg-bg-selected' : overrideClass || ''} ${props.className || ''}`}
+      className={`${isRefunded ? 'cursor-not-allowed opacity-50 select-none' : 'hover:bg-bg-hover text-text-primary'} ${isSelected ? 'bg-bg-selected' : overrideClass || ''} ${props.className || ''}`}
       onClick={(e) => {
+        if (isRefunded) return
         // Prevent row selection if clicking/interacting with inputs/buttons/labels
         if (e.target.closest('input') || e.target.closest('button') || e.target.closest('label'))
           return
@@ -58,11 +60,16 @@ const VIRTUOSO_COMPONENTS = {
 const itemContent = (index, row, context) => {
   const { selectedIds, handleSelectRow, headers, showCountryCode } = context
   const isSelected = selectedIds.has(index)
+  const isRefunded = row?.status?.toLowerCase() === 'refunded'
 
   return (
     <>
       <td data-capture-ignore className="border-border border-b px-2 py-2 text-center sm:px-4">
-        <Checkbox checked={isSelected} onChange={(e) => handleSelectRow(index, e.shiftKey)} />
+        <Checkbox
+          checked={isSelected}
+          onChange={(e) => handleSelectRow(index, e.shiftKey)}
+          disabled={isRefunded}
+        />
       </td>
       {headers.map((header) => {
         const cellValue = row[header]
@@ -220,6 +227,9 @@ const Table = forwardRef(function Table(
         const end = Math.max(lastSelectedIndex, index)
 
         for (let i = start; i <= end; i++) {
+          const rowStatus = filteredData[i]?.status?.toLowerCase()
+          if (rowStatus === 'refunded') continue
+
           if (lastSelectionAction === 'add') newSelected.add(i)
           else newSelected.delete(i)
         }
@@ -304,112 +314,126 @@ const Table = forwardRef(function Table(
       }
     }
 
-    return () => (
-      <tr className="bg-thead">
-        <th data-capture-ignore className="px-2 sm:px-4">
-          <Checkbox
-            checked={selectedIds.size === filteredData.length && filteredData.length > 0}
-            indeterminate={selectedIds.size > 0 && selectedIds.size < filteredData.length}
-            onChange={(e) => {
-              let newSelected
-              if (e.target.checked) {
-                // Select all currently VISIBLE items
-                newSelected = new Set(filteredData.map((_, index) => index))
-              } else {
-                newSelected = new Set()
-              }
-              const selectedRows = filteredData
-                .map((row, idx) => ({ ...row, _index: idx }))
-                .filter((_, idx) => newSelected.has(idx))
-              onSelectionChange(selectedRows, newSelected)
-            }}
-          />
-        </th>
+    return () => {
+      const selectableCount = filteredData.reduce((count, row) => {
+        const isRefunded = row?.status?.toLowerCase() === 'refunded'
+        return isRefunded ? count : count + 1
+      }, 0)
 
-        {headers.map((header) => {
-          let currentFilter = filters[header] || { value: '', operator: 'contain' }
+      return (
+        <tr className="bg-thead">
+          <th data-capture-ignore className="px-2 sm:px-4">
+            <Checkbox
+              checked={selectedIds.size === selectableCount && selectableCount > 0}
+              indeterminate={selectedIds.size > 0 && selectedIds.size < selectableCount}
+              onChange={(e) => {
+                let newSelected
+                if (e.target.checked) {
+                  // Select all currently VISIBLE and selectable items
+                  newSelected = new Set(
+                    filteredData
+                      .map((row, index) => {
+                        const isRefunded = row?.status?.toLowerCase() === 'refunded'
+                        return isRefunded ? -1 : index
+                      })
+                      .filter((index) => index !== -1)
+                  )
+                } else {
+                  newSelected = new Set()
+                }
+                const selectedRows = filteredData
+                  .map((row, idx) => ({ ...row, _index: idx }))
+                  .filter((_, idx) => newSelected.has(idx))
+                onSelectionChange(selectedRows, newSelected)
+              }}
+            />
+          </th>
 
-          let operator = currentFilter.operator
+          {headers.map((header) => {
+            let currentFilter = filters[header] || { value: '', operator: 'contain' }
 
-          const OperatorIcon = operatorIcons[operator]
+            let operator = currentFilter.operator
 
-          const showOperator = operatorConfig ? !!operatorConfig[header] : true // Default behavior matches original (show all)
+            const OperatorIcon = operatorIcons[operator]
 
-          // Current input value takes precedence over active filter value
-          const inputValue =
-            filterInputs[header] !== undefined ? filterInputs[header] : currentFilter.value
+            const showOperator = operatorConfig ? !!operatorConfig[header] : true // Default behavior matches original (show all)
 
-          return (
-            <th key={header} className="px-2 py-3 font-medium tracking-wider uppercase sm:px-4">
-              <div
-                className={`flex min-w-15 flex-col gap-1 font-bold whitespace-nowrap ${
-                  title === 'Proxy Status' ? 'text-base sm:text-lg' : 'text-sm sm:text-base'
-                }`}
-              >
-                <span
-                  className={['ip_port', 'note'].includes(header) ? 'text-left' : 'text-center'}
+            // Current input value takes precedence over active filter value
+            const inputValue =
+              filterInputs[header] !== undefined ? filterInputs[header] : currentFilter.value
+
+            return (
+              <th key={header} className="px-2 py-3 font-medium tracking-wider uppercase sm:px-4">
+                <div
+                  className={`flex min-w-15 flex-col gap-1 font-bold whitespace-nowrap ${
+                    title === 'Proxy Status' ? 'text-base sm:text-lg' : 'text-sm sm:text-base'
+                  }`}
                 >
-                  {header === 'country' ? (
-                    <div
-                      className="group inline-flex cursor-pointer items-center justify-center gap-1"
-                      onClick={() => setShowCountryCode((prev) => !prev)}
-                      title="Toggle country display (Flag / Code)"
-                    >
-                      <span>{headerLabels?.[header] || header.replace(/_/g, ' ')}</span>
-                      {!showCountryCode ? (
+                  <span
+                    className={['ip_port', 'note'].includes(header) ? 'text-left' : 'text-center'}
+                  >
+                    {header === 'country' ? (
+                      <div
+                        className="group inline-flex cursor-pointer items-center justify-center gap-1"
+                        onClick={() => setShowCountryCode((prev) => !prev)}
+                        title="Toggle country display (Flag / Code)"
+                      >
+                        <span>{headerLabels?.[header] || header.replace(/_/g, ' ')}</span>
+                        {!showCountryCode ? (
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 640 640"
+                            className="size-3.5 shrink-0 fill-current text-gray-300 transition-colors group-hover:text-white"
+                          >
+                            <path d="M144 88C144 74.7 133.3 64 120 64C106.7 64 96 74.7 96 88L96 552C96 565.3 106.7 576 120 576C133.3 576 144 565.3 144 552L144 452L224.3 431.9C265.4 421.6 308.9 426.4 346.8 445.3C391 467.4 442.3 470.1 488.5 452.7L523.2 439.7C535.7 435 544 423.1 544 409.7L544 130C544 107 519.8 92 499.2 102.3L489.6 107.1C443.3 130.3 388.8 130.3 342.5 107.1C307.4 89.5 267.1 85.1 229 94.6L144 116L144 88zM144 165.5L240.6 141.3C267.6 134.6 296.1 137.7 321 150.1C375.9 177.5 439.7 179.8 496 156.9L496 398.7L471.6 407.8C437.9 420.4 400.4 418.5 368.2 402.4C320 378.3 264.9 372.3 212.6 385.3L144 402.5L144 165.5z" />
+                          </svg>
+                        ) : (
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 512 512"
+                            className="size-3.5 shrink-0 fill-current text-gray-300 transition-colors group-hover:text-white"
+                          >
+                            <path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z" />
+                          </svg>
+                        )}
+                      </div>
+                    ) : (
+                      <>{headerLabels?.[header] || header.replace(/_/g, ' ')}</>
+                    )}
+                  </span>
+                  {useFilter && (
+                    <div className="relative">
+                      {/* Operator icon */}
+                      {showOperator && (
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           viewBox="0 0 640 640"
-                          className="size-3.5 shrink-0 fill-current text-gray-300 transition-colors group-hover:text-white"
+                          className="bg-border filter-operator fill-text-primary absolute top-[-2px] right-[-6px] size-4 cursor-pointer rounded-full p-0.5 hover:brightness-(--highlight-brightness)"
+                          onClick={() => toggleOperator(header)}
+                          title={`Filter: ${operator}`}
                         >
-                          <path d="M144 88C144 74.7 133.3 64 120 64C106.7 64 96 74.7 96 88L96 552C96 565.3 106.7 576 120 576C133.3 576 144 565.3 144 552L144 452L224.3 431.9C265.4 421.6 308.9 426.4 346.8 445.3C391 467.4 442.3 470.1 488.5 452.7L523.2 439.7C535.7 435 544 423.1 544 409.7L544 130C544 107 519.8 92 499.2 102.3L489.6 107.1C443.3 130.3 388.8 130.3 342.5 107.1C307.4 89.5 267.1 85.1 229 94.6L144 116L144 88zM144 165.5L240.6 141.3C267.6 134.6 296.1 137.7 321 150.1C375.9 177.5 439.7 179.8 496 156.9L496 398.7L471.6 407.8C437.9 420.4 400.4 418.5 368.2 402.4C320 378.3 264.9 372.3 212.6 385.3L144 402.5L144 165.5z" />
-                        </svg>
-                      ) : (
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 512 512"
-                          className="size-3.5 shrink-0 fill-current text-gray-300 transition-colors group-hover:text-white"
-                        >
-                          <path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z" />
+                          {OperatorIcon}
                         </svg>
                       )}
+                      <input
+                        type="text"
+                        placeholder="Filter"
+                        className={`filter-input bg-dropdown mt-1 w-full px-2 py-1 text-center ${
+                          ['ip_port', 'note'].includes(header) ? 'text-left' : 'text-center'
+                        }`}
+                        value={inputValue}
+                        onChange={(e) => handleFilterInputChange(header, e.target.value)}
+                        onKeyDown={(e) => handleFilterKeyDown(e, header)}
+                      />
                     </div>
-                  ) : (
-                    <>{headerLabels?.[header] || header.replace(/_/g, ' ')}</>
                   )}
-                </span>
-                {useFilter && (
-                  <div className="relative">
-                    {/* Operator icon */}
-                    {showOperator && (
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 640 640"
-                        className="bg-border filter-operator fill-text-primary absolute top-[-2px] right-[-6px] size-4 cursor-pointer rounded-full p-0.5 hover:brightness-(--highlight-brightness)"
-                        onClick={() => toggleOperator(header)}
-                        title={`Filter: ${operator}`}
-                      >
-                        {OperatorIcon}
-                      </svg>
-                    )}
-                    <input
-                      type="text"
-                      placeholder="Filter"
-                      className={`filter-input bg-dropdown mt-1 w-full px-2 py-1 text-center ${
-                        ['ip_port', 'note'].includes(header) ? 'text-left' : 'text-center'
-                      }`}
-                      value={inputValue}
-                      onChange={(e) => handleFilterInputChange(header, e.target.value)}
-                      onKeyDown={(e) => handleFilterKeyDown(e, header)}
-                    />
-                  </div>
-                )}
-              </div>
-            </th>
-          )
-        })}
-      </tr>
-    )
+                </div>
+              </th>
+            )
+          })}
+        </tr>
+      )
+    }
   }, [
     title,
     headers,

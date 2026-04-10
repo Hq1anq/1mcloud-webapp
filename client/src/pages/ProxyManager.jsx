@@ -1,6 +1,5 @@
 import DropDown from '../components/ui/DropDown'
 import Table from '../components/ui/Table'
-import Checkbox from '../components/ui/Checkbox'
 import axiosInstance from '../lib/axios'
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useToast } from '../context/ToastContext'
@@ -591,19 +590,95 @@ export default function ProxyManager({ onBuySuccessRef }) {
   // --- Change Note handler ---
   const handleChangeNote = useCallback(async () => {
     const rows = [...selectedRowsRef.current]
-    const newNote = noteInput
     const updatedRows = []
+
+    let isReplaceMode = false
+    let replaceFrom = ''
+    let replaceTo = ''
+
+    if (noteInput.includes('->')) {
+      const arrowIndex = noteInput.indexOf('->')
+      replaceFrom = noteInput.substring(0, arrowIndex)
+      replaceTo = noteInput.substring(arrowIndex + 2)
+      isReplaceMode = true
+    }
 
     await processSequential(
       rows,
       async (row) => {
+        let targetNote = noteInput
+        if (isReplaceMode) {
+          const oldNote = row.note || ''
+
+          let evaluatedFrom = replaceFrom
+          let evaluatedTo = replaceTo
+
+          let calculatedBaseDate = null
+          let calculatedMonth = null
+          let extractedDDMMText = ''
+
+          const needsDateParsing = evaluatedFrom === '' || /\+(1w|2w|1m)/.test(noteInput)
+
+          if (needsDateParsing) {
+            const dateMatch = oldNote.match(/^\**(\d{2})(\d{2})/)
+            if (!dateMatch) {
+              return {
+                data: {
+                  success: false,
+                  error: 'invalid oldNote format for date calculation/extraction',
+                },
+              }
+            }
+
+            const day = parseInt(dateMatch[1], 10)
+            const month = parseInt(dateMatch[2], 10) - 1
+            const year = new Date().getFullYear()
+            calculatedBaseDate = new Date(year, month, day)
+            calculatedMonth = month
+            extractedDDMMText = `${dateMatch[1]}${dateMatch[2]}`
+
+            if (
+              isNaN(calculatedBaseDate.getTime()) ||
+              calculatedBaseDate.getMonth() !== calculatedMonth
+            ) {
+              return { data: { success: false, error: 'invalid date in oldNote' } }
+            }
+          }
+
+          if (evaluatedFrom === '') {
+            evaluatedFrom = `${extractedDDMMText} `
+          }
+
+          if (/\+(1w|2w|1m)/.test(noteInput)) {
+            const keywordReplacer = (match) => {
+              let d = new Date(calculatedBaseDate)
+              if (match === '+1w') d.setDate(d.getDate() + 7)
+              else if (match === '+2w') d.setDate(d.getDate() + 14)
+              else if (match === '+1m') d.setDate(d.getDate() + 30)
+
+              const resD = String(d.getDate()).padStart(2, '0')
+              const resM = String(d.getMonth() + 1).padStart(2, '0')
+              return `${resD}${resM}`
+            }
+
+            evaluatedFrom = evaluatedFrom.replace(/\+(1w|2w|1m)/g, keywordReplacer)
+            evaluatedTo = evaluatedTo.replace(/\+(1w|2w|1m)/g, keywordReplacer)
+          }
+
+          if (!oldNote.includes(evaluatedFrom)) {
+            // Fail if the from string is not found in the old note
+            return { data: { success: false, error: 'target string not found in old note' } }
+          }
+          targetNote = oldNote.replace(evaluatedFrom, evaluatedTo)
+        }
+
         const res = await axiosInstance.put('/server/info/note', {
           sid: row.sid.toString(),
-          newNote,
+          newNote: targetNote,
         })
         if (res.data?.success) {
-          updateRowBySid(row.sid, () => ({ note: newNote }))
-          updatedRows.push({ ...row, note: newNote })
+          updateRowBySid(row.sid, () => ({ note: targetNote }))
+          updatedRows.push({ ...row, note: targetNote })
         }
         return res
       },
@@ -1324,16 +1399,6 @@ export default function ProxyManager({ onBuySuccessRef }) {
                         </svg>
                         {t('manager.changeNote')}
                       </button>
-                      <div className="ml-1 flex items-center sm:ml-2">
-                        <label className="group text-text-secondary inline-flex cursor-pointer items-center gap-2 select-none">
-                          <Checkbox
-                            id="replaceCheckbox"
-                            checked={replaceNote}
-                            onChange={() => setReplaceNote(!replaceNote)}
-                          />
-                          Replace
-                        </label>
-                      </div>
                     </div>
                   </div>
                 </div>

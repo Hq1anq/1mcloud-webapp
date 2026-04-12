@@ -32,10 +32,17 @@ export default function ManagerPage() {
           <div className="bg-surface relative flex items-center rounded-xl p-1 shadow-(--glass-inset-shadow)">
             {/* Sliding indicator */}
             <div
-              className="bg-navbar absolute top-1 bottom-1 rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.15)] transition-[left] duration-300 ease-in-out"
+              className="absolute top-1 bottom-1 rounded-lg backdrop-blur-xl backdrop-saturate-150"
               style={{
+                background:
+                  'linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 30%, rgba(255, 255, 255, 0.08)) 0%, color-mix(in srgb, var(--color-primary) 10%, rgba(255, 255, 255, 0.01)) 100%)',
+                boxShadow:
+                  'inset 0 1px 1px rgba(255, 255, 255, 0.15), inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 20%, transparent), 0 4px 10px rgba(0, 0, 0, 0.3)',
+                left: '4px',
                 width: 'calc(50% - 4px)',
-                left: activeView === 'VPS' ? '4px' : 'calc(50%)',
+                transform: activeView === 'VPS' ? 'translateX(0)' : 'translateX(100%)',
+                transition:
+                  'transform 0.38s cubic-bezier(.34,1.4,.64,1), width 0.38s cubic-bezier(.34,1.4,.64,1)',
               }}
             />
 

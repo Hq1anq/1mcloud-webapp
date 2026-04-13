@@ -79,7 +79,7 @@ const en = {
   'footer.contact': 'Contact',
   'footer.terms': 'Terms of Service',
   'footer.privacy': 'Privacy Policy',
-  'footer.copyright': '© 2026 1mcloud. All rights reserved.',
+  'footer.copyright': '© 2026 1MCLOUD. All rights reserved.',
 
   // Contact Page
   'contact.title': 'Contact Us',

@@ -7,6 +7,7 @@ const en = {
   'nav.manager': 'Manager',
 
   // UserMenu
+  'menu.explore': 'Explore',
   'menu.login': 'Login',
   'menu.account': 'Account',
   'menu.theme': 'Theme',

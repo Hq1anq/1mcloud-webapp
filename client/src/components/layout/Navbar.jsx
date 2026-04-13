@@ -81,10 +81,11 @@ export default function Navbar() {
             {Logo}
             <div className="flex items-center gap-3 md:hidden">
               <Link
-                to="/login"
+                to="https://1mcloud.vn/"
+                target="_blank"
                 className="bg-blue rounded-lg px-4 py-2 font-medium text-white shadow-sm hover:brightness-(--highlight-brightness)"
               >
-                {t('menu.login')}
+                {t('menu.explore')}
               </Link>
             </div>
           </div>
@@ -103,10 +104,11 @@ export default function Navbar() {
             <LanguageToggle />
             <ThemeToggle />
             <Link
-              to="/login"
+              to="https://1mcloud.vn/"
+              target="_blank"
               className="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white shadow-sm hover:bg-blue-700"
             >
-              {t('menu.login')}
+              {t('menu.explore')}
             </Link>
           </div>
         </>

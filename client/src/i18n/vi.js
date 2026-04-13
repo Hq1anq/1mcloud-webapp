@@ -7,6 +7,7 @@ const vi = {
   'nav.manager': 'Manager',
 
   // UserMenu
+  'menu.explore': 'Khám phá',
   'menu.login': 'Đăng nhập',
   'menu.account': 'Tài khoản',
   'menu.theme': 'Theme',

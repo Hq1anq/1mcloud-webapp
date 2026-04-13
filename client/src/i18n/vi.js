@@ -7,7 +7,6 @@ const vi = {
   'nav.manager': 'Manager',
 
   // UserMenu
-  'menu.explore': 'Khám phá',
   'menu.login': 'Đăng nhập',
   'menu.account': 'Tài khoản',
   'menu.theme': 'Theme',
@@ -81,7 +80,7 @@ const vi = {
   'footer.contact': 'Liên hệ',
   'footer.terms': 'Điều khoản sử dụng',
   'footer.privacy': 'Chính sách bảo mật',
-  'footer.copyright': '© 2026 1mcloud. Bảo lưu mọi quyền.',
+  'footer.copyright': '© 2026 1MCLOUD. Bảo lưu mọi quyền.',
 
   // Contact Page
   'contact.title': 'Liên hệ với chúng tôi',

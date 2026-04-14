@@ -603,6 +603,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
       isReplaceMode = true
     }
 
+    const now = new Date()
     await processSequential(
       rows,
       async (row) => {
@@ -632,7 +633,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
 
             const day = parseInt(dateMatch[1], 10)
             const month = parseInt(dateMatch[2], 10) - 1
-            const year = new Date().getFullYear()
+            const year = now.getFullYear()
             calculatedBaseDate = new Date(year, month, day)
             calculatedMonth = month
             extractedDDMMText = `${dateMatch[1]}${dateMatch[2]}`
@@ -649,20 +650,26 @@ export default function ProxyManager({ onBuySuccessRef }) {
             evaluatedFrom = `${extractedDDMMText} `
           }
 
-          if (/\+(1w|2w|1m)/.test(noteInput)) {
+          if (/\+(1[wW]|2[wW]|1[mM])/.test(noteInput)) {
             const keywordReplacer = (match) => {
-              let d = new Date(calculatedBaseDate)
-              if (match === '+1w') d.setDate(d.getDate() + 7)
-              else if (match === '+2w') d.setDate(d.getDate() + 14)
-              else if (match === '+1m') d.setDate(d.getDate() + 30)
+              let d =
+                match === '+1W' || match === '+2W' || match === '+1M'
+                  ? new Date(now)
+                  : new Date(calculatedBaseDate)
+
+              const m = match.toLowerCase()
+              if (m === '+1w') d.setDate(d.getDate() + 7)
+              else if (m === '+2w') d.setDate(d.getDate() + 14)
+              else if (m === '+1m') d.setDate(d.getDate() + 30)
 
               const resD = String(d.getDate()).padStart(2, '0')
               const resM = String(d.getMonth() + 1).padStart(2, '0')
               return `${resD}${resM}`
             }
 
-            evaluatedFrom = evaluatedFrom.replace(/\+(1w|2w|1m)/g, keywordReplacer)
-            evaluatedTo = evaluatedTo.replace(/\+(1w|2w|1m)/g, keywordReplacer)
+            const kwRegex = /\+(1[wW]|2[wW]|1[mM])/g
+            evaluatedFrom = evaluatedFrom.replace(kwRegex, keywordReplacer)
+            evaluatedTo = evaluatedTo.replace(kwRegex, keywordReplacer)
           }
 
           if (!oldNote.includes(evaluatedFrom)) {
@@ -1381,7 +1388,22 @@ export default function ProxyManager({ onBuySuccessRef }) {
                       type="text"
                       placeholder={t('manager.enterNote')}
                       value={noteInput}
-                      onChange={(e) => setNoteInput(e.target.value)}
+                      onChange={(e) => {
+                        const val = e.target.value
+                        const now = new Date()
+                        const keywordReplacer = (match) => {
+                          let d = new Date(now)
+                          if (match === '+1W') d.setDate(d.getDate() + 7)
+                          else if (match === '+2W') d.setDate(d.getDate() + 14)
+                          else if (match === '+1M') d.setDate(d.getDate() + 30)
+
+                          const resD = String(d.getDate()).padStart(2, '0')
+                          const resM = String(d.getMonth() + 1).padStart(2, '0')
+                          return `${resD}${resM}`
+                        }
+                        const newVal = val.replace(/\+(1W|2W|1M)/g, keywordReplacer)
+                        setNoteInput(newVal)
+                      }}
                     />
                     <div className="flex items-center space-x-2">
                       <button

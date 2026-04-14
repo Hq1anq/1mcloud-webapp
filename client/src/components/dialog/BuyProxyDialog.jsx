@@ -390,7 +390,22 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
               <span className="text-text-primary text-sm font-medium">{t('buy.note')}</span>
               <textarea
                 value={note}
-                onChange={(e) => setNote(e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value
+                  const now = new Date()
+                  const keywordReplacer = (match) => {
+                    let d = new Date(now)
+                    if (match === '+1W') d.setDate(d.getDate() + 7)
+                    else if (match === '+2W') d.setDate(d.getDate() + 14)
+                    else if (match === '+1M') d.setDate(d.getDate() + 30)
+
+                    const resD = String(d.getDate()).padStart(2, '0')
+                    const resM = String(d.getMonth() + 1).padStart(2, '0')
+                    return `${resD}${resM}`
+                  }
+                  const newVal = val.replace(/\+(1W|2W|1M)/g, keywordReplacer)
+                  setNote(newVal)
+                }}
                 placeholder={t('buy.enterNote')}
                 className="h-full min-h-0 resize-none"
               />

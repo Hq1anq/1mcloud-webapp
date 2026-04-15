@@ -178,7 +178,7 @@ export default function useManagerActions(store) {
 
   // --- Sequential processor: one API call per row with per-row feedback ---
   const processSequential = useCallback(
-    async (rows, apiCallFn, actionName) => {
+    async (rows, apiCallFn, actionName, onRowSuccess) => {
       if (rows.length === 0) {
         addToast(t('manager.noRowsSelected'), 'warning')
         return
@@ -199,8 +199,9 @@ export default function useManagerActions(store) {
       for (let i = 0; i < rows.length; i++) {
         const row = rows[i]
         let isSuccess = false
+        let res
         try {
-          const res = await apiCallFn(row)
+          res = await apiCallFn(row)
           if (res.data?.success) {
             successCount++
             setRowClassMap((prev) => ({ ...prev, [row.sid]: 'bg-success-cell' }))
@@ -227,6 +228,15 @@ export default function useManagerActions(store) {
             return newSet
           })
           setSelectedRows((prev) => prev.filter((r) => r._index !== row._index))
+        } else if (isReinstallOrChangeIp && isSuccess && onRowSuccess) {
+          // Row stays selected — replace stale snapshot with fresh data so
+          // subsequent actions (e.g. re-opening reinstall dialog) see new values.
+          const updatedRow = onRowSuccess(res)
+          if (updatedRow) {
+            setSelectedRows((prev) =>
+              prev.map((r) => (r._index === row._index ? { ...r, ...updatedRow } : r))
+            )
+          }
         }
         updateToast(
           loadingId,

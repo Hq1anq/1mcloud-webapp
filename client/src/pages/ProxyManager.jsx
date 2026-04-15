@@ -242,7 +242,17 @@ export default function ProxyManager({ onBuySuccessRef }) {
         }
         return res
       },
-      t('manager.changeIp').toUpperCase()
+      t('manager.changeIp').toUpperCase(),
+      (res) => {
+        const info = res.data?.info
+        if (!info) return null
+        return {
+          ip_port: `${info.ip}:${info.port}`,
+          user_pass: `${info.username}:${info.password}`,
+          type: changeIpType + ' Proxy',
+          status: 'Running',
+        }
+      }
     )
 
     // Sync only the updated rows to DB
@@ -401,7 +411,17 @@ export default function ProxyManager({ onBuySuccessRef }) {
         }
         return res
       },
-      t('manager.reinstall').toUpperCase()
+      t('manager.reinstall').toUpperCase(),
+      (res) => {
+        const info = res.data?.info
+        if (!info) return null
+        return {
+          ip_port: `${info.ip}:${info.port}`,
+          user_pass: `${info.username}:${info.password}`,
+          type: reinstallType + ' Proxy',
+          status: 'Running',
+        }
+      }
     )
 
     // Sync only the updated rows to DB

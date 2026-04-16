@@ -21,6 +21,34 @@ const createInitialForm = (data) => ({
   not_remove_data: false,
 })
 
+const SUPPORT_OS = [
+  { id: 1, display_name: 'Windows Server 2012 R2 Standard' },
+  { id: 2, display_name: 'Windows Server 2019 Standard' },
+  { id: 3, display_name: 'Windows Server 2022 Standard' },
+  { id: 4, display_name: 'Windows 10 Pro' },
+  { id: 5, display_name: 'Win10 Enterprise' },
+  { id: 6, display_name: 'CentOS 7.7' },
+  { id: 7, display_name: 'CentOS 8.5.2111' },
+  { id: 8, display_name: 'Ubuntu 18.04.4 LTS' },
+  { id: 10, display_name: 'Ubuntu 20.04.4 LTS' },
+  { id: 11, display_name: 'Windows 11 Pro' },
+  { id: 18, display_name: 'Windows Server 2016 Standard' },
+  { id: 19, display_name: 'Ubuntu 22.04.5 LTS' },
+  { id: 20, display_name: 'Rocky Linux 9.4' },
+  { id: 21, display_name: 'AlmaLinux 9.4' },
+]
+
+const resolveOsId = (currentOs, supportOsList) => {
+  if (!currentOs) return supportOsList[0]?.id
+  const idMatch = supportOsList.find((o) => String(o.id) === String(currentOs))
+  if (idMatch) return idMatch.id
+  const nameMatch = supportOsList.find(
+    (o) => o.display_name.toLowerCase() === String(currentOs).toLowerCase()
+  )
+  if (nameMatch) return nameMatch.id
+  return supportOsList[0]?.id
+}
+
 export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess }) {
   const { addToast, removeToast } = useToast()
   const t = useTranslation()
@@ -34,6 +62,15 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
   const [loadingNoIsp, setLoadingNoIsp] = useState(false)
   const [loadSupportError, setLoadSupportError] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [isFetchedMode, setIsFetchedMode] = useState(false)
+  const [fetchedOsList, setFetchedOsList] = useState([])
+
+  const staticOsList = useMemo(
+    () => [{ id: 'current', display_name: t('current') }, ...SUPPORT_OS],
+    [t]
+  )
+
+  const activeOsList = isFetchedMode ? fetchedOsList : staticOsList
 
   const passwordInvalid = useMemo(() => {
     if (form.random_password || !form.password) return false
@@ -42,7 +79,7 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
 
   // Fetch support data (OS, range IP) optionally filtered by ISP
   const fetchSupport = useCallback(
-    async (ispParam = null) => {
+    async (ispParam = null, useFetchedMode = false) => {
       try {
         setLoadingSupport(true)
         let url = `/vps/change-ip-params?ip=${currentData.ip}`
@@ -57,16 +94,21 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
         }
         const data = res.data.info
         setSupportData(data)
+        if (data.support_os) {
+          setFetchedOsList(data.support_os)
+        }
         // Update dependent form fields (OS and range IP)
+        const nextOsId = useFetchedMode ? resolveOsId(data.current_os, data.support_os || []) : 'current'
+
         if (ispParam)
           updateForm({
-            os_id: data.current_os || data.support_os?.[0]?.id,
+            os_id: nextOsId,
             remote_port: data.current_remote_port || '',
             range_ip: data.range_ip?.[0] || 'Ngẫu nhiên',
           })
         else
           updateForm({
-            os_id: data.current_os || data.support_os?.[0]?.id,
+            os_id: nextOsId,
             remote_port: data.current_remote_port || '',
             range_ip: data.range_ip?.[0] || 'Ngẫu nhiên',
             isp: data.isp?.[0] || 'Ngẫu nhiên',
@@ -82,14 +124,28 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
 
   useEffect(() => {
     if (!isOpen) return
+    setIsFetchedMode(false)
+    setFetchedOsList([])
     setLoadSupportError(false)
     fetchSupport()
   }, [isOpen, fetchSupport])
 
   const handleIspChange = (val) => {
-    if (val === 'Ngẫu nhiên') fetchSupport()
-    else fetchSupport(val)
+    if (val === 'Ngẫu nhiên') fetchSupport(null, isFetchedMode)
+    else fetchSupport(val, isFetchedMode)
     updateForm({ isp: val })
+  }
+
+  const handleUseStaticOs = () => {
+    setIsFetchedMode(false)
+    updateForm({
+      os_id: 'current',
+    })
+  }
+
+  const handleFetchOs = () => {
+    setIsFetchedMode(true)
+    fetchSupport(form.isp === 'Ngẫu nhiên' ? null : form.isp, true)
   }
 
   const handleSubmit = async () => {
@@ -116,6 +172,11 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
       remote_port: form.random_remote_port ? undefined : form.remote_port,
       isProxy: false,
     }
+    if (form.os_id === 'current') {
+      delete payload.os_id
+    } else {
+      payload.os_id = Number(form.os_id)
+    }
 
     axiosInstance
       .post('/server/change-ip', payload)
@@ -124,7 +185,10 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
           addToast(t('manager.changeIp') + ' ' + t('manager.success'), 'success')
           onSuccess({
             ...res.data.info,
-            os: supportData?.support_os?.find((os) => os.id === form.os_id)?.display_name,
+            os:
+              form.os_id === 'current'
+                ? currentData.os
+                : activeOsList.find((os) => os.id === form.os_id)?.display_name,
           })
           onClose()
         } else {
@@ -282,23 +346,65 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
           </div>
         </div>
 
-        <span className="mt-4 mb-2 block text-base font-medium">{t('buyVps.os')}</span>
+        <div className="my-2 flex justify-between">
+          <span className="text-base font-medium">{t('buyVps.os')}</span>
+          <div className="flex gap-4">
+            <button
+              type="button"
+              onClick={handleUseStaticOs}
+              className={`border-border flex size-8 shrink-0 items-center justify-center rounded-lg border transition-all active:scale-95 ${
+                !isFetchedMode
+                  ? 'border-blue text-blue bg-[color-mix(in_srgb,var(--bg-terminal),var(--color-blue)_12%)]'
+                  : 'text-text-muted bg-terminal hover:text-text-primary hover:bg-bg-hover'
+              }`}
+              title={t('reinstall.useLocalOS') || 'Switch to local OS list'}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                className="size-4 fill-current"
+              >
+                <path d="m16.3788 6.20698c-1.1903-.95239-2.6354-1.70698-4.3788-1.70698-4.14213 0-7.5 3.35786-7.5 7.5 0 4.1421 3.35787 7.5 7.5 7.5 3.2549 0 6.028-2.0746 7.0646-4.9744.1859-.5201.7104-.8688 1.2507-.7543l.9782.2074c.5403.1145.8901.6475.7244 1.1744-1.3392 4.2581-5.3163 7.3469-10.0179 7.3469-5.79899 0-10.5-4.701-10.5-10.5 0-5.79899 4.70101-10.5 10.5-10.5 2.7835 0 4.9516 1.26847 6.5112 2.5746l1.7817-1.78171c.286-.286.7161-.37155 1.0898-.21677s.6173.51942.6173.92388v5.5c0 .55228-.4477 1-1 1h-5.5c-.4044 0-.7691-.24364-.9239-.61732-.1547-.37367-.0692-.80379.2168-1.08979z" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              onClick={handleFetchOs}
+              className={`border-border flex size-8 shrink-0 items-center justify-center rounded-lg border transition-all active:scale-95 ${
+                isFetchedMode
+                  ? 'border-blue text-blue bg-[color-mix(in_srgb,var(--bg-terminal),var(--color-blue)_12%)]'
+                  : 'text-text-muted bg-terminal hover:text-text-primary hover:bg-bg-hover'
+              }`}
+              title={t('reinstall.fetchOS') || 'Fetch OS list from server'}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="size-4 fill-current"
+                viewBox="0 0 100 100"
+              >
+                <path d="m50.0003777 4.8265123c-1.2988396 0-2.5439453.5157838-3.4627533 1.4346166-.9179764.9179802-1.4337616 2.1638703-1.4337616 3.4627538v45.4180374l-11.8748017-11.7528133v.0008507c-1.2681046-.9512939-2.9179802-1.2296715-4.4276886-.7480545-1.5097542.4824677-2.6932545 1.6660347-3.175724 3.175724-.4816151 1.5097466-.2032375 3.1595421.7480564 4.4276886l20.1989651 20.1989593c.8992004.9273834 2.1356926 1.4508362 3.4277725 1.4508362 1.2920837 0 2.5284233-.5234528 3.4277763-1.4508362l20.1989632-20.1989593c.9512939-1.2681046 1.2296677-2.9179802.7480545-4.4276886-.4824677-1.5097542-1.6660309-2.6932564-3.1757202-3.175724-1.5097504-.481617-3.1595459-.2032394-4.4276886.7480545l-11.8748016 11.7519416v-45.4180393c0-1.2988386-.5157852-2.5448174-1.4337616-3.4627528-.9188309-.9188323-2.1638756-1.4346161-3.4627533-1.4346161z" />
+                <path d="m92.6027451 58.2021065c-1.3082352-.0341568-2.5736771.4713593-3.4994812 1.3970337-.9265213.9256783-1.4311981 2.1911125-1.3970413 3.5003548v19.8319168c0 .6490097-.2578888 1.2723694-.7172928 1.7309418-.4594345.4594193-1.0819397.7172928-1.7309418.7172928h-70.5142613c-1.3517847 0-2.4481945-1.0964508-2.4481945-2.4481964v-18.3630906c.0341578-1.3090897-.4705105-2.5745468-1.3970366-3.500351-.9256754-.9256744-2.1911087-1.4303513-3.4994788-1.3970337-1.3090911-.0333061-2.5745506.4713593-3.5003533 1.3970337-.9258027.9256783-1.4312074 2.1911125-1.3970366 3.500351v18.3630905c0 3.2467651 1.2902908 6.3601837 3.5856137 8.6564484 2.2962604 2.2953873 5.4096789 3.5856094 8.6564465 3.5856094h70.514267c3.2467728 0 6.3601913-1.2902908 8.6564407-3.5856094 2.295383-2.2962647 3.5856052-5.4096833 3.5856052-8.6564484v-19.831913c0-1.2988434-.5157776-2.5448189-1.4346161-3.4627533-.917984-.9188309-2.1638641-1.4346161-3.4627609-1.4346161z" />
+              </svg>
+            </button>
+          </div>
+        </div>
         <Skeleton
           isLoading={loadingSupport}
           isError={loadSupportError}
           element={
             <DropDown
-              value={supportData?.support_os?.find((os) => os.id === form.os_id)?.display_name}
-              options={supportData?.support_os?.map((os) => os.display_name) || []}
+              value={activeOsList.find((os) => os.id === form.os_id)?.display_name || ''}
+              options={activeOsList.map((os) => os.display_name) || []}
               onChange={(name) => {
-                const os = supportData.support_os.find((o) => o.display_name === name)
-                updateForm({ os_id: os.id })
+                const os = activeOsList.find((o) => o.display_name === name)
+                if (os) updateForm({ os_id: os.id })
               }}
               className="rounded-lg text-base sm:text-lg"
               menuClassName="sm:text-lg text-base"
             />
           }
-          className="bg-text-muted h-11 w-full"
+          className="bg-dropdown/70 h-11 w-full"
         />
 
         <div className="mt-4 flex flex-wrap gap-4">
@@ -316,27 +422,29 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
                   menuClassName="sm:text-lg text-base"
                 />
               }
-              className="bg-text-muted h-11 w-full"
+              className="bg-dropdown/70 h-11 w-full"
             />
           </div>
 
-          <div className="grow">
-            <span className="mt-2 text-base font-medium">{t('buy.provider')}</span>
-            <Skeleton
-              isLoading={loadingSupport && !loadingNoIsp}
-              isError={loadSupportError}
-              element={
-                <DropDown
-                  value={form.isp}
-                  options={supportData?.isp || []}
-                  onChange={handleIspChange}
-                  className="rounded-lg text-base sm:text-lg"
-                  menuClassName="sm:text-lg text-base"
-                />
-              }
-              className="bg-text-muted h-11 w-full"
-            />
-          </div>
+          {(!supportData?.isp || supportData.isp.length > 0) && (
+            <div className="grow">
+              <span className="mt-2 text-base font-medium">{t('buy.provider')}</span>
+              <Skeleton
+                isLoading={loadingSupport && !loadingNoIsp}
+                isError={loadSupportError}
+                element={
+                  <DropDown
+                    value={form.isp}
+                    options={supportData?.isp || []}
+                    onChange={handleIspChange}
+                    className="rounded-lg text-base sm:text-lg"
+                    menuClassName="sm:text-lg text-base"
+                  />
+                }
+                className="bg-dropdown/70 h-11 w-full"
+              />
+            </div>
+          )}
         </div>
 
         <div className="mt-4 mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">

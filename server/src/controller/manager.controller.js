@@ -290,7 +290,6 @@ export async function changeIp(req, res) {
   } else {
     data = {
       ip: ip,
-      os_id: os_id,
       install_chrome: install_chrome,
       install_firefox: install_firefox,
       random_remote_port: random_remote_port,
@@ -301,6 +300,9 @@ export async function changeIp(req, res) {
       isp: isp || "Ngẫu nhiên",
       not_remove_data: not_remove_data,
     };
+    if (os_id !== undefined && os_id !== null && os_id !== "" && !isNaN(Number(os_id))) {
+      data.os_id = Number(os_id);
+    }
   }
 
   try {
@@ -374,13 +376,15 @@ export async function reinstall(req, res) {
     data = {
       install_chrome,
       install_firefox,
-      os: Number(os),
       random_remote_port: random_remote_port ? "on" : "",
       random_password: random_password ? "on" : "",
       remote_port: random_remote_port ? "" : remote_port,
       password: random_password ? "" : password,
       sid: String(sid),
     };
+    if (os !== undefined && os !== null && os !== "" && !isNaN(Number(os))) {
+      data.os = Number(os);
+    }
   }
 
   try {

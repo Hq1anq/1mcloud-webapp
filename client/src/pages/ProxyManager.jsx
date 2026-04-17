@@ -309,13 +309,6 @@ export default function ProxyManager({ onBuySuccessRef }) {
           failCount++
           setRowClassMap((prev) => ({ ...prev, [row.sid]: 'bg-error-cell' }))
         }
-        // Deselect this row
-        setSelectedIds((prev) => {
-          const newSet = new Set(prev)
-          newSet.delete(row._index)
-          return newSet
-        })
-        setSelectedRows((prev) => prev.filter((r) => r._index !== row._index))
         // Update progress toast
         updateToast(
           loadingId,
@@ -594,6 +587,14 @@ export default function ProxyManager({ onBuySuccessRef }) {
   const handleChangeNote = useCallback(async () => {
     const rows = [...selectedRowsRef.current]
     const updatedRows = []
+    const copyTexts = []
+
+    const patternMap = {
+      '->*+1w ': 'đã gia hạn tuần',
+      '->*+2w ': 'đã gia hạn 2 tuần',
+      '->*+1m ': 'đã gia hạn 1 tháng',
+    }
+    const suffix = patternMap[noteInput]
 
     let isReplaceMode = false
     let replaceFrom = ''
@@ -620,6 +621,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
           let calculatedBaseDate = null
           let calculatedMonth = null
           let extractedDDMMText = ''
+          let firstMatch = ''
 
           const needsDateParsing = evaluatedFrom === '' || /\+(1w|2w|1m)/.test(noteInput)
 
@@ -640,6 +642,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
             calculatedBaseDate = new Date(year, month, day)
             calculatedMonth = month
             extractedDDMMText = `${dateMatch[1]}${dateMatch[2]}`
+            firstMatch = dateMatch[0]
 
             if (
               isNaN(calculatedBaseDate.getTime()) ||
@@ -650,7 +653,9 @@ export default function ProxyManager({ onBuySuccessRef }) {
           }
 
           if (evaluatedFrom === '') {
-            evaluatedFrom = `${extractedDDMMText} `
+            if (noteInput.includes('*'))
+              evaluatedFrom = `${extractedDDMMText} ` // gia hạn -> thêm *
+            else evaluatedFrom = `${firstMatch} ` // không gia hạn (đổi khách) -> xoá *
           }
 
           if (/\+(1[wW]|2[wW]|1[mM])/.test(noteInput)) {
@@ -689,17 +694,29 @@ export default function ProxyManager({ onBuySuccessRef }) {
         if (res.data?.success) {
           updateRowBySid(row.sid, () => ({ note: targetNote }))
           updatedRows.push({ ...row, note: targetNote })
+          if (suffix) {
+            const ip = row.ip_port?.split(':')[0] || ''
+            copyTexts.push(`${ip} - ${suffix}`)
+          }
         }
         return res
       },
       t('manager.changeNote').toUpperCase()
     )
 
+    setSelectedIds(new Set())
+    setSelectedRows([])
+
+    // Safe copy concatenated results for successful changes
+    if (copyTexts.length > 0) {
+      safeCopy(copyTexts.join('\n'))
+    }
+
     // Sync in background
     if (updatedRows.length > 0) {
       syncToDb(updatedRows)
     }
-  }, [noteInput, processSequential, updateRowBySid, t, syncToDb])
+  }, [noteInput, processSequential, updateRowBySid, t, syncToDb, safeCopy])
 
   // --- Pause handler (batch) ---
   const handlePause = useCallback(async () => {

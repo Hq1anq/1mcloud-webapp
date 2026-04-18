@@ -43,7 +43,7 @@ export default function Navbar() {
         id="1mcloud-icon"
         viewBox="0 0 1024 1024"
         xmlns="http://www.w3.org/2000/svg"
-        className="mr-[10px] h-[50px] w-[50px]"
+        className="mr-2.5 h-12.5 w-12.5"
       >
         <path
           fill="var(--logo-ring)"
@@ -116,7 +116,7 @@ export default function Navbar() {
 
       {/* Menu Items */}
       <ul
-        className={`bg-surface flex w-full flex-col justify-end overflow-hidden rounded-lg font-medium md:mr-8 md:max-h-none md:w-auto md:flex-1 md:flex-row md:items-center md:space-x-8 md:bg-transparent ${isMenuOpen ? 'mt-4 max-h-[500px] p-4' : 'max-h-0'}`}
+        className={`bg-surface flex w-full flex-col justify-end overflow-hidden rounded-lg font-medium md:mr-8 md:max-h-none md:w-auto md:flex-1 md:flex-row md:items-center md:space-x-8 md:bg-transparent ${isMenuOpen ? 'mt-4 max-h-125 p-4' : 'max-h-0'}`}
       >
         <li>
           <NavLink to="/" className={navLinkClass} onClick={() => setIsMenuOpen(false)}>

@@ -120,7 +120,7 @@ export default function HistoryMetricsCards({
             className="text-text-primary text-2xl font-extrabold tracking-tight sm:text-3xl"
           />
 
-          <span className="via-primary absolute right-0 bottom-0 left-0 h-[3px] -translate-x-full bg-linear-to-r from-transparent to-transparent transition-transform duration-500 group-hover:translate-x-0" />
+          <span className="via-primary absolute right-0 bottom-0 left-0 h-0.75 -translate-x-full bg-linear-to-r from-transparent to-transparent transition-transform duration-500 group-hover:translate-x-0" />
         </article>
       ))}
     </div>

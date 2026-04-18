@@ -41,7 +41,7 @@ export default function ProxySection() {
       id="proxy"
       className="text-text-muted flex w-full justify-center overflow-hidden px-4 pt-16"
     >
-      <div className="flex max-w-[1280px] flex-1 flex-col">
+      <div className="flex max-w-7xl flex-1 flex-col">
         <div className="flex flex-col items-center gap-12 lg:flex-row">
           {/*  Left: Header + Feature Cards  */}
           <div className="home-animate-fade-up flex flex-1 flex-col gap-8">

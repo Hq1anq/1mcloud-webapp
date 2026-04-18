@@ -439,7 +439,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
         </div>
 
         {/* Right Summary Panel */}
-        <div className="bg-surface border-border flex w-full shrink-0 flex-col justify-between rounded-b-xl p-6 md:w-[380px] md:rounded-r-xl md:rounded-bl-none md:border-l md:p-8">
+        <div className="bg-surface border-border flex w-full shrink-0 flex-col justify-between rounded-b-xl p-6 md:w-95 md:rounded-r-xl md:rounded-bl-none md:border-l md:p-8">
           <div className="flex flex-col gap-6">
             <h2 className="text-lg font-bold">{t('buy.orderSummary')}</h2>
             <div className="flex flex-col gap-4">

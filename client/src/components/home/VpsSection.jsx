@@ -139,7 +139,7 @@ export default function VpsSection() {
       id="vps"
       className="text-text-muted bg-home-section-alt border-card-border flex w-full justify-center overflow-hidden border-t border-b px-4 py-16"
     >
-      <div className="flex max-w-[1280px] flex-1 flex-col">
+      <div className="flex max-w-7xl flex-1 flex-col">
         <div className="flex flex-col items-center gap-12 lg:flex-row">
           {/*  Left: Monitoring Panel + Spec Cards  */}
           <div className="home-animate-slide-left order-2 w-full flex-1 lg:order-1">

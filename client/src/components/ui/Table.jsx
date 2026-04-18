@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, forwardRef, useEffect } from 'react'
+import { useState, useMemo, useCallback, forwardRef, useEffect, useRef } from 'react'
 import { TableVirtuoso } from 'react-virtuoso'
 import { handleCopy, getStatusClasses, formatInputDate, str2date } from '../../lib/utils.js'
 import { getFlagIcon } from '../../data/flags.jsx'
@@ -131,6 +131,11 @@ const Table = forwardRef(function Table(
   const [scrollParent, setScrollParent] = useState(undefined)
   const [showCountryCode, setShowCountryCode] = useState(false)
 
+  // Filter snapshot: only recompute which rows match on Enter press, not on data change
+  const [filterVersion, setFilterVersion] = useState(0)
+  const matchedSidsRef = useRef(null)
+  const lastFilterVersionRef = useRef(0)
+
   // Attach to our new custom scroll layout
   useEffect(() => {
     const parent = document.getElementById('main-scroll-container')
@@ -139,83 +144,104 @@ const Table = forwardRef(function Table(
 
   const filteredData = useMemo(() => {
     if (!useFilter) return data || DEFAULT_DATA
-    if (renderingReceived) return receivedData
+    if (renderingReceived) {
+      matchedSidsRef.current = null
+      lastFilterVersionRef.current = filterVersion
+      return receivedData
+    }
     const hasActiveFilters = Object.values(filters).some((f) => f.value)
-    if (!hasActiveFilters) return data
+    if (!hasActiveFilters) {
+      matchedSidsRef.current = null
+      lastFilterVersionRef.current = filterVersion
+      return data
+    }
 
-    return data.filter((row) => {
-      return Object.entries(filters).every(([key, filter]) => {
-        if (!filter.value) return true // Skip empty filters
+    // Only recompute which SIDs match when filterVersion changes (Enter was pressed)
+    if (filterVersion !== lastFilterVersionRef.current) {
+      lastFilterVersionRef.current = filterVersion
+      const result = data.filter((row) => {
+        return Object.entries(filters).every(([key, filter]) => {
+          if (!filter.value) return true // Skip empty filters
 
-        let operator = filter.operator || 'contain'
+          let operator = filter.operator || 'contain'
 
-        const cellValue = row[key]
-        const filterValue = filter.value
+          const cellValue = row[key]
+          const filterValue = filter.value
 
-        if (['created', 'expired'].includes(key) && cellValue && filterValue) {
-          try {
-            const dateCell = str2date(String(cellValue)).getTime()
-            const dateFilter = str2date(String(filterValue)).getTime()
+          if (['created', 'expired'].includes(key) && cellValue && filterValue) {
+            try {
+              const dateCell = str2date(String(cellValue)).getTime()
+              const dateFilter = str2date(String(filterValue)).getTime()
 
-            if (!isNaN(dateCell) && !isNaN(dateFilter)) {
-              switch (operator) {
-                case 'greater-equal':
-                  return dateCell >= dateFilter
-                case 'less-equal':
-                  return dateCell <= dateFilter
-                case 'equal':
-                  return dateCell === dateFilter
-                case 'contain':
-                default:
-                  return String(cellValue).toLowerCase().includes(String(filterValue).toLowerCase())
+              if (!isNaN(dateCell) && !isNaN(dateFilter)) {
+                switch (operator) {
+                  case 'greater-equal':
+                    return dateCell >= dateFilter
+                  case 'less-equal':
+                    return dateCell <= dateFilter
+                  case 'equal':
+                    return dateCell === dateFilter
+                  case 'contain':
+                  default:
+                    return String(cellValue).toLowerCase().includes(String(filterValue).toLowerCase())
+                }
               }
+            } catch (e) {
+              // Fallback for parsing errors
             }
-          } catch (e) {
-            // Fallback for parsing errors
           }
-        }
 
-        // Check if both values are valid numbers for numeric comparison
-        const isNumeric =
-          !isNaN(parseFloat(cellValue)) &&
-          isFinite(cellValue) &&
-          !isNaN(parseFloat(filterValue)) &&
-          isFinite(filterValue)
+          // Check if both values are valid numbers for numeric comparison
+          const isNumeric =
+            !isNaN(parseFloat(cellValue)) &&
+            isFinite(cellValue) &&
+            !isNaN(parseFloat(filterValue)) &&
+            isFinite(filterValue)
 
-        if (isNumeric) {
-          const numCell = parseFloat(cellValue)
-          const numFilter = parseFloat(filterValue)
+          if (isNumeric) {
+            const numCell = parseFloat(cellValue)
+            const numFilter = parseFloat(filterValue)
 
-          switch (operator) {
-            case 'greater-equal':
-              return numCell >= numFilter
-            case 'less-equal':
-              return numCell <= numFilter
-            case 'equal':
-              return numCell === numFilter
-            case 'contain':
-            default:
-              return String(cellValue).toLowerCase().includes(String(filterValue).toLowerCase())
+            switch (operator) {
+              case 'greater-equal':
+                return numCell >= numFilter
+              case 'less-equal':
+                return numCell <= numFilter
+              case 'equal':
+                return numCell === numFilter
+              case 'contain':
+              default:
+                return String(cellValue).toLowerCase().includes(String(filterValue).toLowerCase())
+            }
+          } else {
+            // String comparison
+            const strCell = String(cellValue ?? '').toLowerCase()
+            const strFilter = String(filterValue).toLowerCase()
+
+            switch (operator) {
+              case 'equal':
+                return strCell === strFilter
+              case 'contain':
+              default:
+                return strCell.includes(strFilter)
+              case 'greater-equal':
+              case 'less-equal':
+                return strCell.includes(strFilter)
+            }
           }
-        } else {
-          // String comparison
-          const strCell = String(cellValue ?? '').toLowerCase()
-          const strFilter = String(filterValue).toLowerCase()
-
-          switch (operator) {
-            case 'equal':
-              return strCell === strFilter
-            case 'contain':
-            default:
-              return strCell.includes(strFilter)
-            case 'greater-equal':
-            case 'less-equal':
-              return strCell.includes(strFilter)
-          }
-        }
+        })
       })
-    })
-  }, [data, receivedData, renderingReceived, filters, useFilter])
+      matchedSidsRef.current = new Set(result.map((r) => r.sid))
+    }
+
+    // Use snapshotted SIDs: rows stay visible even if their data changes,
+    // only re-filter on next Enter press
+    if (matchedSidsRef.current) {
+      return data.filter((row) => matchedSidsRef.current.has(row.sid))
+    }
+
+    return data
+  }, [data, receivedData, renderingReceived, filters, useFilter, filterVersion])
 
   const handleSelectRow = useCallback(
     (index, shiftKey) => {
@@ -308,6 +334,7 @@ const Table = forwardRef(function Table(
           ...prev,
           [header]: { ...(prev[header] || { operator: 'contain' }), value: inputValue },
         }))
+        setFilterVersion((v) => v + 1)
         onSelectionChange([], new Set())
         setLastSelectedIndex(null)
         setRenderingReceived(false)

@@ -209,6 +209,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
       setReceivedData(finalResData)
       setRenderingReceived(true)
       setSelectedIds(new Set())
+      setSelectedRows([])
 
       // Sync updated data to DB in background
       syncToDb(finalResData)
@@ -242,6 +243,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
           setReceivedData(enrichedData)
           setRenderingReceived(true)
           setSelectedIds(new Set())
+          setSelectedRows([])
           const proxies = newData.map((item) => `${item.ip_port}:${item.user_pass}`).join('\n')
           safeCopy(proxies).then(
             (ok) =>
@@ -311,6 +313,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
           newSet.delete(row._index)
           return newSet
         })
+        setSelectedRows((prev) => prev.filter((r) => r._index !== row._index))
         // Update progress toast
         updateToast(
           loadingId,
@@ -706,6 +709,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
           for (const row of rows) newSet.delete(row._index)
           return newSet
         })
+        setSelectedRows([])
 
         addToast(
           <>
@@ -727,6 +731,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
           for (const row of rows) newSet.delete(row._index)
           return newSet
         })
+        setSelectedRows([])
         addToast(
           <>
             {t('manager.pause').toUpperCase()} {t('manager.completed')} <br />
@@ -746,6 +751,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
         for (const row of rows) newSet.delete(row._index)
         return newSet
       })
+      setSelectedRows([])
       addToast(
         <>
           PAUSE completed <br />
@@ -787,6 +793,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
           for (const row of rows) newSet.delete(row._index)
           return newSet
         })
+        setSelectedRows([])
 
         addToast(
           <>
@@ -808,6 +815,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
           for (const row of rows) newSet.delete(row._index)
           return newSet
         })
+        setSelectedRows([])
         addToast(
           <>
             {t('manager.reboot').toUpperCase()} {t('manager.completed')} <br />
@@ -827,6 +835,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
         for (const row of rows) newSet.delete(row._index)
         return newSet
       })
+      setSelectedRows([])
       addToast(
         <>
           {t('manager.reboot').toUpperCase()} {t('manager.completed')} <br />
@@ -930,6 +939,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
         for (const row of rows) newSet.delete(row._index)
         return newSet
       })
+      setSelectedRows([])
 
       if (successCount > 0 && failCount === 0) {
         addToast(
@@ -977,6 +987,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
         for (const row of rows) newSet.delete(row._index)
         return newSet
       })
+      setSelectedRows([])
       addToast(t('manager.renewError'), 'error')
     } finally {
       setIsProcessing(false)
@@ -1065,6 +1076,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
         for (const row of rows) newSet.delete(row._index)
         return newSet
       })
+      setSelectedRows([])
 
       if (successCount > 0 && failCount === 0) {
         addToast(
@@ -1112,6 +1124,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
         for (const row of rows) newSet.delete(row._index)
         return newSet
       })
+      setSelectedRows([])
       addToast(t('manager.refundError'), 'error')
     } finally {
       setIsProcessing(false)
@@ -1483,6 +1496,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
               setReceivedData([...data])
               setRenderingReceived(true)
               setSelectedIds(new Set())
+              setSelectedRows([])
               setRowClassMap({})
             }}
           >

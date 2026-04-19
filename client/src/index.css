@@ -36,7 +36,6 @@
   --color-scrollbar-thumb-hover: var(--scrollbar-thumb-hover);
 
   /* Text */
-  --color-text-title: var(--text-title);
   --color-text-primary: var(--text-primary);
   --color-text-secondary: var(--text-secondary);
   --color-text-muted: var(--text-muted);
@@ -147,7 +146,6 @@
   --scrollbar-thumb-hover: var(--color-sky-500);
 
   /* Text Colors */
-  --text-title: #007bfc;
   --text-primary: var(--dark-800);
   --text-secondary: #f8fafc;
   --text-muted: var(--color-slate-500);
@@ -180,7 +178,9 @@
 
   --btn-mix: 100%;
 
-  --glass-inset-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.15);
+  --glass-inset-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.15), inset 0 6px 12px rgba(0, 0, 0, 0.05);
+  --indicator-background: rgba(255, 255, 255, 0.6);
+  --indicator-box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 
   /* Home Page */
   --home-hero-gradient-from: var(--bg-body);
@@ -228,7 +228,6 @@
   --scrollbar-thumb-hover: var(--dark-900);
 
   /* Text Colors */
-  --text-title: #4aa3ff;
   --text-primary: #f3f4f6;
   --text-secondary: #f3f4f6;
   --text-muted: #9ca3af;
@@ -262,6 +261,8 @@
   --btn-mix: 70%;
 
   --glass-inset-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.5), inset 0 1px 2px rgba(0, 0, 0, 0.3);
+  --indicator-background: linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 30%, rgba(255, 255, 255, 0.08)) 0%, color-mix(in srgb, var(--color-primary) 10%, rgba(255, 255, 255, 0.01)) 100%);
+  --indicator-box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15), inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 20%, transparent), 0 4px 10px rgba(0, 0, 0, 0.3);
 
   /* Home Page */
   --home-hero-gradient-from: var(--bg-body);
@@ -302,7 +303,7 @@
 
 .theme-transitions .social-link:hover {
   transform: translateY(-3px);
-  color: var(--color-text-title);
+  color: var(--primary);
 }
 
 /* Custom base styles */
@@ -340,7 +341,7 @@
   }
 
   h1 {
-    @apply text-text-title text-xl;
+    @apply text-primary text-xl;
   }
 
   textarea::-webkit-scrollbar,

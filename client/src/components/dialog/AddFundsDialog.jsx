@@ -26,13 +26,13 @@ export default function AddFundsDialog({ isOpen, onClose }) {
       <div className="scroll-container text-text-primary flex max-h-[85vh] flex-col overflow-y-auto md:flex-row">
         {/* Left — QR Code */}
         <div className="flex flex-col items-center justify-center gap-3 p-6 md:p-8">
-          <h1 className="text-text-title font-bold">{t('addfunds.title')}</h1>
+          <h1 className="text-primary font-bold">{t('addfunds.title')}</h1>
           <img src={qrUrl} alt="VietQR" className="h-auto w-64 rounded-xl shadow-lg" />
         </div>
 
         {/* Right — Transfer Info */}
         <div className="bg-surface border-border flex w-full flex-col gap-5 rounded-b-xl p-6 md:w-96 md:rounded-r-xl md:rounded-bl-none md:border-l md:p-8">
-          <h2 className="text-text-title text-lg font-bold">{t('addfunds.transferInfo')}</h2>
+          <h2 className="text-primary text-lg font-bold">{t('addfunds.transferInfo')}</h2>
 
           <div className="flex flex-col gap-4">
             {infoRows.map((row) => (

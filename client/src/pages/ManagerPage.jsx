@@ -34,10 +34,8 @@ export default function ManagerPage() {
             <div
               className="absolute top-1 bottom-1 rounded-lg backdrop-blur-xl backdrop-saturate-150"
               style={{
-                background:
-                  'linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 30%, rgba(255, 255, 255, 0.08)) 0%, color-mix(in srgb, var(--color-primary) 10%, rgba(255, 255, 255, 0.01)) 100%)',
-                boxShadow:
-                  'inset 0 1px 1px rgba(255, 255, 255, 0.15), inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 20%, transparent), 0 4px 10px rgba(0, 0, 0, 0.3)',
+                background: 'var(--indicator-background)',
+                boxShadow: 'var(--indicator-box-shadow)',
                 left: '4px',
                 width: 'calc(50% - 4px)',
                 transform: activeView === 'VPS' ? 'translateX(0)' : 'translateX(100%)',
@@ -49,7 +47,7 @@ export default function ManagerPage() {
             <button
               onClick={() => setActiveView('VPS')}
               className={`relative z-10 flex w-22 items-center justify-center gap-1.5 rounded-lg py-2 font-bold transition-colors duration-300 sm:w-28 ${
-                activeView === 'VPS' ? 'text-text-title' : 'text-text-muted hover:text-text-primary'
+                activeView === 'VPS' ? 'text-primary' : 'text-text-muted hover:text-text-primary'
               }`}
             >
               <svg
@@ -65,9 +63,7 @@ export default function ManagerPage() {
             <button
               onClick={() => setActiveView('PROXY')}
               className={`relative z-10 flex w-22 items-center justify-center gap-1.5 rounded-lg py-2 font-bold transition-colors duration-300 sm:w-28 ${
-                activeView === 'PROXY'
-                  ? 'text-text-title'
-                  : 'text-text-muted hover:text-text-primary'
+                activeView === 'PROXY' ? 'text-primary' : 'text-text-muted hover:text-text-primary'
               }`}
             >
               <svg

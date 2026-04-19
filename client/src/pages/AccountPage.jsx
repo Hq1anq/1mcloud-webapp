@@ -79,7 +79,7 @@ export default function AccountPage() {
         {/* Page Title */}
         <div className="border-border flex flex-wrap items-end justify-between gap-3 border-b pb-2">
           <div className="flex min-w-72 flex-col gap-2">
-            <h1 className="text-text-title text-3xl leading-tight font-black tracking-[-0.033em] md:text-4xl">
+            <h1 className="text-primary text-3xl leading-tight font-black tracking-[-0.033em] md:text-4xl">
               {t('account.title')}
             </h1>
             <p className="text-text-muted text-base leading-normal font-normal">

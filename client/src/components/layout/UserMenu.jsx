@@ -157,7 +157,7 @@ export default function UserMenu() {
       >
         {/* Header */}
         <div className="border-border border-b px-4 py-4">
-          <p className="text-text-title truncate font-bold" title={user?.username || user?.email}>
+          <p className="text-primary truncate font-bold" title={user?.username || user?.email}>
             {user?.username || 'User'}
           </p>
         </div>

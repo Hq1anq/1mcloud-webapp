@@ -25,7 +25,7 @@ export default function HeroSection() {
               {/* Heading */}
               <h1 className="text-text-primary text-4xl leading-tight font-black tracking-tight md:text-5xl lg:text-6xl">
                 {t('hero.heading1')} <br className="hidden lg:block" />
-                <span className="text-text-title">{t('hero.heading2')}</span>
+                <span className="text-primary">{t('hero.heading2')}</span>
                 <br />
                 {t('hero.heading3')}
               </h1>

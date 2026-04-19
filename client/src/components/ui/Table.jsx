@@ -37,7 +37,7 @@ const TableRow = ({ context, ...props }) => {
   return (
     <tr
       {...props}
-      className={`${isRefunded ? 'cursor-not-allowed opacity-50 select-none' : 'hover:bg-bg-hover text-text-primary'} ${isSelected ? 'bg-bg-selected' : overrideClass || ''} ${props.className || ''}`}
+      className={`text-text-primary ${isRefunded ? 'cursor-not-allowed opacity-50 select-none' : 'hover:bg-bg-hover'} ${isSelected ? 'bg-bg-selected' : overrideClass || ''} ${props.className || ''}`}
       onClick={(e) => {
         if (isRefunded) return
         // Prevent row selection if clicking/interacting with inputs/buttons/labels

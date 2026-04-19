@@ -314,7 +314,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
               </svg>
             </div>
             <div>
-              <h1 className="text-text-title text-2xl font-bold">{t('buyVps.title')}</h1>
+              <h1 className="text-primary text-2xl font-bold">{t('buyVps.title')}</h1>
               <p className="text-text-muted">{t('buyVps.subtitle')}</p>
             </div>
             <svg
@@ -383,7 +383,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
               </svg>
               <div>
-                <h1 className="text-text-title text-lg leading-none font-bold">
+                <h1 className="text-primary text-lg leading-none font-bold">
                   {t('buyVps.title')} — {selectedItem?.name || selectedNation}
                 </h1>
                 <p className="text-text-muted mt-1 text-xs">{t('buyVps.configureInstance')}</p>

@@ -1,19 +1,14 @@
 {
-<<<<<<< HEAD
-  "trailingComma": "es5",
   "tabWidth": 2,
-  "semi": false,
-  "singleQuote": true
-=======
-	"tabWidth": 2,
-	"useTabs": false,
-	"overrides": [
-		{
-			"files": ["*.ejs"],
-			"options": {
-				"parser": "html"
-			}
-		}
-	]
->>>>>>> production
+  "useTabs": false,
+  "overrides": [
+    {
+      "files": [
+        "*.ejs"
+      ],
+      "options": {
+        "parser": "html"
+      }
+    }
+  ]
 }

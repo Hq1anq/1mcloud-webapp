@@ -72,7 +72,9 @@ export async function getProxies(req, res) {
     return res.json({ success: true, data: result.recordset });
   } catch (error) {
     console.error("❌ getProxies error:", error.message);
-    return res.status(error.status || 500).json({ success: false, error: error.message });
+    return res
+      .status(error.status || 500)
+      .json({ success: false, error: error.message });
   }
 }
 
@@ -138,7 +140,9 @@ export async function saveProxies(req, res) {
     }
   } catch (error) {
     console.error("❌ saveProxies error:", error.message);
-    return res.status(error.status || 500).json({ success: false, error: error.message });
+    return res
+      .status(error.status || 500)
+      .json({ success: false, error: error.message });
   }
 }
 
@@ -171,6 +175,8 @@ export async function deleteProxies(req, res) {
     return res.json({ success: true });
   } catch (error) {
     console.error("❌ deleteProxies error:", error.message);
-    return res.status(error.status || 500).json({ success: false, error: error.message });
+    return res
+      .status(error.status || 500)
+      .json({ success: false, error: error.message });
   }
 }

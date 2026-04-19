@@ -183,7 +183,9 @@ const Table = forwardRef(function Table(
                     return dateCell === dateFilter
                   case 'contain':
                   default:
-                    return String(cellValue).toLowerCase().includes(String(filterValue).toLowerCase())
+                    return String(cellValue)
+                      .toLowerCase()
+                      .includes(String(filterValue).toLowerCase())
                 }
               }
             } catch (e) {

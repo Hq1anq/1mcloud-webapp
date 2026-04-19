@@ -55,7 +55,8 @@ export async function list(req, res) {
       expired: server.het_han,
       ip_changed: server.change_ip_time,
       status: server.trang_thai
-        ? server.trang_thai.charAt(0).toUpperCase() + server.trang_thai.slice(1).toLowerCase()
+        ? server.trang_thai.charAt(0).toUpperCase() +
+          server.trang_thai.slice(1).toLowerCase()
         : server.trang_thai,
       note: server.note,
     }));

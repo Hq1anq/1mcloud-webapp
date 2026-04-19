@@ -13,16 +13,16 @@ const ToastContainer = ({ toasts, removeToast }) => {
       {toasts.map((toast, index) => {
         const style = isHovered
           ? {
-            position: 'absolute',
-            zIndex: index, // Higher index = on top
-            top: index * 66,
-          }
+              position: 'absolute',
+              zIndex: index, // Higher index = on top
+              top: index * 66,
+            }
           : {
-            position: 'absolute',
-            zIndex: index, // Higher index = on top
-            top: index * 5,
-            left: index * -5,
-          }
+              position: 'absolute',
+              zIndex: index, // Higher index = on top
+              top: index * 5,
+              left: index * -5,
+            }
 
         return <Toast key={toast.id} {...toast} removeToast={removeToast} style={style} />
       })}

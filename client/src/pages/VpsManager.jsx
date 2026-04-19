@@ -29,13 +29,15 @@ function saveData(data) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
 }
 
-/** Merge res into data by sid, preserving user_pass from data */
+/** Merge res into data by sid, safely merging user_pass */
 function mergeResIntoData(data, res) {
   const dataMap = new Map(data.map((row) => [row.sid, row]))
 
   for (const resRow of res) {
     const existingRow = dataMap.get(resRow.sid)
-    let userPass = existingRow ? existingRow.user_pass : resRow.user_pass
+
+    // Priority: 1. resRow.user_pass, 2. existingRow.user_pass
+    let userPass = resRow.user_pass !== undefined ? resRow.user_pass : existingRow?.user_pass
 
     // Add default user if missing based on OS
     if (!userPass || !userPass.includes('/')) {
@@ -51,7 +53,7 @@ function mergeResIntoData(data, res) {
     }
 
     if (existingRow) {
-      // Update all columns from res, but keep user_pass from data
+      // Update all columns from res, but keep user_pass based on priority above
       Object.assign(existingRow, resRow)
       if (userPass !== undefined) {
         existingRow.user_pass = userPass

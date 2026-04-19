@@ -321,7 +321,7 @@
   input[type='number'],
   input[type='password'],
   textarea {
-    @apply bg-navbar text-text-primary border-border w-full rounded-lg border-2 px-3 py-2 placeholder-gray-400 focus:border-(--logo-ring) focus:outline-none whitespace-nowrap;
+    @apply bg-navbar text-text-primary border-border w-full rounded-lg border-2 px-3 py-2 whitespace-nowrap placeholder-gray-400 focus:border-(--logo-ring) focus:outline-none;
   }
 
   /* Hides the arrows in Chrome, Safari, Edge */

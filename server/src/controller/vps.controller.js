@@ -145,7 +145,9 @@ export async function getVpsList(req, res) {
     return res.json({ success: true, data: result.recordset });
   } catch (error) {
     console.error("❌ getVpsList error:", error.message);
-    return res.status(error.status || 500).json({ success: false, error: error.message });
+    return res
+      .status(error.status || 500)
+      .json({ success: false, error: error.message });
   }
 }
 
@@ -214,7 +216,9 @@ export async function saveVpsList(req, res) {
     }
   } catch (error) {
     console.error("❌ saveVpsList error:", error.message);
-    return res.status(error.status || 500).json({ success: false, error: error.message });
+    return res
+      .status(error.status || 500)
+      .json({ success: false, error: error.message });
   }
 }
 
@@ -246,6 +250,8 @@ export async function deleteVpsList(req, res) {
     return res.json({ success: true });
   } catch (error) {
     console.error("❌ deleteVpsList error:", error.message);
-    return res.status(error.status || 500).json({ success: false, error: error.message });
+    return res
+      .status(error.status || 500)
+      .json({ success: false, error: error.message });
   }
 }

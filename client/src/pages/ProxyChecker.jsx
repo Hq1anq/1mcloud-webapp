@@ -370,6 +370,7 @@ export default function ProxyChecker() {
       </div>
       <Table
         data={results}
+        virtualized={false}
         title={t('checker.proxyStatus')}
         useFilter={false}
         className="mt-4 px-4 text-base sm:text-lg"

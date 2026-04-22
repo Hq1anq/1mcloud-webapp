@@ -1142,7 +1142,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
           <div className="bg-wrapper rounded-lg p-4">
             <div className="flex flex-col gap-4 sm:flex-row">
               {/* IPs Input */}
-              <div className="relative m-1 flex flex-col sm:w-3/5">
+              <div className="relative flex flex-col sm:w-3/5">
                 <div className="mb-2 flex items-center justify-between">
                   <label className="text-text-primary flex items-center font-medium">
                     <svg
@@ -1192,7 +1192,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
                     min="1"
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
-                    className="w-34 rounded-r-none border-r-0"
+                    className="w-24 rounded-r-none border-r-0 py-1"
                   />
                   <button
                     className="bg-action flex flex-1 items-center justify-center rounded-lg rounded-l-none px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
@@ -1217,23 +1217,6 @@ export default function ProxyManager({ onBuySuccessRef }) {
                   </button>
                 </div>
 
-                {/* Reboot */}
-                <button
-                  className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap hover:brightness-(--highlight-brightness)"
-                  style={{ '--action-color': 'var(--orange)' }}
-                  onClick={handleReboot}
-                  disabled={isProcessing}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 16 16"
-                    className="mr-1 h-[18px] w-[18px] shrink-0 fill-current sm:mr-2 sm:h-6 sm:w-6"
-                  >
-                    <path d="m 8 0 c -0.550781 0 -1 0.449219 -1 1 v 5 c 0 0.550781 0.449219 1 1 1 s 1 -0.449219 1 -1 v -5 c 0 -0.550781 -0.449219 -1 -1 -1 z m -7 1 l 2.050781 2.050781 c -2.117187 2.117188 -2.652343 5.355469 -1.332031 8.039063 c 1.324219 2.683594 4.214844 4.238281 7.179688 3.851562 c 2.96875 -0.386718 5.367187 -2.625 5.960937 -5.554687 c 0.59375 -2.933594 -0.75 -5.929688 -3.335937 -7.433594 c -0.476563 -0.28125 -1.089844 -0.117187 -1.367188 0.359375 s -0.117188 1.089844 0.359375 1.367188 c 1.851563 1.078124 2.808594 3.207031 2.382813 5.3125 c -0.421876 2.101562 -2.128907 3.691406 -4.253907 3.96875 c -2.128906 0.273437 -4.183593 -0.828126 -5.128906 -2.753907 s -0.566406 -4.226562 0.949219 -5.742187 l 1.535156 1.535156 v -4.003906 c 0 -0.519532 -0.449219 -0.996094 -1 -0.996094 z m 0 0" />
-                  </svg>
-                  {t('manager.reboot')}
-                </button>
-
                 {/* Pause */}
                 <button
                   className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap hover:brightness-(--highlight-brightness)"
@@ -1249,6 +1232,23 @@ export default function ProxyManager({ onBuySuccessRef }) {
                     <path d="M176 96C149.5 96 128 117.5 128 144L128 496C128 522.5 149.5 544 176 544L240 544C266.5 544 288 522.5 288 496L288 144C288 117.5 266.5 96 240 96L176 96zM400 96C373.5 96 352 117.5 352 144L352 496C352 522.5 373.5 544 400 544L464 544C490.5 544 512 522.5 512 496L512 144C512 117.5 490.5 96 464 96L400 96z" />
                   </svg>
                   {t('manager.pause')}
+                </button>
+
+                {/* Reboot */}
+                <button
+                  className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap hover:brightness-(--highlight-brightness)"
+                  style={{ '--action-color': 'var(--orange)' }}
+                  onClick={handleReboot}
+                  disabled={isProcessing}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 16 16"
+                    className="mr-1 h-[18px] w-[18px] shrink-0 fill-current sm:mr-2 sm:h-6 sm:w-6"
+                  >
+                    <path d="m 8 0 c -0.550781 0 -1 0.449219 -1 1 v 5 c 0 0.550781 0.449219 1 1 1 s 1 -0.449219 1 -1 v -5 c 0 -0.550781 -0.449219 -1 -1 -1 z m -7 1 l 2.050781 2.050781 c -2.117187 2.117188 -2.652343 5.355469 -1.332031 8.039063 c 1.324219 2.683594 4.214844 4.238281 7.179688 3.851562 c 2.96875 -0.386718 5.367187 -2.625 5.960937 -5.554687 c 0.59375 -2.933594 -0.75 -5.929688 -3.335937 -7.433594 c -0.476563 -0.28125 -1.089844 -0.117187 -1.367188 0.359375 s -0.117188 1.089844 0.359375 1.367188 c 1.851563 1.078124 2.808594 3.207031 2.382813 5.3125 c -0.421876 2.101562 -2.128907 3.691406 -4.253907 3.96875 c -2.128906 0.273437 -4.183593 -0.828126 -5.128906 -2.753907 s -0.566406 -4.226562 0.949219 -5.742187 l 1.535156 1.535156 v -4.003906 c 0 -0.519532 -0.449219 -0.996094 -1 -0.996094 z m 0 0" />
+                  </svg>
+                  {t('manager.reboot')}
                 </button>
 
                 {/* Renew */}
@@ -1272,7 +1272,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
                 {profile?.is_refund && (
                   <button
                     className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap hover:brightness-(--highlight-brightness)"
-                    style={{ '--action-color': 'var(--brown)' }}
+                    style={{ '--action-color': 'var(--pink)' }}
                     onClick={handleRefund}
                     disabled={isProcessing}
                   >
@@ -1326,7 +1326,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
                 <button
                   id="getInfoBtn"
                   className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap hover:brightness-(--highlight-brightness)"
-                  style={{ '--action-color': 'var(--primary)' }}
+                  style={{ '--action-color': 'var(--blue)' }}
                   onClick={() => {
                     const rows = selectedRowsRef.current
                     if (rows.length === 0) return addToast(t('manager.noRowsSelected'), 'warning')
@@ -1382,7 +1382,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
                       const newVal = val.replace(/\+(1W|2W|1M)/g, keywordReplacer)
                       setNoteInput(newVal)
                     }}
-                    className="rounded-r-none border-r-0"
+                    className="rounded-r-none border-r-0 py-1"
                   />
                   <button
                     className="bg-action flex w-full items-center justify-center rounded-lg rounded-l-none px-3 py-2 font-medium transition-colors duration-200 hover:brightness-(--highlight-brightness)"
@@ -1427,17 +1427,18 @@ export default function ProxyManager({ onBuySuccessRef }) {
                 </div>
 
                 {/* Reinstall */}
-                <div className="grow space-y-1">
+                <div className="w-full">
                   <input
                     type="text"
                     placeholder={t('manager.portUserPass')}
                     value={reinstallInput}
                     onChange={(e) => setReinstallInput(e.target.value)}
+                    className="rounded-b-none"
                   />
                   <div className="flex">
                     <button
-                      className="bg-action flex flex-1 items-center justify-center rounded-l-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
-                      style={{ '--action-color': 'var(--primary)' }}
+                      className="bg-action flex flex-1 items-center justify-center rounded-bl-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
+                      style={{ '--action-color': 'var(--blue)' }}
                       onClick={handleReinstall}
                       disabled={isProcessing}
                     >
@@ -1454,7 +1455,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
                       options={['HTTPS', 'SOCKS5']}
                       value={reinstallType}
                       onChange={setReinstallType}
-                      className="rounded-r-lg"
+                      className="rounded-br-lg"
                     />
                   </div>
                 </div>

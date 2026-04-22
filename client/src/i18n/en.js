@@ -147,7 +147,7 @@ const en = {
   'manager.enterIps': 'Enter IP',
   'manager.onePerLine': '(one per line)',
   'manager.delete': 'Delete',
-  'manager.enterAmount': 'Enter amount',
+  'manager.enterAmount': 'Amount',
   'manager.enterNote': 'Enter note',
   'manager.portUserPass': 'port:username:password',
   'manager.getData': 'Get Data',

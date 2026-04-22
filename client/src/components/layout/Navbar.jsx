@@ -8,8 +8,8 @@ export default function Navbar() {
   const t = useTranslation()
   const { isAuthenticated } = useAuthStore()
   const linkBase = 'text-text-primary py-2 px-3 rounded-sm md:p-0 flex items-center'
-  const active = 'bg-wrapper md:bg-transparent text-[#cbd5e1] md:text-text-title'
-  const inactive = 'md:hover:text-text-title hover:bg-bg-hover md:hover:bg-transparent'
+  const active = 'bg-wrapper md:bg-transparent text-[#cbd5e1] md:text-primary'
+  const inactive = 'md:hover:text-primary hover:bg-bg-hover md:hover:bg-transparent'
 
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const toggleMenu = () => {

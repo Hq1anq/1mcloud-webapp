@@ -50,7 +50,7 @@ export default function SignupPage() {
   return (
     <div className="flex min-h-[calc(100vh-130px)] items-center justify-center p-4">
       <div className="bg-surface w-full max-w-xl rounded-xl p-8 shadow-2xl">
-        <h2 className="text-text-title mb-6 text-center text-2xl font-bold">{t('signup.title')}</h2>
+        <h2 className="text-primary mb-6 text-center text-2xl font-bold">{t('signup.title')}</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
             id="fullname"

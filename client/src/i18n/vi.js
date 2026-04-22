@@ -148,7 +148,7 @@ const vi = {
   'manager.enterIps': 'Nhập IP',
   'manager.onePerLine': '(mỗi dòng một IP)',
   'manager.delete': 'Xóa',
-  'manager.enterAmount': 'Nhập số lượng',
+  'manager.enterAmount': 'Số lượng',
   'manager.enterNote': 'Nhập ghi chú',
   'manager.portUserPass': 'port:username:password',
   'manager.getData': 'Lấy dữ liệu',

@@ -179,7 +179,7 @@ export default function VpsSection() {
           {/*  Right: Description + Features  */}
           <div className="home-animate-fade-up order-1 flex flex-1 flex-col gap-8 lg:order-2">
             <div className="flex flex-col gap-4">
-              <div className="text-text-title flex items-center gap-2 font-bold tracking-wider uppercase">
+              <div className="text-primary flex items-center gap-2 font-bold tracking-wider uppercase">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 -960 960 960"

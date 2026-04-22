@@ -65,7 +65,7 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-[calc(100vh-130px)] items-center justify-center p-4">
       <div className="bg-surface w-full max-w-md rounded-xl p-8 shadow-2xl">
-        <h2 className="text-text-title mb-6 text-center text-2xl font-bold">{t('login.title')}</h2>
+        <h2 className="text-primary mb-6 text-center text-2xl font-bold">{t('login.title')}</h2>
 
         {error && (
           <div className="mb-4 rounded-lg bg-red-100 p-3 text-sm text-red-700">{error}</div>

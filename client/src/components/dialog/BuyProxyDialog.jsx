@@ -231,7 +231,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
         {/* Left Form Panel */}
         <div className="flex flex-1 flex-col gap-6 p-6 md:p-8 lg:p-10">
           <div className="flex flex-col gap-2">
-            <h1 className="text-text-title text-2xl leading-tight font-bold">{t('buy.title')}</h1>
+            <h1 className="text-primary text-2xl leading-tight font-bold">{t('buy.title')}</h1>
           </div>
 
           <div className="flex flex-1 flex-col gap-5">

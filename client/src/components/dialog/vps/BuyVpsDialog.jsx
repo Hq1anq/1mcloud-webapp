@@ -248,11 +248,16 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
           </>,
           'success'
         )
+        const parsedMustPay = parseFloat((summary.must_pay || '0').toString().replace(/,/g, '').replace(/[^\d.-]/g, '')) || 0
+        const qty = Number(amount) || 1
+        const calculatedPrice = parsedMustPay / qty
+        const formattedPrice = Math.round(calculatedPrice).toLocaleString('en-US')
+
         const extraConfig = {
           plan_number: selectedPlanObj?.name,
           country: selectedNation,
           he_dieu_hanh: getOS(supportData?.os?.option?.[selectedOs]),
-          price_vnd: selectedPlanObj?.price,
+          price_vnd: formattedPrice,
           note: note,
         }
         if (onSuccess) onSuccess(res.data?.data, extraConfig)

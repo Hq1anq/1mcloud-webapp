@@ -172,40 +172,48 @@ export async function saveVpsList(req, res) {
     await transaction.begin();
 
     try {
-      for (const vps of vpsList) {
-        await transaction
-          .request()
-          .input("userId", userId)
-          .input("sid", vps.sid)
-          .input("plan_number", vps.plan_number || null)
-          .input("ip_port", vps.ip_port || null)
-          .input("user_pass", vps.user_pass || null)
-          .input("country", vps.country || null)
-          .input("he_dieu_hanh", vps.he_dieu_hanh || null)
-          .input("price_vnd", vps.price_vnd || null)
-          .input("created", vps.created || null)
-          .input("expired", vps.expired || null)
-          .input("status", vps.status || null)
-          .input("note", vps.note || null).query(`
+      const chunkSize = 100;
+      for (let i = 0; i < vpsList.length; i += chunkSize) {
+        const chunk = vpsList.slice(i, i + chunkSize);
+        const request = transaction.request();
+        request.input("userId", userId);
+
+        let query = "";
+        chunk.forEach((vps, idx) => {
+          request.input(`sid_${idx}`, vps.sid);
+          request.input(`plan_number_${idx}`, vps.plan_number || null);
+          request.input(`ip_port_${idx}`, vps.ip_port || null);
+          request.input(`user_pass_${idx}`, vps.user_pass || null);
+          request.input(`country_${idx}`, vps.country || null);
+          request.input(`he_dieu_hanh_${idx}`, vps.he_dieu_hanh || null);
+          request.input(`price_vnd_${idx}`, vps.price_vnd || null);
+          request.input(`created_${idx}`, vps.created || null);
+          request.input(`expired_${idx}`, vps.expired || null);
+          request.input(`status_${idx}`, vps.status || null);
+          request.input(`note_${idx}`, vps.note || null);
+
+          query += `
             MERGE Vps AS target
-            USING (SELECT @userId AS user_id, @sid AS sid) AS source
+            USING (SELECT @userId AS user_id, @sid_${idx} AS sid) AS source
             ON target.user_id = source.user_id AND target.sid = source.sid
             WHEN MATCHED THEN
               UPDATE SET
-                plan_number = COALESCE(@plan_number, target.plan_number),
-                ip_port = COALESCE(@ip_port, target.ip_port),
-                user_pass = COALESCE(@user_pass, target.user_pass),
-                country = COALESCE(@country, target.country),
-                he_dieu_hanh = COALESCE(@he_dieu_hanh, target.he_dieu_hanh),
-                price_vnd = COALESCE(@price_vnd, target.price_vnd),
-                created = COALESCE(@created, target.created),
-                expired = COALESCE(@expired, target.expired),
-                status = COALESCE(@status, target.status),
-                note = COALESCE(@note, target.note)
+                plan_number = COALESCE(@plan_number_${idx}, target.plan_number),
+                ip_port = COALESCE(@ip_port_${idx}, target.ip_port),
+                user_pass = COALESCE(@user_pass_${idx}, target.user_pass),
+                country = COALESCE(@country_${idx}, target.country),
+                he_dieu_hanh = COALESCE(@he_dieu_hanh_${idx}, target.he_dieu_hanh),
+                price_vnd = COALESCE(@price_vnd_${idx}, target.price_vnd),
+                created = COALESCE(@created_${idx}, target.created),
+                expired = COALESCE(@expired_${idx}, target.expired),
+                status = COALESCE(@status_${idx}, target.status),
+                note = COALESCE(@note_${idx}, target.note)
             WHEN NOT MATCHED THEN
               INSERT (user_id, sid, plan_number, ip_port, user_pass, country, he_dieu_hanh, price_vnd, created, expired, status, note)
-              VALUES (@userId, @sid, @plan_number, @ip_port, @user_pass, @country, @he_dieu_hanh, @price_vnd, @created, @expired, @status, @note);
-          `);
+              VALUES (@userId, @sid_${idx}, @plan_number_${idx}, @ip_port_${idx}, @user_pass_${idx}, @country_${idx}, @he_dieu_hanh_${idx}, @price_vnd_${idx}, @created_${idx}, @expired_${idx}, @status_${idx}, @note_${idx});
+          `;
+        });
+        await request.query(query);
       }
 
       await transaction.commit();

@@ -22,23 +22,7 @@
     "url": "https://github.com/Hq1anq/1mcloud_tools/issues"
   },
   "homepage": "https://github.com/Hq1anq/1mcloud_tools#readme",
-  "dependencies": {
-    "@tailwindcss/cli": "^4.1.11",
-    "dotenv": "^17.1.0",
-    "ejs": "^3.1.10",
-    "express": "^5.1.0",
-    "https-proxy-agent": "^7.0.6",
-    "node-fetch": "^3.3.2",
-    "socks-proxy-agent": "^8.0.5",
-    "tailwindcss": "^4.1.11"
-  },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.1.12",
-    "autoprefixer": "^10.4.21",
-    "concurrently": "^9.2.1",
-    "cssnano": "^7.1.1",
-    "nodemon": "^3.1.10",
-    "prettier": "^3.6.2",
-    "prettier-plugin-tailwindcss": "^0.6.14"
+    "concurrently": "^9.2.1"
   }
 }

@@ -28,7 +28,6 @@ export default function ProxyManager({ onBuySuccessRef }) {
   const [ips, setIps] = useState('')
   const [amount, setAmount] = useState('')
   const [noteInput, setNoteInput] = useState('')
-  const [replaceNote, setReplaceNote] = useState(false)
   const [reinstallInput, setReinstallInput] = useState('')
   const [changeIpInput, setChangeIpInput] = useState('')
 
@@ -468,9 +467,6 @@ export default function ProxyManager({ onBuySuccessRef }) {
       t('manager.changeNote').toUpperCase()
     )
 
-    setSelectedIds(new Set())
-    setSelectedRows([])
-
     // Safe copy concatenated results for successful changes
     if (copyTexts.length > 0) {
       safeCopy(copyTexts.join('\n'))
@@ -480,7 +476,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
     if (updatedRows.length > 0) {
       syncToDb(updatedRows)
     }
-  }, [selectedRowsRef, noteInput, processSequential, updateRowBySid, t, syncToDb])
+  }, [selectedRowsRef, noteInput, processSequential, safeCopy, updateRowBySid, t, syncToDb])
 
   const handlePause = useCallback(
     () =>

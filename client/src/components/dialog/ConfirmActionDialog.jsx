@@ -73,7 +73,7 @@ export default function ConfirmActionDialog({
       setIsFetchingRefund(false)
       setFetchError('')
     }
-  }, [isOpen, isRenew, selectedRows, t])
+  }, [isOpen, isRenew, isRefund, selectedRows, t])
 
   // Expose renewData to parent dialog on confirm
   const handleConfirmClick = () => {

@@ -188,7 +188,7 @@ const Table = forwardRef(function Table(
                       .includes(String(filterValue).toLowerCase())
                 }
               }
-            } catch (e) {
+            } catch {
               // Fallback for parsing errors
             }
           }

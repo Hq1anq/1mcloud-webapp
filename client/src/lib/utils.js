@@ -102,3 +102,64 @@ export function formatInputDate(inputValue) {
     return `${day}-${month}-${year}`
   }
 }
+
+export function mergeVpsData(data, res) {
+  const dataMap = new Map(data.map((row) => [row.sid, row]))
+
+  for (const resRow of res) {
+    const existingRow = dataMap.get(resRow.sid)
+
+    // Priority: 1. resRow.user_pass, 2. existingRow.user_pass
+    let userPass = resRow.user_pass !== undefined ? resRow.user_pass : existingRow?.user_pass
+
+    // Add default user if missing based on OS
+    if (!userPass || !userPass.includes('/')) {
+      const os = resRow.he_dieu_hanh || existingRow?.he_dieu_hanh || ''
+      const defaultUser = os.toLowerCase().includes('ubuntu')
+        ? 'root'
+        : os.toLowerCase().includes('win')
+          ? 'Administrator'
+          : ''
+      if (defaultUser) {
+        userPass = `${defaultUser}/`
+      }
+    }
+
+    if (existingRow) {
+      // Update all columns from res, but keep user_pass based on priority above
+      Object.assign(existingRow, resRow)
+      if (userPass !== undefined) {
+        existingRow.user_pass = userPass
+      }
+    } else {
+      // New row from res — add to data
+      const newRow = { ...resRow }
+      if (userPass !== undefined) newRow.user_pass = userPass
+      dataMap.set(resRow.sid, newRow)
+    }
+  }
+
+  return Array.from(dataMap.values())
+}
+
+export function mergeProxyData(data, res) {
+  const dataMap = new Map(data.map((row) => [row.sid, row]))
+
+  for (const resRow of res) {
+    const existingRow = dataMap.get(resRow.sid)
+    if (existingRow) {
+      // Priority: 1. resRow.user_pass, 2. existingRow.user_pass
+      const finalUserPass =
+        resRow.user_pass !== undefined ? resRow.user_pass : existingRow.user_pass
+      Object.assign(existingRow, resRow)
+      if (finalUserPass !== undefined) {
+        existingRow.user_pass = finalUserPass
+      }
+    } else {
+      // New row from res — add to data
+      dataMap.set(resRow.sid, { ...resRow })
+    }
+  }
+
+  return Array.from(dataMap.values())
+}

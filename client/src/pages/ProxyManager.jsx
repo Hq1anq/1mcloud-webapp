@@ -1,13 +1,14 @@
 import DropDown from '../components/ui/DropDown'
 import Table from '../components/ui/Table'
 import axiosInstance from '../lib/axios'
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useToast } from '../context/ToastContext'
-import { extractIP, randomDelay } from '../lib/utils'
 import { useSafeCopy } from '../context/SafeCopyContext'
 import { useConfirm } from '../context/ConfirmContext'
 import { useTranslation } from '../i18n'
 import useAuthStore from '../store/useAuthStore'
+import useProxyStore from '../store/useProxyStore'
+import useManagerActions from '../hooks/useManagerActions'
 
 const OPERATOR_CONFIG = {
   sid: ['greater-equal', 'less-equal', 'equal', 'contain'],
@@ -15,49 +16,10 @@ const OPERATOR_CONFIG = {
   expired: ['greater-equal', 'less-equal', 'contain'],
 }
 
-const STORAGE_KEY = 'proxyManager_data'
-
-function loadData() {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    return stored ? JSON.parse(stored) : []
-  } catch {
-    return []
-  }
-}
-
-function saveData(data) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
-}
-
-/** Merge res into data by sid, safely merging user_pass */
-function mergeResIntoData(data, res) {
-  const dataMap = new Map(data.map((row) => [row.sid, row]))
-
-  for (const resRow of res) {
-    const existingRow = dataMap.get(resRow.sid)
-    if (existingRow) {
-      // Priority: 1. resRow.user_pass, 2. existingRow.user_pass
-      const finalUserPass =
-        resRow.user_pass !== undefined ? resRow.user_pass : existingRow.user_pass
-      Object.assign(existingRow, resRow)
-      if (finalUserPass !== undefined) {
-        existingRow.user_pass = finalUserPass
-      }
-    } else {
-      // New row from res — add to data
-      dataMap.set(resRow.sid, { ...resRow })
-    }
-  }
-
-  return Array.from(dataMap.values())
-}
-
 export default function ProxyManager({ onBuySuccessRef }) {
   const [reinstallType, setReinstallType] = useState('HTTPS')
   const [changeIpType, setChangeIpType] = useState('HTTPS')
-  const [selectedRows, setSelectedRows] = useState([])
-  const { addToast, updateToast, removeToast } = useToast()
+  const { addToast, removeToast } = useToast()
   const { safeCopy } = useSafeCopy()
   const { confirmAction } = useConfirm()
   const t = useTranslation()
@@ -70,22 +32,32 @@ export default function ProxyManager({ onBuySuccessRef }) {
   const [reinstallInput, setReinstallInput] = useState('')
   const [changeIpInput, setChangeIpInput] = useState('')
 
-  // persistent data in localStorage (includes user_pass)
-  const [data, setData] = useState(loadData)
-  // TableData: what renders in the table (receivedData after GetData, data on first load)
-  const [receivedData, setReceivedData] = useState(loadData)
-  const [renderingReceived, setRenderingReceived] = useState(false)
+  // Data from Zustand store
+  const data = useProxyStore((s) => s.data)
+  const receivedData = useProxyStore((s) => s.receivedData)
+  const renderingReceived = useProxyStore((s) => s.renderingReceived)
+  const setRenderingReceived = useProxyStore((s) => s.setRenderingReceived)
+  const updateRowBySid = useProxyStore((s) => s.updateRowBySid)
+  const syncToDb = useProxyStore((s) => s.syncToDb)
+  const loadFromDb = useProxyStore((s) => s.loadFromDb)
+  const fetchData = useProxyStore((s) => s.fetchData)
+  const handleBuySuccessStore = useProxyStore((s) => s.handleBuySuccess)
+  const resetView = useProxyStore((s) => s.resetView)
 
-  // Action feedback state
-  const [rowClassMap, setRowClassMap] = useState({})
-  const [selectedIds, setSelectedIds] = useState(new Set())
-  const [isProcessing, setIsProcessing] = useState(false)
-  const selectedRowsRef = useRef(selectedRows)
-  const dataRef = useRef(data)
-  useEffect(() => {
-    selectedRowsRef.current = selectedRows
-    dataRef.current = data
-  }, [selectedRows, data])
+  // Shared selection & processing logic
+  const {
+    selectedIds,
+    selectedRowsRef,
+    isProcessing,
+    rowClassMap,
+    setRowClassMap,
+    setIsProcessing,
+    clearSelection,
+    deselectRows,
+    onSelectionChange,
+    handleBatchAction,
+    processSequential,
+  } = useManagerActions({ updateRowBySid, syncToDb })
 
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
 
@@ -98,125 +70,17 @@ export default function ProxyManager({ onBuySuccessRef }) {
     }
   }, [])
 
-  // --- DB sync helpers ---
-  const syncToDb = useCallback(
-    async (proxiesToSync) => {
-      if (!isAuthenticated || !proxiesToSync || proxiesToSync.length === 0) return
-      try {
-        await axiosInstance.post('/proxy', { proxies: proxiesToSync })
-      } catch (err) {
-        console.error('[DB Sync] Save failed:', err.message)
-      }
-    },
-    [isAuthenticated]
-  )
-  // Load from DB on mount (merge with localStorage, DB wins)
-  // If DB is empty (first-time user), auto-fetch from /server/list and sync to DB
+  // Load from DB on mount
   useEffect(() => {
-    if (!isAuthenticated) return
-    let cancelled = false
+    if (isAuthenticated) loadFromDb()
+  }, [isAuthenticated, loadFromDb])
 
-    async function loadFromDb() {
-      try {
-        const res = await axiosInstance.get('/proxy')
-        if (cancelled) return
-        const dbData = res.data?.data || []
-
-        if (dbData.length > 0) {
-          // Returning user — load from DB
-          setData((prev) => mergeResIntoData(prev, dbData))
-          setReceivedData(dbData)
-          setRenderingReceived(true)
-        } else {
-          // First-time user — DB empty, auto-fetch from API
-          try {
-            const listRes = await axiosInstance.get('/server/list', {
-              params: { proxy: 'true' },
-            })
-            if (cancelled) return
-            const listData = listRes.data?.data || []
-            if (listData.length > 0) {
-              setData((prev) => mergeResIntoData(prev, listData))
-              setReceivedData(listData)
-              setRenderingReceived(true)
-              // Sync fetched data to DB so next visit loads from DB
-              syncToDb(listData)
-            }
-          } catch (listErr) {
-            console.error('[DB Sync] Initial fetch failed:', listErr.message)
-          }
-        }
-      } catch (err) {
-        console.error('[DB Sync] Load failed:', err.message)
-      }
-    }
-
-    loadFromDb()
-    return () => {
-      cancelled = true
-    }
-  }, [isAuthenticated, syncToDb])
-
-  // Save data to localStorage whenever it changes
-  useEffect(() => {
-    saveData(data)
-  }, [data])
-
+  // handleGetData — thin wrapper around store.fetchData with toast feedback
   const handleGetData = useCallback(async () => {
-    const parsedIps = ips
-      .split('\n')
-      .map((line) => extractIP(line))
-      .filter(Boolean)
-      .join(',')
-
-    const params = { proxy: 'true' }
-    if (parsedIps) params.ips = parsedIps
-    if (amount) params.amount = +amount
-
     const loadingId = addToast(t('manager.fetchingData'), 'loading')
-
     try {
-      const res = await axiosInstance.get('/server/list', { params })
-
-      const resData = res.data?.data || []
-
-      // Merge resData into current state locally for rendering and syncing
-      const localMerged = mergeResIntoData(dataRef.current, resData)
-      const finalResData = localMerged.filter((row) => resData.some((r) => r.sid === row.sid))
-
-      setData((prevData) => {
-        let mergedData = mergeResIntoData(prevData, resData)
-
-        // Trash data cleanup
-        let finalMergedData = mergedData
-        if (!parsedIps && resData.length <= (params.amount || 200)) {
-          const trashSids = prevData
-            .filter(
-              (row) =>
-                !resData.some((r) => r.sid === row.sid) && row.status?.toLowerCase() !== 'refunded'
-            )
-            .map((row) => row.sid)
-
-          if (trashSids.length > 0) {
-            axiosInstance
-              .delete('/proxy', { data: { sids: trashSids } })
-              .catch((err) => console.error('[Cleanup] Delete failed:', err.message))
-
-            finalMergedData = mergedData.filter((row) => !trashSids.includes(row.sid))
-          }
-        }
-        return finalMergedData
-      })
-
-      // Update renderer state using merged data (important for keeping user_pass)
-      setReceivedData(finalResData)
-      setRenderingReceived(true)
-      setSelectedIds(new Set())
-      setSelectedRows([])
-
-      // Sync updated data to DB in background
-      syncToDb(finalResData)
-
+      const finalResData = await fetchData({ ips, amount })
+      clearSelection()
       removeToast(loadingId)
       addToast(
         <>
@@ -230,23 +94,15 @@ export default function ProxyManager({ onBuySuccessRef }) {
       removeToast(loadingId)
       addToast(`${t('manager.failedGetData')}: ${err.message}`, 'error')
     }
-  }, [ips, amount, addToast, removeToast, t, syncToDb])
+  }, [ips, amount, fetchData, clearSelection, addToast, removeToast, t])
 
   // Register buy success handler on parent ref
   useEffect(() => {
     if (onBuySuccessRef) {
       onBuySuccessRef.current = (newData, extraConfig) => {
-        if (Array.isArray(newData) && newData.length > 0) {
-          const enrichedData = newData.map((item) => ({
-            ...item,
-            ...extraConfig,
-          }))
-          setData((prev) => mergeResIntoData(prev, enrichedData))
-          syncToDb(enrichedData)
-          setReceivedData(enrichedData)
-          setRenderingReceived(true)
-          setSelectedIds(new Set())
-          setSelectedRows([])
+        const enriched = handleBuySuccessStore(newData, extraConfig)
+        if (enriched) {
+          clearSelection()
           const proxies = newData.map((item) => `${item.ip_port}:${item.user_pass}`).join('\n')
           safeCopy(proxies).then(
             (ok) =>
@@ -267,102 +123,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
     return () => {
       if (onBuySuccessRef) onBuySuccessRef.current = null
     }
-  }, [onBuySuccessRef, syncToDb, safeCopy, addToast, t, handleGetData])
-
-  // Helper: update a single row in both receivedData and data by sid
-  const updateRowBySid = useCallback((sid, updater) => {
-    setReceivedData((prev) => prev.map((r) => (r.sid === sid ? { ...r, ...updater(r) } : r)))
-    setData((prev) => prev.map((r) => (r.sid === sid ? { ...r, ...updater(r) } : r)))
-  }, [])
-
-  // --- Sequential processor with per-row feedback ---
-  const processSequential = useCallback(
-    async (rows, apiCallFn, actionName) => {
-      if (rows.length === 0) {
-        addToast(t('manager.noRowsSelected'), 'warning')
-        return
-      }
-      setIsProcessing(true)
-      setRowClassMap({})
-      let successCount = 0
-      let failCount = 0
-
-      const total = rows.length
-      const loadingId = addToast(
-        <>
-          {actionName} <span className="text-text-toast-success">1/{total}</span>
-        </>,
-        'loading'
-      )
-
-      for (let i = 0; i < rows.length; i++) {
-        const row = rows[i]
-        try {
-          const res = await apiCallFn(row)
-          if (res.data?.success) {
-            successCount++
-            setRowClassMap((prev) => ({ ...prev, [row.sid]: 'bg-success-cell' }))
-          } else {
-            failCount++
-            setRowClassMap((prev) => ({ ...prev, [row.sid]: 'bg-error-cell' }))
-          }
-        } catch {
-          failCount++
-          setRowClassMap((prev) => ({ ...prev, [row.sid]: 'bg-error-cell' }))
-        }
-        // Update progress toast
-        updateToast(
-          loadingId,
-          <>
-            {actionName}{' '}
-            <span className="text-text-toast-success">
-              {i + 2}/{total}
-            </span>
-          </>
-        )
-        // Random delay before next request
-        if (i < rows.length - 1) await randomDelay()
-      }
-
-      removeToast(loadingId)
-      setIsProcessing(false)
-      if (failCount === 0)
-        addToast(
-          <>
-            {actionName} {t('manager.completed')} <br />
-            <span className="text-text-toast-success">
-              {successCount} {t('manager.success')}
-            </span>
-          </>,
-          'success'
-        )
-      else if (successCount === 0)
-        addToast(
-          <>
-            {actionName} {t('manager.completed')} <br />
-            <span className="text-text-toast-error">
-              {failCount} {t('manager.failed')}
-            </span>
-          </>,
-          'error'
-        )
-      else
-        addToast(
-          <>
-            {actionName} {t('manager.completed')} <br />
-            <span className="text-text-toast-success">
-              {successCount} {t('manager.success')}
-            </span>
-            ,{' '}
-            <span className="text-text-toast-error">
-              {failCount} {t('manager.failed')}
-            </span>
-          </>,
-          failCount === 0 ? 'success' : 'error'
-        )
-    },
-    [addToast, updateToast, removeToast, t]
-  )
+  }, [onBuySuccessRef, handleBuySuccessStore, clearSelection, safeCopy, addToast, t, handleGetData])
 
   // --- Change IP handler ---
   const handleChangeIp = useCallback(async () => {
@@ -450,6 +211,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
       )
     }
   }, [
+    selectedRowsRef,
     changeIpType,
     changeIpInput,
     confirmAction,
@@ -573,6 +335,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
       )
     }
   }, [
+    selectedRowsRef,
     reinstallType,
     reinstallInput,
     confirmAction,
@@ -717,177 +480,23 @@ export default function ProxyManager({ onBuySuccessRef }) {
     if (updatedRows.length > 0) {
       syncToDb(updatedRows)
     }
-  }, [noteInput, processSequential, updateRowBySid, t, syncToDb, safeCopy])
+  }, [selectedRowsRef, noteInput, processSequential, updateRowBySid, t, syncToDb])
 
-  // --- Pause handler (batch) ---
-  const handlePause = useCallback(async () => {
-    const rows = [...selectedRowsRef.current]
-    if (rows.length === 0) {
-      addToast(t('manager.noRowsSelected'), 'warning')
-      return
-    }
-    const pausingId = addToast(t('manager.pausing'), 'loading')
-    setIsProcessing(true)
-    setRowClassMap({})
-    const sids = rows.map((r) => r.sid).join(',')
+  const handlePause = useCallback(
+    () =>
+      handleBatchAction('/server/pause', t('manager.pause').toUpperCase(), () => ({
+        status: 'Paused',
+      })),
+    [handleBatchAction, t]
+  )
 
-    try {
-      const res = await axiosInstance.post('/server/pause', { sids })
-      if (res.data?.success) {
-        const classUpdates = {}
-        const updatedRows = []
-        for (const row of rows) {
-          updateRowBySid(row.sid, () => ({ status: 'Paused' }))
-          updatedRows.push({ ...row, status: 'Paused' })
-          classUpdates[row.sid] = 'bg-success-cell'
-        }
-
-        setRowClassMap(classUpdates)
-        setSelectedIds((prev) => {
-          const newSet = new Set(prev)
-          for (const row of rows) newSet.delete(row._index)
-          return newSet
-        })
-        setSelectedRows([])
-
-        addToast(
-          <>
-            {t('manager.pause').toUpperCase()} {t('manager.completed')} <br />
-            <span className="text-text-toast-success">
-              {rows.length} {t('manager.success')}
-            </span>
-          </>,
-          'success'
-        )
-        // Sync in background after feedback
-        if (updatedRows.length > 0) syncToDb(updatedRows)
-      } else {
-        const classUpdates = {}
-        for (const row of rows) classUpdates[row.sid] = 'bg-error-cell'
-        setRowClassMap(classUpdates)
-        setSelectedIds((prev) => {
-          const newSet = new Set(prev)
-          for (const row of rows) newSet.delete(row._index)
-          return newSet
-        })
-        setSelectedRows([])
-        addToast(
-          <>
-            {t('manager.pause').toUpperCase()} {t('manager.completed')} <br />
-            <span className="text-text-toast-error">
-              {rows.length} {t('manager.failed')}
-            </span>
-          </>,
-          'error'
-        )
-      }
-    } catch {
-      const classUpdates = {}
-      for (const row of rows) classUpdates[row.sid] = 'bg-error-cell'
-      setRowClassMap(classUpdates)
-      setSelectedIds((prev) => {
-        const newSet = new Set(prev)
-        for (const row of rows) newSet.delete(row._index)
-        return newSet
-      })
-      setSelectedRows([])
-      addToast(
-        <>
-          PAUSE completed <br />
-          <span className="text-text-toast-error">{rows.length} failed</span>
-        </>,
-        'error'
-      )
-    }
-    removeToast(pausingId)
-    setIsProcessing(false)
-  }, [addToast, removeToast, updateRowBySid, t, syncToDb])
-
-  // --- Reboot handler (batch) ---
-  const handleReboot = useCallback(async () => {
-    const rows = [...selectedRowsRef.current]
-    if (rows.length === 0) {
-      addToast(t('manager.noRowsSelected'), 'warning')
-      return
-    }
-    const rebootingId = addToast(t('manager.rebooting'), 'loading')
-    setIsProcessing(true)
-    setRowClassMap({})
-    const sids = rows.map((r) => r.sid).join(',')
-
-    try {
-      const res = await axiosInstance.post('/server/reboot', { sids })
-      if (res.data?.success) {
-        const classUpdates = {}
-        const updatedRows = []
-        for (const row of rows) {
-          updateRowBySid(row.sid, () => ({ status: 'Running' }))
-          updatedRows.push({ ...row, status: 'Running' })
-          classUpdates[row.sid] = 'bg-success-cell'
-        }
-
-        setRowClassMap(classUpdates)
-        setSelectedIds((prev) => {
-          const newSet = new Set(prev)
-          for (const row of rows) newSet.delete(row._index)
-          return newSet
-        })
-        setSelectedRows([])
-
-        addToast(
-          <>
-            {t('manager.reboot').toUpperCase()} {t('manager.completed')} <br />
-            <span className="text-text-toast-success">
-              {rows.length} {t('manager.success')}
-            </span>
-          </>,
-          'success'
-        )
-        // Sync in background after feedback
-        if (updatedRows.length > 0) syncToDb(updatedRows)
-      } else {
-        const classUpdates = {}
-        for (const row of rows) classUpdates[row.sid] = 'bg-error-cell'
-        setRowClassMap(classUpdates)
-        setSelectedIds((prev) => {
-          const newSet = new Set(prev)
-          for (const row of rows) newSet.delete(row._index)
-          return newSet
-        })
-        setSelectedRows([])
-        addToast(
-          <>
-            {t('manager.reboot').toUpperCase()} {t('manager.completed')} <br />
-            <span className="text-text-toast-error">
-              {rows.length} {t('manager.failed')}
-            </span>
-          </>,
-          'error'
-        )
-      }
-    } catch {
-      const classUpdates = {}
-      for (const row of rows) classUpdates[row.sid] = 'bg-error-cell'
-      setRowClassMap(classUpdates)
-      setSelectedIds((prev) => {
-        const newSet = new Set(prev)
-        for (const row of rows) newSet.delete(row._index)
-        return newSet
-      })
-      setSelectedRows([])
-      addToast(
-        <>
-          {t('manager.reboot').toUpperCase()} {t('manager.completed')} <br />
-          <span className="text-text-toast-error">
-            {rows.length} {t('manager.failed')}
-          </span>
-        </>,
-        'error'
-      )
-    }
-    removeToast(rebootingId)
-    setIsProcessing(false)
-  }, [addToast, removeToast, updateRowBySid, t, syncToDb])
+  const handleReboot = useCallback(
+    () =>
+      handleBatchAction('/server/reboot', t('manager.reboot').toUpperCase(), () => ({
+        status: 'Running',
+      })),
+    [handleBatchAction, t]
+  )
 
   const handleRenew = useCallback(async () => {
     const rows = [...selectedRowsRef.current]
@@ -972,13 +581,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
 
       setRowClassMap((prev) => ({ ...prev, ...classUpdates }))
 
-      // Deselect all processed rows
-      setSelectedIds((prev) => {
-        const newSet = new Set(prev)
-        for (const row of rows) newSet.delete(row._index)
-        return newSet
-      })
-      setSelectedRows([])
+      deselectRows(rows)
 
       if (successCount > 0 && failCount === 0) {
         addToast(
@@ -1021,18 +624,24 @@ export default function ProxyManager({ onBuySuccessRef }) {
       const classUpdates = {}
       for (const row of validRows) classUpdates[row.sid] = 'bg-error-cell'
       setRowClassMap((prev) => ({ ...prev, ...classUpdates }))
-      setSelectedIds((prev) => {
-        const newSet = new Set(prev)
-        for (const row of rows) newSet.delete(row._index)
-        return newSet
-      })
-      setSelectedRows([])
+      deselectRows(rows)
       addToast(t('manager.renewError'), 'error')
     } finally {
       setIsProcessing(false)
       removeToast(toastId)
     }
-  }, [confirmAction, addToast, removeToast, updateRowBySid, t, syncToDb])
+  }, [
+    selectedRowsRef,
+    confirmAction,
+    addToast,
+    removeToast,
+    updateRowBySid,
+    deselectRows,
+    setIsProcessing,
+    setRowClassMap,
+    t,
+    syncToDb,
+  ])
 
   const handleRefund = useCallback(async () => {
     const rows = [...selectedRowsRef.current]
@@ -1109,13 +718,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
 
       setRowClassMap((prev) => ({ ...prev, ...classUpdates }))
 
-      // Deselect all processed rows
-      setSelectedIds((prev) => {
-        const newSet = new Set(prev)
-        for (const row of rows) newSet.delete(row._index)
-        return newSet
-      })
-      setSelectedRows([])
+      deselectRows(rows)
 
       if (successCount > 0 && failCount === 0) {
         addToast(
@@ -1158,18 +761,24 @@ export default function ProxyManager({ onBuySuccessRef }) {
       const classUpdates = {}
       for (const row of validRows) classUpdates[row.sid] = 'bg-error-cell'
       setRowClassMap((prev) => ({ ...prev, ...classUpdates }))
-      setSelectedIds((prev) => {
-        const newSet = new Set(prev)
-        for (const row of rows) newSet.delete(row._index)
-        return newSet
-      })
-      setSelectedRows([])
+      deselectRows(rows)
       addToast(t('manager.refundError'), 'error')
     } finally {
       setIsProcessing(false)
       removeToast(toastId)
     }
-  }, [confirmAction, addToast, removeToast, updateRowBySid, t, syncToDb])
+  }, [
+    selectedRowsRef,
+    confirmAction,
+    addToast,
+    removeToast,
+    updateRowBySid,
+    deselectRows,
+    setIsProcessing,
+    setRowClassMap,
+    t,
+    syncToDb,
+  ])
 
   return (
     <div>
@@ -1704,10 +1313,8 @@ export default function ProxyManager({ onBuySuccessRef }) {
             className="bg-action rounded-lg px-2 py-2 hover:brightness-(--highlight-brightness)"
             style={{ '--action-color': 'var(--orange)' }}
             onClick={() => {
-              setReceivedData([...data])
-              setRenderingReceived(true)
-              setSelectedIds(new Set())
-              setSelectedRows([])
+              resetView()
+              clearSelection()
               setRowClassMap({})
             }}
           >
@@ -1737,10 +1344,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
             </p>
           </div>
         }
-        onSelectionChange={(rows, ids) => {
-          setSelectedRows(rows)
-          setSelectedIds(ids)
-        }}
+        onSelectionChange={onSelectionChange}
       />
     </div>
   )

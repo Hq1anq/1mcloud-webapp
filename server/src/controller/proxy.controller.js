@@ -100,36 +100,44 @@ export async function saveProxies(req, res) {
     await transaction.begin();
 
     try {
-      for (const proxy of proxies) {
-        await transaction
-          .request()
-          .input("userId", userId)
-          .input("sid", proxy.sid)
-          .input("ip_port", proxy.ip_port || null)
-          .input("user_pass", proxy.user_pass || null)
-          .input("country", proxy.country || null)
-          .input("type", proxy.type || null)
-          .input("created", proxy.created || null)
-          .input("expired", proxy.expired || null)
-          .input("status", proxy.status || null)
-          .input("note", proxy.note || null).query(`
+      const chunkSize = 100;
+      for (let i = 0; i < proxies.length; i += chunkSize) {
+        const chunk = proxies.slice(i, i + chunkSize);
+        const request = transaction.request();
+        request.input("userId", userId);
+
+        let query = "";
+        chunk.forEach((proxy, idx) => {
+          request.input(`sid_${idx}`, proxy.sid);
+          request.input(`ip_port_${idx}`, proxy.ip_port || null);
+          request.input(`user_pass_${idx}`, proxy.user_pass || null);
+          request.input(`country_${idx}`, proxy.country || null);
+          request.input(`type_${idx}`, proxy.type || null);
+          request.input(`created_${idx}`, proxy.created || null);
+          request.input(`expired_${idx}`, proxy.expired || null);
+          request.input(`status_${idx}`, proxy.status || null);
+          request.input(`note_${idx}`, proxy.note || null);
+
+          query += `
             MERGE Proxy AS target
-            USING (SELECT @userId AS user_id, @sid AS sid) AS source
+            USING (SELECT @userId AS user_id, @sid_${idx} AS sid) AS source
             ON target.user_id = source.user_id AND target.sid = source.sid
             WHEN MATCHED THEN
               UPDATE SET
-                ip_port = COALESCE(@ip_port, target.ip_port),
-                user_pass = COALESCE(@user_pass, target.user_pass),
-                country = COALESCE(@country, target.country),
-                type = COALESCE(@type, target.type),
-                created = COALESCE(@created, target.created),
-                expired = COALESCE(@expired, target.expired),
-                status = COALESCE(@status, target.status),
-                note = COALESCE(@note, target.note)
+                ip_port = COALESCE(@ip_port_${idx}, target.ip_port),
+                user_pass = COALESCE(@user_pass_${idx}, target.user_pass),
+                country = COALESCE(@country_${idx}, target.country),
+                type = COALESCE(@type_${idx}, target.type),
+                created = COALESCE(@created_${idx}, target.created),
+                expired = COALESCE(@expired_${idx}, target.expired),
+                status = COALESCE(@status_${idx}, target.status),
+                note = COALESCE(@note_${idx}, target.note)
             WHEN NOT MATCHED THEN
               INSERT (user_id, sid, ip_port, user_pass, country, type, created, expired, status, note)
-              VALUES (@userId, @sid, @ip_port, @user_pass, @country, @type, @created, @expired, @status, @note);
-          `);
+              VALUES (@userId, @sid_${idx}, @ip_port_${idx}, @user_pass_${idx}, @country_${idx}, @type_${idx}, @created_${idx}, @expired_${idx}, @status_${idx}, @note_${idx});
+          `;
+        });
+        await request.query(query);
       }
 
       await transaction.commit();

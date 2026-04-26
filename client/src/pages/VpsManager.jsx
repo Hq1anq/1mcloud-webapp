@@ -1,12 +1,13 @@
 import Table from '../components/ui/Table'
 import axiosInstance from '../lib/axios'
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useToast } from '../context/ToastContext'
-import { extractIP, randomDelay } from '../lib/utils'
 import { useSafeCopy } from '../context/SafeCopyContext'
 import { useConfirm } from '../context/ConfirmContext'
 import { useTranslation } from '../i18n'
 import useAuthStore from '../store/useAuthStore'
+import useVpsStore from '../store/useVpsStore'
+import useManagerActions from '../hooks/useManagerActions'
 
 const OPERATOR_CONFIG = {
   sid: ['greater-equal', 'less-equal', 'equal', 'contain'],
@@ -14,88 +15,43 @@ const OPERATOR_CONFIG = {
   expired: ['greater-equal', 'less-equal', 'contain'],
 }
 
-const STORAGE_KEY = 'vpsManager_data'
-
-function loadData() {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    return stored ? JSON.parse(stored) : []
-  } catch {
-    return []
-  }
-}
-
-function saveData(data) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
-}
-
-/** Merge res into data by sid, safely merging user_pass */
-function mergeResIntoData(data, res) {
-  const dataMap = new Map(data.map((row) => [row.sid, row]))
-
-  for (const resRow of res) {
-    const existingRow = dataMap.get(resRow.sid)
-
-    // Priority: 1. resRow.user_pass, 2. existingRow.user_pass
-    let userPass = resRow.user_pass !== undefined ? resRow.user_pass : existingRow?.user_pass
-
-    // Add default user if missing based on OS
-    if (!userPass || !userPass.includes('/')) {
-      const os = resRow.he_dieu_hanh || existingRow?.he_dieu_hanh || ''
-      const defaultUser = os.toLowerCase().includes('ubuntu')
-        ? 'root'
-        : os.toLowerCase().includes('win')
-          ? 'Administrator'
-          : ''
-      if (defaultUser) {
-        userPass = `${defaultUser}/`
-      }
-    }
-
-    if (existingRow) {
-      // Update all columns from res, but keep user_pass based on priority above
-      Object.assign(existingRow, resRow)
-      if (userPass !== undefined) {
-        existingRow.user_pass = userPass
-      }
-    } else {
-      // New row from res — add to data
-      const newRow = { ...resRow }
-      if (userPass !== undefined) newRow.user_pass = userPass
-      dataMap.set(resRow.sid, newRow)
-    }
-  }
-
-  return Array.from(dataMap.values())
-}
-
 export default function VpsManager({ onBuySuccessRef }) {
-  const [selectedRows, setSelectedRows] = useState([])
-  const { addToast, updateToast, removeToast } = useToast()
+  const { addToast, removeToast } = useToast()
   const { safeCopy } = useSafeCopy()
   const { confirmAction } = useConfirm()
   const t = useTranslation()
 
-  // Controlled input state
+  // Controlled input state (ephemeral form state stays local)
   const [ips, setIps] = useState('')
   const [amount, setAmount] = useState('')
   const [noteInput, setNoteInput] = useState('')
 
-  // persistent data in localStorage
-  const [data, setData] = useState(loadData)
-  const [receivedData, setReceivedData] = useState(loadData)
-  const [renderingReceived, setRenderingReceived] = useState(false)
+  // Data from Zustand store
+  const data = useVpsStore((s) => s.data)
+  const receivedData = useVpsStore((s) => s.receivedData)
+  const renderingReceived = useVpsStore((s) => s.renderingReceived)
+  const setRenderingReceived = useVpsStore((s) => s.setRenderingReceived)
+  const updateRowBySid = useVpsStore((s) => s.updateRowBySid)
+  const syncToDb = useVpsStore((s) => s.syncToDb)
+  const loadFromDb = useVpsStore((s) => s.loadFromDb)
+  const fetchData = useVpsStore((s) => s.fetchData)
+  const handleBuySuccessStore = useVpsStore((s) => s.handleBuySuccess)
+  const resetView = useVpsStore((s) => s.resetView)
 
-  // Action feedback state
-  const [rowClassMap, setRowClassMap] = useState({})
-  const [selectedIds, setSelectedIds] = useState(new Set())
-  const [isProcessing, setIsProcessing] = useState(false)
-  const selectedRowsRef = useRef(selectedRows)
-  const dataRef = useRef(data)
-  useEffect(() => {
-    selectedRowsRef.current = selectedRows
-    dataRef.current = data
-  }, [selectedRows, data])
+  // Shared selection & processing logic
+  const {
+    selectedIds,
+    selectedRowsRef,
+    isProcessing,
+    rowClassMap,
+    setRowClassMap,
+    setIsProcessing,
+    clearSelection,
+    deselectRows,
+    onSelectionChange,
+    handleBatchAction,
+    processSequential,
+  } = useManagerActions({ updateRowBySid, syncToDb })
 
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
 
@@ -108,127 +64,17 @@ export default function VpsManager({ onBuySuccessRef }) {
     }
   }, [])
 
-  // --- DB sync helpers ---
-  const syncToDb = useCallback(
-    async (vpsToSync) => {
-      if (!isAuthenticated || !vpsToSync || vpsToSync.length === 0) return
-      try {
-        await axiosInstance.post('/vps', { vpsList: vpsToSync })
-      } catch (err) {
-        console.error('[DB Sync] Save failed:', err.message)
-      }
-    },
-    [isAuthenticated]
-  )
-
-  // Load from DB on mount (merge with localStorage, DB wins)
-  // If DB is empty (first-time user), auto-fetch from /server/list and sync to DB
+  // Load from DB on mount
   useEffect(() => {
-    if (!isAuthenticated) return
-    let cancelled = false
+    if (isAuthenticated) loadFromDb()
+  }, [isAuthenticated, loadFromDb])
 
-    async function loadFromDb() {
-      try {
-        const res = await axiosInstance.get('/vps')
-        if (cancelled) return
-        const dbData = res.data?.data || []
-
-        if (dbData.length > 0) {
-          // Returning user — load from DB
-          setData((prev) => mergeResIntoData(prev, dbData))
-          setReceivedData(dbData)
-          setRenderingReceived(true)
-        } else {
-          // First-time user — DB empty, auto-fetch from API
-          try {
-            const listRes = await axiosInstance.get('/server/list', {
-              params: { proxy: 'false' },
-            })
-            if (cancelled) return
-            const listData = listRes.data?.data || []
-            if (listData.length > 0) {
-              setData((prev) => mergeResIntoData(prev, listData))
-              setReceivedData(listData)
-              setRenderingReceived(true)
-              // Sync fetched data to DB so next visit loads from DB
-              syncToDb(listData)
-            }
-          } catch (listErr) {
-            console.error('[DB Sync] Initial fetch failed:', listErr.message)
-          }
-        }
-      } catch (err) {
-        console.error('[DB Sync] Load failed:', err.message)
-      }
-    }
-
-    loadFromDb()
-    return () => {
-      cancelled = true
-    }
-  }, [isAuthenticated, syncToDb])
-
-  // Save data to localStorage whenever it changes
-  useEffect(() => {
-    saveData(data)
-  }, [data])
-
+  // handleGetData — thin wrapper around store.fetchData with toast feedback
   const handleGetData = useCallback(async () => {
-    const parsedIps = ips
-      .split('\n')
-      .map((line) => extractIP(line))
-      .filter(Boolean)
-      .join(',')
-
-    const params = { proxy: 'false' }
-    if (parsedIps) params.ips = parsedIps
-    params.amount = amount ? +amount : 200
-
     const loadingId = addToast(t('manager.fetchingData'), 'loading')
-
     try {
-      const res = await axiosInstance.get('/server/list', { params })
-
-      const resData = res.data?.data || []
-
-      // Merge resData into current state locally for rendering and syncing
-      const localMerged = mergeResIntoData(dataRef.current, resData)
-      const finalResData = localMerged.filter((row) => resData.some((r) => r.sid === row.sid))
-
-      setData((prevData) => {
-        let mergedData = mergeResIntoData(prevData, resData)
-
-        // Trash data cleanup: if full fetch (no IPs) and returned results are within limit,
-        // it means we got all current resources. Anything in prevData NOT in resData and NOT refunded is trash.
-        let finalMergedData = mergedData
-        if (!parsedIps && resData.length <= (params.amount || 200)) {
-          const trashSids = prevData
-            .filter(
-              (row) =>
-                !resData.some((r) => r.sid === row.sid) && row.status?.toLowerCase() !== 'refunded'
-            )
-            .map((row) => row.sid)
-
-          if (trashSids.length > 0) {
-            axiosInstance
-              .delete('/vps', { data: { sids: trashSids } })
-              .catch((err) => console.error('[Cleanup] Delete failed:', err.message))
-
-            finalMergedData = mergedData.filter((row) => !trashSids.includes(row.sid))
-          }
-        }
-        return finalMergedData
-      })
-
-      // Update renderer state using merged data (important for keeping user_pass)
-      setReceivedData(finalResData)
-      setRenderingReceived(true)
-      setSelectedIds(new Set())
-      setSelectedRows([])
-
-      // Sync updated data to DB in background
-      syncToDb(finalResData)
-
+      const finalResData = await fetchData({ ips, amount })
+      clearSelection()
       removeToast(loadingId)
       addToast(
         <>
@@ -242,23 +88,15 @@ export default function VpsManager({ onBuySuccessRef }) {
       removeToast(loadingId)
       addToast(`${t('manager.failedGetData')}: ${err.message}`, 'error')
     }
-  }, [ips, amount, addToast, removeToast, t, syncToDb])
+  }, [ips, amount, fetchData, clearSelection, addToast, removeToast, t])
 
   // Register buy success handler on parent ref
   useEffect(() => {
     if (onBuySuccessRef) {
       onBuySuccessRef.current = (newData, extraConfig) => {
-        if (Array.isArray(newData) && newData.length > 0) {
-          const enrichedData = newData.map((item) => ({
-            ...item,
-            ...extraConfig,
-          }))
-          setData((prev) => mergeResIntoData(prev, enrichedData))
-          syncToDb(enrichedData)
-          setReceivedData(enrichedData)
-          setRenderingReceived(true)
-          setSelectedIds(new Set())
-          setSelectedRows([])
+        const enriched = handleBuySuccessStore(newData, extraConfig)
+        if (enriched) {
+          clearSelection()
           const vps = newData.map((item) => `${item.ip_port}/${item.user_pass}`).join('\n')
           safeCopy(vps).then(
             (ok) =>
@@ -279,197 +117,7 @@ export default function VpsManager({ onBuySuccessRef }) {
     return () => {
       if (onBuySuccessRef) onBuySuccessRef.current = null
     }
-  }, [onBuySuccessRef, syncToDb, safeCopy, addToast, t, handleGetData])
-
-  // Helper: update a single row in both receivedData and data by sid
-  const updateRowBySid = useCallback((sid, updater) => {
-    setReceivedData((prev) => prev.map((r) => (r.sid === sid ? { ...r, ...updater(r) } : r)))
-    setData((prev) => prev.map((r) => (r.sid === sid ? { ...r, ...updater(r) } : r)))
-  }, [])
-
-  // --- Batch handler helper ---
-  const handleBatchAction = useCallback(
-    async (endpoint, actionName, statusUpdater) => {
-      const rows = [...selectedRowsRef.current]
-      if (rows.length === 0) {
-        addToast(t('manager.noRowsSelected'), 'warning')
-        return
-      }
-      const loadingId = addToast(actionName + '...', 'loading')
-      setIsProcessing(true)
-      setRowClassMap({})
-      const sids = rows.map((r) => r.sid).join(',')
-
-      try {
-        const res = await axiosInstance.post(endpoint, { sids })
-        if (res.data?.success) {
-          const classUpdates = {}
-          const updatedRows = []
-          for (const row of rows) {
-            if (statusUpdater) {
-              const updates = statusUpdater(row)
-              updateRowBySid(row.sid, () => updates)
-              updatedRows.push({ ...row, ...updates })
-            }
-            classUpdates[row.sid] = 'bg-success-cell'
-          }
-
-          setRowClassMap(classUpdates)
-          setSelectedIds((prev) => {
-            const newSet = new Set(prev)
-            for (const row of rows) newSet.delete(row._index)
-            return newSet
-          })
-          setSelectedRows([])
-          addToast(
-            <>
-              {actionName} {t('manager.completed')} <br />
-              <span className="text-text-toast-success">
-                {rows.length} {t('manager.success')}
-              </span>
-            </>,
-            'success'
-          )
-          // Sync in background after feedback
-          if (updatedRows.length > 0) syncToDb(updatedRows)
-        } else {
-          const classUpdates = {}
-          for (const row of rows) classUpdates[row.sid] = 'bg-error-cell'
-          setRowClassMap(classUpdates)
-          setSelectedIds((prev) => {
-            const newSet = new Set(prev)
-            for (const row of rows) newSet.delete(row._index)
-            return newSet
-          })
-          setSelectedRows([])
-          addToast(
-            <>
-              {actionName} {t('manager.completed')} <br />
-              <span className="text-text-toast-error">
-                {rows.length} {t('manager.failed')}
-              </span>
-            </>,
-            'error'
-          )
-        }
-      } catch {
-        const classUpdates = {}
-        for (const row of rows) classUpdates[row.sid] = 'bg-error-cell'
-        setRowClassMap(classUpdates)
-        setSelectedIds((prev) => {
-          const newSet = new Set(prev)
-          for (const row of rows) newSet.delete(row._index)
-          return newSet
-        })
-        setSelectedRows([])
-        addToast(
-          <>
-            {actionName} {t('manager.completed')} <br />
-            <span className="text-text-toast-error">
-              {rows.length} {t('manager.failed')}
-            </span>
-          </>,
-          'error'
-        )
-      }
-      removeToast(loadingId)
-      setIsProcessing(false)
-    },
-    [addToast, removeToast, syncToDb, updateRowBySid, t]
-  )
-
-  // --- Sequential processor with per-row feedback ---
-  const processSequential = useCallback(
-    async (rows, apiCallFn, actionName) => {
-      if (rows.length === 0) {
-        addToast(t('manager.noRowsSelected'), 'warning')
-        return
-      }
-      setIsProcessing(true)
-      setRowClassMap({})
-      let successCount = 0
-      let failCount = 0
-
-      const total = rows.length
-      const loadingId = addToast(
-        <>
-          {actionName} <span className="text-text-toast-success">1/{total}</span>
-        </>,
-        'loading'
-      )
-
-      for (let i = 0; i < rows.length; i++) {
-        const row = rows[i]
-        try {
-          const res = await apiCallFn(row)
-          if (res.data?.success) {
-            successCount++
-            setRowClassMap((prev) => ({ ...prev, [row.sid]: 'bg-success-cell' }))
-          } else {
-            failCount++
-            setRowClassMap((prev) => ({ ...prev, [row.sid]: 'bg-error-cell' }))
-          }
-        } catch {
-          failCount++
-          setRowClassMap((prev) => ({ ...prev, [row.sid]: 'bg-error-cell' }))
-        }
-        setSelectedIds((prev) => {
-          const newSet = new Set(prev)
-          newSet.delete(row._index)
-          return newSet
-        })
-        setSelectedRows((prev) => prev.filter((r) => r._index !== row._index))
-        updateToast(
-          loadingId,
-          <>
-            {actionName}{' '}
-            <span className="text-text-toast-success">
-              {i + 2}/{total}
-            </span>
-          </>
-        )
-        if (i < rows.length - 1) await randomDelay()
-      }
-
-      removeToast(loadingId)
-      setIsProcessing(false)
-      if (failCount === 0)
-        addToast(
-          <>
-            {actionName} {t('manager.completed')} <br />
-            <span className="text-text-toast-success">
-              {successCount} {t('manager.success')}
-            </span>
-          </>,
-          'success'
-        )
-      else if (successCount === 0)
-        addToast(
-          <>
-            {actionName} {t('manager.completed')} <br />
-            <span className="text-text-toast-error">
-              {failCount} {t('manager.failed')}
-            </span>
-          </>,
-          'error'
-        )
-      else
-        addToast(
-          <>
-            {actionName} {t('manager.completed')} <br />
-            <span className="text-text-toast-success">
-              {successCount} {t('manager.success')}
-            </span>
-            ,{' '}
-            <span className="text-text-toast-error">
-              {failCount} {t('manager.failed')}
-            </span>
-          </>,
-          failCount === 0 ? 'success' : 'error'
-        )
-    },
-    [addToast, updateToast, removeToast, t]
-  )
+  }, [onBuySuccessRef, handleBuySuccessStore, clearSelection, safeCopy, addToast, t, handleGetData])
 
   // --- Handlers ---
   const handleCopyIp = useCallback(() => {
@@ -495,7 +143,7 @@ export default function VpsManager({ onBuySuccessRef }) {
         )
       }
     })
-  }, [addToast, safeCopy, t])
+  }, [selectedRowsRef, addToast, safeCopy, t])
 
   const handleReboot = useCallback(
     () =>
@@ -553,7 +201,7 @@ export default function VpsManager({ onBuySuccessRef }) {
       t('manager.changeNote').toUpperCase()
     )
     if (updatedRowsToSync.length > 0) syncToDb(updatedRowsToSync)
-  }, [noteInput, processSequential, updateRowBySid, t, syncToDb])
+  }, [selectedRowsRef, noteInput, processSequential, updateRowBySid, t, syncToDb])
 
   // --- Renew handler ---
   const handleRenew = useCallback(async () => {
@@ -638,13 +286,7 @@ export default function VpsManager({ onBuySuccessRef }) {
       }
 
       setRowClassMap((prev) => ({ ...prev, ...classUpdates }))
-
-      setSelectedIds((prev) => {
-        const newSet = new Set(prev)
-        for (const row of rows) newSet.delete(row._index)
-        return newSet
-      })
-      setSelectedRows([])
+      deselectRows(rows)
 
       if (successCount > 0 && failCount === 0) {
         addToast(
@@ -687,18 +329,24 @@ export default function VpsManager({ onBuySuccessRef }) {
       const classUpdates = {}
       for (const row of validRows) classUpdates[row.sid] = 'bg-error-cell'
       setRowClassMap((prev) => ({ ...prev, ...classUpdates }))
-      setSelectedIds((prev) => {
-        const newSet = new Set(prev)
-        for (const row of rows) newSet.delete(row._index)
-        return newSet
-      })
-      setSelectedRows([])
+      deselectRows(rows)
       addToast(t('manager.renewError'), 'error')
     } finally {
       setIsProcessing(false)
       removeToast(toastId)
     }
-  }, [confirmAction, addToast, removeToast, updateRowBySid, t, syncToDb])
+  }, [
+    selectedRowsRef,
+    confirmAction,
+    addToast,
+    removeToast,
+    updateRowBySid,
+    deselectRows,
+    setIsProcessing,
+    setRowClassMap,
+    t,
+    syncToDb,
+  ])
 
   const handleRefund = useCallback(async () => {
     const rows = [...selectedRowsRef.current]
@@ -781,12 +429,7 @@ export default function VpsManager({ onBuySuccessRef }) {
 
       setRowClassMap((prev) => ({ ...prev, ...classUpdates }))
 
-      setSelectedIds((prev) => {
-        const newSet = new Set(prev)
-        for (const row of rows) newSet.delete(row._index)
-        return newSet
-      })
-      setSelectedRows([])
+      deselectRows(rows)
 
       if (successCount > 0 && failCount === 0) {
         addToast(
@@ -829,18 +472,24 @@ export default function VpsManager({ onBuySuccessRef }) {
       const classUpdates = {}
       for (const row of validRows) classUpdates[row.sid] = 'bg-error-cell'
       setRowClassMap((prev) => ({ ...prev, ...classUpdates }))
-      setSelectedIds((prev) => {
-        const newSet = new Set(prev)
-        for (const row of rows) newSet.delete(row._index)
-        return newSet
-      })
-      setSelectedRows([])
+      deselectRows(rows)
       addToast(t('manager.refundError'), 'error')
     } finally {
       setIsProcessing(false)
       removeToast(toastId)
     }
-  }, [confirmAction, addToast, removeToast, updateRowBySid, t, syncToDb])
+  }, [
+    selectedRowsRef,
+    confirmAction,
+    addToast,
+    removeToast,
+    updateRowBySid,
+    deselectRows,
+    setIsProcessing,
+    setRowClassMap,
+    t,
+    syncToDb,
+  ])
 
   return (
     <div>
@@ -1170,10 +819,8 @@ export default function VpsManager({ onBuySuccessRef }) {
             className="bg-action rounded-lg px-2 py-2 hover:brightness-(--highlight-brightness)"
             style={{ '--action-color': 'var(--orange)' }}
             onClick={() => {
-              setReceivedData([...data])
-              setRenderingReceived(true)
-              setSelectedIds(new Set())
-              setSelectedRows([])
+              resetView()
+              clearSelection()
               setRowClassMap({})
             }}
           >
@@ -1203,10 +850,7 @@ export default function VpsManager({ onBuySuccessRef }) {
             </p>
           </div>
         }
-        onSelectionChange={(rows, ids) => {
-          setSelectedRows(rows)
-          setSelectedIds(ids)
-        }}
+        onSelectionChange={onSelectionChange}
       />
     </div>
   )

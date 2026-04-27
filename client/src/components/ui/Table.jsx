@@ -153,106 +153,125 @@ const Table = forwardRef(function Table(
   }, [])
 
   const filteredData = useMemo(() => {
-    if (!useFilter) return data || DEFAULT_DATA
+    let resultData = data || DEFAULT_DATA
+
+    if (!useFilter) {
+      // Keep resultData as data
+      return [...resultData].sort((a, b) => b.sid - a.sid)
+    }
+
+    const isIpPortFilterActive = !!filters['ip_port']?.value
+    const isStatusFilterActive = !!filters['status']?.value
+    const shouldHideRefunded = !isIpPortFilterActive && !isStatusFilterActive
+
     if (renderingReceived) {
-      matchedSidsRef.current = null
       lastFilterVersionRef.current = filterVersion
-      return receivedData
-    }
-    const hasActiveFilters = Object.values(filters).some((f) => f.value)
-    if (!hasActiveFilters) {
-      matchedSidsRef.current = null
-      lastFilterVersionRef.current = filterVersion
-      return data
-    }
 
-    // Only recompute which SIDs match when filterVersion changes (Enter was pressed)
-    if (filterVersion !== lastFilterVersionRef.current) {
-      lastFilterVersionRef.current = filterVersion
-      const result = data.filter((row) => {
-        return Object.entries(filters).every(([key, filter]) => {
-          if (!filter.value) return true // Skip empty filters
+      let initialData = receivedData
+      if (shouldHideRefunded)
+        initialData = initialData.filter((row) => row?.status?.toLowerCase() !== 'refunded')
+      matchedSidsRef.current = new Set(initialData.map((r) => r.sid))
+      resultData = initialData
+    } else {
+      if (filterVersion !== lastFilterVersionRef.current) {
+        lastFilterVersionRef.current = filterVersion
 
-          let operator = filter.operator || 'contain'
+        let result = data
+        const hasActiveFilters = Object.values(filters).some((f) => f.value)
 
-          const cellValue = row[key]
-          const filterValue = filter.value
+        if (hasActiveFilters) {
+          result = data.filter((row) => {
+            return Object.entries(filters).every(([key, filter]) => {
+              if (!filter.value) return true // Skip empty filters
 
-          if (['created', 'expired'].includes(key) && cellValue && filterValue) {
-            try {
-              const dateCell = str2date(String(cellValue)).getTime()
-              const dateFilter = str2date(String(filterValue)).getTime()
+              let operator = filter.operator || 'contain'
 
-              if (!isNaN(dateCell) && !isNaN(dateFilter)) {
+              const cellValue = row[key]
+              const filterValue = filter.value
+
+              if (['created', 'expired'].includes(key) && cellValue && filterValue) {
+                try {
+                  const dateCell = str2date(String(cellValue)).getTime()
+                  const dateFilter = str2date(String(filterValue)).getTime()
+
+                  if (!isNaN(dateCell) && !isNaN(dateFilter)) {
+                    switch (operator) {
+                      case 'greater-equal':
+                        return dateCell >= dateFilter
+                      case 'less-equal':
+                        return dateCell <= dateFilter
+                      case 'equal':
+                        return dateCell === dateFilter
+                      case 'contain':
+                      default:
+                        return String(cellValue)
+                          .toLowerCase()
+                          .includes(String(filterValue).toLowerCase())
+                    }
+                  }
+                } catch {
+                  // Fallback for parsing errors
+                }
+              }
+
+              // Check if both values are valid numbers for numeric comparison
+              const isNumeric =
+                !isNaN(parseFloat(cellValue)) &&
+                isFinite(cellValue) &&
+                !isNaN(parseFloat(filterValue)) &&
+                isFinite(filterValue)
+
+              if (isNumeric) {
+                const numCell = parseFloat(cellValue)
+                const numFilter = parseFloat(filterValue)
+
                 switch (operator) {
                   case 'greater-equal':
-                    return dateCell >= dateFilter
+                    return numCell >= numFilter
                   case 'less-equal':
-                    return dateCell <= dateFilter
+                    return numCell <= numFilter
                   case 'equal':
-                    return dateCell === dateFilter
+                    return numCell === numFilter
                   case 'contain':
                   default:
                     return String(cellValue)
                       .toLowerCase()
                       .includes(String(filterValue).toLowerCase())
                 }
+              } else {
+                // String comparison
+                const strCell = String(cellValue ?? '').toLowerCase()
+                const strFilter = String(filterValue).toLowerCase()
+
+                switch (operator) {
+                  case 'equal':
+                    return strCell === strFilter
+                  case 'contain':
+                  default:
+                    return strCell.includes(strFilter)
+                  case 'greater-equal':
+                  case 'less-equal':
+                    return strCell.includes(strFilter)
+                }
               }
-            } catch {
-              // Fallback for parsing errors
-            }
-          }
+            })
+          })
+        }
 
-          // Check if both values are valid numbers for numeric comparison
-          const isNumeric =
-            !isNaN(parseFloat(cellValue)) &&
-            isFinite(cellValue) &&
-            !isNaN(parseFloat(filterValue)) &&
-            isFinite(filterValue)
+        if (shouldHideRefunded)
+          result = result.filter((row) => row?.status?.toLowerCase() !== 'refunded')
 
-          if (isNumeric) {
-            const numCell = parseFloat(cellValue)
-            const numFilter = parseFloat(filterValue)
+        matchedSidsRef.current = new Set(result.map((r) => r.sid))
+      }
 
-            switch (operator) {
-              case 'greater-equal':
-                return numCell >= numFilter
-              case 'less-equal':
-                return numCell <= numFilter
-              case 'equal':
-                return numCell === numFilter
-              case 'contain':
-              default:
-                return String(cellValue).toLowerCase().includes(String(filterValue).toLowerCase())
-            }
-          } else {
-            // String comparison
-            const strCell = String(cellValue ?? '').toLowerCase()
-            const strFilter = String(filterValue).toLowerCase()
-
-            switch (operator) {
-              case 'equal':
-                return strCell === strFilter
-              case 'contain':
-              default:
-                return strCell.includes(strFilter)
-              case 'greater-equal':
-              case 'less-equal':
-                return strCell.includes(strFilter)
-            }
-          }
-        })
-      })
-      matchedSidsRef.current = new Set(result.map((r) => r.sid))
+      // Use snapshotted SIDs: rows stay visible even if their data changes
+      if (matchedSidsRef.current)
+        resultData = data.filter((row) => matchedSidsRef.current.has(row.sid))
+      else resultData = data
     }
 
-    // Use snapshotted SIDs: rows stay visible even if their data changes,
-    // only re-filter on next Enter press
-    if (matchedSidsRef.current) {
-      return data.filter((row) => matchedSidsRef.current.has(row.sid))
-    }
-
-    return data
+    // Sort descending by sid
+    return [...resultData].sort((a, b) => b.sid - a.sid)
   }, [data, receivedData, renderingReceived, filters, useFilter, filterVersion])
 
   const handleSelectRow = useCallback(

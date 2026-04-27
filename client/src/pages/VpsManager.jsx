@@ -827,8 +827,8 @@ export default function VpsManager({ onBuySuccessRef }) {
           'created',
           'expired',
           'status',
-          'note',
           'is_auto_renew',
+          'note',
         ]}
         headerLabels={{
           plan_number: t('table.planNumber'),
@@ -838,8 +838,8 @@ export default function VpsManager({ onBuySuccessRef }) {
           created: t('table.created'),
           expired: t('table.expired'),
           status: t('table.status'),
-          note: t('table.note'),
           is_auto_renew: t('table.autoRenew'),
+          note: t('table.note'),
           _selected: t('table.selected'),
           _total: t('table.total'),
           _rows: t('table.rows'),

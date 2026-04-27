@@ -1,107 +1,40 @@
-import { useState } from 'react'
+import { useRef } from 'react'
 import { useTranslation } from '../../i18n'
+import { usePopConfirm } from '../../context/PopConfirmContext'
+import ToggleButton from './ToggleButton'
 
-// --- TOGGLE COMPONENT: Elastic Stretch ---
-const ToggleElastic = ({ isOn, onToggle, t }) => (
-  <button
-    onClick={onToggle}
-    className="group relative h-9 w-[72px] shrink-0 overflow-hidden rounded-full bg-black/40 shadow-[inset_0_2px_5px_rgba(0,0,0,0.5)] transition-transform outline-none active:scale-95"
-  >
-    <div
-      className={`absolute inset-0 transition-colors duration-500 ${isOn ? 'bg-oncheck/20' : 'bg-white/20'}`}
-    />
-    <div className="absolute inset-0 z-0 flex items-center justify-between px-2.5 text-[0.6rem] uppercase">
-      <span
-        className={`font-bold tracking-wide transition-all duration-500 ${
-          isOn
-            ? 'text-oncheck translate-x-0 opacity-100'
-            : '-translate-x-4 text-transparent opacity-0'
-        }`}
-      >
-        {t('popConfirm.on')}
-      </span>
-      <span
-        className={`font-bold tracking-wide transition-all duration-500 ${
-          !isOn
-            ? 'text-text-muted translate-x-0 opacity-100'
-            : 'translate-x-4 text-transparent opacity-0'
-        }`}
-      >
-        {t('popConfirm.off')}
-      </span>
-    </div>
-
-    <div
-      className={`elastic-out absolute top-1 left-1 z-10 size-7 rounded-full bg-white shadow-md transition-all duration-400 group-active:w-10 ${
-        isOn ? 'bg-oncheck translate-x-[36px] group-active:translate-x-[24px]' : 'translate-x-0'
-      }`}
-    />
-  </button>
-)
-
-// --- POP CONFIRM WRAPPER ---
+// --- POP CONFIRM TOGGLE ---
+// Renders only ToggleButton; opens the singleton PopConfirm from context on click.
 export default function PopConfirmToggle({ isOn, onConfirm }) {
-  const [isOpen, setIsOpen] = useState(false)
-  const [pendingState, setPendingState] = useState(isOn)
+  const { show } = usePopConfirm()
+  const buttonRef = useRef(null)
   const t = useTranslation()
 
-  const handleToggleClick = () => {
-    setPendingState(!isOn)
-    setIsOpen(true)
-  }
+  const handleClick = () => {
+    if (!buttonRef.current) return
 
-  const handleYes = () => {
-    const newState = pendingState
+    const pendingState = !isOn
 
-    // Close the modal immediately
-    setIsOpen(false)
-
-    if (onConfirm) {
-      onConfirm(newState).catch((error) => {
-        // Rollback feedback: Re-open the confirm modal on failure
-        console.error('Auto-renew failed:', error)
-        setPendingState(newState)
-        setIsOpen(true)
-      })
-    }
-  }
-
-  const handleNo = () => {
-    setIsOpen(false)
+    show(buttonRef.current, {
+      title: pendingState ? t('popConfirm.autoRenewOn') : t('popConfirm.autoRenewOff'),
+      onConfirm: () => {
+        if (onConfirm) {
+          onConfirm(pendingState).catch((error) => {
+            console.error('Auto-renew failed:', error)
+            // Re-show the confirm on failure (rollback feedback)
+            show(buttonRef.current, {
+              title: pendingState ? t('popConfirm.autoRenewOn') : t('popConfirm.autoRenewOff'),
+              onConfirm: () => onConfirm(pendingState),
+            })
+          })
+        }
+      },
+    })
   }
 
   return (
-    <div className="relative inline-flex flex-col items-center">
-      {/* The Pop Confirm Modal */}
-      <div
-        className={`pop-spring border-border bg-surface-secondary absolute top-1/2 right-full z-50 mr-3 flex w-64 origin-right -translate-y-1/2 flex-col gap-4 rounded-xl border p-4 shadow-[0_15px_40px_rgba(0,0,0,0.6)] transition-all duration-400 ${
-          isOpen
-            ? 'translate-x-0 scale-100 opacity-100'
-            : 'pointer-events-none translate-x-6 scale-[0.3] opacity-0'
-        }`}
-      >
-        <div className="border-border bg-surface-secondary absolute top-1/2 -right-2 h-4 w-4 -translate-y-1/2 rotate-45 rounded-sm border-t border-r" />
-
-        {pendingState ? t('popConfirm.autoRenewOn') : t('popConfirm.autoRenewOff')}
-
-        <div className="flex gap-2">
-          <button
-            onClick={handleNo}
-            className="text-text-muted flex-1 rounded-lg bg-black/10 py-1.5 text-xs font-semibold transition-colors outline-none hover:bg-black/15"
-          >
-            {t('dialog.no')}
-          </button>
-          <button
-            onClick={handleYes}
-            className="border-primary/30 bg-primary/20 text-primary hover:bg-primary/30 flex-1 rounded-lg border py-1.5 text-xs font-semibold transition-colors outline-none"
-          >
-            {t('dialog.yes')}
-          </button>
-        </div>
-      </div>
-
-      {/* The Toggle Button itself */}
-      <ToggleElastic isOn={isOn} onToggle={handleToggleClick} t={t} />
+    <div ref={buttonRef} className="inline-flex items-center justify-center">
+      <ToggleButton isOn={isOn} onClick={handleClick} />
     </div>
   )
 }

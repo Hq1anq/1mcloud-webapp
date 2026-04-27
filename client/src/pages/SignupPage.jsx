@@ -76,7 +76,7 @@ export default function SignupPage() {
               id="phone"
               label={t('signup.phone')}
               type="tel"
-              placeholder="+1 234 567 8900"
+              placeholder="0234567890"
               value={formData.phone}
               onChange={handleChange}
               required

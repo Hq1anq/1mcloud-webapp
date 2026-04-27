@@ -135,15 +135,17 @@ export default function ConfirmActionDialog({
                         let content = row[header]
 
                         if (header === 'new_expired_day') {
-                          content = isFetchingRenew
-                            ? 'Loading...'
-                            : rowRenewData
-                              ? rowRenewData.new_expired_day
-                              : '-'
+                          content = isFetchingRenew ? (
+                            <div className="bg-border mx-auto h-4 w-16 animate-pulse rounded"></div>
+                          ) : rowRenewData ? (
+                            rowRenewData.new_expired_day
+                          ) : (
+                            '-'
+                          )
                         } else if (header === 'expense') {
                           const expenseVal = rowRenewData?.expense
                           content = isFetchingRenew ? (
-                            'Loading...'
+                            <div className="bg-border mx-auto h-4 w-16 animate-pulse rounded"></div>
                           ) : expenseVal && expenseVal !== '-' ? (
                             <span className="text-highlight font-semibold">
                               {expenseVal}{' '}
@@ -155,7 +157,7 @@ export default function ConfirmActionDialog({
                         } else if (header === 'refund') {
                           const expenseVal = rowRefundData?.split(' VNĐ')[0]
                           content = isFetchingRefund ? (
-                            'Loading...'
+                            <div className="bg-border mx-auto h-4 w-16 animate-pulse rounded"></div>
                           ) : expenseVal && expenseVal !== '-' ? (
                             <span className="text-highlight font-semibold">
                               {expenseVal}{' '}

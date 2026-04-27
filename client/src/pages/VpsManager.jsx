@@ -532,7 +532,7 @@ export default function VpsManager({ onBuySuccessRef }) {
                   </button>
                 </div>
                 <textarea
-                  className="min-h-24 grow"
+                  className="min-h-24 grow whitespace-pre-line"
                   placeholder="192.168.1.1&#10;10.0.0.1&#10;172.16.0.1"
                   value={ips}
                   onChange={(e) => setIps(e.target.value)}

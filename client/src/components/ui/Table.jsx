@@ -104,12 +104,22 @@ const itemContent = (index, row, context) => {
   )
 }
 
+const SKELETON_WIDTHS = [
+  ['w-20', 'w-32', 'w-24', 'w-16', 'w-24', 'w-24', 'w-24', 'w-20', 'w-32'],
+  ['w-24', 'w-28', 'w-20', 'w-16', 'w-20', 'w-24', 'w-24', 'w-16', 'w-28'],
+  ['w-16', 'w-32', 'w-24', 'w-20', 'w-24', 'w-24', 'w-24', 'w-20', 'w-24'],
+  ['w-20', 'w-28', 'w-28', 'w-16', 'w-20', 'w-24', 'w-24', 'w-16', 'w-32'],
+  ['w-24', 'w-32', 'w-20', 'w-20', 'w-24', 'w-24', 'w-24', 'w-20', 'w-24'],
+  ['w-16', 'w-28', 'w-24', 'w-16', 'w-20', 'w-24', 'w-24', 'w-16', 'w-32'],
+]
+
 const Table = forwardRef(function Table(
   {
     data,
     receivedData = DEFAULT_DATA,
     renderingReceived,
     setRenderingReceived,
+    isLoading = false,
     useFilter,
     selectedIds = new Set(),
     title,
@@ -526,20 +536,48 @@ const Table = forwardRef(function Table(
           </div>
           {/* Table */}
           <div className="scroll-container overflow-x-auto overflow-y-hidden rounded-b-lg **:transition-colors!">
-            {scrollParent !== undefined && (
-              <TableVirtuoso
-                data={filteredData}
-                customScrollParent={scrollParent}
-                context={virtuosoContext}
-                components={VIRTUOSO_COMPONENTS}
-                fixedHeaderContent={fixedHeader}
-                itemContent={itemContent}
-                overscan={150}
-                increaseViewportBy={{ top: 80, bottom: 80 }}
-              />
+            {isLoading ? (
+              <table className="w-full border-collapse text-left">
+                <thead>{fixedHeader()}</thead>
+                <tbody>
+                  {SKELETON_WIDTHS.map((rowWidths, rowIndex) => (
+                    <tr key={rowIndex} className="border-border/50 border-b">
+                      <td className="w-12 p-4 text-center align-middle">
+                        <div className="shimmer-bg mx-auto h-4 w-4 animate-pulse rounded"></div>
+                      </td>
+                      {headers.map((header, colIndex) => {
+                        const widthClass = rowWidths[colIndex % rowWidths.length]
+                        const isRoundedFull = header === 'status'
+                        return (
+                          <td key={header} className="p-4 align-middle">
+                            <div
+                              className={`shimmer-bg h-4 ${widthClass} animate-pulse ${
+                                isRoundedFull ? 'h-6! rounded-full' : 'rounded'
+                              }`}
+                            ></div>
+                          </td>
+                        )
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              scrollParent !== undefined && (
+                <TableVirtuoso
+                  data={filteredData}
+                  customScrollParent={scrollParent}
+                  context={virtuosoContext}
+                  components={VIRTUOSO_COMPONENTS}
+                  fixedHeaderContent={fixedHeader}
+                  itemContent={itemContent}
+                  overscan={150}
+                  increaseViewportBy={{ top: 80, bottom: 80 }}
+                />
+              )
             )}
           </div>
-          {filteredData.length === 0 && emptyMessage}
+          {!isLoading && filteredData.length === 0 && emptyMessage}
         </div>
       </div>
     </div>

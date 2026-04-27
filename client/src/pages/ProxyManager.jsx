@@ -35,6 +35,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
   const receivedData = useProxyStore((s) => s.receivedData)
   const renderingReceived = useProxyStore((s) => s.renderingReceived)
   const setRenderingReceived = useProxyStore((s) => s.setRenderingReceived)
+  const isLoading = useProxyStore((s) => s.isLoading)
   const updateRowBySid = useProxyStore((s) => s.updateRowBySid)
   const syncToDb = useProxyStore((s) => s.syncToDb)
   const loadFromDb = useProxyStore((s) => s.loadFromDb)
@@ -1074,6 +1075,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
         receivedData={receivedData}
         renderingReceived={renderingReceived}
         setRenderingReceived={setRenderingReceived}
+        isLoading={isLoading}
         useFilter={true}
         headers={['sid', 'ip_port', 'country', 'type', 'created', 'expired', 'status', 'note']}
         headerLabels={{

@@ -7,8 +7,10 @@ const useVpsStore = create((set, get) => ({
   data: [],
   receivedData: [],
   renderingReceived: false,
+  isLoading: false,
 
   // --- Core setters ---
+  setIsLoading: (isLoading) => set({ isLoading }),
   setRenderingReceived: (renderingReceived) => set({ renderingReceived }),
 
   // Update a single row in both data and receivedData by sid
@@ -50,6 +52,7 @@ const useVpsStore = create((set, get) => ({
     const isAuthenticated = useAuthStore.getState().isAuthenticated
     if (!isAuthenticated) return
 
+    set({ isLoading: true })
     try {
       const res = await axiosInstance.get('/vps')
       const dbData = res.data?.data || []
@@ -81,6 +84,8 @@ const useVpsStore = create((set, get) => ({
       }
     } catch (err) {
       console.error('[DB Sync] Load failed:', err.message)
+    } finally {
+      set({ isLoading: false })
     }
   },
 
@@ -96,44 +101,49 @@ const useVpsStore = create((set, get) => ({
     if (parsedIps) params.ips = parsedIps
     params.amount = amount ? +amount : 200
 
-    const res = await axiosInstance.get('/server/list', { params })
-    const resData = res.data?.data || []
+    set({ isLoading: true })
+    try {
+      const res = await axiosInstance.get('/server/list', { params })
+      const resData = res.data?.data || []
 
-    // Merge resData into current state locally for rendering and syncing
-    const localMerged = mergeVpsData(get().data, resData)
-    const finalResData = localMerged.filter((row) => resData.some((r) => r.sid === row.sid))
+      // Merge resData into current state locally for rendering and syncing
+      const localMerged = mergeVpsData(get().data, resData)
+      const finalResData = localMerged.filter((row) => resData.some((r) => r.sid === row.sid))
 
-    set((state) => {
-      let mergedData = mergeVpsData(state.data, resData)
+      set((state) => {
+        let mergedData = mergeVpsData(state.data, resData)
 
-      // Trash data cleanup: if full fetch (no IPs) and returned results are within limit,
-      // it means we got all current resources. Anything in prevData NOT in resData and NOT refunded is trash.
-      let finalMergedData = mergedData
-      if (!parsedIps && resData.length <= (params.amount || 200)) {
-        const trashSids = state.data
-          .filter(
-            (row) =>
-              !resData.some((r) => r.sid === row.sid) && row.status?.toLowerCase() !== 'refunded'
-          )
-          .map((row) => row.sid)
+        // Trash data cleanup: if full fetch (no IPs) and returned results are within limit,
+        // it means we got all current resources. Anything in prevData NOT in resData and NOT refunded is trash.
+        let finalMergedData = mergedData
+        if (!parsedIps && resData.length <= (params.amount || 200)) {
+          const trashSids = state.data
+            .filter(
+              (row) =>
+                !resData.some((r) => r.sid === row.sid) && row.status?.toLowerCase() !== 'refunded'
+            )
+            .map((row) => row.sid)
 
-        if (trashSids.length > 0) {
-          get().deleteFromDb(trashSids)
-          finalMergedData = mergedData.filter((row) => !trashSids.includes(row.sid))
+          if (trashSids.length > 0) {
+            get().deleteFromDb(trashSids)
+            finalMergedData = mergedData.filter((row) => !trashSids.includes(row.sid))
+          }
         }
-      }
 
-      return {
-        data: finalMergedData,
-        receivedData: finalResData,
-        renderingReceived: true,
-      }
-    })
+        return {
+          data: finalMergedData,
+          receivedData: finalResData,
+          renderingReceived: true,
+        }
+      })
 
-    // Sync updated data to DB in background
-    get().syncToDb(finalResData)
+      // Sync updated data to DB in background
+      get().syncToDb(finalResData)
 
-    return finalResData
+      return finalResData
+    } finally {
+      set({ isLoading: false })
+    }
   },
 
   // --- Buy success handler ---

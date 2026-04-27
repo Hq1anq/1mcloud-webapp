@@ -31,6 +31,7 @@ export default function VpsManager({ onBuySuccessRef }) {
   const receivedData = useVpsStore((s) => s.receivedData)
   const renderingReceived = useVpsStore((s) => s.renderingReceived)
   const setRenderingReceived = useVpsStore((s) => s.setRenderingReceived)
+  const isLoading = useVpsStore((s) => s.isLoading)
   const updateRowBySid = useVpsStore((s) => s.updateRowBySid)
   const syncToDb = useVpsStore((s) => s.syncToDb)
   const loadFromDb = useVpsStore((s) => s.loadFromDb)
@@ -785,6 +786,7 @@ export default function VpsManager({ onBuySuccessRef }) {
         receivedData={receivedData}
         renderingReceived={renderingReceived}
         setRenderingReceived={setRenderingReceived}
+        isLoading={isLoading}
         useFilter={true}
         headers={[
           'plan_number',

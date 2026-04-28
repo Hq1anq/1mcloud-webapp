@@ -30,13 +30,13 @@ export default function Checkbox({ checked, indeterminate, onChange, disabled })
           fill="none"
           stroke="currentColor"
           strokeWidth="3"
-          className="checkbox-transition absolute size-5 scale-0 opacity-0"
+          className="absolute size-5 scale-0 opacity-0"
         >
           <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
         </svg>
 
         {/* Indeterminate icon (Rounded Square) */}
-        <div className="checkbox-transition size-2 scale-0 rounded-xs bg-current opacity-0" />
+        <div className="size-2 scale-0 rounded-xs bg-current opacity-0" />
       </span>
     </label>
   )

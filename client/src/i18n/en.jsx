@@ -203,6 +203,8 @@ const en = {
   'dialog.copy': 'Copy',
   'dialog.copied': 'Copied',
   'dialog.failed': 'Failed',
+  'dialog.yes': 'Yes',
+  'dialog.no': 'No',
 
   // Buy Proxy Dialog
   'buy.title': 'Buy Proxy',
@@ -316,6 +318,19 @@ const en = {
   'table.planNumber': 'Plan',
   'table.os': 'OS',
   'table.priceVnd': 'Price (VNĐ)',
+
+  'popConfirm.on': 'On',
+  'popConfirm.off': 'Off',
+  'popConfirm.autoRenewOn': (
+    <p className="text-text-primary text-center text-sm font-medium">
+      You want to turn auto renew <span className="text-primary font-bold">ON</span>?
+    </p>
+  ),
+  'popConfirm.autoRenewOff': (
+    <p className="text-text-primary text-center text-sm font-medium">
+      You want to turn auto renew <span className="text-text-muted font-bold">OFF</span>?
+    </p>
+  ),
 }
 
 export default en

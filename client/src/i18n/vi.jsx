@@ -204,6 +204,8 @@ const vi = {
   'dialog.copy': 'Sao chép',
   'dialog.copied': 'Đã sao chép',
   'dialog.failed': 'Thất bại',
+  'dialog.yes': 'Có',
+  'dialog.no': 'Không',
 
   // Buy Proxy Dialog
   'buy.title': 'Mua Proxy',
@@ -317,6 +319,19 @@ const vi = {
   'table.planNumber': 'Dịch vụ',
   'table.os': 'OS',
   'table.priceVnd': 'Giá (VNĐ)',
+
+  'popConfirm.on': 'Bật',
+  'popConfirm.off': 'Tắt',
+  'popConfirm.autoRenewOn': (
+    <p className="text-text-primary text-center text-sm font-medium">
+      Bạn muốn <span className="text-primary font-bold">BẬT</span> gia hạn tự động?
+    </p>
+  ),
+  'popConfirm.autoRenewOff': (
+    <p className="text-text-primary text-center text-sm font-medium">
+      Bạn muốn <span className="text-text-muted font-bold">TẮT</span> gia hạn tự động?
+    </p>
+  ),
 }
 
 export default vi

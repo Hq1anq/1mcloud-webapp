@@ -786,6 +786,15 @@ export default function VpsManager({ onBuySuccessRef }) {
         receivedData={receivedData}
         renderingReceived={renderingReceived}
         setRenderingReceived={setRenderingReceived}
+        showAutoRenew={true}
+        onAutoRenewToggle={async (sid, newState) => {
+          // You can handle your API call here!
+          // await axiosInstance.post('/server/auto-renew', {
+          //   sid: sid.toString(),
+          //   auto_renew: newState,
+          // })
+          // Update local state or trigger a re-fetch if needed
+        }}
         isLoading={isLoading}
         useFilter={true}
         headers={[

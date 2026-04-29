@@ -21,6 +21,7 @@
   --color-dialog: var(--bg-dialog);
   --color-terminal: var(--bg-terminal);
   --color-checkbox: var(--bg-checkbox);
+  --color-oncheck: var(--bg-oncheck);
 
   --color-toast: var(--bg-toast);
   --color-text-toast: var(--text-toast);
@@ -277,43 +278,38 @@
   --card-border: #293347;
 }
 
-/* Base theme colors without transitions */
-[data-theme] * {
-  /* Disable all color transitions by default */
-  transition: none;
-}
-
-/* Enable transitions only after adding this class */
-.theme-transitions * {
-  transition-property: all;
-  transition-timing-function: ease-out;
-  transition-duration: 0.3s;
-}
-
-.theme-transitions .all-fast {
-  transition-property: all;
-  transition-timing-function: ease-out;
-  transition-duration: 0.2s;
-}
-
-.theme-transitions .checkbox-transition {
-  transition-property: all;
-  transition-duration: 0.3s;
-}
-
-.theme-transitions .social-link {
-  transition:
-    transform 0.2s ease,
-    color 0.2s ease;
-}
-
-.theme-transitions .social-link:hover {
-  transform: translateY(-3px);
-  color: var(--primary);
-}
-
-/* Custom base styles */
 @layer base {
+  /* Base theme colors without transitions */
+  [data-theme] * {
+    /* Disable all color transitions by default */
+    transition: none;
+  }
+
+  /* Enable transitions only after adding this class */
+  .theme-transitions * {
+    transition-property: all;
+    transition-timing-function: ease-out;
+    transition-duration: 0.3s;
+  }
+
+  .theme-transitions .all-fast {
+    transition-property: all;
+    transition-timing-function: ease-out;
+    transition-duration: 0.2s;
+  }
+
+  .theme-transitions .social-link {
+    transition:
+      transform 0.2s ease,
+      color 0.2s ease;
+  }
+
+  .theme-transitions .social-link:hover {
+    transform: translateY(-3px);
+    color: var(--primary);
+  }
+
+  /* Custom base styles */
   html,
   body,
   #root {
@@ -445,6 +441,9 @@
   .float-out {
     animation: fade-out 0.3s ease-in forwards;
   }
+
+  .elastic-out { transition-timing-function: cubic-bezier(0.5, 2, 0.5, 0.8); }
+  .pop-spring { transition-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.25); }
 
   .loader {
     width: 48px;

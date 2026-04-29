@@ -22,5 +22,6 @@ router.post("/refund/calculate", managerController.refundCalculate);
 router.put("/info/note", managerController.updateNote);
 router.post("/reset-password", managerController.resetPassword);
 router.post("/auto-fix", managerController.autoFix);
+router.post("/auto-renew", managerController.toggleAutoRenew);
 
 export default router;

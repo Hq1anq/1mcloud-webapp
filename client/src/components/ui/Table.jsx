@@ -3,6 +3,7 @@ import { TableVirtuoso } from 'react-virtuoso'
 import { handleCopy, getStatusClasses, formatInputDate, str2date } from '../../lib/utils.js'
 import { getFlagIcon } from '../../data/flags.jsx'
 import Checkbox from './Checkbox.jsx'
+import PopConfirmToggle from './PopConfirmToggle.jsx'
 
 const DEFAULT_DATA = []
 
@@ -58,7 +59,7 @@ const VIRTUOSO_COMPONENTS = {
 }
 
 const itemContent = (index, row, context) => {
-  const { selectedIds, handleSelectRow, headers, showCountryCode } = context
+  const { selectedIds, handleSelectRow, headers, showCountryCode, onAutoRenewToggle } = context
   const isSelected = selectedIds.has(index)
   const isRefunded = row?.status?.toLowerCase() === 'refunded'
 
@@ -85,7 +86,12 @@ const itemContent = (index, row, context) => {
             onDoubleClick={(e) => handleCopy(e, cellValue)}
             title="Double click to copy"
           >
-            {statusClass ? (
+            {header === 'is_auto_renew' ? (
+              <PopConfirmToggle
+                isOn={cellValue}
+                onConfirm={(newState) => onAutoRenewToggle?.(row.sid, newState)}
+              />
+            ) : statusClass ? (
               <span
                 className={`inline-flex items-center rounded-full px-3 py-1 font-semibold ${statusClass}`}
               >
@@ -121,6 +127,7 @@ const Table = forwardRef(function Table(
     setRenderingReceived,
     isLoading = false,
     useFilter,
+    onAutoRenewToggle,
     selectedIds = new Set(),
     title,
     headers,
@@ -313,8 +320,24 @@ const Table = forwardRef(function Table(
   // Deselect effect removed; controlled via selectedIds parent state.
 
   const virtuosoContext = useMemo(() => {
-    return { selectedIds, headers, headerLabels, rowClassMap, handleSelectRow, showCountryCode }
-  }, [selectedIds, headers, headerLabels, rowClassMap, handleSelectRow, showCountryCode])
+    return {
+      selectedIds,
+      headers,
+      headerLabels,
+      rowClassMap,
+      handleSelectRow,
+      showCountryCode,
+      onAutoRenewToggle,
+    }
+  }, [
+    selectedIds,
+    headers,
+    headerLabels,
+    rowClassMap,
+    handleSelectRow,
+    showCountryCode,
+    onAutoRenewToggle,
+  ])
 
   const fixedHeader = useMemo(() => {
     const toggleOperator = (header) => {
@@ -441,7 +464,7 @@ const Table = forwardRef(function Table(
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 640 640"
-                            className="size-3.5 shrink-0 fill-current text-gray-300 transition-colors group-hover:text-white"
+                            className="size-3.5 shrink-0 fill-current text-gray-300 group-hover:text-white"
                           >
                             <path d="M144 88C144 74.7 133.3 64 120 64C106.7 64 96 74.7 96 88L96 552C96 565.3 106.7 576 120 576C133.3 576 144 565.3 144 552L144 452L224.3 431.9C265.4 421.6 308.9 426.4 346.8 445.3C391 467.4 442.3 470.1 488.5 452.7L523.2 439.7C535.7 435 544 423.1 544 409.7L544 130C544 107 519.8 92 499.2 102.3L489.6 107.1C443.3 130.3 388.8 130.3 342.5 107.1C307.4 89.5 267.1 85.1 229 94.6L144 116L144 88zM144 165.5L240.6 141.3C267.6 134.6 296.1 137.7 321 150.1C375.9 177.5 439.7 179.8 496 156.9L496 398.7L471.6 407.8C437.9 420.4 400.4 418.5 368.2 402.4C320 378.3 264.9 372.3 212.6 385.3L144 402.5L144 165.5z" />
                           </svg>
@@ -449,7 +472,7 @@ const Table = forwardRef(function Table(
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 512 512"
-                            className="size-3.5 shrink-0 fill-current text-gray-300 transition-colors group-hover:text-white"
+                            className="size-3.5 shrink-0 fill-current text-gray-300 group-hover:text-white"
                           >
                             <path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM216 336h24V272H216c-13.3 0-24-10.7-24-24s10.7-24 24-24h48c13.3 0 24 10.7 24 24v88h8c13.3 0 24 10.7 24 24s-10.7 24-24 24H216c-13.3 0-24-10.7-24-24s10.7-24 24-24zm40-208a32 32 0 1 1 0 64 32 32 0 1 1 0-64z" />
                           </svg>
@@ -554,7 +577,7 @@ const Table = forwardRef(function Table(
             </div>
           </div>
           {/* Table */}
-          <div className="scroll-container overflow-x-auto overflow-y-hidden rounded-b-lg **:transition-colors!">
+          <div className="scroll-container overflow-x-auto overflow-y-hidden rounded-b-lg [&_td]:transition-colors!">
             {isLoading ? (
               <table className="w-full border-collapse text-left">
                 <thead>{fixedHeader()}</thead>
@@ -566,7 +589,7 @@ const Table = forwardRef(function Table(
                       </td>
                       {headers.map((header, colIndex) => {
                         const widthClass = rowWidths[colIndex % rowWidths.length]
-                        const isRoundedFull = header === 'status'
+                        const isRoundedFull = header === 'status' || header === 'is_auto_renew'
                         return (
                           <td key={header} className="p-4 align-middle">
                             <div

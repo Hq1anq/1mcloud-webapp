@@ -265,7 +265,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
           {t('manager.type')} <span className="text-highlight font-bold">{reinstallType} </span>
           <br />
           {t('manager.info')}{' '}
-          <span className="text-highlight font-bold">
+          <span className="text-highlight font-bold break-all">
             {ip}:{port}:{user}:{pass}
           </span>
         </>
@@ -901,7 +901,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
                   {t('dialog.copy')}
                 </button>
                 <textarea
-                  className="min-h-24 grow"
+                  className="min-h-24 grow whitespace-pre-line"
                   placeholder="192.168.1.1&#10;10.0.0.1&#10;172.16.0.1"
                   value={ips}
                   onChange={(e) => setIps(e.target.value)}
@@ -1288,9 +1288,49 @@ export default function ProxyManager({ onBuySuccessRef }) {
         receivedData={receivedData}
         renderingReceived={renderingReceived}
         setRenderingReceived={setRenderingReceived}
+        onAutoRenewToggle={async (sid, newState) => {
+          // Optimistic Update
+          updateRowBySid(sid, () => ({ is_auto_renew: newState }))
+
+          try {
+            const res = await axiosInstance.post('/server/auto-renew', {
+              sid: sid.toString(),
+            })
+            if (res.data?.success) {
+              const finalState = res.data.changes.is_on
+              // Refine state if the server result differs
+              updateRowBySid(sid, () => ({ is_auto_renew: finalState }))
+
+              const row = data.find((r) => r.sid === sid)
+              if (row) {
+                syncToDb([{ ...row, is_auto_renew: finalState }])
+              }
+
+              addToast(t('dialog.success'), 'success')
+            } else {
+              throw new Error('API reported failure')
+            }
+          } catch (err) {
+            console.error('[AutoRenew] Error:', err.message)
+            addToast(t('dialog.failed'), 'error')
+            // Rollback parent state
+            updateRowBySid(sid, () => ({ is_auto_renew: !newState }))
+            throw err // Re-throw for PopConfirmToggle rollback
+          }
+        }}
         isLoading={isLoading}
         useFilter={true}
-        headers={['sid', 'ip_port', 'country', 'type', 'created', 'expired', 'status', 'note']}
+        headers={[
+          'sid',
+          'ip_port',
+          'country',
+          'type',
+          'created',
+          'expired',
+          'status',
+          'note',
+          'is_auto_renew',
+        ]}
         headerLabels={{
           country: t('table.country'),
           type: t('table.type'),
@@ -1298,6 +1338,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
           expired: t('table.expired'),
           status: t('table.status'),
           note: t('table.note'),
+          is_auto_renew: t('table.autoRenew'),
           _selected: t('table.selected'),
           _total: t('table.total'),
           _rows: t('table.rows'),

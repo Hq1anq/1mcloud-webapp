@@ -59,6 +59,7 @@ export async function list(req, res) {
           server.trang_thai.slice(1).toLowerCase()
         : server.trang_thai,
       note: server.note,
+      is_auto_renew: !!server.is_auto_renew,
     }));
 
     return res.json({ data });
@@ -194,6 +195,7 @@ export async function create(req, res) {
       ip_changed: 0,
       status: "Running",
       note: note,
+      is_auto_renew: auto_renew,
       ...(is_proxy && { user_pass: `${server.username}:${server.password}` }),
       ...(!is_proxy && { user_pass: `${server.username}/${server.password}` }),
     }));
@@ -675,5 +677,36 @@ export async function autoFix(req, res) {
     res
       .status(500)
       .json({ success: false, error: "Internal server error", sids });
+  }
+}
+
+export async function toggleAutoRenew(req, res) {
+  const { sid } = req.body;
+  const url = `${process.env.BASE_URL}/server/auto-renew`;
+  const headers = { ...HEADERS, authorization: `Bearer ${req.token}` };
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ sid: sid }),
+    });
+
+    if (!response.ok) {
+      console.error(`Failed to AUTO RENEW for sid: ${sid}:`, response.status);
+      return res.status(response.status).json({
+        success: false,
+        error: "Request failed",
+        sid,
+      });
+    }
+
+    const data = await response.json();
+    res.json({ success: true, ...data });
+  } catch (error) {
+    console.error(`Failed to AUTO RENEW for sid: ${sid}`, error.message);
+    res
+      .status(500)
+      .json({ success: false, error: "Internal server error", sid });
   }
 }

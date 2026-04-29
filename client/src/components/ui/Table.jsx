@@ -59,14 +59,7 @@ const VIRTUOSO_COMPONENTS = {
 }
 
 const itemContent = (index, row, context) => {
-  const {
-    selectedIds,
-    handleSelectRow,
-    headers,
-    showCountryCode,
-    showAutoRenew,
-    onAutoRenewToggle,
-  } = context
+  const { selectedIds, handleSelectRow, headers, showCountryCode, onAutoRenewToggle } = context
   const isSelected = selectedIds.has(index)
   const isRefunded = row?.status?.toLowerCase() === 'refunded'
 
@@ -93,7 +86,12 @@ const itemContent = (index, row, context) => {
             onDoubleClick={(e) => handleCopy(e, cellValue)}
             title="Double click to copy"
           >
-            {statusClass ? (
+            {header === 'is_auto_renew' ? (
+              <PopConfirmToggle
+                isOn={cellValue}
+                onConfirm={(newState) => onAutoRenewToggle?.(row.sid, newState)}
+              />
+            ) : statusClass ? (
               <span
                 className={`inline-flex items-center rounded-full px-3 py-1 font-semibold ${statusClass}`}
               >
@@ -108,14 +106,6 @@ const itemContent = (index, row, context) => {
           </td>
         )
       })}
-      {showAutoRenew && (
-        <td data-capture-ignore className="border-border border-b px-2 py-2 text-center sm:px-4">
-          <PopConfirmToggle
-            initialIsOn={row.auto_renew || false}
-            onConfirm={(newState) => onAutoRenewToggle?.(row.sid, newState)}
-          />
-        </td>
-      )}
     </>
   )
 }
@@ -137,7 +127,6 @@ const Table = forwardRef(function Table(
     setRenderingReceived,
     isLoading = false,
     useFilter,
-    showAutoRenew = false,
     onAutoRenewToggle,
     selectedIds = new Set(),
     title,
@@ -338,7 +327,6 @@ const Table = forwardRef(function Table(
       rowClassMap,
       handleSelectRow,
       showCountryCode,
-      showAutoRenew,
       onAutoRenewToggle,
     }
   }, [
@@ -348,7 +336,6 @@ const Table = forwardRef(function Table(
     rowClassMap,
     handleSelectRow,
     showCountryCode,
-    showAutoRenew,
     onAutoRenewToggle,
   ])
 
@@ -525,24 +512,6 @@ const Table = forwardRef(function Table(
               </th>
             )
           })}
-          {showAutoRenew && (
-            <th className="px-2 py-3 text-center font-medium tracking-wider uppercase sm:px-4">
-              <div
-                className={`flex min-w-15 flex-col gap-1 font-bold whitespace-nowrap ${
-                  title === 'Proxy Status' ? 'text-base sm:text-lg' : 'text-sm sm:text-base'
-                }`}
-              >
-                <span className="text-center">Auto Renew</span>
-                {useFilter && (
-                  <input
-                    type="text"
-                    placeholder="Filter"
-                    className={'filter-input bg-dropdown mt-1 w-full px-2 py-1 text-center'}
-                  />
-                )}
-              </div>
-            </th>
-          )}
         </tr>
       )
     }
@@ -559,7 +528,6 @@ const Table = forwardRef(function Table(
     onSelectionChange,
     setRenderingReceived,
     showCountryCode,
-    showAutoRenew,
   ])
 
   return (
@@ -621,7 +589,7 @@ const Table = forwardRef(function Table(
                       </td>
                       {headers.map((header, colIndex) => {
                         const widthClass = rowWidths[colIndex % rowWidths.length]
-                        const isRoundedFull = header === 'status'
+                        const isRoundedFull = header === 'status' || header === 'is_auto_renew'
                         return (
                           <td key={header} className="p-4 align-middle">
                             <div
@@ -632,11 +600,6 @@ const Table = forwardRef(function Table(
                           </td>
                         )
                       })}
-                      {showAutoRenew && (
-                        <td className="p-4 text-center align-middle">
-                          <div className="shimmer-bg mx-auto h-9 w-[72px] animate-pulse rounded-full"></div>
-                        </td>
-                      )}
                     </tr>
                   ))}
                 </tbody>

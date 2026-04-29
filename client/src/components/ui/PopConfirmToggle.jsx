@@ -40,8 +40,7 @@ const ToggleElastic = ({ isOn, onToggle, t }) => (
 )
 
 // --- POP CONFIRM WRAPPER ---
-export default function PopConfirmToggle({ initialIsOn, onConfirm }) {
-  const [isOn, setIsOn] = useState(initialIsOn)
+export default function PopConfirmToggle({ isOn, onConfirm }) {
   const [isOpen, setIsOpen] = useState(false)
   const [pendingState, setPendingState] = useState(isOn)
   const t = useTranslation()
@@ -51,14 +50,19 @@ export default function PopConfirmToggle({ initialIsOn, onConfirm }) {
     setIsOpen(true)
   }
 
-  const handleYes = async () => {
-    try {
-      if (onConfirm) await onConfirm(pendingState)
-      setIsOn(pendingState)
-    } catch (error) {
-      console.error('Failed to toggle auto renew:', error)
-    } finally {
-      setIsOpen(false)
+  const handleYes = () => {
+    const newState = pendingState
+
+    // Close the modal immediately
+    setIsOpen(false)
+
+    if (onConfirm) {
+      onConfirm(newState).catch((error) => {
+        // Rollback feedback: Re-open the confirm modal on failure
+        console.error('Auto-renew failed:', error)
+        setPendingState(newState)
+        setIsOpen(true)
+      })
     }
   }
 

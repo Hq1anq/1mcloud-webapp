@@ -786,14 +786,35 @@ export default function VpsManager({ onBuySuccessRef }) {
         receivedData={receivedData}
         renderingReceived={renderingReceived}
         setRenderingReceived={setRenderingReceived}
-        showAutoRenew={true}
         onAutoRenewToggle={async (sid, newState) => {
-          // You can handle your API call here!
-          // await axiosInstance.post('/server/auto-renew', {
-          //   sid: sid.toString(),
-          //   auto_renew: newState,
-          // })
-          // Update local state or trigger a re-fetch if needed
+          // Optimistic Update
+          updateRowBySid(sid, () => ({ is_auto_renew: newState }))
+
+          try {
+            const res = await axiosInstance.post('/server/auto-renew', {
+              sid: sid.toString(),
+            })
+            if (res.data?.success) {
+              const finalState = res.data.changes.is_on
+              // Refine state if the server result differs
+              updateRowBySid(sid, () => ({ is_auto_renew: finalState }))
+
+              const row = data.find((r) => r.sid === sid)
+              if (row) {
+                syncToDb([{ ...row, is_auto_renew: finalState }])
+              }
+
+              addToast(t('dialog.success'), 'success')
+            } else {
+              throw new Error('API reported failure')
+            }
+          } catch (err) {
+            console.error('[AutoRenew] Error:', err.message)
+            addToast(t('dialog.failed'), 'error')
+            // Rollback parent state
+            updateRowBySid(sid, () => ({ is_auto_renew: !newState }))
+            throw err // Re-throw for PopConfirmToggle rollback
+          }
         }}
         isLoading={isLoading}
         useFilter={true}
@@ -807,6 +828,7 @@ export default function VpsManager({ onBuySuccessRef }) {
           'expired',
           'status',
           'note',
+          'is_auto_renew',
         ]}
         headerLabels={{
           plan_number: t('table.planNumber'),
@@ -817,6 +839,7 @@ export default function VpsManager({ onBuySuccessRef }) {
           expired: t('table.expired'),
           status: t('table.status'),
           note: t('table.note'),
+          is_auto_renew: t('table.autoRenew'),
           _selected: t('table.selected'),
           _total: t('table.total'),
           _rows: t('table.rows'),

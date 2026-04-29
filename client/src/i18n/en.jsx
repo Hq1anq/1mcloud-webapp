@@ -92,6 +92,10 @@ const en = {
   'table.created': 'Created',
   'table.expired': 'Expired',
   'table.note': 'Note',
+  'table.autoRenew': 'Auto Renew',
+  'table.planNumber': 'Plan',
+  'table.os': 'OS',
+  'table.priceVnd': 'Price (VNĐ)',
   'table.selected': 'Selected',
   'table.total': 'Total',
   'table.rows': 'rows',
@@ -202,9 +206,10 @@ const en = {
   'dialog.download': 'Download',
   'dialog.copy': 'Copy',
   'dialog.copied': 'Copied',
-  'dialog.failed': 'Failed',
   'dialog.yes': 'Yes',
   'dialog.no': 'No',
+  'dialog.success': 'Action completed successfully.',
+  'dialog.failed': 'Action failed.',
 
   // Buy Proxy Dialog
   'buy.title': 'Buy Proxy',
@@ -313,11 +318,6 @@ const en = {
   'vpsManager.resetPassword': 'Reset Password',
   'vpsManager.autoFix': 'Auto Fix',
   'vpsManager.comingSoon': 'Coming Soon',
-
-  // Additional Table Headers
-  'table.planNumber': 'Plan',
-  'table.os': 'OS',
-  'table.priceVnd': 'Price (VNĐ)',
 
   'popConfirm.on': 'On',
   'popConfirm.off': 'Off',

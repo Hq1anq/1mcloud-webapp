@@ -93,6 +93,10 @@ const vi = {
   'table.created': 'Ngày tạo',
   'table.expired': 'Hết hạn',
   'table.note': 'Ghi chú',
+  'table.autoRenew': 'Tự gia hạn',
+  'table.planNumber': 'Dịch vụ',
+  'table.os': 'OS',
+  'table.priceVnd': 'Giá (VNĐ)',
   'table.selected': 'Đã chọn',
   'table.total': 'Tổng',
   'table.rows': 'dòng',
@@ -203,9 +207,10 @@ const vi = {
   'dialog.download': 'Tải xuống',
   'dialog.copy': 'Sao chép',
   'dialog.copied': 'Đã sao chép',
-  'dialog.failed': 'Thất bại',
   'dialog.yes': 'Có',
   'dialog.no': 'Không',
+  'dialog.success': 'Thao tác thành công.',
+  'dialog.failed': 'Thao tác thất bại.',
 
   // Buy Proxy Dialog
   'buy.title': 'Mua Proxy',
@@ -314,11 +319,6 @@ const vi = {
   'vpsManager.resetPassword': 'Đặt lại mật khẩu',
   'vpsManager.autoFix': 'Tự động sửa',
   'vpsManager.comingSoon': 'Sắp ra mắt',
-
-  // Additional Table Headers
-  'table.planNumber': 'Dịch vụ',
-  'table.os': 'OS',
-  'table.priceVnd': 'Giá (VNĐ)',
 
   'popConfirm.on': 'Bật',
   'popConfirm.off': 'Tắt',

@@ -86,6 +86,8 @@ const en = {
   'contact.subtitle': 'Expert support, addressing all your service needs.',
 
   // Table Headers
+  'table.sid': 'Sid',
+  'table.ip_port': 'IP:Port',
   'table.type': 'Type',
   'table.country': 'Country',
   'table.status': 'Status',
@@ -93,13 +95,21 @@ const en = {
   'table.expired': 'Expired',
   'table.note': 'Note',
   'table.control': 'Control',
-  'table.autoRenew': 'Auto Renew',
-  'table.planNumber': 'Plan',
-  'table.os': 'OS',
-  'table.priceVnd': 'Price (VNĐ)',
+  'table.is_auto_renew': 'Auto Renew',
+  'table.plan_number': 'Plan',
+  'table.he_dieu_hanh': 'OS',
+  'table.price_vnd': 'Price (VNĐ)',
+  'table.refund': 'Refund',
+  'table.new_expired_day': 'New expired day',
+  'table.expense': 'Expense',
   'table.selected': 'Selected',
   'table.total': 'Total',
   'table.rows': 'rows',
+
+  'table.ip': 'IP',
+  'table.port': 'Port',
+  'table.username': 'Username',
+  'table.password': 'Password',
 
   // Login Page
   'login.title': 'Login',

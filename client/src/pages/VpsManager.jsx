@@ -214,6 +214,7 @@ export default function VpsManager({ onBuySuccessRef }) {
 
     const renewDataOrConfirmed = await confirmAction({
       title: t('manager.confirmRenew'),
+      isProxy: false,
       isRenew: true,
       selectedRows: rows,
     })
@@ -358,6 +359,7 @@ export default function VpsManager({ onBuySuccessRef }) {
 
     const refundDataOrConfirmed = await confirmAction({
       title: t('manager.confirmRefund'),
+      isProxy: false,
       isRefund: true,
       selectedRows: rows,
     })
@@ -371,17 +373,9 @@ export default function VpsManager({ onBuySuccessRef }) {
 
     rows.forEach((row) => {
       const cleanIp = row.ip_port?.split(':')[0]
-      if (
-        refundData &&
-        refundData.success &&
-        refundData.success[cleanIp] &&
-        refundData.success[cleanIp].new_expired_day &&
-        refundData.success[cleanIp].new_expired_day !== '-'
-      ) {
+      if (refundData && refundData.success && refundData.success[cleanIp]) {
         validRows.push(row)
-      } else {
-        invalidRows.push(row)
-      }
+      } else invalidRows.push(row)
     })
 
     setRowClassMap((prev) => {
@@ -713,22 +707,6 @@ export default function VpsManager({ onBuySuccessRef }) {
                   {t('vpsManager.autoFix')}
                 </button>
 
-                {/* Change IP */}
-                <button
-                  className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
-                  style={{ '--action-color': 'var(--red)' }}
-                  onClick={() => addToast(t('vpsManager.comingSoon'), 'warning')}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 640 640"
-                    className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:h-7 sm:w-7"
-                  >
-                    <path d="M566.6 214.6L470.6 310.6C461.4 319.8 447.7 322.5 435.7 317.5C423.7 312.5 416 300.9 416 288L416 224L96 224C78.3 224 64 209.7 64 192C64 174.3 78.3 160 96 160L416 160L416 96C416 83.1 423.8 71.4 435.8 66.4C447.8 61.4 461.5 64.2 470.7 73.3L566.7 169.3C579.2 181.8 579.2 202.1 566.7 214.6zM169.3 566.6L73.3 470.6C60.8 458.1 60.8 437.8 73.3 425.3L169.3 329.3C178.5 320.1 192.2 317.4 204.2 322.4C216.2 327.4 224 339.1 224 352L224 416L544 416C561.7 416 576 430.3 576 448C576 465.7 561.7 480 544 480L224 480L224 544C224 556.9 216.2 568.6 204.2 573.6C192.2 578.6 178.5 575.8 169.3 566.7z" />
-                  </svg>
-                  {t('manager.changeIp')}
-                </button>
-
                 {/* Reset Password */}
                 {profile?.is_reset_pass && (
                   <button
@@ -831,21 +809,6 @@ export default function VpsManager({ onBuySuccessRef }) {
           'control',
           'is_auto_renew',
         ]}
-        headerLabels={{
-          plan_number: t('table.planNumber'),
-          country: t('table.country'),
-          he_dieu_hanh: t('table.os'),
-          price_vnd: t('table.priceVnd'),
-          created: t('table.created'),
-          expired: t('table.expired'),
-          status: t('table.status'),
-          note: t('table.note'),
-          control: t('table.control'),
-          is_auto_renew: t('table.autoRenew'),
-          _selected: t('table.selected'),
-          _total: t('table.total'),
-          _rows: t('table.rows'),
-        }}
         operatorConfig={OPERATOR_CONFIG}
         rowClassMap={rowClassMap}
         selectedIds={selectedIds}

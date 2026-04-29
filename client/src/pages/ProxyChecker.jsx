@@ -351,14 +351,6 @@ export default function ProxyChecker() {
         useFilter={false}
         className="text-base sm:text-lg"
         headers={['ip', 'port', 'username', 'password', 'type', 'country', 'status']}
-        headerLabels={{
-          type: t('table.type'),
-          country: t('table.country'),
-          status: t('table.status'),
-          _selected: t('table.selected'),
-          _total: t('table.total'),
-          _rows: t('table.rows'),
-        }}
         selectedIds={selectedIds}
         ref={tableRef}
         extraBtn={

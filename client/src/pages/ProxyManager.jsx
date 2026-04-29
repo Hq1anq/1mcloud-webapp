@@ -139,6 +139,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
           {t('manager.type')} <span className="text-highlight font-bold">{changeIpType}</span>
         </>
       ),
+      isProxy: true,
       isRenew: false,
       selectedRows: rows,
     })
@@ -260,6 +261,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
     const confirmed = await confirmAction({
       title: t('manager.confirmReinstall'),
       infoText: infoTextNode,
+      isProxy: true,
       isRenew: false,
       selectedRows: rows,
     })
@@ -463,6 +465,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
 
     const renewDataOrConfirmed = await confirmAction({
       title: t('manager.confirmRenew'),
+      isProxy: true,
       isRenew: true,
       selectedRows: rows,
     })
@@ -608,6 +611,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
 
     const refundDataOrConfirmed = await confirmAction({
       title: t('manager.confirmRefund'),
+      isProxy: true,
       isRefund: true,
       selectedRows: rows,
     })
@@ -625,9 +629,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
       const cleanIp = row.ip_port?.split(':')[0]
       if (refundData && refundData.success && refundData.success[cleanIp]) {
         validRows.push(row)
-      } else {
-        invalidRows.push(row)
-      }
+      } else invalidRows.push(row)
     })
 
     setRowClassMap((prev) => {
@@ -1119,19 +1121,6 @@ export default function ProxyManager({ onBuySuccessRef }) {
           'control',
           'is_auto_renew',
         ]}
-        headerLabels={{
-          country: t('table.country'),
-          type: t('table.type'),
-          created: t('table.created'),
-          expired: t('table.expired'),
-          status: t('table.status'),
-          note: t('table.note'),
-          control: t('table.control'),
-          is_auto_renew: t('table.autoRenew'),
-          _selected: t('table.selected'),
-          _total: t('table.total'),
-          _rows: t('table.rows'),
-        }}
         operatorConfig={OPERATOR_CONFIG}
         rowClassMap={rowClassMap}
         selectedIds={selectedIds}

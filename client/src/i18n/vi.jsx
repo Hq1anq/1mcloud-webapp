@@ -87,6 +87,8 @@ const vi = {
   'contact.subtitle': 'Hỗ trợ chuyên sâu, giải đáp mọi nhu cầu về dịch vụ.',
 
   // Table Headers
+  'table.sid': 'Sid',
+  'table.ip_port': 'IP:Port',
   'table.type': 'Loại',
   'table.country': 'Quốc gia',
   'table.status': 'Trạng thái',
@@ -94,13 +96,21 @@ const vi = {
   'table.expired': 'Hết hạn',
   'table.note': 'Ghi chú',
   'table.control': 'Điều khiển',
-  'table.autoRenew': 'Tự gia hạn',
-  'table.planNumber': 'Dịch vụ',
-  'table.os': 'OS',
-  'table.priceVnd': 'Giá (VNĐ)',
+  'table.is_auto_renew': 'Tự gia hạn',
+  'table.plan_number': 'Dịch vụ',
+  'table.he_dieu_hanh': 'Hệ điều hành',
+  'table.price_vnd': 'Giá (VNĐ)',
+  'table.refund': 'Hoàn lại',
+  'table.new_expired_day': 'Ngày hết hạn mới',
+  'table.expense': 'Chi phí',
   'table.selected': 'Đã chọn',
   'table.total': 'Tổng',
   'table.rows': 'dòng',
+
+  'table.ip': 'IP',
+  'table.port': 'Port',
+  'table.username': 'Tên đăng nhập',
+  'table.password': 'Mật khẩu',
 
   // Login Page
   'login.title': 'Đăng nhập',

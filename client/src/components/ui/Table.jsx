@@ -3,7 +3,8 @@ import { TableVirtuoso } from 'react-virtuoso'
 import { handleCopy, getStatusClasses, formatInputDate, str2date } from '../../lib/utils.js'
 import { getFlagIcon } from '../../data/flags.jsx'
 import Checkbox from './Checkbox.jsx'
-import PopConfirmToggle from './PopConfirmToggle.jsx'
+import RenewToggle from './RenewToggle.jsx'
+import ControlButton from './ControlButton'
 
 const DEFAULT_DATA = []
 
@@ -86,8 +87,10 @@ const itemContent = (index, row, context) => {
             onDoubleClick={(e) => handleCopy(e, cellValue)}
             title="Double click to copy"
           >
-            {header === 'is_auto_renew' ? (
-              <PopConfirmToggle
+            {header === 'control' ? (
+              <ControlButton onControlClick={(e) => console.log(e)} />
+            ) : header === 'is_auto_renew' ? (
+              <RenewToggle
                 isOn={cellValue}
                 onConfirm={(newState) => onAutoRenewToggle?.(row.sid, newState)}
               />
@@ -482,7 +485,7 @@ const Table = forwardRef(function Table(
                       <>{headerLabels?.[header] || header.replace(/_/g, ' ')}</>
                     )}
                   </span>
-                  {useFilter && (
+                  {useFilter && !['control', 'is_auto_renew'].includes(header) && (
                     <div className="relative">
                       {/* Operator icon */}
                       {showOperator && (

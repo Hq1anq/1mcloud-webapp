@@ -269,3 +269,33 @@ export async function deleteVpsList(req, res) {
       .json({ success: false, error: error.message });
   }
 }
+
+export async function upgradePlans(req, res) {
+  const url = `${process.env.BASE_URL}/server/upgrade/plans`;
+  const { sid } = req.query;
+  const headers = { ...HEADERS, authorization: `Bearer ${req.token}` };
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ sid }),
+    });
+
+    if (!response.ok) {
+      console.error(`Failed to GET UPGRADE PLANS:`, response.status);
+      return res.status(response.status).json({
+        success: false,
+        error: "GET UPGRADE PLANS request failed",
+      });
+    }
+
+    const data = await response.json();
+    return res.json({ success: true, info: data });
+  } catch (error) {
+    console.error("Failed to GET UPGRADE PLANS", error.message);
+    return res
+      .status(500)
+      .json({ success: false, error: "Internal server error" });
+  }
+}

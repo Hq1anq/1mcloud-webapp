@@ -3,6 +3,8 @@ import { useEffect } from 'react'
 import { ToastProvider } from './context/ToastContext.jsx'
 import { SafeCopyProvider } from './context/SafeCopyContext.jsx'
 import { ConfirmProvider } from './context/ConfirmContext.jsx'
+import { PopConfirmProvider } from './context/PopConfirmContext.jsx'
+import { PopMenuProvider } from './context/PopMenuContext.jsx'
 import Navbar from './components/layout/Navbar.jsx'
 import Footer from './components/layout/Footer.jsx'
 import ScrollToTop from './components/layout/ScrollToTop.jsx'
@@ -54,7 +56,11 @@ function App() {
                   <ToastProvider>
                     <SafeCopyProvider>
                       <ConfirmProvider>
-                        <ManagerPage />
+                        <PopConfirmProvider>
+                          <PopMenuProvider>
+                            <ManagerPage />
+                          </PopMenuProvider>
+                        </PopConfirmProvider>
                       </ConfirmProvider>
                     </SafeCopyProvider>
                   </ToastProvider>

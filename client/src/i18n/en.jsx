@@ -92,6 +92,7 @@ const en = {
   'table.created': 'Created',
   'table.expired': 'Expired',
   'table.note': 'Note',
+  'table.control': 'Control',
   'table.autoRenew': 'Auto Renew',
   'table.planNumber': 'Plan',
   'table.os': 'OS',
@@ -317,6 +318,7 @@ const en = {
   'vpsManager.title': 'VPS Manager',
   'vpsManager.resetPassword': 'Reset Password',
   'vpsManager.autoFix': 'Auto Fix',
+  'vpsManager.upgrade': 'Upgrade',
   'vpsManager.comingSoon': 'Coming Soon',
 
   'popConfirm.on': 'On',

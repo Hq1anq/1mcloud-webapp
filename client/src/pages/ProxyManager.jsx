@@ -1115,8 +1115,9 @@ export default function ProxyManager({ onBuySuccessRef }) {
           'created',
           'expired',
           'status',
-          'is_auto_renew',
           'note',
+          'control',
+          'is_auto_renew',
         ]}
         headerLabels={{
           country: t('table.country'),
@@ -1124,8 +1125,9 @@ export default function ProxyManager({ onBuySuccessRef }) {
           created: t('table.created'),
           expired: t('table.expired'),
           status: t('table.status'),
-          is_auto_renew: t('table.autoRenew'),
           note: t('table.note'),
+          control: t('table.control'),
+          is_auto_renew: t('table.autoRenew'),
           _selected: t('table.selected'),
           _total: t('table.total'),
           _rows: t('table.rows'),

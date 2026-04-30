@@ -3,9 +3,7 @@ import { useTranslation } from '../../i18n'
 import { usePopConfirm } from '../../context/PopConfirmContext'
 import ToggleButton from './ToggleButton'
 
-// --- POP CONFIRM TOGGLE ---
-// Renders only ToggleButton; opens the singleton PopConfirm from context on click.
-export default function PopConfirmToggle({ isOn, onConfirm }) {
+export default function RenewToggle({ isOn, onConfirm }) {
   const { show } = usePopConfirm()
   const buttonRef = useRef(null)
   const t = useTranslation()

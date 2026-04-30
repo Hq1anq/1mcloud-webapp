@@ -93,6 +93,7 @@ const vi = {
   'table.created': 'Ngày tạo',
   'table.expired': 'Hết hạn',
   'table.note': 'Ghi chú',
+  'table.control': 'Điều khiển',
   'table.autoRenew': 'Tự gia hạn',
   'table.planNumber': 'Dịch vụ',
   'table.os': 'OS',
@@ -318,6 +319,7 @@ const vi = {
   'vpsManager.title': 'Quản lý VPS',
   'vpsManager.resetPassword': 'Đặt lại mật khẩu',
   'vpsManager.autoFix': 'Tự động sửa',
+  'vpsManager.upgrade': 'Nâng cấp',
   'vpsManager.comingSoon': 'Sắp ra mắt',
 
   'popConfirm.on': 'Bật',

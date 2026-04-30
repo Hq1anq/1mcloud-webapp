@@ -162,51 +162,48 @@ export default function UserMenu() {
           </p>
         </div>
 
-        {/* Menu Items */}
-        <div>
-          <Link
-            to="/account"
-            className="group hover:bg-bg-hover flex items-center gap-2 px-4 py-2"
-            onClick={() => setIsOpen(false)}
+        <Link
+          to="/account"
+          className="group hover:bg-bg-hover flex items-center gap-2 px-4 py-2"
+          onClick={() => setIsOpen(false)}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 640 640"
+            className="size-5 fill-current"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 640 640"
-              className="size-5 fill-current"
-            >
-              <path d="M320 312C386.3 312 440 258.3 440 192C440 125.7 386.3 72 320 72C253.7 72 200 125.7 200 192C200 258.3 253.7 312 320 312zM290.3 368C191.8 368 112 447.8 112 546.3C112 562.7 125.3 576 141.7 576L498.3 576C514.7 576 528 562.7 528 546.3C528 447.8 448.2 368 349.7 368L290.3 368z" />
-            </svg>
-            {t('menu.account')}
-          </Link>
+            <path d="M320 312C386.3 312 440 258.3 440 192C440 125.7 386.3 72 320 72C253.7 72 200 125.7 200 192C200 258.3 253.7 312 320 312zM290.3 368C191.8 368 112 447.8 112 546.3C112 562.7 125.3 576 141.7 576L498.3 576C514.7 576 528 562.7 528 546.3C528 447.8 448.2 368 349.7 368L290.3 368z" />
+          </svg>
+          {t('menu.account')}
+        </Link>
 
-          <div className="flex items-center justify-evenly px-4 py-2">
-            <LanguageToggle />
-            <ThemeToggle />
-          </div>
-
-          <div className="border-border my-1 border-t"></div>
-
-          <button
-            onClick={handleLogout}
-            className="hover:bg-bg-hover flex w-full items-center px-4 py-2 text-red-500"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="mr-3 size-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-              />
-            </svg>
-            {t('menu.logout')}
-          </button>
+        <div className="flex items-center justify-evenly px-4 py-2">
+          <LanguageToggle />
+          <ThemeToggle />
         </div>
+
+        <div className="border-border my-1 border-t"></div>
+
+        <button
+          onClick={handleLogout}
+          className="hover:bg-bg-hover flex w-full items-center px-4 py-2 text-red-500"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="mr-3 size-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+            />
+          </svg>
+          {t('menu.logout')}
+        </button>
       </div>
     </div>
   )

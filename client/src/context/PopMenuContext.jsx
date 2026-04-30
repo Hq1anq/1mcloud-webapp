@@ -1,27 +1,32 @@
 import { createContext, useContext, useState, useCallback } from 'react'
 import AnchorPopup from '../components/ui/AnchorPopup'
-import PopConfirmContent from '../components/ui/PopConfirmContent'
+import ControlMenuContent from '../components/ui/ControlMenuContent'
 
-const PopConfirmContext = createContext(null)
+const PopMenuContext = createContext(null)
 
 /**
- * usePopConfirm — hook for showing a Yes/No confirmation popup.
+ * usePopMenu — hook for showing the VPS action menu popup.
  *
  * API:
- *   const { show, hide } = usePopConfirm()
- *   show(anchorEl, { title, onConfirm, onCancel? })
+ *   const { show, hide } = usePopMenu()
+ *   show(anchorEl, { actions })
  */
-export function usePopConfirm() {
-  const ctx = useContext(PopConfirmContext)
-  if (!ctx) throw new Error('usePopConfirm must be used inside <PopConfirmProvider>')
-  return ctx
+export function usePopMenu() {
+  const context = useContext(PopMenuContext)
+  if (!context) throw new Error('usePopMenu must be used inside <PopMenuProvider>')
+  return context
 }
 
 // ─── Provider ─────────────────────────────────────────────────────────────────
-export function PopConfirmProvider({ children }) {
-  // null = no active confirm — don't render the portal
+export function PopMenuProvider({ children }) {
+  // null = no active menu — don't render the portal
   const [active, setActive] = useState(null)
 
+  /**
+   * show(anchorEl, { actions })
+   *  anchorEl — DOM element used to compute card position
+   *  actions  — array of action descriptors passed to ControlMenuContent
+   */
   const show = useCallback((anchorEl, config) => {
     const rect = anchorEl.getBoundingClientRect()
     const coords = {
@@ -42,31 +47,21 @@ export function PopConfirmProvider({ children }) {
   }, [])
 
   return (
-    <PopConfirmContext.Provider value={{ show, hide }}>
+    <PopMenuContext.Provider value={{ show, hide }}>
       {children}
 
-      {/* Singleton confirm popup — independent of the menu popup */}
+      {/* Singleton menu popup */}
       {active && (
         <AnchorPopup
           isOpen={active.isOpen}
           coords={active.coords}
           onClose={hide}
-          bgClassName="bg-surface-secondary"
-          cardClassName="p-4 gap-4"
+          bgClassName="bg-terminal"
+          cardClassName="p-3 gap-1"
         >
-          <PopConfirmContent
-            title={active.config.title}
-            onConfirm={() => {
-              hide()
-              active.config.onConfirm?.()
-            }}
-            onCancel={() => {
-              hide()
-              active.config.onCancel?.()
-            }}
-          />
+          <ControlMenuContent actions={active.config.actions} onClose={hide} />
         </AnchorPopup>
       )}
-    </PopConfirmContext.Provider>
+    </PopMenuContext.Provider>
   )
 }

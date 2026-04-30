@@ -9,6 +9,7 @@ router.use(authenticate);
 
 router.get("/plan", vpsController.getVpsPlan);
 router.get("/support", vpsController.support);
+router.post("/upgrade/plans", vpsController.upgradePlans);
 
 router.get("/", vpsController.getVpsList);
 router.post("/", vpsController.saveVpsList);

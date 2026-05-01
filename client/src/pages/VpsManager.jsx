@@ -52,6 +52,7 @@ export default function VpsManager({ onBuySuccessRef }) {
     deselectRows,
     onSelectionChange,
     handleBatchAction,
+    handleSingleAction,
     processSequential,
   } = useManagerActions({ updateRowBySid, syncToDb })
 
@@ -810,22 +811,26 @@ export default function VpsManager({ onBuySuccessRef }) {
           'control',
           'is_auto_renew',
         ]}
-        controlButton={
+        controlButton={(row) => (
           <ControlButton
             onUpgrade={() => {
-              addToast(t('vpsManager.comingSoon'), 'info')
+              addToast(t('manager.comingSoon'), 'info')
             }}
-            onPause={() => {
-              addToast(t('vpsManager.comingSoon'), 'info')
-            }}
-            onReboot={() => {
-              addToast(t('vpsManager.comingSoon'), 'info')
-            }}
+            onPause={() =>
+              handleSingleAction(row, '/server/pause', t('manager.pause').toUpperCase(), () => ({
+                status: 'Paused',
+              }))
+            }
+            onReboot={() =>
+              handleSingleAction(row, '/server/reboot', t('manager.reboot').toUpperCase(), () => ({
+                status: 'Running',
+              }))
+            }
             onChangeIp={() => {
-              addToast(t('vpsManager.comingSoon'), 'info')
+              addToast(t('manager.comingSoon'), 'info')
             }}
           />
-        }
+        )}
         operatorConfig={OPERATOR_CONFIG}
         rowClassMap={rowClassMap}
         selectedIds={selectedIds}

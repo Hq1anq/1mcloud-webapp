@@ -59,7 +59,6 @@ export default function useManagerActions(store) {
       }
       const loadingId = addToast(actionName + '...', 'loading')
       setIsProcessing(true)
-      setRowClassMap({})
       const sids = rows.map((r) => r.sid).join(',')
 
       try {
@@ -123,6 +122,58 @@ export default function useManagerActions(store) {
       setIsProcessing(false)
     },
     [addToast, removeToast, syncToDb, updateRowBySid, deselectRows, t]
+  )
+
+  // --- Single handler: single API call for one row ---
+  const handleSingleAction = useCallback(
+    async (row, endpoint, actionName, statusUpdater) => {
+      const loadingId = addToast(actionName + '...', 'loading')
+      setIsProcessing(true)
+
+      try {
+        const res = await axiosInstance.post(endpoint, { sids: row.sid.toString() })
+        if (res.data?.success) {
+          let updates = {}
+          if (statusUpdater) {
+            updates = statusUpdater(row)
+            updateRowBySid(row.sid, () => updates)
+          }
+          setRowClassMap((prev) => ({ ...prev, [row.sid]: 'bg-success-cell' }))
+          addToast(
+            <>
+              {actionName} {t('manager.completed')} <br />
+              <span className="text-text-toast-success">1 {t('manager.success')}</span>
+            </>,
+            'success'
+          )
+          // Sync in background after feedback
+          if (statusUpdater) {
+            syncToDb([{ ...row, ...updates }])
+          }
+        } else {
+          setRowClassMap((prev) => ({ ...prev, [row.sid]: 'bg-error-cell' }))
+          addToast(
+            <>
+              {actionName} {t('manager.completed')} <br />
+              <span className="text-text-toast-error">1 {t('manager.failed')}</span>
+            </>,
+            'error'
+          )
+        }
+      } catch {
+        setRowClassMap((prev) => ({ ...prev, [row.sid]: 'bg-error-cell' }))
+        addToast(
+          <>
+            {actionName} {t('manager.completed')} <br />
+            <span className="text-text-toast-error">1 {t('manager.failed')}</span>
+          </>,
+          'error'
+        )
+      }
+      removeToast(loadingId)
+      setIsProcessing(false)
+    },
+    [addToast, removeToast, syncToDb, updateRowBySid, t]
   )
 
   // --- Sequential processor: one API call per row with per-row feedback ---
@@ -237,6 +288,7 @@ export default function useManagerActions(store) {
 
     // Action processors
     handleBatchAction,
+    handleSingleAction,
     processSequential,
   }
 }

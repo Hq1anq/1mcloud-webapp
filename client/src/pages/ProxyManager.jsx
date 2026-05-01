@@ -56,6 +56,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
     deselectRows,
     onSelectionChange,
     handleBatchAction,
+    handleSingleAction,
     processSequential,
   } = useManagerActions({ updateRowBySid, syncToDb })
 
@@ -1122,19 +1123,72 @@ export default function ProxyManager({ onBuySuccessRef }) {
           'control',
           'is_auto_renew',
         ]}
-        controlButton={
+        controlButton={(row) => (
           <ControlButton
-            onPause={() => {
-              addToast(t('vpsManager.comingSoon'), 'info')
-            }}
-            onReboot={() => {
-              addToast(t('vpsManager.comingSoon'), 'info')
-            }}
-            onChangeIp={() => {
-              addToast(t('vpsManager.comingSoon'), 'info')
+            onPause={() =>
+              handleSingleAction(row, '/server/pause', t('manager.pause').toUpperCase(), () => ({
+                status: 'Paused',
+              }))
+            }
+            onReboot={() =>
+              handleSingleAction(row, '/server/reboot', t('manager.reboot').toUpperCase(), () => ({
+                status: 'Running',
+              }))
+            }
+            onChangeIp={async () => {
+              addToast(t('manager.comingSoon'), 'info')
+              return
+              const type = changeIpType === 'HTTPS' ? 'proxy_https' : 'proxy_sock_5'
+              const ip = row.ip_port?.split(':')[0]
+
+              const loadingId = addToast(t('manager.changeIp').toUpperCase() + '...', 'loading')
+              setIsProcessing(true)
+
+              try {
+                const res = await axiosInstance.post('/server/change-ip', { ip, type })
+                if (res.data?.success) {
+                  const [newIp, port, user, pass] = res.data.proxyInfo
+                  const updates = {
+                    ip_port: `${newIp}:${port}`,
+                    user_pass: `${user}:${pass}`,
+                    type: changeIpType + ' Proxy',
+                    status: 'Running',
+                  }
+                  updateRowBySid(row.sid, () => updates)
+                  setRowClassMap((prev) => ({ ...prev, [row.sid]: 'bg-success-cell' }))
+                  syncToDb([{ ...row, ...updates }])
+                  addToast(
+                    <>
+                      {t('manager.changeIp').toUpperCase()} {t('manager.completed')} <br />
+                      <span className="text-text-toast-success">1 {t('manager.success')}</span>
+                    </>,
+                    'success'
+                  )
+                } else {
+                  setRowClassMap((prev) => ({ ...prev, [row.sid]: 'bg-error-cell' }))
+                  addToast(
+                    <>
+                      {t('manager.changeIp').toUpperCase()} {t('manager.completed')} <br />
+                      <span className="text-text-toast-error">1 {t('manager.failed')}</span>
+                    </>,
+                    'error'
+                  )
+                }
+              } catch {
+                setRowClassMap((prev) => ({ ...prev, [row.sid]: 'bg-error-cell' }))
+                addToast(
+                  <>
+                    {t('manager.changeIp').toUpperCase()} {t('manager.completed')} <br />
+                    <span className="text-text-toast-error">1 {t('manager.failed')}</span>
+                  </>,
+                  'error'
+                )
+              }
+              removeToast(loadingId)
+              setIsProcessing(false)
             }}
           />
-        }
+        )}
         operatorConfig={OPERATOR_CONFIG}
         rowClassMap={rowClassMap}
         selectedIds={selectedIds}

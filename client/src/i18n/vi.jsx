@@ -330,10 +330,11 @@ const vi = {
   'vpsManager.resetPassword': 'Đặt lại mật khẩu',
   'vpsManager.autoFix': 'Tự động sửa',
   'vpsManager.upgrade': 'Nâng cấp',
-  'vpsManager.comingSoon': 'Sắp ra mắt',
+  'manager.comingSoon': 'Sắp ra mắt',
 
   'popConfirm.on': 'Bật',
   'popConfirm.off': 'Tắt',
+  'popConfirm.youWantTo': 'Bạn muốn',
   'popConfirm.autoRenewOn': (
     <p className="text-text-primary text-center text-sm font-medium">
       Bạn muốn <span className="text-primary font-bold">BẬT</span> gia hạn tự động?

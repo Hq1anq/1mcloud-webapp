@@ -88,7 +88,7 @@ export default function ConfirmActionDialog({
   // Base headers excluding sid and created
   let headers = []
   if (isProxy) headers = ['ip_port', 'country', 'type', 'expired', 'status', 'note']
-  else headers = ['plan', 'ip_port', 'country', 'he_dieu_hanh', 'expired', 'status', 'note']
+  else headers = ['plan_number', 'ip_port', 'country', 'he_dieu_hanh', 'expired', 'status', 'note']
 
   if (isRenew) {
     headers = [...headers, 'new_expired_day', 'expense']

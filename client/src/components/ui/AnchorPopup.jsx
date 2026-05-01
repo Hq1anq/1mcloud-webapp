@@ -66,7 +66,7 @@ export default function AnchorPopup({
       {/* Spring-animated card */}
       <div
         style={{ top: `${top}px`, left: `${left}px`, zIndex: zIndex }}
-        className={`pop-spring border-border fixed flex flex-col rounded-xl border shadow-[0_15px_40_rgba(0,0,0,0.6)] transition-all duration-400 ${placementClass} ${cardClassName} ${bgClassName} ${
+        className={`pop-spring border-border text-text-primary fixed flex flex-col rounded-xl border shadow-[0_15px_40_rgba(0,0,0,0.6)] transition-all duration-400 ${placementClass} ${cardClassName} ${bgClassName} ${
           isOpen ? 'scale-100 opacity-100' : 'scale-[0.3] opacity-0'
         }`}
         onClick={(e) => e.stopPropagation()}

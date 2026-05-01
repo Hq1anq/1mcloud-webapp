@@ -48,7 +48,14 @@ export default function ControlButton({ onUpgrade, onPause, onReboot, onChangeIp
             </svg>
           ),
           className: 'text-red',
-          confirm: { title: t('popConfirm.pauseConfirm') },
+          confirm: {
+            title: (
+              <p className="font-medium">
+                {t('popConfirm.youWantTo')}{' '}
+                <span className="text-primary font-bold">{t('manager.pause')}</span>?
+              </p>
+            ),
+          },
           onAction: onPause,
         },
         {
@@ -63,10 +70,17 @@ export default function ControlButton({ onUpgrade, onPause, onReboot, onChangeIp
             </svg>
           ),
           className: 'text-orange',
-          confirm: { title: t('popConfirm.rebootConfirm') },
+          confirm: {
+            title: (
+              <p className="font-medium">
+                {t('popConfirm.youWantTo')}{' '}
+                <span className="text-primary font-bold">{t('manager.reboot')}</span>?
+              </p>
+            ),
+          },
           onAction: onReboot,
         },
-        {
+        onChangeIp && {
           label: t('manager.changeIp'),
           icon: (
             <svg

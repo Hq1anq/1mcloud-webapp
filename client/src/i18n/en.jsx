@@ -210,6 +210,7 @@ const en = {
   'manager.clickGetData': 'Click',
   'manager.toLoadInfo': 'to load information',
   'manager.copied': 'Copied',
+  'manager.comingSoon': 'Coming Soon',
 
   'dialog.confirm': 'Confirm',
   'dialog.cancel': 'Cancel',
@@ -329,17 +330,17 @@ const en = {
   'vpsManager.resetPassword': 'Reset Password',
   'vpsManager.autoFix': 'Auto Fix',
   'vpsManager.upgrade': 'Upgrade',
-  'vpsManager.comingSoon': 'Coming Soon',
 
   'popConfirm.on': 'On',
   'popConfirm.off': 'Off',
+  'popConfirm.youWantTo': 'You want to',
   'popConfirm.autoRenewOn': (
-    <p className="text-text-primary text-center text-sm font-medium">
+    <p className="font-medium">
       You want to turn auto renew <span className="text-primary font-bold">ON</span>?
     </p>
   ),
   'popConfirm.autoRenewOff': (
-    <p className="text-text-primary text-center text-sm font-medium">
+    <p className="font-medium">
       You want to turn auto renew <span className="text-text-muted font-bold">OFF</span>?
     </p>
   ),

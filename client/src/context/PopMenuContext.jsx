@@ -29,12 +29,14 @@ export function PopMenuProvider({ children }) {
    */
   const show = useCallback((anchorEl, config) => {
     const rect = anchorEl.getBoundingClientRect()
-    const coords = {
-      top: rect.top + rect.height / 2,
-      left: rect.left - 12,
+    const anchorRect = {
+      top: rect.top,
+      left: rect.left,
+      width: rect.width,
+      height: rect.height,
     }
 
-    setActive({ isOpen: false, coords, config })
+    setActive({ isOpen: false, anchorRect, config })
 
     requestAnimationFrame(() => {
       setActive((prev) => prev && { ...prev, isOpen: true })
@@ -54,7 +56,9 @@ export function PopMenuProvider({ children }) {
       {active && (
         <AnchorPopup
           isOpen={active.isOpen}
-          coords={active.coords}
+          anchorRect={active.anchorRect}
+          direction={active.config.direction || [-1, 0]}
+          zIndex={10}
           onClose={hide}
           bgClassName="bg-terminal"
           cardClassName="p-3 gap-1"

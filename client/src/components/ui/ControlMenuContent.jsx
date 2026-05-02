@@ -31,6 +31,7 @@ export default function ControlMenuContent({ actions, onClose }) {
               // The menu stays open behind the confirm (independent contexts).
               showConfirm(e.currentTarget, {
                 title: action.confirm.title,
+                direction: [0, 1],
                 onConfirm: () => {
                   // User said Yes → close the menu, then run the action
                   onClose()

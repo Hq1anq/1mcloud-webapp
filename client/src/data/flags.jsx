@@ -151,7 +151,7 @@ export const flagsIcons = {
       <use xlinkHref="#hk-a" transform="rotate(288 312.5 243.5)" />
     </svg>
   ),
-  gpu: (
+  GPU: (
     // GPU / chip icon
     <svg
       xmlns="http://www.w3.org/2000/svg"

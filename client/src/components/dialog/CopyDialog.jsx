@@ -83,7 +83,7 @@ export default function CopyDialog({ isOpen, onClose, text }) {
     <Dialog isOpen={isOpen} onClose={handleClose} title={t('dialog.copy')}>
       <button
         onClick={handleCopy}
-        className={`group absolute top-6 right-6 inline-flex cursor-pointer items-center justify-center rounded-lg px-1 py-0.5 hover:brightness-(--highlight-brightness) ${
+        className={`group absolute top-6 right-6 inline-flex cursor-pointer items-center justify-center rounded-lg px-1 py-0.5 ${
           copyState === 'copied'
             ? 'text-text-toast-success'
             : copyState === 'failed'
@@ -112,7 +112,7 @@ export default function CopyDialog({ isOpen, onClose, text }) {
       />
       <button
         onClick={handleClose}
-        className="bg-red mt-3 self-end rounded-lg px-4 py-2 font-medium hover:brightness-(--highlight-brightness)"
+        className="bg-red mt-3 self-end rounded-lg px-4 py-2 font-medium"
       >
         {t('dialog.close')}
       </button>

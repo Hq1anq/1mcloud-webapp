@@ -181,7 +181,7 @@ export default function ProxyChecker() {
                       {t('checker.proxyList')}
                     </label>
                     <button
-                      className="bg-action flex items-center justify-center rounded-lg px-2 py-1 font-medium hover:brightness-(--highlight-brightness)"
+                      className="bg-action flex items-center justify-center rounded-lg px-2 py-1 font-medium"
                       style={{ '--action-color': 'var(--red)' }}
                       onClick={() => setProxyInput('')}
                     >
@@ -231,7 +231,7 @@ export default function ProxyChecker() {
                   <button
                     onClick={handleCheck}
                     disabled={isChecking}
-                    className="bg-action flex w-full items-center justify-center rounded-l-lg px-4 py-2 font-bold hover:brightness-(--highlight-brightness) disabled:opacity-50"
+                    className="bg-action flex w-full items-center justify-center rounded-l-lg px-4 py-2 font-bold disabled:opacity-50"
                     style={{ '--action-color': 'var(--purple)' }}
                   >
                     {isChecking ? (
@@ -281,7 +281,7 @@ export default function ProxyChecker() {
                   {/* Copy Buttons */}
                   <button
                     onClick={handleCopyIp}
-                    className="bg-action flex flex-1 items-center justify-center rounded-l-xl px-4 py-2 font-medium hover:brightness-(--highlight-brightness)"
+                    className="bg-action flex flex-1 items-center justify-center rounded-l-xl px-4 py-2 font-medium"
                     style={{ '--action-color': 'var(--primary)' }}
                   >
                     <svg
@@ -296,7 +296,7 @@ export default function ProxyChecker() {
 
                   <button
                     onClick={handleCopyFullProxy}
-                    className="bg-action flex flex-1 items-center justify-center rounded-r-xl px-4 py-2 font-medium hover:brightness-(--highlight-brightness)"
+                    className="bg-action flex flex-1 items-center justify-center rounded-r-xl px-4 py-2 font-medium"
                     style={{ '--action-color': 'var(--orange)' }}
                   >
                     <svg
@@ -312,7 +312,7 @@ export default function ProxyChecker() {
                   {/* Selection buttons*/}
                   <button
                     onClick={() => handleSelectByStatus('Active')}
-                    className="bg-action flex items-center justify-center rounded-l-xl px-4 py-2 font-medium hover:brightness-(--highlight-brightness)"
+                    className="bg-action flex items-center justify-center rounded-l-xl px-4 py-2 font-medium"
                     style={{ '--action-color': 'var(--green)' }}
                   >
                     <svg
@@ -327,7 +327,7 @@ export default function ProxyChecker() {
 
                   <button
                     onClick={() => handleSelectByStatus('Inactive')}
-                    className="bg-action flex items-center justify-center rounded-r-xl px-4 py-2 font-medium hover:brightness-(--highlight-brightness)"
+                    className="bg-action flex items-center justify-center rounded-r-xl px-4 py-2 font-medium"
                     style={{ '--action-color': 'var(--red)' }}
                   >
                     <svg
@@ -357,13 +357,13 @@ export default function ProxyChecker() {
           <button
             id="captureBtn"
             onClick={handleCapture}
-            className="bg-action rounded-lg px-2 py-2 hover:brightness-(--highlight-brightness)"
+            className="bg-action rounded-lg px-2 py-2"
             style={{ '--action-color': 'var(--orange)' }}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 512 512"
-              className="size-5 shrink-0 fill-current sm:h-7 sm:w-7"
+              className="size-5 shrink-0 fill-current sm:size-7"
             >
               <path d="M384 320V192C384 174.326 369.674 160 352 160H316L309.812 143.562C306.312 134.188 297.375 128 287.375 128H224.625C214.625 128 205.625 134.188 202.125 143.562L196 160H160C142.326 160 128 174.326 128 192V320C128 337.672 142.326 352 160 352H352C369.674 352 384 337.672 384 320ZM256 304C229.5 304 208 282.5 208 256S229.5 208 256 208S304 229.5 304 256S282.5 304 256 304ZM144 432H48V336C48 327.162 40.836 320 32 320H16C7.164 320 0 327.162 0 336V448C0 465.672 14.326 480 32 480H144C152.836 480 160 472.836 160 464V448C160 439.162 152.836 432 144 432ZM16 192H32C40.836 192 48 184.836 48 176V80H144C152.836 80 160 72.836 160 64V48C160 39.162 152.836 32 144 32H32C14.326 32 0 46.326 0 64V176C0 184.836 7.164 192 16 192ZM480 32H368C359.164 32 352 39.162 352 48V64C352 72.836 359.164 80 368 80H464V176C464 184.836 471.164 192 480 192H496C504.836 192 512 184.836 512 176V64C512 46.326 497.674 32 480 32ZM496 320H480C471.164 320 464 327.162 464 336V432H368C359.164 432 352 439.162 352 448V464C352 472.836 359.164 480 368 480H480C497.674 480 512 465.672 512 448V336C512 327.162 504.836 320 496 320Z" />
             </svg>

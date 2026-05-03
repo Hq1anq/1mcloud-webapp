@@ -505,7 +505,7 @@ export default function VpsManager({ onBuySuccessRef }) {
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 24 24"
-                      className="mr-2 size-6 shrink-0 fill-current sm:h-7 sm:w-7"
+                      className="mr-2 size-6 shrink-0 fill-current sm:size-7"
                     >
                       <path d="M5 5a2 2 0 0 0-2 2v3a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V7a2 2 0 0 0-2-2H5Zm9 2a1 1 0 1 0 0 2h.01a1 1 0 1 0 0-2H14Zm3 0a1 1 0 1 0 0 2h.01a1 1 0 1 0 0-2H17ZM3 17v-3a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Zm11-2a1 1 0 1 0 0 2h.01a1 1 0 1 0 0-2H14Zm3 0a1 1 0 1 0 0 2h.01a1 1 0 1 0 0-2H17Z" />
                     </svg>
@@ -516,7 +516,7 @@ export default function VpsManager({ onBuySuccessRef }) {
                   </label>
                   <button
                     onClick={() => setIps('')}
-                    className="bg-action static right-0 flex items-center justify-center rounded-lg px-3 py-1 text-sm font-medium transition-colors duration-200 hover:brightness-(--highlight-brightness) md:absolute lg:static"
+                    className="bg-action static right-0 flex items-center justify-center rounded-lg px-3 py-1 text-sm font-medium transition-colors duration-200 md:absolute lg:static"
                     style={{ '--action-color': 'var(--red)' }}
                   >
                     <svg
@@ -550,7 +550,7 @@ export default function VpsManager({ onBuySuccessRef }) {
                     className="w-24 rounded-r-none border-r-0 py-1"
                   />
                   <button
-                    className="bg-action flex flex-1 items-center justify-center rounded-lg rounded-l-none px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
+                    className="bg-action flex flex-1 items-center justify-center rounded-lg rounded-l-none px-3 py-2 font-medium"
                     style={{ '--action-color': 'var(--purple)' }}
                     onClick={handleGetData}
                   >
@@ -558,7 +558,7 @@ export default function VpsManager({ onBuySuccessRef }) {
                       aria-hidden="true"
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 24 24"
-                      className="mr-1 size-5 shrink-0 fill-none sm:mr-2 sm:h-7 sm:w-7"
+                      className="mr-1 size-5 shrink-0 fill-none sm:mr-2 sm:size-7"
                     >
                       <path
                         stroke="currentColor"
@@ -574,7 +574,7 @@ export default function VpsManager({ onBuySuccessRef }) {
 
                 {/* Pause */}
                 <button
-                  className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap hover:brightness-(--highlight-brightness)"
+                  className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap"
                   style={{ '--action-color': 'var(--red)' }}
                   onClick={handlePause}
                   disabled={isProcessing}
@@ -582,7 +582,7 @@ export default function VpsManager({ onBuySuccessRef }) {
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 640 640"
-                    className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:h-6 sm:w-6"
+                    className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:size-6"
                   >
                     <path d="M176 96C149.5 96 128 117.5 128 144L128 496C128 522.5 149.5 544 176 544L240 544C266.5 544 288 522.5 288 496L288 144C288 117.5 266.5 96 240 96L176 96zM400 96C373.5 96 352 117.5 352 144L352 496C352 522.5 373.5 544 400 544L464 544C490.5 544 512 522.5 512 496L512 144C512 117.5 490.5 96 464 96L400 96z" />
                   </svg>
@@ -591,7 +591,7 @@ export default function VpsManager({ onBuySuccessRef }) {
 
                 {/* Reboot */}
                 <button
-                  className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap hover:brightness-(--highlight-brightness)"
+                  className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap"
                   style={{ '--action-color': 'var(--orange)' }}
                   onClick={handleReboot}
                   disabled={isProcessing}
@@ -599,7 +599,7 @@ export default function VpsManager({ onBuySuccessRef }) {
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 16 16"
-                    className="mr-1 h-[18px] w-[18px] shrink-0 fill-current sm:mr-2 sm:h-6 sm:w-6"
+                    className="mr-1 h-[18px] w-[18px] shrink-0 fill-current sm:mr-2 sm:size-6"
                   >
                     <path d="m 8 0 c -0.550781 0 -1 0.449219 -1 1 v 5 c 0 0.550781 0.449219 1 1 1 s 1 -0.449219 1 -1 v -5 c 0 -0.550781 -0.449219 -1 -1 -1 z m -7 1 l 2.050781 2.050781 c -2.117187 2.117188 -2.652343 5.355469 -1.332031 8.039063 c 1.324219 2.683594 4.214844 4.238281 7.179688 3.851562 c 2.96875 -0.386718 5.367187 -2.625 5.960937 -5.554687 c 0.59375 -2.933594 -0.75 -5.929688 -3.335937 -7.433594 c -0.476563 -0.28125 -1.089844 -0.117187 -1.367188 0.359375 s -0.117188 1.089844 0.359375 1.367188 c 1.851563 1.078124 2.808594 3.207031 2.382813 5.3125 c -0.421876 2.101562 -2.128907 3.691406 -4.253907 3.96875 c -2.128906 0.273437 -4.183593 -0.828126 -5.128906 -2.753907 s -0.566406 -4.226562 0.949219 -5.742187 l 1.535156 1.535156 v -4.003906 c 0 -0.519532 -0.449219 -0.996094 -1 -0.996094 z m 0 0" />
                   </svg>
@@ -608,7 +608,7 @@ export default function VpsManager({ onBuySuccessRef }) {
 
                 {/* Renew */}
                 <button
-                  className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap hover:brightness-(--highlight-brightness)"
+                  className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap"
                   style={{ '--action-color': 'var(--purple)' }}
                   onClick={handleRenew}
                   disabled={isProcessing}
@@ -616,7 +616,7 @@ export default function VpsManager({ onBuySuccessRef }) {
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 640 640"
-                    className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:h-6 sm:w-6"
+                    className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:size-6"
                   >
                     <path d="M160 96C124.7 96 96 124.7 96 160L96 480C96 515.3 124.7 544 160 544L480 544C515.3 544 544 515.3 544 480L544 160C544 124.7 515.3 96 480 96L160 96zM296 408L296 344L232 344C218.7 344 208 333.3 208 320C208 306.7 218.7 296 232 296L296 296L296 232C296 218.7 306.7 208 320 208C333.3 208 344 218.7 344 232L344 296L408 296C421.3 296 432 306.7 432 320C432 333.3 421.3 344 408 344L344 344L344 408C344 421.3 333.3 432 320 432C306.7 432 296 421.3 296 408z" />
                   </svg>
@@ -626,7 +626,7 @@ export default function VpsManager({ onBuySuccessRef }) {
                 {/* Refund */}
                 {profile?.is_refund && (
                   <button
-                    className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap hover:brightness-(--highlight-brightness)"
+                    className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap"
                     style={{ '--action-color': 'var(--pink)' }}
                     onClick={handleRefund}
                     disabled={isProcessing}
@@ -634,7 +634,7 @@ export default function VpsManager({ onBuySuccessRef }) {
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 448 512"
-                      className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:h-6 sm:w-6"
+                      className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:size-6"
                     >
                       <path d="M384 32H64C28.654 32 0 60.652 0 96V416C0 451.346 28.654 480 64 480H384C419.346 480 448 451.346 448 416V96C448 60.652 419.346 32 384 32ZM310.764 314.281C305.451 342.701 281.738 361.422 248.045 366.818V384C248.045 397.25 237.295 408 224.045 408S200.045 397.25 200.045 384V365.939C185.955 363.51 171.59 359 158.795 354.734L152.514 352.656C139.92 348.531 133.045 334.969 137.17 322.375S154.92 302.922 167.451 307.031L173.951 309.187C186.076 313.219 199.795 317.781 210.951 319.344C238.826 323.359 261.326 317.359 263.576 305.437C265.389 295.828 261.732 290.766 217.795 279.156L209.201 276.875C184.482 270.156 126.576 254.469 137.201 197.719C142.523 169.283 166.266 150.521 200.045 145.156V128C200.045 114.75 210.795 104 224.045 104S248.045 114.75 248.045 128V146.002C256.998 147.568 266.891 149.984 279.264 153.937C291.889 157.953 298.889 171.469 294.857 184.094C290.857 196.719 277.326 203.75 264.701 199.656C253.139 195.969 244.014 193.672 236.857 192.641C209.295 188.703 186.607 194.625 184.389 206.562C183.045 213.625 181.92 219.734 221.764 230.547L230.045 232.75C264.264 241.781 321.514 256.906 310.764 314.281Z" />
                     </svg>
@@ -645,13 +645,13 @@ export default function VpsManager({ onBuySuccessRef }) {
                 {/* Copy IP */}
                 <button
                   onClick={handleCopyIp}
-                  className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
+                  className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap transition-colors duration-200"
                   style={{ '--action-color': 'var(--green)' }}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 640 640"
-                    className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:h-7 sm:w-7"
+                    className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:size-7"
                   >
                     <path d="M288 64C252.7 64 224 92.7 224 128L224 384C224 419.3 252.7 448 288 448L480 448C515.3 448 544 419.3 544 384L544 183.4C544 166 536.9 149.3 524.3 137.2L466.6 81.8C454.7 70.4 438.8 64 422.3 64L288 64zM160 192C124.7 192 96 220.7 96 256L96 512C96 547.3 124.7 576 160 576L352 576C387.3 576 416 547.3 416 512L416 496L352 496L352 512L160 512L160 256L176 256L176 192L160 192z" />
                   </svg>
@@ -660,7 +660,7 @@ export default function VpsManager({ onBuySuccessRef }) {
 
                 {/* Get Info */}
                 <button
-                  className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap hover:brightness-(--highlight-brightness)"
+                  className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap"
                   style={{ '--action-color': 'var(--blue)' }}
                   onClick={() => {
                     const rows = selectedRowsRef.current
@@ -687,7 +687,7 @@ export default function VpsManager({ onBuySuccessRef }) {
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 448 512"
-                    className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:h-6 sm:w-6"
+                    className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:size-6"
                   >
                     <path d="M384 32H64C28.654 32 0 60.652 0 96V416C0 451.344 28.654 480 64 480H384C419.346 480 448 451.344 448 416V96C448 60.652 419.346 32 384 32ZM224 128C241.674 128 256 142.326 256 160C256 177.672 241.674 192 224 192S192 177.672 192 160C192 142.326 206.326 128 224 128ZM264 384H184C170.75 384 160 373.25 160 360S170.75 336 184 336H200V272H192C178.75 272 168 261.25 168 248S178.75 224 192 224H224C237.25 224 248 234.75 248 248V336H264C277.25 336 288 346.75 288 360S277.25 384 264 384Z" />
                   </svg>
@@ -696,7 +696,7 @@ export default function VpsManager({ onBuySuccessRef }) {
 
                 {/* Auto Fix */}
                 <button
-                  className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap hover:brightness-(--highlight-brightness)"
+                  className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap"
                   style={{ '--action-color': 'var(--green)' }}
                   onClick={handleAutoFix}
                   disabled={isProcessing}
@@ -714,7 +714,7 @@ export default function VpsManager({ onBuySuccessRef }) {
                 {/* Reset Password */}
                 {profile?.is_reset_pass && (
                   <button
-                    className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap hover:brightness-(--highlight-brightness)"
+                    className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap"
                     style={{ '--action-color': 'var(--blue)' }}
                     onClick={handleResetPassword}
                     disabled={isProcessing}
@@ -722,7 +722,7 @@ export default function VpsManager({ onBuySuccessRef }) {
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 512 512"
-                      className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:h-6 sm:w-6"
+                      className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:size-6"
                     >
                       <path d="M336 352c97.2 0 176-78.8 176-176S433.2 0 336 0S160 78.8 160 176c0 18.7 2.9 36.8 8.3 53.7L7 391c-4.5 4.5-7 10.6-7 17l0 80c0 13.3 10.7 24 24 24l80 0c13.3 0 24-10.7 24-24l0-40 40 0c13.3 0 24-10.7 24-24l0-40 40 0c6.4 0 12.5-2.5 17-7l33.3-33.3c16.9 5.4 35 8.3 53.7 8.3zM376 96a40 40 0 1 1 0 80 40 40 0 1 1 0-80z" />
                     </svg>
@@ -740,7 +740,7 @@ export default function VpsManager({ onBuySuccessRef }) {
                     className="rounded-r-none border-r-0 py-1"
                   />
                   <button
-                    className="bg-action flex w-full items-center justify-center rounded-lg rounded-l-none px-3 py-2 font-medium transition-colors duration-200 hover:brightness-(--highlight-brightness)"
+                    className="bg-action flex w-full items-center justify-center rounded-lg rounded-l-none px-3 py-2 font-medium transition-colors duration-200"
                     style={{ '--action-color': 'var(--orange)' }}
                     onClick={handleChangeNote}
                     disabled={isProcessing}
@@ -748,7 +748,7 @@ export default function VpsManager({ onBuySuccessRef }) {
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 640 640"
-                      className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:h-7 sm:w-7"
+                      className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:size-7"
                     >
                       <path d="M535.6 85.7C513.7 63.8 478.3 63.8 456.4 85.7L432 110.1L529.9 208L554.3 183.6C576.2 161.7 576.2 126.3 554.3 104.4L535.6 85.7zM236.4 305.7C230.3 311.8 225.6 319.3 222.9 327.6L193.3 416.4C190.4 425 192.7 434.5 199.1 441C205.5 447.5 215 449.7 223.7 446.8L312.5 417.2C320.7 414.5 328.2 409.8 334.4 403.7L496 241.9L398.1 144L236.4 305.7zM160 128C107 128 64 171 64 224L64 480C64 533 107 576 160 576L416 576C469 576 512 533 512 480L512 384C512 366.3 497.7 352 480 352C462.3 352 448 366.3 448 384L448 480C448 497.7 433.7 512 416 512L160 512C142.3 512 128 497.7 128 480L128 224C128 206.3 142.3 192 160 192L256 192C273.7 192 288 177.7 288 160C288 142.3 273.7 128 256 128L160 128z" />
                     </svg>
@@ -843,7 +843,7 @@ export default function VpsManager({ onBuySuccessRef }) {
         extraBtn={
           <button
             id="reloadBtn"
-            className="bg-action rounded-lg px-2 py-2 hover:brightness-(--highlight-brightness)"
+            className="bg-action rounded-lg px-2 py-2"
             style={{ '--action-color': 'var(--orange)' }}
             onClick={() => {
               resetView()
@@ -854,7 +854,7 @@ export default function VpsManager({ onBuySuccessRef }) {
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 640 640"
-              className="size-5 shrink-0 fill-current sm:h-7 sm:w-7"
+              className="size-5 shrink-0 fill-current sm:size-7"
             >
               <path d="M544.1 256L552 256C565.3 256 576 245.3 576 232L576 88C576 78.3 570.2 69.5 561.2 65.8C552.2 62.1 541.9 64.2 535 71L483.3 122.8C439 86.1 382 64 320 64C191 64 84.3 159.4 66.6 283.5C64.1 301 76.2 317.2 93.7 319.7C111.2 322.2 127.4 310 129.9 292.6C143.2 199.5 223.3 128 320 128C364.4 128 405.2 143 437.7 168.3L391 215C384.1 221.9 382.1 232.2 385.8 241.2C389.5 250.2 398.3 256 408 256L544.1 256zM573.5 356.5C576 339 563.8 322.8 546.4 320.3C529 317.8 512.7 330 510.2 347.4C496.9 440.4 416.8 511.9 320.1 511.9C275.7 511.9 234.9 496.9 202.4 471.6L249 425C255.9 418.1 257.9 407.8 254.2 398.8C250.5 389.8 241.7 384 232 384L88 384C74.7 384 64 394.7 64 408L64 552C64 561.7 69.8 570.5 78.8 574.2C87.8 577.9 98.1 575.8 105 569L156.8 517.2C201 553.9 258 576 320 576C449 576 555.7 480.6 573.4 356.5z" />
             </svg>
@@ -865,7 +865,7 @@ export default function VpsManager({ onBuySuccessRef }) {
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
-              className="fill-text-muted mx-auto size-12 shrink-0 sm:h-16 sm:w-16"
+              className="fill-text-muted mx-auto size-12 shrink-0 sm:size-16"
             >
               <path d="M5 5a2 2 0 0 0-2 2v3a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V7a2 2 0 0 0-2-2H5Zm9 2a1 1 0 1 0 0 2h.01a1 1 0 1 0 0-2H14Zm3 0a1 1 0 1 0 0 2h.01a1 1 0 1 0 0-2H17ZM3 17v-3a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Zm11-2a1 1 0 1 0 0 2h.01a1 1 0 1 0 0-2H14Zm3 0a1 1 0 1 0 0 2h.01a1 1 0 1 0 0-2H17Z" />
             </svg>

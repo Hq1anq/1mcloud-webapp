@@ -83,7 +83,7 @@ export default function Navbar() {
               <Link
                 to="https://1mcloud.vn/"
                 target="_blank"
-                className="bg-blue rounded-lg px-4 py-2 font-medium text-white shadow-sm hover:brightness-(--highlight-brightness)"
+                className="bg-blue rounded-lg px-4 py-2 font-medium text-white shadow-sm"
               >
                 {t('menu.login')}
               </Link>

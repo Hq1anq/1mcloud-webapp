@@ -823,14 +823,40 @@ export default function VpsManager({ onBuySuccessRef }) {
                   }
             }
             onPause={() =>
-              handleSingleAction(row, '/server/pause', t('manager.pause').toUpperCase(), () => ({
-                status: 'Paused',
-              }))
+              handleSingleAction(
+                row,
+                '/server/pause',
+                { sids: row.sid.toString() },
+                t('manager.pause').toUpperCase(),
+                () => ({
+                  status: 'Paused',
+                })
+              )
             }
             onReboot={() =>
-              handleSingleAction(row, '/server/reboot', t('manager.reboot').toUpperCase(), () => ({
-                status: 'Running',
-              }))
+              handleSingleAction(
+                row,
+                '/server/reboot',
+                { sids: row.sid.toString() },
+                t('manager.reboot').toUpperCase(),
+                () => ({
+                  status: 'Running',
+                })
+              )
+            }
+            onRefund={
+              profile?.is_refund
+                ? () =>
+                    handleSingleAction(
+                      row,
+                      '/server/refund',
+                      { sid: row.sid.toString() },
+                      t('manager.refund').toUpperCase(),
+                      () => ({
+                        status: 'Refunded',
+                      })
+                    )
+                : undefined
             }
             onChangeIp={() => {
               addToast(t('manager.comingSoon'), 'info')

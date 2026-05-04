@@ -170,6 +170,14 @@ const Table = forwardRef(function Table(
     if (parent) setScrollParent(parent)
   }, [])
 
+  // Auto-commit renderingReceived once it's been processed by useMemo
+  // This "locks in" the current set of rows so they don't disappear on status updates
+  useEffect(() => {
+    if (renderingReceived && setRenderingReceived) {
+      setRenderingReceived(false)
+    }
+  }, [renderingReceived, setRenderingReceived])
+
   const filteredData = useMemo(() => {
     let resultData = data || DEFAULT_DATA
 

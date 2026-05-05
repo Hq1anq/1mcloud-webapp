@@ -1,5 +1,6 @@
 import DropDown from '../components/ui/DropDown'
 import Table from '../components/ui/Table'
+import ControlButton from '../components/ui/ControlButton'
 import axiosInstance from '../lib/axios'
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useToast } from '../context/ToastContext'
@@ -56,6 +57,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
     deselectRows,
     onSelectionChange,
     handleBatchAction,
+    handleSingleAction,
     processSequential,
   } = useManagerActions({ updateRowBySid, syncToDb })
 
@@ -155,6 +157,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
     const confirmed = await confirmAction({
       title: t('manager.confirmChangeIp'),
       infoText: infoTextNode,
+      isProxy: true,
       isRenew: false,
       selectedRows: rows,
     })
@@ -280,6 +283,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
     const confirmed = await confirmAction({
       title: t('manager.confirmReinstall'),
       infoText: infoTextNode,
+      isProxy: true,
       isRenew: false,
       selectedRows: rows,
     })
@@ -504,6 +508,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
 
     const renewDataOrConfirmed = await confirmAction({
       title: t('manager.confirmRenew'),
+      isProxy: true,
       isRenew: true,
       selectedRows: rows,
     })
@@ -649,6 +654,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
 
     const refundDataOrConfirmed = await confirmAction({
       title: t('manager.confirmRefund'),
+      isProxy: true,
       isRefund: true,
       selectedRows: rows,
     })
@@ -666,9 +672,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
       const cleanIp = row.ip_port?.split(':')[0]
       if (refundData && refundData.success && refundData.success[cleanIp]) {
         validRows.push(row)
-      } else {
-        invalidRows.push(row)
-      }
+      } else invalidRows.push(row)
     })
 
     setRowClassMap((prev) => {
@@ -901,7 +905,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
                   {t('dialog.copy')}
                 </button>
                 <textarea
-                  className="min-h-24 grow whitespace-pre-line"
+                  className="min-h-24 grow whitespace-pre"
                   placeholder="192.168.1.1&#10;10.0.0.1&#10;172.16.0.1"
                   value={ips}
                   onChange={(e) => setIps(e.target.value)}
@@ -1332,19 +1336,72 @@ export default function ProxyManager({ onBuySuccessRef }) {
           'control',
           'is_auto_renew',
         ]}
-        headerLabels={{
-          country: t('table.country'),
-          type: t('table.type'),
-          created: t('table.created'),
-          expired: t('table.expired'),
-          status: t('table.status'),
-          note: t('table.note'),
-          control: t('table.control'),
-          is_auto_renew: t('table.autoRenew'),
-          _selected: t('table.selected'),
-          _total: t('table.total'),
-          _rows: t('table.rows'),
-        }}
+        controlButton={(row) => (
+          <ControlButton
+            onPause={() =>
+              handleSingleAction(row, '/server/pause', t('manager.pause').toUpperCase(), () => ({
+                status: 'Paused',
+              }))
+            }
+            onReboot={() =>
+              handleSingleAction(row, '/server/reboot', t('manager.reboot').toUpperCase(), () => ({
+                status: 'Running',
+              }))
+            }
+            onChangeIp={async () => {
+              addToast(t('manager.comingSoon'), 'info')
+              return
+              const type = changeIpType === 'HTTPS' ? 'proxy_https' : 'proxy_sock_5'
+              const ip = row.ip_port?.split(':')[0]
+
+              const loadingId = addToast(t('manager.changeIp').toUpperCase() + '...', 'loading')
+              setIsProcessing(true)
+
+              try {
+                const res = await axiosInstance.post('/server/change-ip', { ip, type })
+                if (res.data?.success) {
+                  const [newIp, port, user, pass] = res.data.proxyInfo
+                  const updates = {
+                    ip_port: `${newIp}:${port}`,
+                    user_pass: `${user}:${pass}`,
+                    type: changeIpType + ' Proxy',
+                    status: 'Running',
+                  }
+                  updateRowBySid(row.sid, () => updates)
+                  setRowClassMap((prev) => ({ ...prev, [row.sid]: 'bg-success-cell' }))
+                  syncToDb([{ ...row, ...updates }])
+                  addToast(
+                    <>
+                      {t('manager.changeIp').toUpperCase()} {t('manager.completed')} <br />
+                      <span className="text-text-toast-success">1 {t('manager.success')}</span>
+                    </>,
+                    'success'
+                  )
+                } else {
+                  setRowClassMap((prev) => ({ ...prev, [row.sid]: 'bg-error-cell' }))
+                  addToast(
+                    <>
+                      {t('manager.changeIp').toUpperCase()} {t('manager.completed')} <br />
+                      <span className="text-text-toast-error">1 {t('manager.failed')}</span>
+                    </>,
+                    'error'
+                  )
+                }
+              } catch {
+                setRowClassMap((prev) => ({ ...prev, [row.sid]: 'bg-error-cell' }))
+                addToast(
+                  <>
+                    {t('manager.changeIp').toUpperCase()} {t('manager.completed')} <br />
+                    <span className="text-text-toast-error">1 {t('manager.failed')}</span>
+                  </>,
+                  'error'
+                )
+              }
+              removeToast(loadingId)
+              setIsProcessing(false)
+            }}
+          />
+        )}
         operatorConfig={OPERATOR_CONFIG}
         rowClassMap={rowClassMap}
         selectedIds={selectedIds}

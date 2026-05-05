@@ -166,7 +166,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
       is_proxy: true,
     }
 
-    const loadingId = addToast(t('buy.processing'), 'loading')
+    const loadingId = addToast(t('processing'), 'loading')
 
     try {
       const res = await axiosInstance.post('/server/create', proxyDataBuying)
@@ -423,7 +423,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
                 <span className="font-medium">{summary.original_price}</span>
               </div>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-text-muted">{t('buy.discount')}</span>
+                <span className="text-text-muted">{t('discount')}</span>
                 <span className="font-medium text-green-500">
                   {summary.discount && `-${summary.discount}`}
                 </span>
@@ -434,7 +434,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
               </div>
               <div className="bg-border my-1 h-px"></div>
               <div className="flex items-center justify-between text-base">
-                <span className="font-bold">{t('buy.totalToPay')}</span>
+                <span className="font-bold">{t('totalToPay')}</span>
                 <h1 className="font-bold">{summary.must_pay}</h1>
               </div>
               {summary.warning && (
@@ -508,7 +508,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
               onClick={onClose}
               className="text-text-muted hover:text-text-primary h-12 w-full rounded-lg bg-transparent font-medium transition-colors"
             >
-              {t('buy.cancel')}
+              {t('cancel')}
             </button>
           </div>
         </div>

@@ -6,6 +6,13 @@ const vi = {
   'nav.vpsManager': 'VPS Manager',
   'nav.manager': 'Manager',
 
+  discount: 'Giảm giá',
+  totalToPay: 'Tổng thanh toán',
+  cancel: 'Huỷ',
+  noData: 'Không dữ liệu',
+  error: 'Lỗi',
+  processing: 'Đang xử lý...',
+
   // UserMenu
   'menu.login': 'Đăng nhập',
   'menu.account': 'Tài khoản',
@@ -87,6 +94,8 @@ const vi = {
   'contact.subtitle': 'Hỗ trợ chuyên sâu, giải đáp mọi nhu cầu về dịch vụ.',
 
   // Table Headers
+  'table.sid': 'Sid',
+  'table.ip_port': 'IP:Port',
   'table.type': 'Loại',
   'table.country': 'Quốc gia',
   'table.status': 'Trạng thái',
@@ -94,13 +103,23 @@ const vi = {
   'table.expired': 'Hết hạn',
   'table.note': 'Ghi chú',
   'table.control': 'Điều khiển',
-  'table.autoRenew': 'Tự gia hạn',
-  'table.planNumber': 'Dịch vụ',
-  'table.os': 'OS',
-  'table.priceVnd': 'Giá (VNĐ)',
+  'table.is_auto_renew': 'Tự gia hạn',
+  'table.plan_number': 'Dịch vụ',
+  'table.he_dieu_hanh': 'Hệ điều hành',
+  'table.price_vnd': 'Giá (VNĐ)',
+  'table.refund': 'Hoàn lại',
+  'table.new_expired_day': 'Ngày hết hạn mới',
+  'table.expense': 'Chi phí',
+  'table.monthlyPrice': 'Giá (Tháng)',
+  'table.spec': 'Cấu hình (vCPU / RAM / SSD)',
   'table.selected': 'Đã chọn',
   'table.total': 'Tổng',
   'table.rows': 'dòng',
+
+  'table.ip': 'IP',
+  'table.port': 'Port',
+  'table.username': 'Tên đăng nhập',
+  'table.password': 'Mật khẩu',
 
   // Login Page
   'login.title': 'Đăng nhập',
@@ -203,7 +222,6 @@ const vi = {
   'manager.copied': 'Đã sao chép',
 
   'dialog.confirm': 'Xác nhận',
-  'dialog.cancel': 'Huỷ',
   'dialog.close': 'Đóng',
   'dialog.download': 'Tải xuống',
   'dialog.copy': 'Sao chép',
@@ -231,19 +249,15 @@ const vi = {
   'buy.enterNote': 'Nhập ghi chú',
   'buy.orderSummary': 'Tóm tắt đơn hàng',
   'buy.originalPrice': 'Giá gốc',
-  'buy.discount': 'Giảm giá',
   'buy.coupon': 'Mã giảm giá',
-  'buy.totalToPay': 'Tổng thanh toán',
   'buy.discountCode': 'Mã giảm giá',
   'buy.autoRenew': 'Tự động gia hạn',
   'buy.agreeTerms': 'Đồng ý với điều khoản dịch vụ.',
   'buy.payNow': 'Thanh toán',
-  'buy.cancel': 'Huỷ',
   'buy.purchased': 'Đã mua',
   'buy.proxySuccess': 'proxy!',
   'buy.purchaseFailed': 'Mua thất bại',
   'buy.errorOccurred': 'Đã xảy ra lỗi',
-  'buy.processing': 'Đang xử lý...',
   'buy.invalidUsername': 'Chỉ được phép dùng kí tự thường (a-z) và số 0-9',
   'buy.invalidPassword': 'Chữ hoa + chữ thường + số, tối thiểu 10',
 
@@ -267,7 +281,6 @@ const vi = {
   'buyVps.autoRenew': 'Tự động gia hạn',
   'buyVps.agreeTerms': 'Đồng ý với điều khoản dịch vụ.',
   'buyVps.payNow': 'Thanh toán',
-  'buyVps.cancel': 'Huỷ',
   'buyVps.processing': 'Đang xử lý...',
   'buyVps.purchaseSuccess': 'Mua VPS thành công!',
   'buyVps.purchaseFailed': 'Mua VPS thất bại',
@@ -290,6 +303,17 @@ const vi = {
   'buyVps.soldOut': 'Hết hàng',
   'buyVps.soldOutMessage':
     'Gói dịch vụ này hiện đã hết. Vui lòng kiểm tra lại sau hoặc liên hệ bộ phận hỗ trợ.',
+
+  'upgradePlan.title': 'Nâng cấp cấu hình',
+  'upgradePlan.subtitle':
+    'Chọn gói mới để mở rộng tài nguyên. Phí chênh lệch sẽ được áp dụng ngay lập tức.',
+  'upgradePlan.summary': 'Tóm tắt nâng cấp',
+  'upgradePlan.currentPlan': 'Plan hiện tại',
+  'upgradePlan.targetPlan': 'Plan nâng cấp',
+  'upgradePlan.daysRemaining': 'Còn lại',
+  'upgradePlan.days': 'ngày',
+  'upgradePlan.calculationDetail': 'Chi tiết tính toán',
+  'upgradePlan.noUpgradePlans': 'Không có gói nâng cấp phù hợp',
 
   // Account Page
   'account.title': 'Tài khoản của tôi',
@@ -320,10 +344,11 @@ const vi = {
   'vpsManager.resetPassword': 'Đặt lại mật khẩu',
   'vpsManager.autoFix': 'Tự động sửa',
   'vpsManager.upgrade': 'Nâng cấp',
-  'vpsManager.comingSoon': 'Sắp ra mắt',
+  'manager.comingSoon': 'Sắp ra mắt',
 
   'popConfirm.on': 'Bật',
   'popConfirm.off': 'Tắt',
+  'popConfirm.youWantTo': 'Bạn muốn',
   'popConfirm.autoRenewOn': (
     <p className="text-text-primary text-center text-sm font-medium">
       Bạn muốn <span className="text-primary font-bold">BẬT</span> gia hạn tự động?

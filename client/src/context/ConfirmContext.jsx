@@ -41,6 +41,7 @@ export const ConfirmProvider = ({ children }) => {
         infoText={config.infoText}
         isRenew={config.isRenew}
         isRefund={config.isRefund}
+        isProxy={config.isProxy}
         selectedRows={config.selectedRows || []}
       />
     </ConfirmContext.Provider>

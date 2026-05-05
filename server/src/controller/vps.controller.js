@@ -272,7 +272,7 @@ export async function deleteVpsList(req, res) {
 
 export async function upgradePlans(req, res) {
   const url = `${process.env.BASE_URL}/server/upgrade/plans`;
-  const { sid } = req.query;
+  const { sid } = req.body;
   const headers = { ...HEADERS, authorization: `Bearer ${req.token}` };
 
   try {
@@ -294,6 +294,66 @@ export async function upgradePlans(req, res) {
     return res.json({ success: true, info: data });
   } catch (error) {
     console.error("Failed to GET UPGRADE PLANS", error.message);
+    return res
+      .status(500)
+      .json({ success: false, error: "Internal server error" });
+  }
+}
+
+export async function upgradeCalculate(req, res) {
+  const url = `${process.env.BASE_URL}/server/upgrade/calculate`;
+  const { sid, plan_id } = req.body;
+  const headers = { ...HEADERS, authorization: `Bearer ${req.token}` };
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ sid, plan_id }),
+    });
+
+    if (!response.ok) {
+      console.error(`Failed to UPGRADE CALCULATE:`, response.status);
+      return res.status(response.status).json({
+        success: false,
+        error: "UPGRADE CALCULATE request failed",
+      });
+    }
+
+    const data = await response.json();
+    return res.json({ success: true, info: data });
+  } catch (error) {
+    console.error("Failed to UPGRADE CALCULATE", error.message);
+    return res
+      .status(500)
+      .json({ success: false, error: "Internal server error" });
+  }
+}
+
+export async function upgrade(req, res) {
+  const url = `${process.env.BASE_URL}/server/upgrade`;
+  const { sid, plan_id } = req.body;
+  const headers = { ...HEADERS, authorization: `Bearer ${req.token}` };
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ sid, plan_id }),
+    });
+
+    if (!response.ok) {
+      console.error(`Failed to UPGRADE:`, response.status);
+      return res.status(response.status).json({
+        success: false,
+        error: "UPGRADE request failed",
+      });
+    }
+
+    const data = await response.json();
+    return res.json({ success: true, info: data });
+  } catch (error) {
+    console.error("Failed to UPGRADE", error.message);
     return res
       .status(500)
       .json({ success: false, error: "Internal server error" });

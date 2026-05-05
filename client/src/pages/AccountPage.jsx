@@ -163,7 +163,7 @@ export default function AccountPage() {
                 <span className="ml-2 text-2xl font-bold opacity-80 md:text-3xl">VNĐ</span>
               </p>
             </div>
-            <div className="mt-4 flex gap-3">
+            <div className="mt-4 flex flex-wrap gap-3">
               <button
                 onClick={() => setShowAddFunds(true)}
                 className="flex items-center gap-2 rounded-lg bg-white px-5 py-2.5 text-sm font-bold text-blue-600 shadow-sm transition-colors hover:bg-blue-50"

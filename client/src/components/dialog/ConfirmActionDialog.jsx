@@ -12,6 +12,7 @@ export default function ConfirmActionDialog({
   infoText,
   isRenew,
   isRefund,
+  isProxy,
   selectedRows,
   isProcessing: externalProcessing,
 }) {
@@ -85,7 +86,9 @@ export default function ConfirmActionDialog({
   const isProcessing = externalProcessing || isFetchingRenew || isFetchingRefund
 
   // Base headers excluding sid and created
-  let headers = ['ip_port', 'country', 'type', 'expired', 'status', 'note']
+  let headers = []
+  if (isProxy) headers = ['ip_port', 'country', 'type', 'expired', 'status', 'note']
+  else headers = ['plan_number', 'ip_port', 'country', 'he_dieu_hanh', 'expired', 'status', 'note']
 
   if (isRenew) {
     headers = [...headers, 'new_expired_day', 'expense']
@@ -111,7 +114,7 @@ export default function ConfirmActionDialog({
                       key={header}
                       className={`px-4 py-2 font-semibold whitespace-nowrap uppercase ${['ip_port', 'note'].includes(header) ? 'text-left' : 'text-center'}`}
                     >
-                      {header.replace(/_/g, ' ')}
+                      {t('table.' + header) || header.replace(/_/g, ' ')}
                     </th>
                   ))}
                 </tr>
@@ -201,7 +204,7 @@ export default function ConfirmActionDialog({
             disabled={isProcessing}
             className="rounded-lg bg-gray-500 px-4 py-2 font-medium transition-colors hover:bg-gray-600 disabled:opacity-50"
           >
-            {t('dialog.cancel')}
+            {t('cancel')}
           </button>
           <button
             onClick={handleConfirmClick}

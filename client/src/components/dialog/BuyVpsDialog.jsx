@@ -80,6 +80,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
   useEffect(() => {
     if (isOpen) {
       setStep('grid')
+      setSummary({})
     }
   }, [isOpen])
 
@@ -178,6 +179,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
 
   const handleBack = () => {
     setStep('grid')
+    setSummary({})
   }
 
   const handlePay = async () => {
@@ -322,7 +324,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
               onClick={onClose}
               fill="none"
               viewBox="0 0 24 24"
-              className="text-text-muted ml-auto size-7 cursor-pointer stroke-current stroke-3 hover:text-white"
+              className="text-text-muted hover:text-text-primary ml-auto size-7 cursor-pointer stroke-current stroke-3"
             >
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -378,7 +380,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                 onClick={handleBack}
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
-                className="stroke-text-muted hover:stroke-text-primary size-6 stroke-4"
+                className="stroke-text-muted hover:stroke-text-primary size-6 fill-none stroke-4"
               >
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
               </svg>
@@ -407,10 +409,10 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                 </div>
 
                 {/* Make table have a max height and scroll inner content */}
-                <div className="scroll-container max-h-56 overflow-x-auto overflow-y-auto">
+                <div className="scroll-container border-border overflow-x-auto overflow-y-auto rounded-lg border">
                   <table className="min-w-full text-lg">
-                    <thead className="bg-thead sticky top-0 z-10 shadow-sm">
-                      <tr className="text-text-secondary">
+                    <thead className="bg-surface-secondary sticky top-0 z-10 shadow-sm">
+                      <tr className="text-text-muted">
                         <th className="w-12 px-3 py-2 text-center font-semibold whitespace-nowrap uppercase" />
                         <th className="px-3 py-2 text-left font-semibold whitespace-nowrap uppercase">
                           {t('buyVps.planName')}
@@ -701,7 +703,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
           </div>
 
           {/* Right: Summary Panel */}
-          <div className="bg-surface border-border flex w-full shrink-0 flex-col justify-between rounded-b-xl p-4 md:w-[380px] md:rounded-r-xl md:rounded-bl-none md:border-l md:p-6">
+          <div className="bg-surface border-border flex w-full shrink-0 flex-col justify-between rounded-b-xl border-t p-4 md:w-[380px] md:rounded-r-xl md:rounded-bl-none md:border-l md:p-6 lg:border-t-0">
             {!plans.some((p) => p.status === 'available') ? (
               <div className="text-text-muted mt-10 flex h-full flex-col items-center justify-center gap-4 text-center md:mt-0">
                 <svg
@@ -757,7 +759,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                     <h1 className="font-bold">{summary.must_pay}</h1>
                   </div>
                   {summary.warning && (
-                    <div className="mt-1 text-xs text-red-500">{summary.warning}</div>
+                    <div className="text-red mt-1 text-sm">{summary.warning}</div>
                   )}
                 </div>
 
@@ -814,14 +816,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                   summary.warning === 'Tài khoản không đủ' ||
                   !plans.some((p) => p.status === 'available')
                 }
-                className={`group flex h-12 w-full items-center justify-center gap-2 rounded-lg font-semibold text-white shadow-sm transition-all duration-200 ${
-                  !agreeTerms ||
-                  !selectedPlanId ||
-                  summary.warning === 'Tài khoản không đủ' ||
-                  !plans.some((p) => p.status === 'available')
-                    ? 'cursor-not-allowed bg-gray-500 opacity-50'
-                    : 'bg-blue hover:brightness-(--highlight-brightness)'
-                }`}
+                className="group bg-blue flex h-12 w-full items-center justify-center gap-2 rounded-lg font-semibold text-white shadow-sm transition-all duration-200 hover:brightness-(--highlight-brightness)"
               >
                 <span>{t('buyVps.payNow')}</span>
                 <svg
@@ -842,7 +837,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                 onClick={onClose}
                 className="text-text-muted hover:text-text-primary h-12 w-full rounded-lg bg-transparent font-medium"
               >
-                {t('buyVps.cancel')}
+                {t('cancel')}
               </button>
             </div>
           </div>

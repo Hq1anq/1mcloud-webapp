@@ -2,9 +2,9 @@ import { useState, useMemo, useCallback, forwardRef, useEffect, useRef } from 'r
 import { TableVirtuoso } from 'react-virtuoso'
 import { handleCopy, getStatusClasses, formatInputDate, str2date } from '../../lib/utils.js'
 import { getFlagIcon } from '../../data/flags.jsx'
+import { useTranslation } from '../../i18n'
 import Checkbox from './Checkbox.jsx'
 import RenewToggle from './RenewToggle.jsx'
-import ControlButton from './ControlButton'
 
 const DEFAULT_DATA = []
 
@@ -60,7 +60,14 @@ const VIRTUOSO_COMPONENTS = {
 }
 
 const itemContent = (index, row, context) => {
-  const { selectedIds, handleSelectRow, headers, showCountryCode, onAutoRenewToggle } = context
+  const {
+    selectedIds,
+    handleSelectRow,
+    headers,
+    showCountryCode,
+    onAutoRenewToggle,
+    controlButton,
+  } = context
   const isSelected = selectedIds.has(index)
   const isRefunded = row?.status?.toLowerCase() === 'refunded'
 
@@ -88,7 +95,7 @@ const itemContent = (index, row, context) => {
             title="Double click to copy"
           >
             {header === 'control' ? (
-              <ControlButton onControlClick={(e) => console.log(e)} />
+              controlButton(row)
             ) : header === 'is_auto_renew' ? (
               <RenewToggle
                 isOn={cellValue}
@@ -134,7 +141,7 @@ const Table = forwardRef(function Table(
     selectedIds = new Set(),
     title,
     headers,
-    headerLabels,
+    controlButton,
     operatorConfig,
     extraBtn,
     emptyMessage,
@@ -155,6 +162,7 @@ const Table = forwardRef(function Table(
   const [filterVersion, setFilterVersion] = useState(0)
   const matchedSidsRef = useRef(null)
   const lastFilterVersionRef = useRef(0)
+  const t = useTranslation()
 
   // Attach to our new custom scroll layout
   useEffect(() => {
@@ -326,20 +334,22 @@ const Table = forwardRef(function Table(
     return {
       selectedIds,
       headers,
-      headerLabels,
       rowClassMap,
       handleSelectRow,
       showCountryCode,
       onAutoRenewToggle,
+      controlButton,
+      t,
     }
   }, [
     selectedIds,
     headers,
-    headerLabels,
     rowClassMap,
     handleSelectRow,
     showCountryCode,
     onAutoRenewToggle,
+    controlButton,
+    t,
   ])
 
   const fixedHeader = useMemo(() => {
@@ -462,7 +472,7 @@ const Table = forwardRef(function Table(
                         onClick={() => setShowCountryCode((prev) => !prev)}
                         title="Toggle country display (Flag / Code)"
                       >
-                        <span>{headerLabels?.[header] || header.replace(/_/g, ' ')}</span>
+                        <span>{t('table.' + header) || header.replace(/_/g, ' ')}</span>
                         {!showCountryCode ? (
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -482,7 +492,7 @@ const Table = forwardRef(function Table(
                         )}
                       </div>
                     ) : (
-                      <>{headerLabels?.[header] || header.replace(/_/g, ' ')}</>
+                      <>{t('table.' + header) || header.replace(/_/g, ' ')}</>
                     )}
                   </span>
                   {useFilter && !['control', 'is_auto_renew'].includes(header) && (
@@ -521,7 +531,6 @@ const Table = forwardRef(function Table(
   }, [
     title,
     headers,
-    headerLabels,
     useFilter,
     operatorConfig,
     selectedIds.size,
@@ -531,6 +540,7 @@ const Table = forwardRef(function Table(
     onSelectionChange,
     setRenderingReceived,
     showCountryCode,
+    t,
   ])
 
   return (
@@ -565,14 +575,14 @@ const Table = forwardRef(function Table(
               <div className="flex items-center gap-3 sm:gap-5">
                 <div className="flex flex-col gap-1 sm:flex-row sm:gap-5">
                   <span className="text-right whitespace-nowrap">
-                    {headerLabels?._selected || 'Selected'}:{' '}
-                    <span id="selectedCount">{selectedIds.size}</span>{' '}
-                    {headerLabels?._rows || 'rows'}
+                    {t('table.selected')}:{' '}
+                    <span className="text-orange font-semibold">{selectedIds.size}</span>{' '}
+                    {t('table.rows')}
                   </span>
                   <span className="text-right whitespace-nowrap">
-                    {headerLabels?._total || 'Total'}:{' '}
-                    <span id="totalCount">{filteredData.length}</span>{' '}
-                    {headerLabels?._rows || 'rows'}
+                    {t('table.total')}:{' '}
+                    <span className="text-orange font-semibold">{filteredData.length}</span>{' '}
+                    {t('table.rows')}
                   </span>
                 </div>
                 {extraBtn && <span data-capture-ignore>{extraBtn}</span>}

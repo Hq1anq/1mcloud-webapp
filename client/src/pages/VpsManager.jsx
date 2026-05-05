@@ -1,5 +1,6 @@
 import Table from '../components/ui/Table'
 import ControlButton from '../components/ui/ControlButton'
+import UpgradePlanDialog from '../components/dialog/UpgradePlanDialog'
 import axiosInstance from '../lib/axios'
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useToast } from '../context/ToastContext'
@@ -26,6 +27,7 @@ export default function VpsManager({ onBuySuccessRef }) {
   const [ips, setIps] = useState('')
   const [amount, setAmount] = useState('')
   const [noteInput, setNoteInput] = useState('')
+  const [upgradeDialogState, setUpgradeDialogState] = useState({ isOpen: false, sid: null })
 
   // Data from Zustand store
   const data = useVpsStore((s) => s.data)
@@ -813,9 +815,13 @@ export default function VpsManager({ onBuySuccessRef }) {
         ]}
         controlButton={(row) => (
           <ControlButton
-            onUpgrade={() => {
-              addToast(t('manager.comingSoon'), 'info')
-            }}
+            onUpgrade={
+              row.nation === 'vps'
+                ? undefined
+                : () => {
+                    setUpgradeDialogState({ isOpen: true, sid: row.sid })
+                  }
+            }
             onPause={() =>
               handleSingleAction(row, '/server/pause', t('manager.pause').toUpperCase(), () => ({
                 status: 'Paused',
@@ -873,6 +879,55 @@ export default function VpsManager({ onBuySuccessRef }) {
         }
         onSelectionChange={onSelectionChange}
       />
+
+      {upgradeDialogState.isOpen && (
+        <UpgradePlanDialog
+          isOpen={upgradeDialogState.isOpen}
+          onClose={() => setUpgradeDialogState({ isOpen: false, sid: null })}
+          sid={upgradeDialogState.sid}
+          onSuccess={(responseData) => {
+            try {
+              const info = responseData.info || responseData
+
+              if (info && info.to_plan) {
+                const toPlan = info.to_plan || ''
+                const plan_number = toPlan.split(':')[0].trim()
+
+                const parseNum = (str) =>
+                  parseFloat(
+                    (str || '0')
+                      .toString()
+                      .replace(/,/g, '')
+                      .replace(/[^\d.-]/g, '')
+                  ) || 0
+
+                const expense = parseNum(info.expense)
+                const discount = parseNum(info.discount)
+                const toPlanPriceParts = toPlan.split(':')
+                const toPlanPrice = toPlanPriceParts.length > 1 ? parseNum(toPlanPriceParts[1]) : 0
+
+                let calculatedPrice = toPlanPrice
+                calculatedPrice = (expense / (expense + discount)) * toPlanPrice
+
+                const price_vnd = Math.round(calculatedPrice).toLocaleString('en-US')
+                const changes = { plan_number, price_vnd }
+                updateRowBySid(upgradeDialogState.sid, () => changes)
+                const row = data.find((r) => r.sid === upgradeDialogState.sid)
+                if (row) syncToDb([{ ...row, ...changes }])
+              } else if (responseData?.changes) {
+                updateRowBySid(upgradeDialogState.sid, () => responseData.changes)
+                const row = data.find((r) => r.sid === upgradeDialogState.sid)
+                if (row) syncToDb([{ ...row, ...responseData.changes }])
+              } else {
+                handleGetData()
+              }
+            } catch (err) {
+              console.error('Failed to parse upgrade response:', err)
+              handleGetData()
+            }
+          }}
+        />
+      )}
     </div>
   )
 }

@@ -204,7 +204,7 @@ export default function ConfirmActionDialog({
             disabled={isProcessing}
             className="rounded-lg bg-gray-500 px-4 py-2 font-medium transition-colors hover:bg-gray-600 disabled:opacity-50"
           >
-            {t('dialog.cancel')}
+            {t('cancel')}
           </button>
           <button
             onClick={handleConfirmClick}

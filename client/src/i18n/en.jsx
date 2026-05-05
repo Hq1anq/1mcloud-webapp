@@ -6,6 +6,13 @@ const en = {
   'nav.vpsManager': 'VPS Manager',
   'nav.manager': 'Manager',
 
+  discount: 'Discount',
+  totalToPay: 'Total to Pay',
+  cancel: 'Cancel',
+  noData: 'No Data',
+  error: 'Error',
+  processing: 'Processing...',
+
   // UserMenu
   'menu.login': 'Login',
   'menu.account': 'Account',
@@ -102,6 +109,8 @@ const en = {
   'table.refund': 'Refund',
   'table.new_expired_day': 'New expired day',
   'table.expense': 'Expense',
+  'table.monthlyPrice': 'Price (Monthly)',
+  'table.spec': 'Specs (vCPU / RAM / SSD)',
   'table.selected': 'Selected',
   'table.total': 'Total',
   'table.rows': 'rows',
@@ -213,7 +222,6 @@ const en = {
   'manager.comingSoon': 'Coming Soon',
 
   'dialog.confirm': 'Confirm',
-  'dialog.cancel': 'Cancel',
   'dialog.close': 'Close',
   'dialog.download': 'Download',
   'dialog.copy': 'Copy',
@@ -241,19 +249,15 @@ const en = {
   'buy.enterNote': 'Enter note',
   'buy.orderSummary': 'Order Summary',
   'buy.originalPrice': 'Original Price',
-  'buy.discount': 'Discount',
   'buy.coupon': 'Coupon',
-  'buy.totalToPay': 'Total to Pay',
   'buy.discountCode': 'Discount Code',
   'buy.autoRenew': 'Auto Renew',
   'buy.agreeTerms': 'Agree to our terms of service.',
   'buy.payNow': 'Pay Now',
-  'buy.cancel': 'Cancel',
   'buy.purchased': 'Purchased',
   'buy.proxySuccess': 'proxy successfully!',
   'buy.purchaseFailed': 'Purchase failed',
   'buy.errorOccurred': 'Error occurred',
-  'buy.processing': 'Processing...',
   'buy.invalidUsername': 'Only lowercase letters (a-z) and numbers (0-9) are allowed',
   'buy.invalidPassword': 'Uppercase, lowercase, number, min length 10',
 
@@ -277,7 +281,6 @@ const en = {
   'buyVps.autoRenew': 'Auto Renew',
   'buyVps.agreeTerms': 'Agree to our terms of service.',
   'buyVps.payNow': 'Pay Now',
-  'buyVps.cancel': 'Cancel',
   'buyVps.processing': 'Processing...',
   'buyVps.purchaseSuccess': 'VPS purchased successfully!',
   'buyVps.purchaseFailed': 'VPS purchase failed',
@@ -300,6 +303,17 @@ const en = {
   'buyVps.soldOut': 'Sold Out',
   'buyVps.soldOutMessage':
     'This plan is currently sold out. Please check back later or contact support.',
+
+  'upgradePlan.title': 'Upgrade Your Plan',
+  'upgradePlan.subtitle':
+    'Select a new tier to scale your resources. Prorated charges will apply immediately.',
+  'upgradePlan.summary': 'Upgrade Summary',
+  'upgradePlan.currentPlan': 'Current Plan',
+  'upgradePlan.targetPlan': 'Target Plan',
+  'upgradePlan.daysRemaining': 'Days Remaining',
+  'upgradePlan.days': 'days',
+  'upgradePlan.calculationDetail': 'Calculation Detail',
+  'upgradePlan.noUpgradePlans': 'No upgrade plans available',
 
   // Account Page
   'account.title': 'My Account',

@@ -126,12 +126,12 @@ export default function useManagerActions(store) {
 
   // --- Single handler: single API call for one row ---
   const handleSingleAction = useCallback(
-    async (row, endpoint, actionName, statusUpdater) => {
+    async (row, endpoint, data, actionName, statusUpdater) => {
       const loadingId = addToast(actionName + '...', 'loading')
       setIsProcessing(true)
 
       try {
-        const res = await axiosInstance.post(endpoint, { sids: row.sid.toString() })
+        const res = await axiosInstance.post(endpoint, data)
         if (res.data?.success) {
           let updates = {}
           if (statusUpdater) {

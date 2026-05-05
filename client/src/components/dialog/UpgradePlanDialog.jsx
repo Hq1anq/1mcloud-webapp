@@ -5,15 +5,33 @@ import axiosInstance from '../../lib/axios'
 import Dialog from '../ui/Dialog'
 
 export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
-  const { addToast } = useToast()
+  const { addToast, removeToast } = useToast()
   const t = useTranslation()
 
-  const [plans, setPlans] = useState([])
+  const [plans, setPlans] = useState(null)
   const [selectedPlanId, setSelectedPlanId] = useState(null)
   const [calculation, setCalculation] = useState(null)
-  const [loadingPlans, setLoadingPlans] = useState(false)
   const [calculationError, setCalculationError] = useState(false)
   const [processing, setProcessing] = useState(false)
+
+  const handleClose = () => {
+    onClose()
+    // Reset state after dialog animation finishes
+    setTimeout(() => {
+      setPlans(null)
+      setSelectedPlanId(null)
+      setCalculation(null)
+      setCalculationError(false)
+      setProcessing(false)
+    }, 300)
+  }
+
+  const handleSelectPlan = (id) => {
+    if (id === selectedPlanId) return
+    setSelectedPlanId(id)
+    setCalculation(null)
+    setCalculationError(false)
+  }
 
   const loadingContent = {
     from_plan: calculationError ? (
@@ -53,7 +71,6 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
   // Fetch plans
   useEffect(() => {
     if (isOpen && sid) {
-      setLoadingPlans(true)
       axiosInstance
         .post('/vps/upgrade/plans', { sid: sid.toString() })
         .then((res) => {
@@ -61,26 +78,23 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
             setPlans(res.data.info)
             if (res.data.info.length > 0) setSelectedPlanId(res.data.info[0].id)
             else setCalculationError(true)
-          } else addToast('Failed to load plans', 'error')
+          } else {
+            setPlans([])
+            addToast('Failed to load plans', 'error')
+          }
         })
         .catch((err) => {
           console.error(err)
+          setPlans([])
           addToast('Error fetching plans', 'error')
           setCalculationError(true)
         })
-        .finally(() => setLoadingPlans(false))
-    } else {
-      setPlans([])
-      setSelectedPlanId(null)
-      setCalculation(null)
     }
   }, [isOpen, sid, addToast])
 
   // Fetch calculation
   useEffect(() => {
     if (isOpen && sid && selectedPlanId) {
-      setCalculation(null)
-      setCalculationError(false)
       axiosInstance
         .post('/vps/upgrade/calculate', { sid: sid.toString(), plan_id: selectedPlanId })
         .then((res) => {
@@ -112,7 +126,7 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
           removeToast(loadingToast)
           addToast(t('vpsManager.upgrade') + ' ' + t('manager.success'), 'success')
           onSuccess(res.data)
-          onClose()
+          handleClose()
         } else {
           addToast(
             res.data?.message || t('vpsManager.upgrade') + ' ' + t('manager.failed'),
@@ -130,7 +144,7 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
   }
 
   return (
-    <Dialog isOpen={isOpen} onClose={onClose} className="w-full max-w-6xl overflow-hidden! p-0!">
+    <Dialog isOpen={isOpen} onClose={handleClose} className="w-full max-w-6xl overflow-hidden! p-0!">
       <div className="flex h-full max-h-[85vh] flex-col">
         {/* Dialog Header */}
         <div className="border-blue flex shrink-0 items-start justify-between border-b px-6 py-5 md:px-10">
@@ -157,7 +171,7 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
                 </div>
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="text-text-muted hidden h-5 w-5 sm:block"
+                  className="text-text-muted hidden size-5 sm:block"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -182,7 +196,7 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
 
             {/* Plans Table */}
             <div className="border-border bg-surface relative flex flex-1 flex-col overflow-hidden rounded-lg border">
-              {loadingPlans ? (
+            {!plans ? (
                 <div className="bg-surface absolute inset-0 flex items-center justify-center">
                   <div className="loader"></div>
                 </div>
@@ -230,7 +244,7 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
                         return (
                           <tr
                             key={plan.id}
-                            onClick={() => setSelectedPlanId(plan.id)}
+                            onClick={() => handleSelectPlan(plan.id)}
                             className={`relative cursor-pointer transition-colors ${
                               isSelected
                                 ? 'bg-bg-selected border-l-blue border-l-4'
@@ -379,7 +393,7 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
                 <span className="text-blue mb-2 flex items-center gap-2 text-xs font-semibold tracking-wide uppercase">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className="text-blue mt-0.5 h-5 w-5 shrink-0"
+                    className="text-blue mt-0.5 size-5 shrink-0"
                     viewBox="0 0 20 20"
                     fill="currentColor"
                   >
@@ -446,7 +460,7 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
                 <div className="bg-red/10 border-red/20 mt-2 flex items-start gap-3 rounded-lg border p-3">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className="text-red mt-0.5 h-5 w-5 shrink-0"
+                    className="text-red mt-0.5 size-5 shrink-0"
                     viewBox="0 0 20 20"
                     fill="currentColor"
                   >
@@ -466,7 +480,7 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
             {/* Actions */}
             <div className="border-border mt-6 flex justify-end gap-3 border-t pt-5">
               <button
-                onClick={onClose}
+                onClick={handleClose}
                 className="text-text-muted hover:bg-surface hover:text-text-primary focus:ring-border rounded-lg px-4 py-2 text-base transition-colors focus:ring-2 focus:outline-none"
               >
                 {t('cancel')}

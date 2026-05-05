@@ -356,7 +356,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                 <button
                   key={item.symbol}
                   onClick={() => handleSelectNation(item.symbol)}
-                  className="bg-surface-secondary border-card-border hover:border-blue group flex flex-col items-center justify-center rounded-xl border p-3 hover:brightness-(--highlight-brightness) active:scale-[0.97]"
+                  className="bg-surface-secondary border-card-border hover:border-blue group flex flex-col items-center justify-center rounded-xl border p-3 active:scale-[0.97]"
                 >
                   <div className="text-text-muted group-hover:text-primary flex aspect-4/3 w-16 items-center justify-center rounded-md group-hover:scale-120 sm:w-20">
                     <span className="size-12">{item.flag}</span>
@@ -816,7 +816,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                   summary.warning === 'Tài khoản không đủ' ||
                   !plans.some((p) => p.status === 'available')
                 }
-                className="group bg-blue flex h-12 w-full items-center justify-center gap-2 rounded-lg font-semibold text-white shadow-sm transition-all duration-200 hover:brightness-(--highlight-brightness)"
+                className="group bg-blue flex h-12 w-full items-center justify-center gap-2 rounded-lg font-semibold text-white shadow-sm transition-all duration-200"
               >
                 <span>{t('buyVps.payNow')}</span>
                 <svg

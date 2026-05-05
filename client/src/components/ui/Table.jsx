@@ -105,7 +105,7 @@ const itemContent = (index, row, context) => {
               <span
                 className={`inline-flex items-center rounded-full px-3 py-1 font-semibold ${statusClass}`}
               >
-                {statusClass && <span className="mr-2 h-2 w-2 rounded-full bg-current"></span>}
+                {statusClass && <span className="mr-2 size-2 rounded-full bg-current"></span>}
                 {cellValue}
               </span>
             ) : nationFlag ? (
@@ -169,6 +169,14 @@ const Table = forwardRef(function Table(
     const parent = document.getElementById('main-scroll-container')
     if (parent) setScrollParent(parent)
   }, [])
+
+  // Auto-commit renderingReceived once it's been processed by useMemo
+  // This "locks in" the current set of rows so they don't disappear on status updates
+  useEffect(() => {
+    if (renderingReceived && setRenderingReceived) {
+      setRenderingReceived(false)
+    }
+  }, [renderingReceived, setRenderingReceived])
 
   const filteredData = useMemo(() => {
     let resultData = data || DEFAULT_DATA
@@ -502,7 +510,7 @@ const Table = forwardRef(function Table(
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           viewBox="0 0 640 640"
-                          className="bg-border filter-operator fill-text-primary absolute top-[-2px] right-[-6px] size-4 cursor-pointer rounded-full p-0.5 hover:brightness-(--highlight-brightness)"
+                          className="bg-border filter-operator fill-text-primary absolute top-[-2px] right-[-6px] size-4 cursor-pointer rounded-full p-0.5"
                           onClick={() => toggleOperator(header)}
                           title={`Filter: ${operator}`}
                         >
@@ -561,7 +569,7 @@ const Table = forwardRef(function Table(
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
-                  className="mr-2 size-7 shrink-0 fill-none stroke-current stroke-2 sm:h-10 sm:w-10"
+                  className="mr-2 size-7 shrink-0 fill-none stroke-current stroke-2 sm:size-10"
                 >
                   <path
                     strokeLinecap="round"
@@ -598,7 +606,7 @@ const Table = forwardRef(function Table(
                   {SKELETON_WIDTHS.map((rowWidths, rowIndex) => (
                     <tr key={rowIndex} className="border-border/50 border-b">
                       <td className="w-12 p-4 text-center align-middle">
-                        <div className="shimmer-bg mx-auto h-4 w-4 animate-pulse rounded"></div>
+                        <div className="shimmer-bg mx-auto size-4 animate-pulse rounded"></div>
                       </td>
                       {headers.map((header, colIndex) => {
                         const widthClass = rowWidths[colIndex % rowWidths.length]
@@ -640,6 +648,7 @@ const Table = forwardRef(function Table(
 })
 
 function getNationFlag(nation) {
+  if (['GPU', 'EU'].includes(nation)) return nation
   return getFlagIcon(nation) || ''
 }
 

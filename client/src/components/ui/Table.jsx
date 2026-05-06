@@ -581,12 +581,12 @@ const Table = forwardRef(function Table(
                 <div className="flex flex-col gap-1 sm:flex-row sm:gap-5">
                   <span className="text-right whitespace-nowrap">
                     {t('table.selected')}:{' '}
-                    <span className="text-orange font-semibold">{selectedIds.size}</span>{' '}
+                    <span className="text-highlight font-semibold">{selectedIds.size}</span>{' '}
                     {t('table.rows')}
                   </span>
                   <span className="text-right whitespace-nowrap">
                     {t('table.total')}:{' '}
-                    <span className="text-orange font-semibold">{filteredData.length}</span>{' '}
+                    <span className="text-highlight font-semibold">{filteredData.length}</span>{' '}
                     {t('table.rows')}
                   </span>
                 </div>

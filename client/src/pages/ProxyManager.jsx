@@ -42,7 +42,6 @@ export default function ProxyManager({ onBuySuccessRef }) {
   const loadFromDb = useProxyStore((s) => s.loadFromDb)
   const fetchData = useProxyStore((s) => s.fetchData)
   const handleBuySuccessStore = useProxyStore((s) => s.handleBuySuccess)
-  const resetView = useProxyStore((s) => s.resetView)
 
   // Shared selection & processing logic
   const {
@@ -1227,7 +1226,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
             className="bg-action rounded-lg px-2 py-2"
             style={{ '--action-color': 'var(--orange)' }}
             onClick={() => {
-              resetView()
+              loadFromDb()
               clearSelection()
               setRowClassMap({})
             }}

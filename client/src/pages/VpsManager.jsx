@@ -40,7 +40,6 @@ export default function VpsManager({ onBuySuccessRef }) {
   const loadFromDb = useVpsStore((s) => s.loadFromDb)
   const fetchData = useVpsStore((s) => s.fetchData)
   const handleBuySuccessStore = useVpsStore((s) => s.handleBuySuccess)
-  const resetView = useVpsStore((s) => s.resetView)
 
   // Shared selection & processing logic
   const {
@@ -875,7 +874,7 @@ export default function VpsManager({ onBuySuccessRef }) {
             className="bg-action rounded-lg px-2 py-2"
             style={{ '--action-color': 'var(--orange)' }}
             onClick={() => {
-              resetView()
+              loadFromDb()
               clearSelection()
               setRowClassMap({})
             }}

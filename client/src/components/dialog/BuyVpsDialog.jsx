@@ -303,7 +303,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
         }}
       >
         {/* ─── PAGE 1: Nation Grid ──────────────────────── */}
-        <div className="scroll-container flex max-h-[85vh] w-full flex-none shrink-0 flex-col overflow-y-auto">
+        <div className="scroll-container flex max-h-[80vh] w-full flex-none shrink-0 flex-col overflow-y-auto">
           {/* Header */}
           <div className="flex items-center gap-4 border-b border-white/10 px-6 py-4">
             <div className="bg-blue flex items-center justify-center rounded-lg p-2 text-white">
@@ -337,7 +337,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                 <button
                   key={nation.symbol}
                   onClick={() => handleSelectNation(nation.symbol)}
-                  className="bg-surface-secondary border-card-border hover:border-blue hover:bg-surface group flex flex-col items-center justify-center gap-3 rounded-xl border p-5 active:scale-[0.97]"
+                  className="bg-thead border-card-border hover:border-blue hover:bg-surface group flex flex-col items-center justify-center gap-3 rounded-xl border p-5 active:scale-[0.97]"
                 >
                   <div className="aspect-4/3 w-16 shrink-0 overflow-hidden rounded-md group-hover:scale-110 sm:w-20">
                     {nation.flag}
@@ -349,14 +349,14 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
               ))}
             </div>
 
-            <div className="bg-border my-3 h-px" />
+            <div className="bg-border m-auto my-3 h-px" />
 
             <div className="grid grid-cols-2 gap-3 lg:gap-4">
               {vpsSpecialOptions.map((item) => (
                 <button
                   key={item.symbol}
                   onClick={() => handleSelectNation(item.symbol)}
-                  className="bg-surface-secondary border-card-border hover:border-blue group flex flex-col items-center justify-center rounded-xl border p-3 active:scale-[0.97]"
+                  className="bg-thead border-card-border hover:border-blue group flex flex-col items-center justify-center rounded-xl border p-3 active:scale-[0.97]"
                 >
                   <div className="text-text-muted group-hover:text-primary flex aspect-4/3 w-16 items-center justify-center rounded-md group-hover:scale-120 sm:w-20">
                     <span className="size-12">{item.flag}</span>
@@ -371,7 +371,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
         </div>
 
         {/* ─── PAGE 2: Config + Summary ─────────────────── */}
-        <div className="scroll-container flex max-h-[85vh] w-full flex-none shrink-0 flex-col overflow-y-auto md:flex-row md:overflow-hidden">
+        <div className="flex max-h-[80vh] w-full flex-none shrink-0 flex-col overflow-y-auto md:flex-row md:overflow-hidden">
           {/* Left: Plan table + config */}
           <div className="flex h-fit min-w-0 flex-1 flex-col md:h-auto">
             {/* Header with back */}
@@ -393,10 +393,10 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
             </header>
 
             {/* Scrollable content */}
-            <div className="scroll-container flex-1 md:overflow-y-auto">
+            <div className="scroll-container flex flex-1 flex-col gap-2 px-4 md:overflow-y-auto">
               {/* Plan Table */}
-              <section className="px-6 py-2">
-                <div className="mb-3 flex items-center justify-between">
+              <section>
+                <div className="mx-2 my-2 flex items-center justify-between">
                   <h3 className="text-text-muted font-semibold tracking-wider uppercase">
                     {t('buyVps.availablePlans')}
                   </h3>
@@ -411,7 +411,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                 {/* Make table have a max height and scroll inner content */}
                 <div className="scroll-container border-border overflow-x-auto overflow-y-auto rounded-lg border">
                   <table className="min-w-full text-lg">
-                    <thead className="bg-surface-secondary sticky top-0 z-10 shadow-sm">
+                    <thead className="bg-thead border-wrapper border-b-2">
                       <tr className="text-text-muted">
                         <th className="w-12 px-3 py-2 text-center font-semibold whitespace-nowrap uppercase" />
                         <th className="px-3 py-2 text-left font-semibold whitespace-nowrap uppercase">
@@ -465,7 +465,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                               }}
                               className={`border-border border-b last:border-0 ${
                                 isSoldOut
-                                  ? 'bg-surface-secondary cursor-not-allowed opacity-60'
+                                  ? 'bg-thead cursor-not-allowed opacity-60'
                                   : isSelected
                                     ? 'bg-bg-selected cursor-pointer shadow-[inset_4px_0_0_0_var(--color-blue)]'
                                     : 'bg-surface hover:bg-bg-hover cursor-pointer'
@@ -489,7 +489,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                                       r="11"
                                     />
                                     <line
-                                      className="text-surface-secondary"
+                                      className="text-thead"
                                       x1="5.93"
                                       y1="5.93"
                                       x2="18.07"
@@ -548,7 +548,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
 
               {/* Config fields - Show only if plans array is valid and non-empty */}
               {plans.some((p) => p.status === 'available') && (
-                <section className="px-6">
+                <section className="my-2">
                   <div className="flex flex-wrap items-center gap-5">
                     {/* OS */}
                     <div className="flex min-w-[314px] grow flex-col gap-1.5 text-lg">
@@ -684,7 +684,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                       </label>
                     </div>
                     {/* Note */}
-                    <div className="mb-2 flex w-full items-center gap-2 text-lg">
+                    <div className="flex w-full items-center gap-2 text-lg">
                       <span className="text-sm font-medium whitespace-nowrap">
                         {t('buyVps.note')}
                       </span>

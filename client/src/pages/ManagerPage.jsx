@@ -27,7 +27,7 @@ export default function ManagerPage() {
     <div>
       {/* ========== MANAGER TOP BAR ========== */}
       <div className="bg-surface select-none">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
+        <div className="mx-auto flex max-w-7xl items-center justify-between p-4">
           {/* Left: Glass Inset Toggle */}
           <div className="bg-surface relative flex items-center rounded-xl p-1 shadow-(--glass-inset-shadow)">
             {/* Sliding indicator */}

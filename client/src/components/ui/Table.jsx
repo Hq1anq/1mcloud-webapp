@@ -39,7 +39,7 @@ const TableRow = ({ context, ...props }) => {
   return (
     <tr
       {...props}
-      className={`text-text-primary ${isRefunded ? 'cursor-not-allowed opacity-50 select-none' : 'hover:bg-bg-hover'} ${isSelected ? 'bg-bg-selected' : overrideClass || ''} ${props.className || ''}`}
+      className={`${isRefunded ? 'cursor-not-allowed opacity-50 select-none' : 'hover:bg-bg-hover'} ${isSelected ? 'bg-bg-selected' : overrideClass || ''} ${props.className || ''}`}
       onClick={(e) => {
         if (isRefunded) return
         // Prevent row selection if clicking/interacting with inputs/buttons/labels
@@ -423,7 +423,7 @@ const Table = forwardRef(function Table(
       }, 0)
 
       return (
-        <tr className="bg-thead">
+        <tr className="bg-thead border-wrapper border-t-4 border-b-2">
           <th data-capture-ignore className="px-2 sm:px-4">
             <Checkbox
               checked={selectedIds.size === selectableCount && selectableCount > 0}
@@ -552,18 +552,15 @@ const Table = forwardRef(function Table(
   ])
 
   return (
-    <div className={`flex-1 ${className}`}>
+    <div className={`text-text-primary flex-1 ${className}`}>
       <div id="table-wrapper" className="mx-auto max-w-7xl px-4 py-3">
         <div
           id="table-container"
           ref={tableRef}
-          className="bg-surface mx-auto w-full rounded-lg shadow-lg select-none"
+          className="bg-surface border-border mx-auto w-full rounded-lg border-2 shadow-lg select-none"
         >
           {/* Table Header */}
-          <div
-            id="container-header"
-            className="bg-thead border-wrapper top-0 z-30 rounded-t-lg border-b-[5px] px-4 py-3"
-          >
+          <div id="container-header" className="bg-thead border-border z-30 rounded-t-lg px-4 py-3">
             <div className="flex items-center justify-between">
               <h2 className="flex items-center text-lg font-semibold sm:text-2xl">
                 <svg
@@ -584,12 +581,12 @@ const Table = forwardRef(function Table(
                 <div className="flex flex-col gap-1 sm:flex-row sm:gap-5">
                   <span className="text-right whitespace-nowrap">
                     {t('table.selected')}:{' '}
-                    <span className="text-orange font-semibold">{selectedIds.size}</span>{' '}
+                    <span className="text-highlight font-semibold">{selectedIds.size}</span>{' '}
                     {t('table.rows')}
                   </span>
                   <span className="text-right whitespace-nowrap">
                     {t('table.total')}:{' '}
-                    <span className="text-orange font-semibold">{filteredData.length}</span>{' '}
+                    <span className="text-highlight font-semibold">{filteredData.length}</span>{' '}
                     {t('table.rows')}
                   </span>
                 </div>

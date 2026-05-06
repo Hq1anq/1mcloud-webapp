@@ -15,7 +15,7 @@ export const vpsNations = [
 ]
 
 export const vpsSpecialOptions = [
-  { symbol: 'gpu', name: 'GPU', type: 'special', flag: flagsIcons['gpu'] },
+  { symbol: 'gpu', name: 'GPU', type: 'special', flag: flagsIcons['GPU'] },
   { symbol: 'EU', name: 'PTU', type: 'special', flag: flagsIcons['EU'] },
 ]
 

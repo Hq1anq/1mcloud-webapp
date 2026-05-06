@@ -20,13 +20,6 @@ const useProxyStore = create((set, get) => ({
       receivedData: state.receivedData.map((r) => (r.sid === sid ? { ...r, ...updater(r) } : r)),
     })),
 
-  // Reset view: reload receivedData from full data
-  resetView: () =>
-    set((state) => ({
-      receivedData: [...state.data],
-      renderingReceived: true,
-    })),
-
   // --- DB sync ---
   syncToDb: async (rowsToSync) => {
     const isAuthenticated = useAuthStore.getState().isAuthenticated

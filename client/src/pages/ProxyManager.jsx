@@ -1003,6 +1003,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
                       <button
                         className="bg-action flex flex-1 items-center justify-center rounded-lg rounded-l-none px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
                         style={{ '--action-color': 'var(--purple)' }}
+                        disabled={isProcessing}
                         onClick={handleGetData}
                       >
                         <svg
@@ -1098,6 +1099,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
                     <button
                       className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
                       style={{ '--action-color': 'var(--green)' }}
+                      disabled={isProcessing}
                       onClick={() => {
                         const rows = selectedRowsRef.current
                         if (rows.length === 0)
@@ -1135,6 +1137,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
                       id="getInfoBtn"
                       className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
                       style={{ '--action-color': 'var(--blue)' }}
+                      disabled={isProcessing}
                       onClick={() => {
                         const rows = selectedRowsRef.current
                         if (rows.length === 0)
@@ -1239,7 +1242,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
                           options={['HTTPS', 'SOCKS5']}
                           value={reinstallType}
                           onChange={setReinstallType}
-                          className="rounded-br-lg"
+                          className="border-border rounded-br-lg border-r-2"
                         />
                       </div>
                     </div>
@@ -1273,7 +1276,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
                           options={['HTTPS', 'SOCKS5']}
                           value={changeIpType}
                           onChange={setChangeIpType}
-                          className="rounded-br-lg"
+                          className="border-border rounded-br-lg border-r-2"
                         />
                       </div>
                     </div>

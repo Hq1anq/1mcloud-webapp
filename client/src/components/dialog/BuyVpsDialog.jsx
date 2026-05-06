@@ -217,7 +217,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
       is_proxy: false,
     }
 
-    const loadingId = addToast(t('buyVps.processing'), 'loading')
+    const loadingId = addToast(t('processing'), 'loading')
 
     try {
       const res = await axiosInstance.post('/server/create', vpsDataBuying)

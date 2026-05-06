@@ -281,7 +281,6 @@ const en = {
   'buyVps.autoRenew': 'Auto Renew',
   'buyVps.agreeTerms': 'Agree to our terms of service.',
   'buyVps.payNow': 'Pay Now',
-  'buyVps.processing': 'Processing...',
   'buyVps.purchaseSuccess': 'VPS purchased successfully!',
   'buyVps.purchaseFailed': 'VPS purchase failed',
   'buyVps.errorOccurred': 'An error occurred',

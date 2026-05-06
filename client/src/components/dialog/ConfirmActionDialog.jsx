@@ -106,8 +106,8 @@ export default function ConfirmActionDialog({
           <p className="text-orange mb-4 font-medium">{fetchError}</p>
         ) : (
           <div className="border-border scroll-container max-h-[50vh] overflow-auto rounded-lg border">
-            <table className="min-w-full">
-              <thead className="bg-thead sticky top-0">
+            <table className="text-text-primary min-w-full">
+              <thead className="bg-thead border-wrapper sticky top-0 border-b-2">
                 <tr>
                   {headers.map((header) => (
                     <th
@@ -119,7 +119,7 @@ export default function ConfirmActionDialog({
                   ))}
                 </tr>
               </thead>
-              <tbody className="text-text-primary">
+              <tbody>
                 {selectedRows.map((row, idx) => {
                   let rowRenewData = null
                   let rowRefundData = null

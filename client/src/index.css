@@ -4,7 +4,6 @@
   /* Backgrounds */
   --color-body: var(--bg-body);
   --color-surface: var(--bg-surface);
-  --color-surface-secondary: var(--bg-surface-secondary);
   --color-wrapper: var(--bg-wrapper);
   --color-thead: var(--bg-thead);
   --color-navbar: var(--bg-navbar);
@@ -112,9 +111,8 @@
   /* Background Colors */
   --bg-body: var(--color-sky-50);
   --bg-surface: var(--color-sky-100);
-  --bg-surface-secondary: #ffffff;
-  --bg-wrapper: var(--color-sky-300);
-  --bg-thead: var(--color-sky-500);
+  --bg-wrapper: #A1E0FE;
+  --bg-thead: #ffffff;
   --bg-navbar: var(--color-cyan-50);
 
   --purple: #9333ea;
@@ -194,7 +192,6 @@
   /* Background Colors */
   --bg-body: var(--dark-900);
   --bg-surface: var(--dark-800);
-  --bg-surface-secondary: var(--dark-700);
   --bg-wrapper: var(--dark-600);
   --bg-thead: var(--dark-700);
   --bg-navbar: #1e293b;

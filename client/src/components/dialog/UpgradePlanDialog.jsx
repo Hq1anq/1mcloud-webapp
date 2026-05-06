@@ -144,7 +144,11 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
   }
 
   return (
-    <Dialog isOpen={isOpen} onClose={handleClose} className="w-full max-w-6xl overflow-hidden! p-0!">
+    <Dialog
+      isOpen={isOpen}
+      onClose={handleClose}
+      className="w-full max-w-6xl overflow-hidden! p-0!"
+    >
       <div className="flex h-full max-h-[85vh] flex-col">
         {/* Dialog Header */}
         <div className="border-blue flex shrink-0 items-start justify-between border-b px-6 py-5 md:px-10">
@@ -155,12 +159,12 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
         </div>
 
         {/* Dialog Body: Two Column Layout */}
-        <div className="scroll-container flex flex-1 flex-col overflow-y-auto lg:flex-row">
+        <div className="flex flex-1 flex-col overflow-y-auto lg:flex-row">
           {/* Left Column: Main Content (Plans Table) */}
           <div className="flex h-fit flex-1 flex-col gap-6 p-6 md:h-auto md:p-10">
             {/* Current & Target Status */}
             {calculation && (
-              <div className="bg-surface-secondary border-border flex flex-wrap items-center gap-5 rounded-lg border p-4">
+              <div className="bg-thead border-border flex flex-wrap items-center gap-5 rounded-lg border p-4">
                 <div className="flex items-center gap-2">
                   <span className="text-text-primary bg-surface border-border rounded border px-2 py-1 text-base font-semibold">
                     {calculation.from_plan.split(' : ')[0]}
@@ -196,13 +200,13 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
 
             {/* Plans Table */}
             <div className="border-border bg-surface relative flex flex-1 flex-col overflow-hidden rounded-lg border">
-            {!plans ? (
+              {!plans ? (
                 <div className="bg-surface absolute inset-0 flex items-center justify-center">
                   <div className="loader"></div>
                 </div>
               ) : plans.length === 0 ? (
                 <div className="m-auto flex flex-col items-center justify-center py-4">
-                  <div className="bg-surface-secondary mb-2 flex size-32 items-center justify-center rounded-full">
+                  <div className="bg-thead mb-2 flex size-32 items-center justify-center rounded-full">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 24 24"
@@ -221,7 +225,7 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
               ) : (
                 <div className="scroll-container flex-1 overflow-x-auto">
                   <table className="h-full w-full min-w-full border-collapse text-left">
-                    <thead className="bg-surface-secondary text-text-muted border-border sticky top-0 z-10 border-b text-sm whitespace-nowrap">
+                    <thead className="bg-thead text-text-muted border-border sticky top-0 z-10 border-b text-sm whitespace-nowrap">
                       <tr>
                         <th className="w-12 px-4 py-3 text-center"></th>
                         <th className="px-4 py-3 font-semibold tracking-wide uppercase">
@@ -274,7 +278,7 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
                             </td>
                             <td className="px-4 py-2">
                               <div className="text-text-muted flex items-center gap-2 whitespace-nowrap">
-                                <span className="bg-surface-secondary flex flex-1 items-center gap-1 rounded p-1">
+                                <span className="bg-thead flex flex-1 items-center gap-1 rounded p-1">
                                   <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     className="size-5 shrink-0 fill-none stroke-current"
@@ -289,7 +293,7 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
                                   </svg>
                                   {plan.cpu}
                                 </span>
-                                <span className="bg-surface-secondary flex flex-1 items-center gap-1 rounded p-1">
+                                <span className="bg-thead flex flex-1 items-center gap-1 rounded p-1">
                                   <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     viewBox="0 -960 960 960"
@@ -299,7 +303,7 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
                                   </svg>
                                   {plan.ram}
                                 </span>
-                                <span className="bg-surface-secondary flex flex-1 items-center gap-1 rounded p-1">
+                                <span className="bg-thead flex flex-1 items-center gap-1 rounded p-1">
                                   <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     className="size-5 shrink-0 fill-none stroke-current"

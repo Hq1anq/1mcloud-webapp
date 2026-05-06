@@ -336,7 +336,7 @@
   }
 
   button {
-    @apply cursor-pointer text-nowrap disabled:bg-gray-500! disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100 hover:brightness-(--highlight-brightness);
+    @apply cursor-pointer text-nowrap disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100 hover:brightness-(--highlight-brightness);
   }
 
   h1 {

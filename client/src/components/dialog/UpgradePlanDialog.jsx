@@ -492,7 +492,7 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
               <button
                 onClick={handlePay}
                 disabled={!calculation || processing || calculation.warning}
-                className="group bg-blue flex items-center gap-2 rounded-lg px-6 py-2 text-base font-semibold shadow-sm transition-colors hover:brightness-90 focus:ring-2 focus:ring-offset-2 focus:outline-none"
+                className="group enabled:bg-blue flex items-center gap-2 rounded-lg px-6 py-2 text-base font-semibold shadow-sm transition-colors hover:brightness-90 focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:bg-gray-500"
               >
                 {processing ? t('processing') : t('vpsManager.upgrade')}
                 {!processing && (

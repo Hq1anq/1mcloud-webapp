@@ -111,7 +111,7 @@
   /* Background Colors */
   --bg-body: var(--color-sky-50);
   --bg-surface: var(--color-sky-100);
-  --bg-wrapper: #A1E0FE;
+  --bg-wrapper: #a1e0fe;
   --bg-thead: #ffffff;
   --bg-navbar: var(--color-cyan-50);
 
@@ -334,7 +334,7 @@
   }
 
   button {
-    @apply cursor-pointer text-nowrap disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100 hover:brightness-120;
+    @apply cursor-pointer text-nowrap hover:brightness-120 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100;
   }
 
   h1 {
@@ -437,8 +437,12 @@
     animation: fade-out 0.3s ease-in forwards;
   }
 
-  .elastic-out { transition-timing-function: cubic-bezier(0.5, 2, 0.5, 0.8); }
-  .pop-spring { transition-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.25); }
+  .elastic-out {
+    transition-timing-function: cubic-bezier(0.5, 2, 0.5, 0.8);
+  }
+  .pop-spring {
+    transition-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.25);
+  }
 
   .loader {
     width: 48px;
@@ -469,7 +473,7 @@
     background-color: var(--text-muted);
   }
   .shimmer-bg::after {
-    content: "";
+    content: '';
     position: absolute;
     top: 0;
     right: 0;

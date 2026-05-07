@@ -137,7 +137,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
       title: t('manager.confirmChangeIp'),
       infoText: (
         <>
-          {t('manager.type')} <span className="text-highlight font-bold">{changeIpType}</span>
+          {t('type')} <span className="text-highlight font-bold">{changeIpType}</span>
         </>
       ),
       isProxy: true,
@@ -243,7 +243,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
       }
       infoTextNode = (
         <>
-          {t('manager.type')} <span className="text-highlight font-bold">{reinstallType} </span>
+          {t('type')} <span className="text-highlight font-bold">{reinstallType} </span>
           <br />
           {t('manager.info')}{' '}
           <span className="text-highlight font-bold break-all">
@@ -254,7 +254,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
     } else {
       infoTextNode = (
         <>
-          {t('manager.type')} <span className="text-highlight font-bold">{reinstallType}</span>
+          {t('type')} <span className="text-highlight font-bold">{reinstallType}</span>
         </>
       )
     }
@@ -748,7 +748,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
           <div className="bg-wrapper rounded-lg p-4">
             <div className="flex flex-col gap-4 sm:flex-row">
               {/* IPs Input */}
-              <div className="relative flex flex-col sm:w-3/5">
+              <div className="flex flex-col sm:w-3/5">
                 <div className="mb-2 flex items-center justify-between">
                   <label className="text-text-primary flex items-center font-medium">
                     <svg

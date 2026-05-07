@@ -11,6 +11,7 @@ const en = {
   cancel: 'Cancel',
   noData: 'No Data',
   error: 'Error',
+  type: 'Type',
   processing: 'Processing...',
 
   // UserMenu
@@ -145,9 +146,8 @@ const en = {
   'signup.passwordLength': 'Password must be at least 8 characters',
 
   // Proxy Checker
-  'checker.proxyList': 'Proxy List (ip:port:username:password)',
+  'checker.proxyList': 'Enter Proxy',
   'checker.checkProxy': 'Check Proxy',
-  'checker.proxyType': 'Proxy Type',
   'checker.delete': 'Delete',
   'checker.checkNow': 'Check Now',
   'checker.checking': 'Checking...',
@@ -205,7 +205,6 @@ const en = {
   'manager.confirmReinstall': 'Confirm Reinstall',
   'manager.confirmRenew': 'Confirm Renew',
   'manager.confirmRefund': 'Confirm Refund',
-  'manager.type': 'Type',
   'manager.info': 'Info',
   'manager.invalidReinstall': 'Invalid reinstall config',
   'manager.reinstallTarget': 'Reinstall target',

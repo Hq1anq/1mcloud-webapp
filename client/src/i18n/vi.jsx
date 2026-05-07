@@ -11,6 +11,7 @@ const vi = {
   cancel: 'Huỷ',
   noData: 'Không dữ liệu',
   error: 'Lỗi',
+  type: 'Loại',
   processing: 'Đang xử lý...',
 
   // UserMenu
@@ -146,9 +147,8 @@ const vi = {
   'signup.passwordLength': 'Mật khẩu phải có ít nhất 8 ký tự',
 
   // Proxy Checker
-  'checker.proxyList': 'Danh sách Proxy (ip:port:username:password)',
+  'checker.proxyList': 'Nhập Proxy',
   'checker.checkProxy': 'Kiểm tra Proxy',
-  'checker.proxyType': 'Loại Proxy',
   'checker.delete': 'Xóa',
   'checker.checkNow': 'Kiểm tra',
   'checker.checking': 'Đang kiểm tra...',
@@ -204,7 +204,6 @@ const vi = {
   'manager.confirmReinstall': 'Xác nhận cài lại',
   'manager.confirmRenew': 'Xác nhận gia hạn',
   'manager.confirmRefund': 'Xác nhận hoàn tiền',
-  'manager.type': 'Loại',
   'manager.info': 'Thông tin',
   'manager.invalidReinstall': 'Cấu hình cài lại không hợp lệ',
   'manager.reinstallTarget': 'Mục tiêu cài lại',

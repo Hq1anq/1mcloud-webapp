@@ -164,48 +164,49 @@ export default function ProxyChecker() {
       <div className="bg-surface border-border z-40 border-b select-none">
         <div className="mx-auto max-w-7xl px-2 py-4 sm:px-4">
           {/* Top Controls Area */}
-          <div className="bg-wrapper rounded-lg p-4 pb-2">
-            <div className="flex flex-col gap-3 md:flex-row md:gap-4">
+          <div className="bg-wrapper rounded-lg p-4">
+            <div className="flex flex-wrap items-stretch gap-3">
               {/* Left Side - Proxy Input */}
-              <div className="w-full lg:w-1/2">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <label className="text-text-primary flex items-center font-medium">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 640 640"
-                        className="mr-2 size-7 shrink-0 fill-current"
-                      >
-                        <path d="M160 96C124.7 96 96 124.7 96 160L96 224C96 259.3 124.7 288 160 288L480 288C515.3 288 544 259.3 544 224L544 160C544 124.7 515.3 96 480 96L160 96zM376 168C389.3 168 400 178.7 400 192C400 205.3 389.3 216 376 216C362.7 216 352 205.3 352 192C352 178.7 362.7 168 376 168zM432 192C432 178.7 442.7 168 456 168C469.3 168 480 178.7 480 192C480 205.3 469.3 216 456 216C442.7 216 432 205.3 432 192zM160 352C124.7 352 96 380.7 96 416L96 480C96 515.3 124.7 544 160 544L480 544C515.3 544 544 515.3 544 480L544 416C544 380.7 515.3 352 480 352L160 352zM376 424C389.3 424 400 434.7 400 448C400 461.3 389.3 472 376 472C362.7 472 352 461.3 352 448C352 434.7 362.7 424 376 424zM432 448C432 434.7 442.7 424 456 424C469.3 424 480 434.7 480 448C480 461.3 469.3 472 456 472C442.7 472 432 461.3 432 448z" />
-                      </svg>
-                      {t('checker.proxyList')}
-                    </label>
-                    <button
-                      className="bg-action flex items-center justify-center rounded-lg px-2 py-1 font-medium"
-                      style={{ '--action-color': 'var(--red)' }}
-                      onClick={() => setProxyInput('')}
+              <div className="flex grow flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-text-primary flex items-center font-medium">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 640 640"
+                      className="mr-2 size-7 shrink-0 fill-current"
                     >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 640 640"
-                        className="mr-1 size-6 shrink-0 fill-current"
-                      >
-                        <path d="M232.7 69.9L224 96L128 96C110.3 96 96 110.3 96 128C96 145.7 110.3 160 128 160L512 160C529.7 160 544 145.7 544 128C544 110.3 529.7 96 512 96L416 96L407.3 69.9C402.9 56.8 390.7 48 376.9 48L263.1 48C249.3 48 237.1 56.8 232.7 69.9zM512 208L128 208L149.1 531.1C150.7 556.4 171.7 576 197 576L443 576C468.3 576 489.3 556.4 490.9 531.1L512 208z" />
-                      </svg>
-                      {t('checker.delete')}
-                    </button>
-                  </div>
-                  <textarea
-                    value={proxyInput}
-                    onChange={(e) => setProxyInput(e.target.value)}
-                    placeholder="192.168.1.1:8080:user:pass&#10;user:pass@10.0.0.1:8080"
-                    rows="6"
-                  ></textarea>
+                      <path d="M160 96C124.7 96 96 124.7 96 160L96 224C96 259.3 124.7 288 160 288L480 288C515.3 288 544 259.3 544 224L544 160C544 124.7 515.3 96 480 96L160 96zM376 168C389.3 168 400 178.7 400 192C400 205.3 389.3 216 376 216C362.7 216 352 205.3 352 192C352 178.7 362.7 168 376 168zM432 192C432 178.7 442.7 168 456 168C469.3 168 480 178.7 480 192C480 205.3 469.3 216 456 216C442.7 216 432 205.3 432 192zM160 352C124.7 352 96 380.7 96 416L96 480C96 515.3 124.7 544 160 544L480 544C515.3 544 544 515.3 544 480L544 416C544 380.7 515.3 352 480 352L160 352zM376 424C389.3 424 400 434.7 400 448C400 461.3 389.3 472 376 472C362.7 472 352 461.3 352 448C352 434.7 362.7 424 376 424zM432 448C432 434.7 442.7 424 456 424C469.3 424 480 434.7 480 448C480 461.3 469.3 472 456 472C442.7 472 432 461.3 432 448z" />
+                    </svg>
+                    <label className="flex flex-wrap">
+                      <span className="whitespace-pre">{t('checker.proxyList')} </span>
+                      <span>{t('manager.onePerLine')}</span>
+                    </label>
+                  </label>
+                  <button
+                    className="bg-action flex items-center justify-center rounded-lg px-2 py-1 font-medium"
+                    style={{ '--action-color': 'var(--red)' }}
+                    onClick={() => setProxyInput('')}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 640 640"
+                      className="mr-1 size-6 shrink-0 fill-current"
+                    >
+                      <path d="M232.7 69.9L224 96L128 96C110.3 96 96 110.3 96 128C96 145.7 110.3 160 128 160L512 160C529.7 160 544 145.7 544 128C544 110.3 529.7 96 512 96L416 96L407.3 69.9C402.9 56.8 390.7 48 376.9 48L263.1 48C249.3 48 237.1 56.8 232.7 69.9zM512 208L128 208L149.1 531.1C150.7 556.4 171.7 576 197 576L443 576C468.3 576 489.3 556.4 490.9 531.1L512 208z" />
+                    </svg>
+                    {t('checker.delete')}
+                  </button>
                 </div>
+                <textarea
+                  value={proxyInput}
+                  onChange={(e) => setProxyInput(e.target.value)}
+                  placeholder="192.168.1.1:8080:user:pass&#10;user:pass@10.0.0.1:8080"
+                  className="min-h-24 grow whitespace-pre"
+                ></textarea>
               </div>
 
               {/* Right Side - Action Controls */}
-              <div className="mt:0 flex w-full flex-col justify-center gap-2 sm:mt-8 lg:w-1/2">
+              <div className="flex grow flex-col justify-center gap-2">
                 {/* Top Row - Proxy Type and Check Button */}
                 <div className="grid grid-cols-[2fr_1fr] grid-rows-2">
                   <label className="text-text-primary flex items-center font-medium">
@@ -226,7 +227,7 @@ export default function ProxyChecker() {
                     >
                       <path d="M96 128C83.1 128 71.4 135.8 66.4 147.8C61.4 159.8 64.2 173.5 73.4 182.6L256 365.3L256 480C256 488.5 259.4 496.6 265.4 502.6L329.4 566.6C338.6 575.8 352.3 578.5 364.3 573.5C376.3 568.5 384 556.9 384 544L384 365.3L566.6 182.7C575.8 173.5 578.5 159.8 573.5 147.8C568.5 135.8 556.9 128 544 128L96 128z" />
                     </svg>
-                    {t('checker.proxyType')}
+                    {t('type')}
                   </label>
                   <button
                     onClick={handleCheck}
@@ -363,7 +364,7 @@ export default function ProxyChecker() {
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 512 512"
-              className="size-5 shrink-0 fill-current sm:size-7"
+              className="fill-text-secondary size-5 shrink-0 sm:size-7"
             >
               <path d="M384 320V192C384 174.326 369.674 160 352 160H316L309.812 143.562C306.312 134.188 297.375 128 287.375 128H224.625C214.625 128 205.625 134.188 202.125 143.562L196 160H160C142.326 160 128 174.326 128 192V320C128 337.672 142.326 352 160 352H352C369.674 352 384 337.672 384 320ZM256 304C229.5 304 208 282.5 208 256S229.5 208 256 208S304 229.5 304 256S282.5 304 256 304ZM144 432H48V336C48 327.162 40.836 320 32 320H16C7.164 320 0 327.162 0 336V448C0 465.672 14.326 480 32 480H144C152.836 480 160 472.836 160 464V448C160 439.162 152.836 432 144 432ZM16 192H32C40.836 192 48 184.836 48 176V80H144C152.836 80 160 72.836 160 64V48C160 39.162 152.836 32 144 32H32C14.326 32 0 46.326 0 64V176C0 184.836 7.164 192 16 192ZM480 32H368C359.164 32 352 39.162 352 48V64C352 72.836 359.164 80 368 80H464V176C464 184.836 471.164 192 480 192H496C504.836 192 512 184.836 512 176V64C512 46.326 497.674 32 480 32ZM496 320H480C471.164 320 464 327.162 464 336V432H368C359.164 432 352 439.162 352 448V464C352 472.836 359.164 480 368 480H480C497.674 480 512 465.672 512 448V336C512 327.162 504.836 320 496 320Z" />
             </svg>

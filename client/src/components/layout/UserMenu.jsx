@@ -197,16 +197,13 @@ export default function UserMenu() {
           <ThemeToggle />
         </div>
 
-        <div className="border-border my-1 border-t"></div>
-
         <button
           onClick={handleLogout}
-          className="hover:bg-bg-hover flex w-full items-center px-4 py-2 text-red-500"
+          className="hover:bg-bg-hover border-border mt-1 flex w-full items-center border-t px-4 py-2 text-red-500"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="mr-3 size-4"
-            fill="none"
+            className="mr-3 size-5 fill-none"
             viewBox="0 0 24 24"
             stroke="currentColor"
           >

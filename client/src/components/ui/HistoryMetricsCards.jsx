@@ -1,6 +1,45 @@
+import { useRef, useLayoutEffect, useState } from 'react'
 import { useTranslation } from '../../i18n'
 
 const formatNumber = (value) => new Intl.NumberFormat('vi-VN').format(value)
+
+function AutoShrinkText({ text, className }) {
+  const containerRef = useRef(null)
+  const textRef = useRef(null)
+  const [scale, setScale] = useState(1)
+
+  useLayoutEffect(() => {
+    const checkSize = () => {
+      if (containerRef.current && textRef.current) {
+        const containerWidth = containerRef.current.offsetWidth
+        const textWidth = textRef.current.scrollWidth
+        if (textWidth > containerWidth && containerWidth > 0) {
+          setScale(containerWidth / textWidth)
+        } else {
+          setScale(1)
+        }
+      }
+    }
+
+    const observer = new ResizeObserver(checkSize)
+    if (containerRef.current) observer.observe(containerRef.current)
+    checkSize()
+
+    return () => observer.disconnect()
+  }, [text])
+
+  return (
+    <div ref={containerRef} className="flex w-full items-center overflow-hidden">
+      <div
+        ref={textRef}
+        className={`origin-left whitespace-nowrap ${className}`}
+        style={{ transform: `scale(${scale})` }}
+      >
+        {text}
+      </div>
+    </div>
+  )
+}
 
 export default function HistoryMetricsCards({
   numRenew,
@@ -76,9 +115,10 @@ export default function HistoryMetricsCards({
             <span>{card.icon}</span>
           </div>
 
-          <div className="text-text-primary text-2xl font-extrabold tracking-tight sm:text-3xl">
-            {formatNumber(values[card.valueKey])}
-          </div>
+          <AutoShrinkText
+            text={formatNumber(values[card.valueKey])}
+            className="text-text-primary text-2xl font-extrabold tracking-tight sm:text-3xl"
+          />
 
           <span className="via-primary absolute right-0 bottom-0 left-0 h-[3px] -translate-x-full bg-linear-to-r from-transparent to-transparent transition-transform duration-500 group-hover:translate-x-0" />
         </article>

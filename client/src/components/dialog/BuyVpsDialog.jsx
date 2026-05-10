@@ -396,7 +396,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
             <div className="scroll-container flex flex-1 flex-col gap-2 px-4 md:overflow-y-auto">
               {/* Plan Table */}
               <section>
-                <div className="mx-2 my-2 flex items-center justify-between">
+                <div className="m-2 flex items-center justify-between">
                   <h3 className="text-text-muted font-semibold tracking-wider uppercase">
                     {t('buyVps.availablePlans')}
                   </h3>

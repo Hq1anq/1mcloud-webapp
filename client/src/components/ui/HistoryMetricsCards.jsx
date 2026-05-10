@@ -71,7 +71,7 @@ export default function HistoryMetricsCards({
           key={card.key}
           className="group border-border bg-thead relative flex flex-col justify-between overflow-hidden rounded-xl border px-4 py-3 shadow-[0_4px_20px_rgba(2,132,199,.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_10px_26px_rgba(2,132,199,.16)]"
         >
-          <div className="text-text-muted mb-2 flex items-center justify-between gap-2 text-sm font-medium">
+          <div className="text-text-muted mb-2 flex justify-between gap-2 text-sm font-medium">
             {card.title}
             <span>{card.icon}</span>
           </div>

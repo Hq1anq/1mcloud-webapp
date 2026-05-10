@@ -154,7 +154,6 @@
   --logo-ring: #f9bb10;
   --logo-inner: #000000;
 
-  --highlight-brightness: 90%;
   --highlight-text: #1d4ed8;
 
   --success-cell: #00c95066;
@@ -235,7 +234,6 @@
   --logo-ring: #053fe5;
   --logo-inner: #e2e2e4;
 
-  --highlight-brightness: 120%;
   --highlight-text: #38bdf8;
 
   --success-cell: #0d542b99;
@@ -336,7 +334,7 @@
   }
 
   button {
-    @apply cursor-pointer text-nowrap disabled:bg-gray-500! disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100 hover:brightness-(--highlight-brightness);
+    @apply cursor-pointer text-nowrap disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100 hover:brightness-120;
   }
 
   h1 {

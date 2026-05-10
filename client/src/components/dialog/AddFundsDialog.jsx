@@ -23,7 +23,7 @@ export default function AddFundsDialog({ isOpen, onClose }) {
 
   return (
     <Dialog isOpen={isOpen} onClose={onClose} className="p-0!">
-      <div className="scroll-container text-text-primary flex max-h-[85vh] flex-col overflow-y-auto md:flex-row">
+      <div className="text-text-primary flex max-h-[80vh] flex-col overflow-y-auto md:flex-row">
         {/* Left — QR Code */}
         <div className="flex flex-col items-center justify-center gap-3 p-6 md:p-8">
           <h1 className="text-primary font-bold">{t('addfunds.title')}</h1>

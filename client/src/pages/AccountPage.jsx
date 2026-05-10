@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import axiosInstance from '../lib/axios'
 import useAuthStore from '../store/useAuthStore'
 import { useTranslation } from '../i18n'
@@ -34,6 +35,7 @@ const DEFAULT_PROFILE = {
 
 export default function AccountPage() {
   const t = useTranslation()
+  const navigate = useNavigate()
   const { user } = useAuthStore()
   const username = user?.username || 'User'
   const avatarLetter = username.charAt(0).toUpperCase()
@@ -166,7 +168,7 @@ export default function AccountPage() {
             <div className="mt-4 flex flex-wrap gap-3">
               <button
                 onClick={() => setShowAddFunds(true)}
-                className="flex items-center gap-2 rounded-lg bg-white px-5 py-2.5 text-sm font-bold text-blue-600 shadow-sm transition-colors hover:bg-blue-50"
+                className="text-blue bg-text-secondary flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-bold shadow-sm transition-colors hover:scale-105"
               >
                 <svg
                   className="size-5 fill-none"
@@ -178,7 +180,10 @@ export default function AccountPage() {
                 </svg>
                 {t('account.addfunds')}
               </button>
-              <button className="flex items-center gap-2 rounded-lg border border-white/10 bg-blue-700/50 px-5 py-2.5 text-sm font-semibold text-white backdrop-blur-sm transition-colors hover:bg-blue-700/70">
+              <button
+                className="text-text-secondary hover:border-primary flex items-center gap-2 rounded-lg border border-white/20 bg-blue-700/50 px-5 py-2.5 text-sm font-semibold backdrop-blur-md transition-colors"
+                onClick={() => navigate('/history')}
+              >
                 <svg
                   className="size-5 fill-none"
                   viewBox="0 0 24 24"

@@ -13,7 +13,7 @@ const CopyIcon = () => (
     <path
       strokeLinejoin="round"
       strokeWidth="2"
-      className="text-text-muted stroke-current group-hover:brightness-(--highlight-brightness)"
+      className="stroke-current text-current"
       d="M9 8v3a1 1 0 0 1-1 1H5m11 4h2a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1h-7a1 1 0 0 0-1 1v1m4 3v10a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-7.13a1 1 0 0 1 .24-.65L7.7 8.35A1 1 0 0 1 8.46 8H13a1 1 0 0 1 1 1Z"
     />
   </svg>
@@ -83,7 +83,7 @@ export default function CopyDialog({ isOpen, onClose, text }) {
     <Dialog isOpen={isOpen} onClose={handleClose} title={t('dialog.copy')}>
       <button
         onClick={handleCopy}
-        className={`group absolute top-6 right-6 inline-flex cursor-pointer items-center justify-center rounded-lg px-1 py-0.5 ${
+        className={`hover:text-text-primary absolute top-6 right-6 inline-flex cursor-pointer items-center justify-center rounded-lg px-1 py-0.5 ${
           copyState === 'copied'
             ? 'text-text-toast-success'
             : copyState === 'failed'

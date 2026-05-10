@@ -11,11 +11,13 @@ const vi = {
   cancel: 'Huỷ',
   noData: 'Không dữ liệu',
   error: 'Lỗi',
+  type: 'Loại',
   processing: 'Đang xử lý...',
 
   // UserMenu
   'menu.login': 'Đăng nhập',
   'menu.account': 'Tài khoản',
+  'menu.history': 'Lịch sử',
   'menu.theme': 'Theme',
   'menu.logout': 'Đăng xuất',
 
@@ -112,6 +114,14 @@ const vi = {
   'table.expense': 'Chi phí',
   'table.monthlyPrice': 'Giá (Tháng)',
   'table.spec': 'Cấu hình (vCPU / RAM / SSD)',
+  'table.trans_type': 'Loại',
+  'table.amount': 'Số tiền (VNĐ)',
+  'table.update_balance': 'Số dư (VNĐ)',
+  'table.description': 'Mô tả',
+  'table.server_name': 'Tên dịch vụ',
+  'table.old_ip': 'IP cũ',
+  'table.new_ip': 'IP mới',
+  'table.date': 'Ngày',
   'table.selected': 'Đã chọn',
   'table.total': 'Tổng',
   'table.rows': 'dòng',
@@ -146,9 +156,8 @@ const vi = {
   'signup.passwordLength': 'Mật khẩu phải có ít nhất 8 ký tự',
 
   // Proxy Checker
-  'checker.proxyList': 'Danh sách Proxy (ip:port:username:password)',
+  'checker.proxyList': 'Nhập Proxy',
   'checker.checkProxy': 'Kiểm tra Proxy',
-  'checker.proxyType': 'Loại Proxy',
   'checker.delete': 'Xóa',
   'checker.checkNow': 'Kiểm tra',
   'checker.checking': 'Đang kiểm tra...',
@@ -204,7 +213,6 @@ const vi = {
   'manager.confirmReinstall': 'Xác nhận cài lại',
   'manager.confirmRenew': 'Xác nhận gia hạn',
   'manager.confirmRefund': 'Xác nhận hoàn tiền',
-  'manager.type': 'Loại',
   'manager.info': 'Thông tin',
   'manager.invalidReinstall': 'Cấu hình cài lại không hợp lệ',
   'manager.reinstallTarget': 'Mục tiêu cài lại',
@@ -341,7 +349,7 @@ const vi = {
   // VPS Manager
   'vpsManager.title': 'Quản lý VPS',
   'vpsManager.resetPassword': 'Đặt lại mật khẩu',
-  'vpsManager.autoFix': 'Tự động sửa',
+  'vpsManager.autoFix': 'Sửa tự động',
   'vpsManager.upgrade': 'Nâng cấp',
   'manager.comingSoon': 'Sắp ra mắt',
 
@@ -358,6 +366,33 @@ const vi = {
       Bạn muốn <span className="text-text-muted font-bold">TẮT</span> gia hạn tự động?
     </p>
   ),
+
+  'history.errorTransaction': (
+    <p className="font-medium">
+      Không thể tải lịch sử <span className="text-highlight">giao dịch</span>
+    </p>
+  ),
+  'history.errorChangeIp': (
+    <p className="font-medium">
+      Không thể tải lịch sử <span className="text-highlight">đổi IP</span>
+    </p>
+  ),
+  'history.transaction': 'Lịch sử giao dịch',
+  'history.changeIp': 'Lịch sử đổi IP',
+  'history.numRenew': (
+    <span className="flex flex-wrap">
+      <span className="whitespace-pre">Số giao dịch </span>
+      <span className="text-highlight">GIA HẠN</span>
+    </span>
+  ),
+  'history.numRefund': (
+    <span className="flex flex-wrap">
+      <span className="whitespace-pre">Số giao dịch </span>
+      <span className="text-highlight">HOÀN TIỀN</span>
+    </span>
+  ),
+  'history.numTransaction': 'Số giao dịch',
+  'history.totalPrice': 'Tổng tiền đã giao dịch',
 }
 
 export default vi

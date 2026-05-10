@@ -1,6 +1,7 @@
 import DropDown from '../components/ui/DropDown'
 import Table from '../components/ui/Table'
 import ControlButton from '../components/ui/ControlButton'
+import StatusMetricsMeter from '../components/ui/StatusMetricsMeter'
 import axiosInstance from '../lib/axios'
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useToast } from '../context/ToastContext'
@@ -12,9 +13,9 @@ import useProxyStore from '../store/useProxyStore'
 import useManagerActions from '../hooks/useManagerActions'
 
 const OPERATOR_CONFIG = {
-  sid: ['greater-equal', 'less-equal', 'equal', 'contain'],
-  created: ['greater-equal', 'less-equal', 'contain'],
-  expired: ['greater-equal', 'less-equal', 'contain'],
+  sid: ['equal', 'greater-equal', 'less-equal'],
+  created: ['equal', 'greater-equal', 'less-equal'],
+  expired: ['equal', 'greater-equal', 'less-equal'],
 }
 
 export default function ProxyManager({ onBuySuccessRef }) {
@@ -149,7 +150,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
     } else
       infoTextNode = (
         <>
-          {t('manager.type')} <span className="text-highlight font-bold">{changeIpType}</span>
+          {t('type')} <span className="text-highlight font-bold">{changeIpType}</span>
         </>
       )
 
@@ -264,7 +265,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
       }
       infoTextNode = (
         <>
-          {t('manager.type')} <span className="text-highlight font-bold">{reinstallType} </span>
+          {t('type')} <span className="text-highlight font-bold">{reinstallType} </span>
           <br />
           {t('manager.info')}{' '}
           <span className="text-highlight font-bold break-all">
@@ -275,7 +276,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
     } else
       infoTextNode = (
         <>
-          {t('manager.type')} <span className="text-highlight font-bold">{reinstallType}</span>
+          {t('type')} <span className="text-highlight font-bold">{reinstallType}</span>
         </>
       )
 
@@ -781,7 +782,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
   ])
 
   return (
-    <div>
+    <>
       {/* ========== TOP CONTROLS ========== */}
       <div className="bg-surface border-border z-40 border-b pb-4 select-none">
         <div className="mx-auto max-w-7xl px-4">
@@ -789,7 +790,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
           <div className="bg-wrapper rounded-lg p-4">
             <div className="flex flex-col gap-4 sm:flex-row">
               {/* IPs Input */}
-              <div className="relative flex flex-col sm:w-3/5">
+              <div className="flex flex-col sm:w-3/5">
                 <div className="mb-2 flex items-center justify-between">
                   <label className="text-text-primary flex items-center font-medium">
                     <svg
@@ -1287,9 +1288,16 @@ export default function ProxyManager({ onBuySuccessRef }) {
         </div>
       </div>
 
+      <StatusMetricsMeter
+        total={data.filter((row) => row.status !== 'Refunded').length}
+        running={data.filter((row) => row.status === 'Running').length}
+        off={data.filter((row) => row.status === 'Off').length}
+        className="mt-4"
+      />
+
       <Table
         title={t('manager.proxyManager')}
-        className="text-xs sm:text-sm"
+        className="mt-2 px-4 text-xs sm:text-sm"
         data={data}
         receivedData={receivedData}
         renderingReceived={renderingReceived}
@@ -1436,7 +1444,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
         extraBtn={
           <button
             id="reloadBtn"
-            className="bg-action rounded-lg px-2 py-2"
+            className="bg-action group rounded-lg p-2"
             style={{ '--action-color': 'var(--orange)' }}
             onClick={() => {
               loadFromDb()
@@ -1447,7 +1455,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 640 640"
-              className="fill-text-secondary size-5 shrink-0 sm:size-7"
+              className="fill-text-secondary size-5 shrink-0 group-hover:rotate-15 sm:size-7"
             >
               <path d="M544.1 256L552 256C565.3 256 576 245.3 576 232L576 88C576 78.3 570.2 69.5 561.2 65.8C552.2 62.1 541.9 64.2 535 71L483.3 122.8C439 86.1 382 64 320 64C191 64 84.3 159.4 66.6 283.5C64.1 301 76.2 317.2 93.7 319.7C111.2 322.2 127.4 310 129.9 292.6C143.2 199.5 223.3 128 320 128C364.4 128 405.2 143 437.7 168.3L391 215C384.1 221.9 382.1 232.2 385.8 241.2C389.5 250.2 398.3 256 408 256L544.1 256zM573.5 356.5C576 339 563.8 322.8 546.4 320.3C529 317.8 512.7 330 510.2 347.4C496.9 440.4 416.8 511.9 320.1 511.9C275.7 511.9 234.9 496.9 202.4 471.6L249 425C255.9 418.1 257.9 407.8 254.2 398.8C250.5 389.8 241.7 384 232 384L88 384C74.7 384 64 394.7 64 408L64 552C64 561.7 69.8 570.5 78.8 574.2C87.8 577.9 98.1 575.8 105 569L156.8 517.2C201 553.9 258 576 320 576C449 576 555.7 480.6 573.4 356.5z" />
             </svg>
@@ -1472,6 +1480,6 @@ export default function ProxyManager({ onBuySuccessRef }) {
         }
         onSelectionChange={onSelectionChange}
       />
-    </div>
+    </>
   )
 }

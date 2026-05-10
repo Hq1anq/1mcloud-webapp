@@ -17,6 +17,7 @@ import LoginPage from './pages/LoginPage.jsx'
 import SignupPage from './pages/SignupPage.jsx'
 import Contact from './pages/Contact.jsx'
 import AccountPage from './pages/AccountPage.jsx'
+import HistoryPage from './pages/HistoryPage.jsx'
 
 function App() {
   const { checkAuth, isAuthenticated } = useAuthStore()
@@ -78,6 +79,17 @@ function App() {
                 <ToastProvider>
                   <SafeCopyProvider>
                     <ProxyChecker />
+                  </SafeCopyProvider>
+                </ToastProvider>
+              }
+            />
+
+            <Route
+              path="/history"
+              element={
+                <ToastProvider>
+                  <SafeCopyProvider>
+                    <HistoryPage />
                   </SafeCopyProvider>
                 </ToastProvider>
               }

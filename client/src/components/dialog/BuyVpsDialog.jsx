@@ -816,7 +816,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                   summary.warning === 'Tài khoản không đủ' ||
                   !plans.some((p) => p.status === 'available')
                 }
-                className="group bg-blue flex h-12 w-full items-center justify-center gap-2 rounded-lg font-semibold text-white shadow-sm transition-all duration-200"
+                className="group enabled:bg-blue flex h-12 w-full items-center justify-center gap-2 rounded-lg font-semibold text-white shadow-sm transition-all duration-200 disabled:bg-gray-500"
               >
                 <span>{t('buyVps.payNow')}</span>
                 <svg

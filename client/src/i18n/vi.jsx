@@ -17,6 +17,7 @@ const vi = {
   // UserMenu
   'menu.login': 'Đăng nhập',
   'menu.account': 'Tài khoản',
+  'menu.history': 'Lịch sử',
   'menu.theme': 'Theme',
   'menu.logout': 'Đăng xuất',
 
@@ -113,6 +114,14 @@ const vi = {
   'table.expense': 'Chi phí',
   'table.monthlyPrice': 'Giá (Tháng)',
   'table.spec': 'Cấu hình (vCPU / RAM / SSD)',
+  'table.trans_type': 'Loại',
+  'table.amount': 'Số tiền (VNĐ)',
+  'table.update_balance': 'Số dư (VNĐ)',
+  'table.description': 'Mô tả',
+  'table.server_name': 'Tên dịch vụ',
+  'table.old_ip': 'IP cũ',
+  'table.new_ip': 'IP mới',
+  'table.date': 'Ngày',
   'table.selected': 'Đã chọn',
   'table.total': 'Tổng',
   'table.rows': 'dòng',
@@ -357,6 +366,33 @@ const vi = {
       Bạn muốn <span className="text-text-muted font-bold">TẮT</span> gia hạn tự động?
     </p>
   ),
+
+  'history.errorTransaction': (
+    <p className="font-medium">
+      Không thể tải lịch sử <span className="text-highlight">giao dịch</span>
+    </p>
+  ),
+  'history.errorChangeIp': (
+    <p className="font-medium">
+      Không thể tải lịch sử <span className="text-highlight">đổi IP</span>
+    </p>
+  ),
+  'history.transaction': 'Lịch sử giao dịch',
+  'history.changeIp': 'Lịch sử đổi IP',
+  'history.numRenew': (
+    <span className="flex flex-wrap">
+      <span className="whitespace-pre">Số giao dịch </span>
+      <span className="text-highlight">GIA HẠN</span>
+    </span>
+  ),
+  'history.numRefund': (
+    <span className="flex flex-wrap">
+      <span className="whitespace-pre">Số giao dịch </span>
+      <span className="text-highlight">HOÀN TIỀN</span>
+    </span>
+  ),
+  'history.numTransaction': 'Số giao dịch',
+  'history.totalPrice': 'Tổng tiền đã giao dịch',
 }
 
 export default vi

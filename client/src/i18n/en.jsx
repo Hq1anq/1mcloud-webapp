@@ -17,6 +17,7 @@ const en = {
   // UserMenu
   'menu.login': 'Login',
   'menu.account': 'Account',
+  'menu.history': 'Lịch sử',
   'menu.theme': 'Theme',
   'menu.logout': 'Logout',
 
@@ -112,6 +113,14 @@ const en = {
   'table.expense': 'Expense',
   'table.monthlyPrice': 'Price (Monthly)',
   'table.spec': 'Specs (vCPU / RAM / SSD)',
+  'table.trans_type': 'Type',
+  'table.amount': 'Price (VNĐ)',
+  'table.update_balance': 'Balance',
+  'table.description': 'Description',
+  'table.server_name': 'Server name',
+  'table.old_ip': 'Old IP',
+  'table.new_ip': 'New IP',
+  'table.date': 'Date',
   'table.selected': 'Selected',
   'table.total': 'Total',
   'table.rows': 'rows',
@@ -356,6 +365,31 @@ const en = {
       You want to turn auto renew <span className="text-text-muted font-bold">OFF</span>?
     </p>
   ),
+
+  'history.errorTransaction': (
+    <p className="font-medium">
+      Cannot load <span className="text-highlight">transaction</span> history
+    </p>
+  ),
+  'history.errorChangeIp': (
+    <p className="font-medium">
+      Cannot load <span className="text-highlight">Change IP</span> history
+    </p>
+  ),
+  'history.transaction': 'Transaction History',
+  'history.changeIp': 'Change IP History',
+  'history.numRenew': (
+    <span>
+      Number of <span className="text-highlight">RENEW</span>
+    </span>
+  ),
+  'history.numRefund': (
+    <span>
+      Number of <span className="text-highlight">REFUND</span>
+    </span>
+  ),
+  'history.numTransaction': 'Number of transaction',
+  'history.totalPrice': 'Total price',
 }
 
 export default en

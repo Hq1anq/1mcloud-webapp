@@ -38,7 +38,8 @@ export default function TableFilterHeader({
       )}
 
       {headers.map((header) => {
-        const currentFilter = filters[header] || { value: '', operator: 'contain' }
+        const defaultOperator = operatorConfig?.[header]?.[0] || 'contain'
+        const currentFilter = filters[header] || { value: '', operator: defaultOperator }
         const operator = currentFilter.operator
         const OperatorIcon = operatorIcons[operator]
         const showOperator = operatorConfig ? !!operatorConfig[header] : true
@@ -53,7 +54,21 @@ export default function TableFilterHeader({
               }`}
             >
               {/* Column label */}
-              <span className={['ip_port', 'note'].includes(header) ? 'text-left' : 'text-center'}>
+              <span
+                className={
+                  [
+                    'ip_port',
+                    'note',
+                    'ip',
+                    'old_ip',
+                    'new_ip',
+                    'description',
+                    'update_balance',
+                  ].includes(header)
+                    ? 'text-left'
+                    : 'text-center'
+                }
+              >
                 {header === 'country' ? (
                   <div
                     className="group inline-flex cursor-pointer items-center justify-center gap-1"
@@ -80,7 +95,12 @@ export default function TableFilterHeader({
                     )}
                   </div>
                 ) : (
-                  <>{t('table.' + header) || header.replace(/_/g, ' ')}</>
+                  <>
+                    {['Transaction History', 'Change-IP History'].includes(title) &&
+                    header === 'created'
+                      ? t('table.date')
+                      : t('table.' + header) || header.replace(/_/g, ' ')}
+                  </>
                 )}
               </span>
 
@@ -102,7 +122,17 @@ export default function TableFilterHeader({
                     type="text"
                     placeholder="Filter"
                     className={`filter-input bg-dropdown mt-1 w-full px-2 py-1 ${
-                      ['ip_port', 'note'].includes(header) ? 'text-left' : 'text-center'
+                      [
+                        'ip_port',
+                        'note',
+                        'ip',
+                        'old_ip',
+                        'new_ip',
+                        'description',
+                        'update_balance',
+                      ].includes(header)
+                        ? 'text-left'
+                        : 'text-center'
                     }`}
                     value={inputValue}
                     onChange={(e) => onFilterInputChange(header, e.target.value)}

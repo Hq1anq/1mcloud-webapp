@@ -13,9 +13,9 @@ import useProxyStore from '../store/useProxyStore'
 import useManagerActions from '../hooks/useManagerActions'
 
 const OPERATOR_CONFIG = {
-  sid: ['greater-equal', 'less-equal', 'equal', 'contain'],
-  created: ['greater-equal', 'less-equal', 'contain'],
-  expired: ['greater-equal', 'less-equal', 'contain'],
+  sid: ['equal', 'greater-equal', 'less-equal'],
+  created: ['equal', 'greater-equal', 'less-equal'],
+  expired: ['equal', 'greater-equal', 'less-equal'],
 }
 
 export default function ProxyManager({ onBuySuccessRef }) {

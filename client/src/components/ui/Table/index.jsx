@@ -38,6 +38,8 @@ const Table = forwardRef(function Table(
     // UI
     extraBtn, // JSX rendered in the top-right corner (e.g. capture button)
     emptyMessage, // JSX shown below table when data is empty and not loading
+    isError,
+    errorMessage,
     className,
     rowClassMap, // { [sid]: cssClass } — per-row background override
   },
@@ -79,8 +81,14 @@ const Table = forwardRef(function Table(
   const filteredData = useMemo(() => {
     let resultData = data || DEFAULT_DATA
 
+    const getRowKey = (r) => r.sid
+    const hasKey = resultData.length > 0 && getRowKey(resultData[0]) !== undefined
+
     if (!useFilter) {
-      return [...resultData].sort((a, b) => b.sid - a.sid)
+      return [...resultData].sort((a, b) => {
+        if (a.sid !== undefined && b.sid !== undefined) return b.sid - a.sid
+        return 0
+      })
     }
 
     const isIpPortFilterActive = !!filters['ip_port']?.value
@@ -92,26 +100,38 @@ const Table = forwardRef(function Table(
       let initialData = receivedData
       if (shouldHideRefunded)
         initialData = initialData.filter((row) => row?.status?.toLowerCase() !== 'refunded')
-      matchedSidsRef.current = new Set(initialData.map((r) => r.sid))
+
+      if (hasKey) matchedSidsRef.current = new Set(initialData.map(getRowKey))
+      else matchedSidsRef.current = initialData
+
       resultData = initialData
     } else {
-      if (filterVersion !== lastFilterVersionRef.current) {
+      // Re-filter if version changed or if we can't snapshot (no unique key)
+      if (filterVersion !== lastFilterVersionRef.current || !hasKey) {
         lastFilterVersionRef.current = filterVersion
 
         let result = applyFilters(data, filters)
         if (shouldHideRefunded)
           result = result.filter((row) => row?.status?.toLowerCase() !== 'refunded')
 
-        matchedSidsRef.current = new Set(result.map((r) => r.sid))
+        if (hasKey) matchedSidsRef.current = new Set(result.map(getRowKey))
+        else matchedSidsRef.current = result
       }
 
-      // Snapshot: rows remain visible even if their data changes mid-session
-      if (matchedSidsRef.current)
-        resultData = data.filter((row) => matchedSidsRef.current.has(row.sid))
-      else resultData = data
+      // Apply snapshot if possible, else use dynamically filtered array
+      if (!hasKey) {
+        resultData = matchedSidsRef.current
+      } else if (matchedSidsRef.current) {
+        resultData = data.filter((row) => matchedSidsRef.current.has(getRowKey(row)))
+      } else {
+        resultData = data
+      }
     }
 
-    return [...resultData].sort((a, b) => b.sid - a.sid)
+    return [...resultData].sort((a, b) => {
+      if (a.sid !== undefined && b.sid !== undefined) return b.sid - a.sid
+      return 0
+    })
   }, [data, receivedData, renderingReceived, filters, useFilter, filterVersion])
 
   // ── Selection handlers (no-ops when selectable=false) ──────────────────
@@ -183,8 +203,9 @@ const Table = forwardRef(function Table(
         filterInputs[header] !== undefined ? filterInputs[header] : filters[header]?.value || ''
 
       setFilters((prev) => {
-        const current = prev[header] || { value: '', operator: 'contain' }
-        const cycle = operatorConfig ? operatorConfig[header] || ['contain'] : operatorCycle
+        const cycle = operatorConfig ? operatorConfig[header] || operatorCycle : operatorCycle
+        const defaultOperator = cycle[0]
+        const current = prev[header] || { value: '', operator: defaultOperator }
         if (cycle.length <= 1) return prev
 
         let currentIndex = cycle.indexOf(current.operator)
@@ -213,9 +234,10 @@ const Table = forwardRef(function Table(
         setFilterInputs((prev) => ({ ...prev, [header]: formatInputDate(inputValue) }))
       }
 
+      const defaultOperator = operatorConfig?.[header]?.[0] || 'contain'
       setFilters((prev) => ({
         ...prev,
-        [header]: { ...(prev[header] || { operator: 'contain' }), value: inputValue },
+        [header]: { ...(prev[header] || { operator: defaultOperator }), value: inputValue },
       }))
       setFilterVersion((v) => v + 1)
 
@@ -225,7 +247,7 @@ const Table = forwardRef(function Table(
       }
       if (setRenderingReceived) setRenderingReceived(false)
     },
-    [filterInputs, filters, selectable, onSelectionChange, setRenderingReceived]
+    [filterInputs, filters, selectable, operatorConfig, onSelectionChange, setRenderingReceived]
   )
 
   // ── Virtuoso context (stable object) ──────────────────────────────────
@@ -362,7 +384,8 @@ const Table = forwardRef(function Table(
           )}
         </div>
 
-        {!isLoading && filteredData.length === 0 && emptyMessage}
+        {!isLoading && isError && errorMessage}
+        {!isLoading && !isError && filteredData.length === 0 && emptyMessage}
       </div>
     </div>
   )

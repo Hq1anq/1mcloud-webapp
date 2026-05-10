@@ -156,9 +156,9 @@ export default function UserMenu() {
         className={`text-text-primary border-border bg-terminal absolute right-0 mt-3 min-w-44 origin-top-right overflow-hidden rounded-xl border shadow-2xl ${isOpen ? 'translate-y-0 scale-100 opacity-100' : 'pointer-events-none -translate-y-3 scale-95 opacity-0'}`}
       >
         {/* Header */}
-        <div className="border-border border-b px-4 py-4">
+        <div className="border-border border-b p-4">
           <p className="text-primary truncate font-bold" title={user?.username || user?.email}>
-            {user?.username || 'User'}
+            {user?.username}
           </p>
         </div>
 
@@ -170,11 +170,26 @@ export default function UserMenu() {
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 640 640"
-            className="size-5 fill-current"
+            className="size-6 fill-current"
           >
             <path d="M320 312C386.3 312 440 258.3 440 192C440 125.7 386.3 72 320 72C253.7 72 200 125.7 200 192C200 258.3 253.7 312 320 312zM290.3 368C191.8 368 112 447.8 112 546.3C112 562.7 125.3 576 141.7 576L498.3 576C514.7 576 528 562.7 528 546.3C528 447.8 448.2 368 349.7 368L290.3 368z" />
           </svg>
           {t('menu.account')}
+        </Link>
+
+        <Link
+          to="/history"
+          className="group hover:bg-bg-hover flex items-center gap-2 px-4 py-2"
+          onClick={() => setIsOpen(false)}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 -960 960 960"
+            className="size-6 fill-current"
+          >
+            <path d="M480-120q-138 0-240.5-91.5T122-440h82q14 104 92.5 172T480-200q117 0 198.5-81.5T760-480q0-117-81.5-198.5T480-760q-69 0-129 32t-101 88h110v80H120v-240h80v94q51-64 124.5-99T480-840q75 0 140.5 28.5t114 77q48.5 48.5 77 114T840-480q0 75-28.5 140.5t-77 114q-48.5 48.5-114 77T480-120Zm112-192L440-464v-216h80v184l128 128-56 56Z" />
+          </svg>
+          {t('menu.history')}
         </Link>
 
         <div className="flex items-center justify-evenly px-4 py-2">

@@ -71,7 +71,17 @@ export const itemContent = (index, row, context) => {
           <td
             key={header}
             className={`border-border border-b px-2 whitespace-nowrap sm:px-4 ${
-              ['ip_port', 'note'].includes(header) ? 'text-left' : 'text-center'
+              [
+                'ip_port',
+                'note',
+                'ip',
+                'old_ip',
+                'new_ip',
+                'description',
+                'update_balance',
+              ].includes(header)
+                ? 'text-left'
+                : 'text-center'
             } ${nationFlag ? '' : 'py-2'}`}
             onClick={(e) => {
               if (e.detail === 3) handleCopy(e, cellValue)
@@ -94,6 +104,22 @@ export const itemContent = (index, row, context) => {
               </span>
             ) : nationFlag ? (
               <div className="mx-auto grid size-10 place-items-center">{nationFlag}</div>
+            ) : header === 'trans_type' ? (
+              <span
+                className={
+                  cellValue === 'BUY' ? 'text-green' : cellValue === 'REFUND' ? 'text-red' : ''
+                }
+              >
+                {cellValue}
+              </span>
+            ) : header === 'amount' ? (
+              <span
+                className={
+                  cellValue.startsWith('-') ? 'text-red' : cellValue === '0' ? '' : 'text-green'
+                }
+              >
+                {cellValue}
+              </span>
             ) : (
               <span>{cellValue}</span>
             )}

@@ -1,6 +1,7 @@
 import Table from '../components/ui/Table'
 import ControlButton from '../components/ui/ControlButton'
 import UpgradePlanDialog from '../components/dialog/UpgradePlanDialog'
+import StatusMetricsMeter from '../components/ui/StatusMetricsMeter'
 import axiosInstance from '../lib/axios'
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useToast } from '../context/ToastContext'
@@ -490,7 +491,7 @@ export default function VpsManager({ onBuySuccessRef }) {
   ])
 
   return (
-    <div>
+    <>
       {/* ========== TOP CONTROLS ========== */}
       <div className="bg-surface border-border z-40 border-b pb-4 select-none">
         <div className="mx-auto max-w-7xl px-4">
@@ -763,9 +764,16 @@ export default function VpsManager({ onBuySuccessRef }) {
         </div>
       </div>
 
+      <StatusMetricsMeter
+        total={data.filter((row) => row.status !== 'Refunded').length}
+        running={data.filter((row) => row.status === 'Running').length}
+        off={data.filter((row) => row.status === 'Off').length}
+        className="mt-4"
+      />
+
       <Table
         title={t('vpsManager.title')}
-        className="text-xs sm:text-sm"
+        className="mt-2 px-4 text-xs sm:text-sm"
         data={data}
         receivedData={receivedData}
         renderingReceived={renderingReceived}
@@ -956,6 +964,6 @@ export default function VpsManager({ onBuySuccessRef }) {
           }}
         />
       )}
-    </div>
+    </>
   )
 }

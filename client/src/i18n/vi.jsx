@@ -340,7 +340,7 @@ const vi = {
   // VPS Manager
   'vpsManager.title': 'Quản lý VPS',
   'vpsManager.resetPassword': 'Đặt lại mật khẩu',
-  'vpsManager.autoFix': 'Tự động sửa',
+  'vpsManager.autoFix': 'Sửa tự động',
   'vpsManager.upgrade': 'Nâng cấp',
   'manager.comingSoon': 'Sắp ra mắt',
 

@@ -350,7 +350,7 @@ export default function ProxyChecker() {
         data={results}
         title={t('checker.proxyStatus')}
         useFilter={false}
-        className="text-base sm:text-lg"
+        className="mt-4 px-4 text-base sm:text-lg"
         headers={['ip', 'port', 'username', 'password', 'type', 'country', 'status']}
         selectedIds={selectedIds}
         ref={tableRef}

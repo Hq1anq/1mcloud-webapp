@@ -229,15 +229,18 @@ const Table = forwardRef(function Table(
       const inputValue =
         filterInputs[header] !== undefined ? filterInputs[header] : filters[header]?.value || ''
 
-      // Auto-format short numeric dates (e.g. "250510" → "25-05-10")
+      let finalValue = inputValue
+
+      // Auto-format short numeric dates (e.g. "250526" → "25-05-2026")
       if (['created', 'expired'].includes(header) && /^\d+$/.test(inputValue.trim())) {
-        setFilterInputs((prev) => ({ ...prev, [header]: formatInputDate(inputValue) }))
+        finalValue = formatInputDate(inputValue)
+        setFilterInputs((prev) => ({ ...prev, [header]: finalValue }))
       }
 
       const defaultOperator = operatorConfig?.[header]?.[0] || 'contain'
       setFilters((prev) => ({
         ...prev,
-        [header]: { ...(prev[header] || { operator: defaultOperator }), value: inputValue },
+        [header]: { ...(prev[header] || { operator: defaultOperator }), value: finalValue },
       }))
       setFilterVersion((v) => v + 1)
 

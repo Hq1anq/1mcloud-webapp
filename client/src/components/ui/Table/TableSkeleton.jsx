@@ -26,7 +26,7 @@ export default function TableSkeleton({ headers, selectable, fixedHeader }) {
               </td>
             )}
             {headers.map((header, colIndex) => {
-              const widthClass    = rowWidths[colIndex % rowWidths.length]
+              const widthClass = rowWidths[colIndex % rowWidths.length]
               const isRoundedFull = header === 'status' || header === 'is_auto_renew'
               return (
                 <td key={header} className="p-4 align-middle">

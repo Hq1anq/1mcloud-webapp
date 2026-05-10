@@ -1,6 +1,45 @@
+import { useRef, useLayoutEffect, useState } from 'react'
 import { useTranslation } from '../../i18n'
 
 const formatNumber = (value) => new Intl.NumberFormat('vi-VN').format(value)
+
+function AutoShrinkText({ text, className }) {
+  const containerRef = useRef(null)
+  const textRef = useRef(null)
+  const [scale, setScale] = useState(1)
+
+  useLayoutEffect(() => {
+    const checkSize = () => {
+      if (containerRef.current && textRef.current) {
+        const containerWidth = containerRef.current.offsetWidth
+        const textWidth = textRef.current.scrollWidth
+        if (textWidth > containerWidth && containerWidth > 0) {
+          setScale(containerWidth / textWidth)
+        } else {
+          setScale(1)
+        }
+      }
+    }
+
+    const observer = new ResizeObserver(checkSize)
+    if (containerRef.current) observer.observe(containerRef.current)
+    checkSize()
+
+    return () => observer.disconnect()
+  }, [text])
+
+  return (
+    <div ref={containerRef} className="flex w-full items-center overflow-hidden">
+      <div
+        ref={textRef}
+        className={`origin-left whitespace-nowrap ${className}`}
+        style={{ transform: `scale(${scale})` }}
+      >
+        {text}
+      </div>
+    </div>
+  )
+}
 
 export default function HistoryMetricsCards({
   numRenew,
@@ -71,14 +110,15 @@ export default function HistoryMetricsCards({
           key={card.key}
           className="group border-border bg-thead relative flex flex-col justify-between overflow-hidden rounded-xl border px-4 py-3 shadow-[0_4px_20px_rgba(2,132,199,.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_10px_26px_rgba(2,132,199,.16)]"
         >
-          <div className="text-text-muted mb-2 flex items-center justify-between gap-2 text-sm font-medium">
+          <div className="text-text-muted mb-2 flex justify-between gap-2 text-sm font-medium">
             {card.title}
             <span>{card.icon}</span>
           </div>
 
-          <div className="text-text-primary text-2xl font-extrabold tracking-tight sm:text-3xl">
-            {formatNumber(values[card.valueKey])}
-          </div>
+          <AutoShrinkText
+            text={formatNumber(values[card.valueKey])}
+            className="text-text-primary text-2xl font-extrabold tracking-tight sm:text-3xl"
+          />
 
           <span className="via-primary absolute right-0 bottom-0 left-0 h-[3px] -translate-x-full bg-linear-to-r from-transparent to-transparent transition-transform duration-500 group-hover:translate-x-0" />
         </article>

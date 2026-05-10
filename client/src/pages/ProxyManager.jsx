@@ -790,7 +790,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
           <div className="bg-wrapper rounded-lg p-4">
             <div className="flex flex-col gap-4 sm:flex-row">
               {/* IPs Input */}
-              <div className="flex flex-col sm:w-3/5">
+              <div className="relative flex flex-col sm:w-3/5">
                 <div className="mb-2 flex items-center justify-between">
                   <label className="text-text-primary flex items-center font-medium">
                     <svg
@@ -810,7 +810,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
                       onClick={() => {
                         setIps('')
                       }}
-                      className="bg-action static right-0 flex items-center justify-center rounded-lg px-3 py-1 text-sm font-medium transition-colors duration-200 hover:brightness-(--highlight-brightness) md:absolute lg:static"
+                      className="bg-action static right-0 flex items-center justify-center rounded-lg px-3 py-1 text-sm font-medium transition-colors duration-200 md:absolute lg:static"
                       style={{ '--action-color': 'var(--red)' }}
                     >
                       <svg
@@ -852,7 +852,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
 
                         setIps(allLines.map((line) => line.ip).join('\n'))
                       }}
-                      className="bg-action static right-0 flex items-center justify-center rounded-lg px-3 py-1 text-sm font-medium transition-colors duration-200 hover:brightness-(--highlight-brightness) md:absolute lg:static"
+                      className="bg-action static right-0 flex items-center justify-center rounded-lg px-3 py-1 text-sm font-medium transition-colors duration-200 md:absolute lg:static"
                       style={{ '--action-color': 'var(--pink)' }}
                     >
                       <svg
@@ -887,7 +887,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
                     )
                   }}
                   id="textCopyBtn"
-                  className="group text-text-muted absolute right-2 bottom-2 inline-flex cursor-pointer items-center justify-center rounded-lg hover:brightness-(--highlight-brightness)"
+                  className="text-text-muted hover:text-text-primary absolute right-2 bottom-2 inline-flex cursor-pointer items-center justify-center rounded-lg"
                 >
                   <svg
                     aria-hidden="true"
@@ -898,7 +898,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
                     <path
                       strokeLinejoin="round"
                       strokeWidth="2"
-                      className="text-text-muted stroke-current group-hover:brightness-(--highlight-brightness)"
+                      className="stroke-current"
                       d="M9 8v3a1 1 0 0 1-1 1H5m11 4h2a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1h-7a1 1 0 0 0-1 1v1m4 3v10a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-7.13a1 1 0 0 1 .24-.65L7.7 8.35A1 1 0 0 1 8.46 8H13a1 1 0 0 1 1 1Z"
                     />
                   </svg>
@@ -1001,7 +1001,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
                         className="w-24 rounded-r-none border-r-0 py-1"
                       />
                       <button
-                        className="bg-action flex flex-1 items-center justify-center rounded-lg rounded-l-none px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
+                        className="bg-action flex flex-1 items-center justify-center rounded-lg rounded-l-none px-3 py-2 font-medium"
                         style={{ '--action-color': 'var(--purple)' }}
                         disabled={isProcessing}
                         onClick={handleGetData}
@@ -1026,7 +1026,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
 
                     {/* Pause */}
                     <button
-                      className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
+                      className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium"
                       style={{ '--action-color': 'var(--red)' }}
                       onClick={handlePause}
                       disabled={isProcessing}
@@ -1043,12 +1043,11 @@ export default function ProxyManager({ onBuySuccessRef }) {
 
                     {/* Reboot */}
                     <button
-                      className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
+                      className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium"
                       style={{ '--action-color': 'var(--orange)' }}
                       onClick={handleReboot}
                       disabled={isProcessing}
                     >
-                      {/* Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools */}
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 16 16"
@@ -1061,7 +1060,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
 
                     {/* Renew */}
                     <button
-                      className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium transition-colors duration-200 hover:brightness-(--highlight-brightness)"
+                      className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium transition-colors duration-200"
                       style={{ '--action-color': 'var(--purple)' }}
                       onClick={handleRenew}
                       disabled={isProcessing}
@@ -1079,7 +1078,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
                     {/* Refund */}
                     {profile?.is_refund && (
                       <button
-                        className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap hover:brightness-(--highlight-brightness)"
+                        className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap"
                         style={{ '--action-color': 'var(--pink)' }}
                         onClick={handleRefund}
                         disabled={isProcessing}
@@ -1097,7 +1096,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
 
                     {/* Copy IP */}
                     <button
-                      className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
+                      className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200"
                       style={{ '--action-color': 'var(--green)' }}
                       disabled={isProcessing}
                       onClick={() => {
@@ -1135,7 +1134,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
                     {/* Get Info */}
                     <button
                       id="getInfoBtn"
-                      className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
+                      className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200"
                       style={{ '--action-color': 'var(--blue)' }}
                       disabled={isProcessing}
                       onClick={() => {
@@ -1197,7 +1196,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
                         className="rounded-r-none border-r-0 py-1"
                       />
                       <button
-                        className="bg-action flex w-full items-center justify-center rounded-lg rounded-l-none px-3 py-2 font-medium transition-colors duration-200 hover:brightness-(--highlight-brightness)"
+                        className="bg-action flex w-full items-center justify-center rounded-lg rounded-l-none px-3 py-2 font-medium transition-colors duration-200"
                         style={{ '--action-color': 'var(--orange)' }}
                         onClick={handleChangeNote}
                         disabled={isProcessing}
@@ -1224,7 +1223,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
                       />
                       <div className="flex">
                         <button
-                          className="bg-action flex flex-1 items-center justify-center rounded-bl-lg px-3 py-2 font-medium hover:brightness-(--highlight-brightness)"
+                          className="bg-action flex flex-1 items-center justify-center rounded-bl-lg px-3 py-2 font-medium"
                           style={{ '--action-color': 'var(--blue)' }}
                           onClick={handleReinstall}
                           disabled={isProcessing}
@@ -1258,7 +1257,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
                       />
                       <div className="flex">
                         <button
-                          className="bg-action flex grow items-center justify-center rounded-bl-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200 hover:brightness-(--highlight-brightness)"
+                          className="bg-action flex grow items-center justify-center rounded-bl-lg px-3 py-2 font-medium text-nowrap transition-colors duration-200"
                           style={{ '--action-color': 'var(--red)' }}
                           onClick={handleChangeIp}
                           disabled={isProcessing}

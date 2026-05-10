@@ -198,11 +198,13 @@ export default function useManagerActions(store) {
 
       for (let i = 0; i < rows.length; i++) {
         const row = rows[i]
+        let isSuccess = false
         try {
           const res = await apiCallFn(row)
           if (res.data?.success) {
             successCount++
             setRowClassMap((prev) => ({ ...prev, [row.sid]: 'bg-success-cell' }))
+            isSuccess = true
           } else {
             failCount++
             setRowClassMap((prev) => ({ ...prev, [row.sid]: 'bg-error-cell' }))
@@ -211,12 +213,18 @@ export default function useManagerActions(store) {
           failCount++
           setRowClassMap((prev) => ({ ...prev, [row.sid]: 'bg-error-cell' }))
         }
-        setSelectedIds((prev) => {
-          const newSet = new Set(prev)
-          newSet.delete(row._index)
-          return newSet
-        })
-        setSelectedRows((prev) => prev.filter((r) => r._index !== row._index))
+
+        const isReinstallOrChangeIp = [t('manager.reinstall'), t('manager.changeIp')].includes(actionName)
+        const shouldUncheck = isReinstallOrChangeIp ? !isSuccess : isSuccess
+
+        if (shouldUncheck) {
+          setSelectedIds((prev) => {
+            const newSet = new Set(prev)
+            newSet.delete(row._index)
+            return newSet
+          })
+          setSelectedRows((prev) => prev.filter((r) => r._index !== row._index))
+        }
         updateToast(
           loadingId,
           <>

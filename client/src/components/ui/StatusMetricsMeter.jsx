@@ -100,7 +100,7 @@ export default function StatusMetricsMeter({ total, running, off, className }) {
 
             <div className="flex items-center gap-2">
               <span
-                className="grid size-7 place-items-center rounded-full transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12"
+                className="grid size-7 place-items-center rounded-full transition-transform duration-300 group-hover:scale-110 group-hover:rotate-15"
                 style={{
                   color: `color-mix(in srgb, ${item.tone}, #111 10%)`,
                   background: `color-mix(in srgb, ${item.tone}, var(--color-navbar) 82%)`,

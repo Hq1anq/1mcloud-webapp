@@ -53,7 +53,7 @@ export const itemContent = (index, row, context) => {
   return (
     <>
       {selectable && (
-        <td data-capture-ignore className="border-border border-b px-2 py-2 text-center sm:px-4">
+        <td data-capture-ignore className="border-border border-b p-2 text-center sm:px-4">
           <Checkbox
             checked={isSelected}
             onChange={(e) => handleSelectRow(index, e.shiftKey)}

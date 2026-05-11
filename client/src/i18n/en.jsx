@@ -321,6 +321,11 @@ const en = {
   'upgradePlan.days': 'days',
   'upgradePlan.calculationDetail': 'Calculation Detail',
   'upgradePlan.noUpgradePlans': 'No upgrade plans available',
+  'upgradePlan.errorCalculate': (
+    <span>
+      Error calculating <span className="text-highlight">upgrade</span> cost
+    </span>
+  ),
 
   // Account Page
   'account.title': 'My Account',

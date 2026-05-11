@@ -321,6 +321,11 @@ const vi = {
   'upgradePlan.days': 'ngày',
   'upgradePlan.calculationDetail': 'Chi tiết tính toán',
   'upgradePlan.noUpgradePlans': 'Không có gói nâng cấp phù hợp',
+  'upgradePlan.errorCalculate': (
+    <span>
+      Lỗi tính toán giá <span className="text-highlight">nâng cấp</span>
+    </span>
+  ),
 
   // Account Page
   'account.title': 'Tài khoản của tôi',

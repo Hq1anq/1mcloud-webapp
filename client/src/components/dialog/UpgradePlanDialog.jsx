@@ -3,6 +3,7 @@ import { useToast } from '../../context/ToastContext'
 import { useTranslation } from '../../i18n'
 import axiosInstance from '../../lib/axios'
 import Dialog from '../ui/Dialog'
+import Skeleton from '../ui/Skeleton'
 
 export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
   const { addToast, removeToast } = useToast()
@@ -10,8 +11,17 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
 
   const [plans, setPlans] = useState(null)
   const [selectedPlanId, setSelectedPlanId] = useState(null)
-  const [calculation, setCalculation] = useState(null)
+  const [calculation, setCalculation] = useState({
+    from_plan: '',
+    to_plan: '',
+    days_left: '',
+    discount: '',
+    expense: '',
+    expense_details: '',
+    warning: '',
+  })
   const [calculationError, setCalculationError] = useState(false)
+  const [isCalculating, setIsCalculating] = useState(true)
   const [processing, setProcessing] = useState(false)
 
   const handleClose = () => {
@@ -20,7 +30,7 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
     setTimeout(() => {
       setPlans(null)
       setSelectedPlanId(null)
-      setCalculation(null)
+      setIsCalculating(true)
       setCalculationError(false)
       setProcessing(false)
     }, 300)
@@ -29,7 +39,7 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
   const handleSelectPlan = (id) => {
     if (id === selectedPlanId) return
     setSelectedPlanId(id)
-    setCalculation(null)
+    setIsCalculating(true)
     setCalculationError(false)
   }
 
@@ -95,25 +105,26 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
   // Fetch calculation
   useEffect(() => {
     if (isOpen && sid && selectedPlanId) {
+      setIsCalculating(true)
       axiosInstance
         .post('/vps/upgrade/calculate', { sid: sid.toString(), plan_id: selectedPlanId })
         .then((res) => {
-          if (res.data?.success) {
-            setCalculation(res.data.info)
-          } else {
-            setCalculation(null)
+          if (res.data?.success) setCalculation(res.data.info)
+          else {
             setCalculationError(true)
-            addToast('Failed to calculate upgrade cost', 'error')
+            addToast(t('upgradePlan.errorCalculate'), 'error')
           }
         })
         .catch((err) => {
           console.error(err)
-          setCalculation(null)
           setCalculationError(true)
-          addToast('Error calculating upgrade cost', 'error')
+          addToast(t('upgradePlan.errorCalculate'), 'error')
+        })
+        .finally(() => {
+          setIsCalculating(false)
         })
     }
-  }, [isOpen, sid, selectedPlanId, addToast])
+  }, [isOpen, sid, selectedPlanId, addToast, t])
 
   const handlePay = () => {
     if (!sid || !selectedPlanId) return
@@ -149,7 +160,7 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
       onClose={handleClose}
       className="w-full max-w-6xl overflow-hidden! p-0!"
     >
-      <div className="flex h-full max-h-[85vh] flex-col">
+      <div className="flex h-[85vh] flex-col">
         {/* Dialog Header */}
         <div className="border-blue flex shrink-0 items-start justify-between border-b px-6 py-5 md:px-10">
           <div>
@@ -161,47 +172,57 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
         {/* Dialog Body: Two Column Layout */}
         <div className="flex flex-1 flex-col overflow-y-auto lg:flex-row">
           {/* Left Column: Main Content (Plans Table) */}
-          <div className="flex h-fit flex-1 flex-col gap-6 p-6 md:h-auto md:p-10">
+          <div className="flex flex-1 flex-col gap-6 p-6 md:p-10">
             {/* Current & Target Status */}
-            {calculation && (
-              <div className="bg-thead border-border flex flex-wrap items-center gap-5 rounded-lg border p-4">
-                <div className="flex items-center gap-2">
-                  <span className="text-text-primary bg-surface border-border rounded border px-2 py-1 text-base font-semibold">
-                    {calculation.from_plan.split(' : ')[0]}
-                  </span>
-                  <span className="text-text-muted text-base whitespace-nowrap">
-                    {calculation.from_plan.split(' : ').slice(1).join(' : ')}
-                  </span>
-                </div>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="text-text-muted hidden size-5 sm:block"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17 8l4 4m0 0l-4 4m4-4H3"
-                  />
-                </svg>
-                <div className="flex items-center gap-2">
-                  <span className="text-blue bg-blue/10 border-blue/20 rounded border px-2 py-1 text-base font-semibold">
-                    {calculation.to_plan.split(' : ')[0]}
-                  </span>
-                  <span className="text-blue text-base whitespace-nowrap">
-                    {calculation.to_plan.split(' : ').slice(1).join(' : ')}
-                  </span>
-                </div>
-              </div>
-            )}
+            <div className="bg-thead border-border flex flex-wrap items-center gap-5 rounded-lg border p-4">
+              <Skeleton
+                isLoading={isCalculating}
+                element={
+                  <div className="flex items-center gap-2">
+                    <span className="text-text-primary bg-surface border-border rounded border px-2 py-1 text-base font-semibold">
+                      {calculation.from_plan.split(' : ')[0]}
+                    </span>
+                    <span className="text-text-muted text-base whitespace-nowrap">
+                      {calculation.from_plan.split(' : ').slice(1).join(' : ')}
+                    </span>
+                  </div>
+                }
+                className="bg-text-muted h-[33.6px] w-36"
+              />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="text-text-muted hidden size-5 sm:block"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17 8l4 4m0 0l-4 4m4-4H3"
+                />
+              </svg>
+              <Skeleton
+                isLoading={isCalculating}
+                element={
+                  <div className="flex items-center gap-2">
+                    <span className="text-blue bg-blue/10 border-blue/20 rounded border px-2 py-1 text-base font-semibold">
+                      {calculation.to_plan.split(' : ')[0]}
+                    </span>
+                    <span className="text-blue text-base whitespace-nowrap">
+                      {calculation.to_plan.split(' : ').slice(1).join(' : ')}
+                    </span>
+                  </div>
+                }
+                className="bg-text-muted h-[33.6px] w-36"
+              />
+            </div>
 
             {/* Plans Table */}
-            <div className="border-border bg-surface relative flex flex-1 flex-col overflow-hidden rounded-lg border">
+            <div className="border-border bg-surface relative flex grow flex-col overflow-hidden rounded-lg border">
               {!plans ? (
-                <div className="bg-surface absolute inset-0 flex items-center justify-center">
+                <div className="bg-surface flex h-full items-center justify-center">
                   <div className="loader"></div>
                 </div>
               ) : plans.length === 0 ? (
@@ -343,51 +364,65 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
               <div className="flex flex-col gap-3 text-sm">
                 <div className="flex items-center justify-between">
                   <span className="text-text-muted">{t('upgradePlan.currentPlan')}</span>
-                  <span className="text-text-primary decoration-text-muted line-through">
-                    {!calculation
-                      ? loadingContent.from_plan
-                      : calculation.from_plan.split(' : ').slice(1).join(' : ')}
-                  </span>
+                  <Skeleton
+                    isLoading={isCalculating}
+                    element={
+                      <span className="text-text-primary decoration-text-muted line-through">
+                        {calculation.from_plan.split(' : ').slice(1).join(' : ')}
+                      </span>
+                    }
+                    className="bg-text-muted h-4 w-18"
+                  />
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-text-muted">{t('upgradePlan.targetPlan')}</span>
-                  <span className="text-text-primary font-semibold">
-                    {!calculation
-                      ? loadingContent.to_plan
-                      : calculation.to_plan.split(' : ').slice(1).join(' : ')}
-                  </span>
+                  <Skeleton
+                    isLoading={isCalculating}
+                    element={
+                      <span className="text-text-primary font-semibold">
+                        {calculation.to_plan.split(' : ').slice(1).join(' : ')}
+                      </span>
+                    }
+                    className="bg-text-muted h-4 w-18"
+                  />
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-text-muted">{t('upgradePlan.daysRemaining')}</span>
-                  <span className="text-purple">
-                    {!calculation
-                      ? loadingContent.days_left
-                      : calculation.days_left + ' ' + t('upgradePlan.days')}
-                  </span>
+                  <Skeleton
+                    isLoading={isCalculating}
+                    element={
+                      <span className="text-purple">
+                        {calculation.days_left + ' ' + t('upgradePlan.days')}
+                      </span>
+                    }
+                    className="bg-text-muted h-4 w-12"
+                  />
                 </div>
                 <div className="text-green flex items-center justify-between">
                   <span>{t('discount')}</span>
-                  <span>
-                    {!calculation
-                      ? loadingContent.discount
-                      : '-' + calculation.discount.replace('.0', '')}
-                  </span>
+                  <Skeleton
+                    isLoading={isCalculating}
+                    element={<span>-{calculation.discount.replace('.0', '')}</span>}
+                    className="bg-text-muted h-4 w-18"
+                  />
                 </div>
               </div>
 
               <div className="border-border mt-2 border-t pt-4">
                 <div className="flex items-end justify-between">
                   <span className="text-text-muted text-base">{t('totalToPay')}</span>
-                  {!calculation ? (
-                    loadingContent.expense
-                  ) : (
-                    <span className="text-blue text-3xl font-bold">
-                      {calculation.expense.split(' ')[0].replace('.0', '')}{' '}
-                      <span className="text-lg font-normal">VND</span>
-                    </span>
-                  )}
+                  <Skeleton
+                    isLoading={isCalculating}
+                    element={
+                      <span className="text-blue text-3xl font-bold">
+                        {calculation.expense.split(' ')[0].replace('.0', '')}{' '}
+                        <span className="text-lg font-normal">VND</span>
+                      </span>
+                    }
+                    className="bg-text-muted h-[37.6px] w-36"
+                  />
                 </div>
-                {calculation?.warning && (
+                {calculation.warning && (
                   <span className="text-red mt-2 text-sm">{calculation.warning}</span>
                 )}
               </div>
@@ -409,58 +444,61 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
                   </svg>
                   {t('upgradePlan.calculationDetail')}
                 </span>
-                {!calculation
-                  ? loadingContent.expense_details
-                  : (() => {
-                      function renderExpenseMath(expr) {
-                        const match = expr.match(
-                          /^\(([\d,]+)-([\d,]+)\)\/(\d+)\*(\d+)-([\d,.]+)=([\d,.]+)$/
-                        )
+                <Skeleton
+                  isLoading={isCalculating}
+                  element={(() => {
+                    if (!calculation) return null
+                    function renderExpenseMath(expr) {
+                      const match = expr.match(
+                        /^\(([\d,]+)-([\d,]+)\)\/(\d+)\*(\d+)-([\d,.]+)=([\d,.]+)$/
+                      )
 
-                        if (!match) {
-                          // fallback if format breaks
-                          return <span className="font-mono text-xs">{expr}</span>
-                        }
+                      if (!match) {
+                        // fallback if format breaks
+                        return <span className="font-mono text-xs">{expr}</span>
+                      }
 
-                        const [, a, b, c, d, e, f] = match
+                      const [, a, b, c, d, e, f] = match
 
-                        return (
-                          <span className="text-text-muted flex flex-wrap items-center gap-y-2 font-mono text-base">
-                            <math className="inline-block">
+                      return (
+                        <span className="text-text-muted flex flex-wrap items-center gap-y-2 font-mono text-base">
+                          <math className="inline-block">
+                            <mrow>
+                              <mfrac>
+                                <mrow>
+                                  <mn>{a}</mn>
+                                  <mo>-</mo>
+                                  <mn>{b}</mn>
+                                </mrow>
+                                <mn>{c}</mn>
+                              </mfrac>
+
+                              <mo>×</mo>
+                              <mn className="text-purple">{d}</mn>
+
+                              <mo>-</mo>
+                              <mn className="text-green">{e}</mn>
+                            </mrow>
+                          </math>
+
+                          <span className="ml-auto">
+                            <math className="inline-block whitespace-nowrap">
                               <mrow>
-                                <mfrac>
-                                  <mrow>
-                                    <mn>{a}</mn>
-                                    <mo>-</mo>
-                                    <mn>{b}</mn>
-                                  </mrow>
-                                  <mn>{c}</mn>
-                                </mfrac>
-
-                                <mo>×</mo>
-                                <mn className="text-purple">{d}</mn>
-
-                                <mo>-</mo>
-                                <mn className="text-green">{e}</mn>
+                                <mo>=</mo>
+                                <mn className="text-blue">{f}</mn>
                               </mrow>
                             </math>
-
-                            <span className="ml-auto">
-                              <math className="inline-block whitespace-nowrap">
-                                <mrow>
-                                  <mo>=</mo>
-                                  <mn className="text-blue">{f}</mn>
-                                </mrow>
-                              </math>
-                            </span>
                           </span>
-                        )
-                      }
-                      return renderExpenseMath(calculation.expense_details)
-                    })()}
+                        </span>
+                      )
+                    }
+                    return renderExpenseMath(calculation.expense_details)
+                  })()}
+                  className="bg-text-muted h-6 w-full"
+                />
               </div>
 
-              {calculation?.warning && (
+              {calculation.warning && (
                 <div className="bg-red/10 border-red/20 mt-2 flex items-start gap-3 rounded-lg border p-3">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"

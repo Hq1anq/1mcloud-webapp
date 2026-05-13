@@ -395,6 +395,9 @@ const en = {
   ),
   'history.numTransaction': 'Number of transaction',
   'history.totalPrice': 'Total price',
+
+  'reinstall.errorLoadOS': 'Failed to load OS list',
+  'reinstall.selectOS': 'Please select an OS',
 }
 
 export default en

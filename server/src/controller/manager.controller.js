@@ -284,7 +284,7 @@ export async function changeIp(req, res) {
     const rawData = await response.json();
     return res.json({
       success: true,
-      proxyInfo: [
+      info: [
         rawData.new_ip,
         rawData.remote_port,
         rawData.username,
@@ -302,50 +302,77 @@ export async function changeIp(req, res) {
 }
 
 export async function reinstall(req, res) {
-  const { sid, custom_info, type } = req.body;
+  const {
+    sid,
+    custom_info,
+    type,
+    isProxy,
+    install_chrome,
+    install_firefox,
+    os,
+    random_password,
+    random_remote_port,
+    password,
+    remote_port,
+  } = req.body;
   const url = `${process.env.BASE_URL}/server/reinstall`;
   const headers = { ...HEADERS, authorization: `Bearer ${req.token}` };
 
-  let range_ip = "",
-    remote_port = "",
-    username = "",
-    password = "";
-  let random_remote_port = "on",
-    random_username = "on",
-    random_password = "on";
-  if (custom_info) {
-    const reinstallInfo = custom_info.split(":");
-    if (reinstallInfo.length === 4) {
-      [range_ip, remote_port, username, password] = reinstallInfo;
-      random_remote_port = "";
-      random_username = "";
-      random_password = "";
-    } else if (reinstallInfo.length === 3) {
-      [remote_port, username, password] = reinstallInfo;
-      random_remote_port = "";
-      random_username = "";
-      random_password = "";
-    } else if (reinstallInfo.length === 2) {
-      [username, password] = reinstallInfo;
-      random_username = "";
-      random_password = "";
-    } else {
-      return res.status(400).json({
-        error:
-          "Invalid custom_info format. Expected format: remote_port:username:password or range_ip:remote_port:username:password or username:password",
-      });
+  let data = {};
+
+  if (isProxy) {
+    let range_ip = "",
+      proxy_remote_port = "",
+      username = "",
+      proxy_password = "";
+    let proxy_random_remote_port = "on",
+      random_username = "on",
+      proxy_random_password = "on";
+    if (custom_info) {
+      const reinstallInfo = custom_info.split(":");
+      if (reinstallInfo.length === 4) {
+        [range_ip, proxy_remote_port, username, proxy_password] = reinstallInfo;
+        proxy_random_remote_port = "";
+        random_username = "";
+        proxy_random_password = "";
+      } else if (reinstallInfo.length === 3) {
+        [proxy_remote_port, username, proxy_password] = reinstallInfo;
+        proxy_random_remote_port = "";
+        random_username = "";
+        proxy_random_password = "";
+      } else if (reinstallInfo.length === 2) {
+        [username, proxy_password] = reinstallInfo;
+        random_username = "";
+        proxy_random_password = "";
+      } else {
+        return res.status(400).json({
+          error:
+            "Invalid custom_info format. Expected format: remote_port:username:password or range_ip:remote_port:username:password or username:password",
+        });
+      }
     }
+    data = {
+      random_remote_port: proxy_random_remote_port,
+      remote_port: proxy_remote_port,
+      random_username,
+      username,
+      random_password: proxy_random_password,
+      password: proxy_password,
+      type,
+      sid,
+    };
+  } else {
+    data = {
+      install_chrome,
+      install_firefox,
+      os: Number(os),
+      random_password,
+      random_remote_port,
+      password,
+      remote_port,
+      sid: String(sid),
+    };
   }
-  const data = {
-    random_remote_port,
-    remote_port,
-    random_username,
-    username,
-    random_password,
-    password,
-    type,
-    sid,
-  };
 
   try {
     const response = await fetch(url, {
@@ -365,12 +392,12 @@ export async function reinstall(req, res) {
     const rawData = await response.json();
     return res.json({
       success: true,
-      proxyInfo: [
-        rawData.ip,
-        rawData.remote_port,
-        rawData.username,
-        rawData.password,
-      ],
+      info: {
+        ip: rawData.ip,
+        port: rawData.remote_port,
+        username: rawData.username,
+        password: rawData.password,
+      },
     });
   } catch (error) {
     console.error(`Failed to REINSTALL for sid: ${sid}`, error.message);

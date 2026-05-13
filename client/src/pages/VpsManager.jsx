@@ -1,6 +1,7 @@
 import Table from '../components/ui/Table'
 import ControlButton from '../components/ui/ControlButton'
 import UpgradePlanDialog from '../components/dialog/UpgradePlanDialog'
+import ReinstallDialog from '../components/dialog/ReinstallDialog'
 import StatusMetricsMeter from '../components/ui/StatusMetricsMeter'
 import axiosInstance from '../lib/axios'
 import { useState, useEffect, useCallback, useMemo } from 'react'
@@ -11,6 +12,7 @@ import { useTranslation } from '../i18n'
 import useAuthStore from '../store/useAuthStore'
 import useVpsStore from '../store/useVpsStore'
 import useManagerActions from '../hooks/useManagerActions'
+import getOS from '../data/osMap'
 
 const OPERATOR_CONFIG = {
   sid: ['equal', 'greater-equal', 'less-equal'],
@@ -29,6 +31,7 @@ export default function VpsManager({ onBuySuccessRef }) {
   const [amount, setAmount] = useState('')
   const [noteInput, setNoteInput] = useState('')
   const [upgradeDialogState, setUpgradeDialogState] = useState({ isOpen: false, sid: null })
+  const [reinstallState, setReinstallState] = useState({ isOpen: false, sid: null })
 
   // Data from Zustand store
   const data = useVpsStore((s) => s.data)
@@ -826,7 +829,7 @@ export default function VpsManager({ onBuySuccessRef }) {
         controlButton={(row) => (
           <ControlButton
             onUpgrade={
-              row.nation === 'vps'
+              row.country === 'GPU'
                 ? undefined
                 : () => {
                     setUpgradeDialogState({ isOpen: true, sid: row.sid })
@@ -868,6 +871,7 @@ export default function VpsManager({ onBuySuccessRef }) {
                     )
                 : undefined
             }
+            onReinstall={() => setReinstallState({ isOpen: true, sid: row.sid })}
             onChangeIp={() => {
               addToast(t('manager.comingSoon'), 'info')
             }}
@@ -916,54 +920,67 @@ export default function VpsManager({ onBuySuccessRef }) {
         onSelectionChange={onSelectionChange}
       />
 
-      {upgradeDialogState.isOpen && (
-        <UpgradePlanDialog
-          isOpen={upgradeDialogState.isOpen}
-          onClose={() => setUpgradeDialogState({ isOpen: false, sid: null })}
-          sid={upgradeDialogState.sid}
-          onSuccess={(responseData) => {
-            try {
-              const info = responseData.info || responseData
+      <UpgradePlanDialog
+        isOpen={upgradeDialogState.isOpen}
+        onClose={() => setUpgradeDialogState({ isOpen: false, sid: null })}
+        sid={upgradeDialogState.sid}
+        onSuccess={(responseData) => {
+          try {
+            const info = responseData.info || responseData
 
-              if (info && info.to_plan) {
-                const toPlan = info.to_plan || ''
-                const plan_number = toPlan.split(':')[0].trim()
+            if (info && info.to_plan) {
+              const toPlan = info.to_plan || ''
+              const plan_number = toPlan.split(':')[0].trim()
 
-                const parseNum = (str) =>
-                  parseFloat(
-                    (str || '0')
-                      .toString()
-                      .replace(/,/g, '')
-                      .replace(/[^\d.-]/g, '')
-                  ) || 0
+              const parseNum = (str) =>
+                parseFloat(
+                  (str || '0')
+                    .toString()
+                    .replace(/,/g, '')
+                    .replace(/[^\d.-]/g, '')
+                ) || 0
 
-                const expense = parseNum(info.expense)
-                const discount = parseNum(info.discount)
-                const toPlanPriceParts = toPlan.split(':')
-                const toPlanPrice = toPlanPriceParts.length > 1 ? parseNum(toPlanPriceParts[1]) : 0
+              const expense = parseNum(info.expense)
+              const discount = parseNum(info.discount)
+              const toPlanPriceParts = toPlan.split(':')
+              const toPlanPrice = toPlanPriceParts.length > 1 ? parseNum(toPlanPriceParts[1]) : 0
 
-                let calculatedPrice = toPlanPrice
-                calculatedPrice = (expense / (expense + discount)) * toPlanPrice
+              let calculatedPrice = toPlanPrice
+              calculatedPrice = (expense / (expense + discount)) * toPlanPrice
 
-                const price_vnd = Math.round(calculatedPrice).toLocaleString('en-US')
-                const changes = { plan_number, price_vnd }
-                updateRowBySid(upgradeDialogState.sid, () => changes)
-                const row = data.find((r) => r.sid === upgradeDialogState.sid)
-                if (row) syncToDb([{ ...row, ...changes }])
-              } else if (responseData?.changes) {
-                updateRowBySid(upgradeDialogState.sid, () => responseData.changes)
-                const row = data.find((r) => r.sid === upgradeDialogState.sid)
-                if (row) syncToDb([{ ...row, ...responseData.changes }])
-              } else {
-                handleGetData()
-              }
-            } catch (err) {
-              console.error('Failed to parse upgrade response:', err)
+              const price_vnd = Math.round(calculatedPrice).toLocaleString('en-US')
+              const changes = { plan_number, price_vnd }
+              updateRowBySid(upgradeDialogState.sid, () => changes)
+              const row = data.find((r) => r.sid === upgradeDialogState.sid)
+              if (row) syncToDb([{ ...row, ...changes }])
+            } else {
               handleGetData()
             }
-          }}
-        />
-      )}
+          } catch (err) {
+            console.error('Failed to parse upgrade response:', err)
+            handleGetData()
+          }
+        }}
+      />
+
+      <ReinstallDialog
+        isOpen={reinstallState.isOpen}
+        onClose={() => setReinstallState({ isOpen: false, sid: null })}
+        sid={reinstallState.sid}
+        onSuccess={(responseData) => {
+          const changes = {
+            ip_port: `${responseData.ip}:${responseData.port}`,
+            user_pass: `${responseData.username}/${responseData.password}`,
+            he_dieu_hanh: getOS(responseData.os),
+          }
+          updateRowBySid(reinstallState.sid, () => changes)
+          const row = data.find((r) => r.sid === reinstallState.sid)
+          syncToDb([{ ...row, ...changes }])
+          safeCopy(
+            `${responseData.ip}:${responseData.port}/${responseData.username}/${responseData.password}`
+          )
+        }}
+      />
     </>
   )
 }

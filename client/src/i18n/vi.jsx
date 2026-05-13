@@ -398,6 +398,9 @@ const vi = {
   ),
   'history.numTransaction': 'Số giao dịch',
   'history.totalPrice': 'Tổng tiền đã giao dịch',
+
+  'reinstall.errorLoadOS': 'Không thể tải danh sách hệ điều hành',
+  'reinstall.selectOS': 'Vui lòng chọn hệ điều hành',
 }
 
 export default vi

@@ -158,7 +158,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
         const ip = row.ip_port?.split(':')[0]
         const res = await axiosInstance.post('/server/change-ip', { ip, type })
         if (res.data?.success) {
-          const [newIp, port, user, pass] = res.data.proxyInfo
+          const [newIp, port, user, pass] = res.data.info
           const updates = {
             ip_port: `${newIp}:${port}`,
             user_pass: `${user}:${pass}`,
@@ -225,21 +225,21 @@ export default function ProxyManager({ onBuySuccessRef }) {
       else if (parts.length === 3) [port, user, pass] = parts
       else if (parts.length === 2) [user, pass] = parts
       else {
-        addToast(t('manager.invalidReinstall'), 'error')
+        addToast(t('manager.invalidReinstall'), 'warning')
         return
       }
 
       // Username validation: lowercase a-z and 0-9
       const usernameRegex = /^[a-z0-9]+$/
       if (user && user !== '__' && !usernameRegex.test(user)) {
-        addToast(`Username ${t('buy.invalidUsername')}`, 'error')
+        addToast(`Username ${t('buy.invalidUsername')}`, 'warning')
         return
       }
 
       // Password validation: at least 10 chars, uppercase, lowercase, and number
       const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{10,}$/
       if (pass && pass !== '__' && !passwordRegex.test(pass)) {
-        addToast(`Password ${t('buy.invalidPassword')}`, 'error')
+        addToast(`Password ${t('buy.invalidPassword')}`, 'warning')
         return
       }
       infoTextNode = (
@@ -281,12 +281,13 @@ export default function ProxyManager({ onBuySuccessRef }) {
           sid: row.sid.toString(),
           custom_info: reinstallInput || undefined,
           type,
+          isProxy: true,
         })
         if (res.data?.success) {
-          const [ip, port, user, pass] = res.data.proxyInfo
+          const info = res.data.info
           const updates = {
-            ip_port: `${ip}:${port}`,
-            user_pass: `${user}:${pass}`,
+            ip_port: `${info.ip}:${info.port}`,
+            user_pass: `${info.username}:${info.password}`,
             type: reinstallType + ' Proxy',
             status: 'Running',
           }
@@ -1183,7 +1184,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
               try {
                 const res = await axiosInstance.post('/server/change-ip', { ip, type })
                 if (res.data?.success) {
-                  const [newIp, port, user, pass] = res.data.proxyInfo
+                  const [newIp, port, user, pass] = res.data.info
                   const updates = {
                     ip_port: `${newIp}:${port}`,
                     user_pass: `${user}:${pass}`,

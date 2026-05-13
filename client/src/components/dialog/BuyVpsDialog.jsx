@@ -284,7 +284,8 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
         value={displayValue}
         options={options}
         onChange={onSelect}
-        className="rounded-lg text-lg"
+        className="rounded-lg text-base sm:text-lg"
+        menuClassName="sm:text-lg text-base"
       />
     )
   }

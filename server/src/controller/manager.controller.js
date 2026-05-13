@@ -284,12 +284,12 @@ export async function changeIp(req, res) {
     const rawData = await response.json();
     return res.json({
       success: true,
-      info: [
-        rawData.new_ip,
-        rawData.remote_port,
-        rawData.username,
-        rawData.password,
-      ],
+      info: {
+        ip: rawData.new_ip,
+        port: rawData.remote_port,
+        username: rawData.username,
+        password: rawData.password,
+      },
     });
   } catch (error) {
     console.error(`Failed to CHANGE IP for ${ip}`, error.message);

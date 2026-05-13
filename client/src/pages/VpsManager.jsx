@@ -175,8 +175,8 @@ export default function VpsManager({ onBuySuccessRef }) {
         '/server/reset-password',
         t('vpsManager.resetPassword').toUpperCase(),
         (row) => {
-          const [user] = (row.user_pass || '').split('/')
-          const newUserPass = user ? `${user}/Httv1234` : `/Httv1234`
+          const [username] = (row.user_pass || '').split('/')
+          const newUserPass = username ? `${username}/Httv1234` : `/Httv1234`
           return { user_pass: newUserPass }
         }
       ),
@@ -673,8 +673,8 @@ export default function VpsManager({ onBuySuccessRef }) {
                     if (rows.length === 0) return addToast(t('manager.noRowsSelected'), 'warning')
                     const text = rows
                       .map((r) => {
-                        const [user, pass] = (r.user_pass || '').split('/')
-                        return [r.ip_port, user, pass].join('/')
+                        const [username, password] = (r.user_pass || '').split('/')
+                        return [r.ip_port, username, password].join('/')
                       })
                       .join('\n')
                     safeCopy(text).then(

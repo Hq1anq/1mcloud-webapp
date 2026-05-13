@@ -43,41 +43,6 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
     setCalculationError(false)
   }
 
-  const loadingContent = {
-    from_plan: calculationError ? (
-      <span className="text-text-primary font-medium">{t('error')}</span>
-    ) : (
-      <div className="bg-border ml-auto h-4 w-18 animate-pulse rounded"></div>
-    ),
-    to_plan: calculationError ? (
-      <span className="text-text-primary font-medium">{t('error')}</span>
-    ) : (
-      <div className="bg-border ml-auto h-4 w-18 animate-pulse rounded"></div>
-    ),
-    discount: calculationError ? (
-      <span className="text-green font-medium">{t('error')}</span>
-    ) : (
-      <div className="bg-border ml-auto h-4 w-18 animate-pulse rounded"></div>
-    ),
-    expense: calculationError ? (
-      <span className="text-blue font-bold">{t('error')}</span>
-    ) : (
-      <div className="bg-border ml-auto h-12 w-24 animate-pulse rounded"></div>
-    ),
-    days_left: calculationError ? (
-      <span className="text-purple font-medium">{t('error')}</span>
-    ) : (
-      <div className="bg-border ml-auto h-4 w-12 animate-pulse rounded"></div>
-    ),
-    expense_details: calculationError ? (
-      <div className="text-red border-red/20 bg-red/5 flex h-10 w-full items-center justify-center rounded border text-sm font-medium">
-        {t('error')}
-      </div>
-    ) : (
-      <div className="bg-border h-6 w-full animate-pulse rounded"></div>
-    ),
-  }
-
   // Fetch plans
   useEffect(() => {
     if (isOpen && sid) {
@@ -134,7 +99,6 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
       .post('/vps/upgrade', { sid: sid.toString(), plan_id: selectedPlanId })
       .then((res) => {
         if (res.data?.success) {
-          removeToast(loadingToast)
           addToast(t('vpsManager.upgrade') + ' ' + t('manager.success'), 'success')
           onSuccess(res.data)
           handleClose()
@@ -151,6 +115,7 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
       })
       .finally(() => {
         setProcessing(false)
+        removeToast(loadingToast)
       })
   }
 
@@ -158,13 +123,13 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
     <Dialog
       isOpen={isOpen}
       onClose={handleClose}
-      className="w-full max-w-6xl overflow-hidden! p-0!"
+      className="text-text-primary w-full max-w-6xl overflow-hidden! p-0!"
     >
       <div className="flex h-[85vh] flex-col">
         {/* Dialog Header */}
         <div className="border-blue flex shrink-0 items-start justify-between border-b px-6 py-5 md:px-10">
           <div>
-            <h2 className="text-text-primary text-2xl font-bold">{t('upgradePlan.title')}</h2>
+            <h2 className="text-2xl font-bold">{t('upgradePlan.title')}</h2>
             <p className="text-text-muted mt-1 text-base">{t('upgradePlan.subtitle')}</p>
           </div>
         </div>
@@ -179,7 +144,7 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
                 isLoading={isCalculating}
                 element={
                   <div className="flex items-center gap-2">
-                    <span className="text-text-primary bg-surface border-border rounded border px-2 py-1 text-base font-semibold">
+                    <span className="bg-surface border-border rounded border px-2 py-1 text-base font-semibold">
                       {calculation.from_plan.split(' : ')[0]}
                     </span>
                     <span className="text-text-muted text-base whitespace-nowrap">
@@ -236,9 +201,7 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
                       <path d="M5 5a2 2 0 0 0-2 2v3a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V7a2 2 0 0 0-2-2H5Zm9 2a1 1 0 1 0 0 2h.01a1 1 0 1 0 0-2H14Zm3 0a1 1 0 1 0 0 2h.01a1 1 0 1 0 0-2H17ZM3 17v-3a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Zm11-2a1 1 0 1 0 0 2h.01a1 1 0 1 0 0-2H14Zm3 0a1 1 0 1 0 0 2h.01a1 1 0 1 0 0-2H17Z" />
                     </svg>
                   </div>
-                  <p className="text-text-primary text-xl font-semibold sm:text-2xl">
-                    {t('noData')}
-                  </p>
+                  <p className="text-xl font-semibold sm:text-2xl">{t('noData')}</p>
                   <p className="text-text-muted text-base sm:text-lg">
                     {t('upgradePlan.noUpgradePlans')}
                   </p>
@@ -288,14 +251,12 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
                               </div>
                             </td>
                             <td className="p-4">
-                              <label className="text-text-primary block cursor-pointer font-semibold">
+                              <label className="block cursor-pointer font-semibold">
                                 {plan.name}
                               </label>
                             </td>
                             <td className="p-4 text-right">
-                              <span className="text-text-primary whitespace-nowrap">
-                                {plan.price} VND
-                              </span>
+                              <span className="whitespace-nowrap">{plan.price} VND</span>
                             </td>
                             <td className="px-4 py-2">
                               <div className="text-text-muted flex items-center gap-2 whitespace-nowrap">
@@ -357,7 +318,7 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
           {/* Right Column: Order Summary */}
           <div className="bg-surface border-blue flex w-full shrink-0 flex-col justify-between overflow-y-auto border-t p-4 md:p-6 lg:w-96 lg:border-t-0 lg:border-l">
             <div className="relative flex flex-col gap-5">
-              <h3 className="text-text-primary border-border border-b pb-2 text-lg font-bold">
+              <h3 className="border-border border-b pb-2 text-lg font-bold">
                 {t('upgradePlan.summary')}
               </h3>
 
@@ -367,7 +328,7 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
                   <Skeleton
                     isLoading={isCalculating}
                     element={
-                      <span className="text-text-primary decoration-text-muted line-through">
+                      <span className="decoration-text-muted line-through">
                         {calculation.from_plan.split(' : ').slice(1).join(' : ')}
                       </span>
                     }
@@ -379,7 +340,7 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
                   <Skeleton
                     isLoading={isCalculating}
                     element={
-                      <span className="text-text-primary font-semibold">
+                      <span className="font-semibold">
                         {calculation.to_plan.split(' : ').slice(1).join(' : ')}
                       </span>
                     }
@@ -523,14 +484,14 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
             <div className="border-border mt-6 flex justify-end gap-3 border-t pt-5">
               <button
                 onClick={handleClose}
-                className="text-text-muted hover:bg-surface hover:text-text-primary focus:ring-border rounded-lg px-4 py-2 text-base transition-colors focus:ring-2 focus:outline-none"
+                className="text-text-muted hover:bg-surface hover:text-text-primary rounded-lg px-4 py-2 text-base transition-colors"
               >
                 {t('cancel')}
               </button>
               <button
                 onClick={handlePay}
                 disabled={!calculation || processing || calculation.warning}
-                className="group enabled:bg-blue flex items-center gap-2 rounded-lg px-6 py-2 text-base font-semibold shadow-sm transition-colors hover:brightness-90 focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:bg-gray-500"
+                className="text-text-secondary group enabled:bg-blue flex items-center gap-2 rounded-lg px-6 py-2 text-base font-semibold hover:brightness-90 disabled:bg-gray-500"
               >
                 {processing ? t('processing') : t('vpsManager.upgrade')}
                 {!processing && (

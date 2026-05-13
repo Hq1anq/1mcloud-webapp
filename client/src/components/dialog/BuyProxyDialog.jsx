@@ -147,7 +147,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
   const handlePay = async () => {
     // Validate inputs
     if (!randomUsername && usernameInput && !/^[a-z0-9]+$/.test(usernameInput)) {
-      addToast(t('buy.invalidUsername'), 'error')
+      addToast(t('buy.invalidUsername'), 'warning')
       return
     }
 
@@ -156,7 +156,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
       passwordInput &&
       !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{10,}$/.test(passwordInput)
     ) {
-      addToast(t('buy.invalidPassword'), 'error')
+      addToast(t('buy.invalidPassword'), 'warning')
       return
     }
 

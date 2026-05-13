@@ -158,16 +158,16 @@ export default function ProxyManager({ onBuySuccessRef }) {
         const ip = row.ip_port?.split(':')[0]
         const res = await axiosInstance.post('/server/change-ip', { ip, type })
         if (res.data?.success) {
-          const [newIp, port, user, pass] = res.data.info
+          const info = res.data.info
           const updates = {
-            ip_port: `${newIp}:${port}`,
-            user_pass: `${user}:${pass}`,
+            ip_port: `${info.ip}:${info.port}`,
+            user_pass: `${info.username}:${info.password}`,
             type: changeIpType + ' Proxy',
             status: 'Running',
           }
           updateRowBySid(row.sid, () => updates)
           updatedRows.push({ ...row, ...updates })
-          proxyResults.push(`${newIp}:${port}:${user}:${pass}`)
+          proxyResults.push(`${info.ip}:${info.port}:${info.username}:${info.password}`)
         }
         return res
       },
@@ -216,14 +216,14 @@ export default function ProxyManager({ onBuySuccessRef }) {
     let infoTextNode = t('manager.reinstallTarget')
     let ip = '__',
       port = '__',
-      user = '__',
-      pass = '__'
+      username = '__',
+      password = '__'
 
     if (reinstallInput) {
       const parts = reinstallInput.split(':')
-      if (parts.length >= 4) [ip, port, user, pass] = parts
-      else if (parts.length === 3) [port, user, pass] = parts
-      else if (parts.length === 2) [user, pass] = parts
+      if (parts.length >= 4) [ip, port, username, password] = parts
+      else if (parts.length === 3) [port, username, password] = parts
+      else if (parts.length === 2) [username, password] = parts
       else {
         addToast(t('manager.invalidReinstall'), 'warning')
         return
@@ -231,14 +231,14 @@ export default function ProxyManager({ onBuySuccessRef }) {
 
       // Username validation: lowercase a-z and 0-9
       const usernameRegex = /^[a-z0-9]+$/
-      if (user && user !== '__' && !usernameRegex.test(user)) {
+      if (username && username !== '__' && !usernameRegex.test(username)) {
         addToast(`Username ${t('buy.invalidUsername')}`, 'warning')
         return
       }
 
       // Password validation: at least 10 chars, uppercase, lowercase, and number
       const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{10,}$/
-      if (pass && pass !== '__' && !passwordRegex.test(pass)) {
+      if (password && password !== '__' && !passwordRegex.test(password)) {
         addToast(`Password ${t('buy.invalidPassword')}`, 'warning')
         return
       }
@@ -248,7 +248,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
           <br />
           {t('manager.info')}{' '}
           <span className="text-highlight font-bold break-all">
-            {ip}:{port}:{user}:{pass}
+            {ip}:{port}:{username}:{password}
           </span>
         </>
       )
@@ -293,7 +293,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
           }
           updateRowBySid(row.sid, () => updates)
           updatedRows.push({ ...row, ...updates })
-          proxyResults.push(`${ip}:${port}:${user}:${pass}`)
+          proxyResults.push(`${info.ip}:${info.port}:${info.username}:${info.password}`)
         }
         return res
       },
@@ -944,8 +944,8 @@ export default function ProxyManager({ onBuySuccessRef }) {
                     const text = rows
                       .map((r) => {
                         const [ip, port] = (r.ip_port || '').split(':')
-                        const [user, pass] = (r.user_pass || '').split(':')
-                        return [ip, port, user, pass].filter(Boolean).join(':')
+                        const [username, password] = (r.user_pass || '').split(':')
+                        return [ip, port, username, password].filter(Boolean).join(':')
                       })
                       .join('\n')
                     safeCopy(text).then(
@@ -1184,10 +1184,10 @@ export default function ProxyManager({ onBuySuccessRef }) {
               try {
                 const res = await axiosInstance.post('/server/change-ip', { ip, type })
                 if (res.data?.success) {
-                  const [newIp, port, user, pass] = res.data.info
+                  const [newIp, port, username, password] = res.data.info
                   const updates = {
                     ip_port: `${newIp}:${port}`,
-                    user_pass: `${user}:${pass}`,
+                    user_pass: `${username}:${password}`,
                     type: changeIpType + ' Proxy',
                     status: 'Running',
                   }

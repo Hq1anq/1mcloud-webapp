@@ -13,6 +13,7 @@ const vi = {
   error: 'Lỗi',
   type: 'Loại',
   processing: 'Đang xử lý...',
+  current: 'Hiện tại',
 
   // UserMenu
   'menu.login': 'Đăng nhập',

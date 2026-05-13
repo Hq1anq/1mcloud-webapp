@@ -13,6 +13,7 @@ const en = {
   error: 'Error',
   type: 'Type',
   processing: 'Processing...',
+  current: 'Current',
 
   // UserMenu
   'menu.login': 'Login',

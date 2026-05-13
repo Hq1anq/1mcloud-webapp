@@ -251,19 +251,51 @@ export async function calculate(req, res) {
 }
 
 export async function changeIp(req, res) {
-  const { ip, type = "proxy_https" } = req.body;
   const url = `${process.env.BASE_URL}/server/change-ip`;
+  const {
+    ip,
+    type,
+    isProxy,
+    install_chrome,
+    install_firefox,
+    os_id,
+    random_password,
+    random_remote_port,
+    password,
+    remote_port,
+    range_ip,
+    isp,
+    not_remove_data,
+  } = req.body;
   const headers = { ...HEADERS, authorization: `Bearer ${req.token}` };
 
-  let data = {
-    ip: ip,
-    os_id: 0,
-    proxy_type: type,
-    range_ip: "Ngẫu nhiên",
-    random_password: true,
-    random_remote_port: true,
-    isp: "Ngẫu nhiên",
-  };
+  let data = {};
+
+  if (isProxy) {
+    data = {
+      ip: ip,
+      os_id: 0,
+      proxy_type: type,
+      range_ip: "Ngẫu nhiên",
+      random_password: true,
+      random_remote_port: true,
+      isp: "Ngẫu nhiên",
+    };
+  } else {
+    data = {
+      ip: ip,
+      os_id: os_id,
+      install_chrome: install_chrome,
+      install_firefox: install_firefox,
+      random_password: random_password,
+      random_remote_port: random_remote_port,
+      password: password,
+      remote_port: remote_port,
+      range_ip: range_ip,
+      isp: isp,
+      not_remove_data: not_remove_data,
+    };
+  }
 
   try {
     const response = await fetch(url, {

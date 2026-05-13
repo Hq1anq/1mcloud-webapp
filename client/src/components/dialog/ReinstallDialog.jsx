@@ -22,7 +22,7 @@ export default function ReinstallDialog({ isOpen, onClose, sid, onSuccess }) {
   const [osOptions, setOsOptions] = useState({})
   const [selectedOs, setSelectedOs] = useState(null)
 
-  const [loadingOs, setLoadingOs] = useState(false)
+  const [loadingOs, setLoadingOs] = useState(true)
   const [submitting, setSubmitting] = useState(false)
 
   const passwordInvalid = useMemo(() => {
@@ -35,8 +35,10 @@ export default function ReinstallDialog({ isOpen, onClose, sid, onSuccess }) {
 
     const fetchOs = async () => {
       try {
-        setLoadingOs(true)
         const res = await axiosInstance.get('/vps/support/os')
+        if (!res.data?.success) {
+          return addToast(t('reinstall.errorLoadOS'), 'error')
+        }
         const osMap = res?.data?.info.os || {}
         setOsOptions(osMap)
         const firstKey = Object.keys(osMap)[0]
@@ -51,7 +53,7 @@ export default function ReinstallDialog({ isOpen, onClose, sid, onSuccess }) {
     }
 
     fetchOs()
-  }, [isOpen])
+  }, [isOpen, addToast, t])
 
   const renderSelect = (value, onChange, optionsMap) => {
     let options = []
@@ -78,13 +80,16 @@ export default function ReinstallDialog({ isOpen, onClose, sid, onSuccess }) {
   }
 
   const handleCancel = () => {
-    setRandomPassword(true)
-    setRandomPort(true)
-    setPasswordInput('')
-    setPortInput('')
-    setInstallChrome(false)
-    setInstallFirefox(false)
     onClose()
+    setTimeout(() => {
+      setRandomPassword(true)
+      setRandomPort(true)
+      setPasswordInput('')
+      setPortInput('')
+      setInstallChrome(false)
+      setInstallFirefox(false)
+      setLoadingOs(true)
+    }, 300)
   }
 
   const handleSubmit = async () => {
@@ -111,7 +116,6 @@ export default function ReinstallDialog({ isOpen, onClose, sid, onSuccess }) {
       sid: String(sid),
       isProxy: false,
     }
-    console.log(payload)
 
     axiosInstance
       .post('/server/reinstall', payload)
@@ -210,7 +214,7 @@ export default function ReinstallDialog({ isOpen, onClose, sid, onSuccess }) {
       <div className="flex justify-end gap-2 pt-2 text-base">
         <button
           onClick={handleCancel}
-          className="text-text-muted hover:bg-surface hover:text-text-primary rounded-lg px-4 py-2 transition-colors"
+          className="text-text-muted hover:text-text-primary rounded-lg px-4 py-2"
           disabled={submitting}
         >
           {t('cancel')}

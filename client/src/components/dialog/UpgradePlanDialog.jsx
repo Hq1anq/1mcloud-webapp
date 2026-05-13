@@ -70,7 +70,6 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
   // Fetch calculation
   useEffect(() => {
     if (isOpen && sid && selectedPlanId) {
-      setIsCalculating(true)
       axiosInstance
         .post('/vps/upgrade/calculate', { sid: sid.toString(), plan_id: selectedPlanId })
         .then((res) => {

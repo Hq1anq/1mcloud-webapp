@@ -115,7 +115,7 @@ export default function StatusMetricsMeter({ total, running, off, className }) {
               {value}
             </div>
 
-            <div className="h-1 overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--border),transparent_70%)]">
+            <div className="mt-1 h-1 overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--border),transparent_70%)]">
               <div
                 className="h-full rounded-full transition-all duration-700 ease-out"
                 style={{

@@ -2,6 +2,7 @@ import Table from '../components/ui/Table'
 import ControlButton from '../components/ui/ControlButton'
 import UpgradePlanDialog from '../components/dialog/UpgradePlanDialog'
 import ReinstallDialog from '../components/dialog/ReinstallDialog'
+import ChangeIpDialog from '../components/dialog/ChangeIpDialog'
 import StatusMetricsMeter from '../components/ui/StatusMetricsMeter'
 import axiosInstance from '../lib/axios'
 import { useState, useEffect, useCallback, useMemo } from 'react'
@@ -32,6 +33,10 @@ export default function VpsManager({ onBuySuccessRef }) {
   const [noteInput, setNoteInput] = useState('')
   const [upgradeDialogState, setUpgradeDialogState] = useState({ isOpen: false, sid: null })
   const [reinstallState, setReinstallState] = useState({ isOpen: false, sid: null })
+  const [changeIpState, setChangeIpState] = useState({
+    isOpen: false,
+    data: { ip: '', os: '', note: '' },
+  })
 
   // Data from Zustand store
   const data = useVpsStore((s) => s.data)
@@ -873,7 +878,16 @@ export default function VpsManager({ onBuySuccessRef }) {
             }
             onReinstall={() => setReinstallState({ isOpen: true, sid: row.sid })}
             onChangeIp={() => {
-              addToast(t('manager.comingSoon'), 'info')
+              setChangeIpState({
+                isOpen: true,
+                data: {
+                  sid: row.sid,
+                  ip: row.ip_port.split(':')[0],
+                  password: row.user_pass ? row.user_pass.split('/')[1] : '',
+                  os: row.he_dieu_hanh,
+                  note: row.note,
+                },
+              })
             }}
           />
         )}
@@ -975,6 +989,25 @@ export default function VpsManager({ onBuySuccessRef }) {
           }
           updateRowBySid(reinstallState.sid, () => changes)
           const row = data.find((r) => r.sid === reinstallState.sid)
+          syncToDb([{ ...row, ...changes }])
+          safeCopy(
+            `${responseData.ip}:${responseData.port}/${responseData.username}/${responseData.password}`
+          )
+        }}
+      />
+
+      <ChangeIpDialog
+        isOpen={changeIpState.isOpen}
+        onClose={() => setChangeIpState({ isOpen: false, data: { ip: '', os: '', note: '' } })}
+        currentData={changeIpState.data}
+        onSuccess={(responseData) => {
+          const changes = {
+            ip_port: `${responseData.ip}:${responseData.port}`,
+            user_pass: `${responseData.username}/${responseData.password}`,
+            he_dieu_hanh: getOS(responseData.os),
+          }
+          updateRowBySid(changeIpState.sid, () => changes)
+          const row = data.find((r) => r.sid === changeIpState.sid)
           syncToDb([{ ...row, ...changes }])
           safeCopy(
             `${responseData.ip}:${responseData.port}/${responseData.username}/${responseData.password}`

@@ -387,3 +387,36 @@ export async function upgrade(req, res) {
       .json({ success: false, error: "Internal server error" });
   }
 }
+
+export async function supportChangeIp(req, res) {
+  const url = `${process.env.BASE_URL}/server/change-ip-params`;
+  const { ip } = req.query;
+  const headers = { ...HEADERS, authorization: `Bearer ${req.token}` };
+
+  const params = new URLSearchParams({
+    ip: ip,
+  });
+
+  try {
+    const response = await fetch(`${url}?${params.toString()}`, {
+      method: "GET",
+      headers,
+    });
+
+    if (!response.ok) {
+      console.error(`Failed to GET CHANGE IP SUPPORT:`, response.status);
+      return res.status(response.status).json({
+        success: false,
+        error: "GET CHANGE IP SUPPORT request failed",
+      });
+    }
+
+    const data = await response.json();
+    return res.json({ success: true, info: data });
+  } catch (error) {
+    console.error("Failed to GET CHANGE IP SUPPORT", error.message);
+    return res
+      .status(500)
+      .json({ success: false, error: "Internal server error" });
+  }
+}

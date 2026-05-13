@@ -156,7 +156,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
       rows,
       async (row) => {
         const ip = row.ip_port?.split(':')[0]
-        const res = await axiosInstance.post('/server/change-ip', { ip, type })
+        const res = await axiosInstance.post('/server/change-ip', { ip, type, isProxy: true })
         if (res.data?.success) {
           const info = res.data.info
           const updates = {
@@ -1182,7 +1182,11 @@ export default function ProxyManager({ onBuySuccessRef }) {
               setIsProcessing(true)
 
               try {
-                const res = await axiosInstance.post('/server/change-ip', { ip, type })
+                const res = await axiosInstance.post('/server/change-ip', {
+                  ip,
+                  type,
+                  isProxy: true,
+                })
                 if (res.data?.success) {
                   const [newIp, port, username, password] = res.data.info
                   const updates = {

@@ -998,7 +998,9 @@ export default function VpsManager({ onBuySuccessRef }) {
 
       <ChangeIpDialog
         isOpen={changeIpState.isOpen}
-        onClose={() => setChangeIpState({ isOpen: false, data: { ip: '', os: '', note: '' } })}
+        onClose={() =>
+          setChangeIpState({ isOpen: false, data: { ip: '', os: '', note: '', sid: '' } })
+        }
         currentData={changeIpState.data}
         onSuccess={(responseData) => {
           const changes = {
@@ -1006,8 +1008,8 @@ export default function VpsManager({ onBuySuccessRef }) {
             user_pass: `${responseData.username}/${responseData.password}`,
             he_dieu_hanh: getOS(responseData.os),
           }
-          updateRowBySid(changeIpState.sid, () => changes)
-          const row = data.find((r) => r.sid === changeIpState.sid)
+          updateRowBySid(changeIpState.data.sid, () => changes)
+          const row = data.find((r) => r.sid === changeIpState.data.sid)
           syncToDb([{ ...row, ...changes }])
           safeCopy(
             `${responseData.ip}:${responseData.port}/${responseData.username}/${responseData.password}`

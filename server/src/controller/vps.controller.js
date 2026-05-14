@@ -390,12 +390,14 @@ export async function upgrade(req, res) {
 
 export async function supportChangeIp(req, res) {
   const url = `${process.env.BASE_URL}/server/change-ip-params`;
-  const { ip } = req.query;
+  const { ip, isp } = req.query;
   const headers = { ...HEADERS, authorization: `Bearer ${req.token}` };
 
   const params = new URLSearchParams({
     ip: ip,
   });
+
+  if (isp) params.append("isp", isp);
 
   try {
     const response = await fetch(`${url}?${params.toString()}`, {

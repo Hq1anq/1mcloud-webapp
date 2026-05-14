@@ -399,6 +399,10 @@ const en = {
 
   'reinstall.errorLoadOS': 'Failed to load OS list',
   'reinstall.selectOS': 'Please select an OS',
+  'changeIp.note': 'Note',
+  'changeIp.noteContent': 'Each IP can be changed 3 times per month. You have changed',
+  'changeIp.changeTimes': 'times this month',
+  'changeIp.notRemoveData': 'Not remove data',
 }
 
 export default en

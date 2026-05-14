@@ -7,6 +7,7 @@ import Dialog from '../ui/Dialog'
 import DropDown from '../ui/DropDown'
 import Checkbox from '../ui/Checkbox'
 import Skeleton from '../ui/Skeleton.jsx'
+import getOS from '../../data/osMap'
 
 export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
   const { addToast, removeToast } = useToast()
@@ -245,7 +246,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
         const extraConfig = {
           plan_number: selectedPlanObj?.name,
           country: selectedNation,
-          he_dieu_hanh: supportData?.os?.option?.[selectedOs],
+          he_dieu_hanh: getOS(supportData?.os?.option?.[selectedOs]),
           price_vnd: selectedPlanObj?.price,
           note: note,
         }

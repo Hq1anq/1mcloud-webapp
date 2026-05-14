@@ -402,6 +402,10 @@ const vi = {
 
   'reinstall.errorLoadOS': 'Không thể tải danh sách hệ điều hành',
   'reinstall.selectOS': 'Vui lòng chọn hệ điều hành',
+  'changeIp.note': 'Lưu ý',
+  'changeIp.noteContent': 'Mỗi IP có 3 lần đổi 1 tháng. Bạn đã đổi',
+  'changeIp.changeTimes': 'lần trong tháng',
+  'changeIp.notRemoveData': 'Không xoá dữ liệu',
 }
 
 export default vi

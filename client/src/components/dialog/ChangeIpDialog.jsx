@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useToast } from '../../context/ToastContext'
 import { useTranslation } from '../../i18n'
 import axiosInstance from '../../lib/axios'
@@ -6,30 +6,30 @@ import Checkbox from '../ui/Checkbox'
 import Dialog from '../ui/Dialog'
 import DropDown from '../ui/DropDown'
 import Skeleton from '../ui/Skeleton'
-
-const INITIAL_FORM_STATE = {
-  install_chrome: false,
-  install_firefox: false,
-  os_id: null,
-  random_password: true,
-  random_remote_port: true,
-  password: '',
-  remote_port: '',
-  range_ip: 'Ngẫu nhiên',
-  isp: 'Ngẫu nhiên',
-  not_remove_data: false,
-}
+import ToggleButton from '../ui/ToggleButton'
 
 export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess }) {
   const { addToast, removeToast } = useToast()
   const t = useTranslation()
 
-  const [form, setForm] = useState(INITIAL_FORM_STATE)
+  const [form, setForm] = useState({
+    install_chrome: false,
+    install_firefox: false,
+    os_id: null,
+    random_password: true,
+    random_remote_port: true,
+    password: currentData?.password || '',
+    remote_port: currentData?.remote_port || '',
+    range_ip: 'Ngẫu nhiên',
+    isp: 'Ngẫu nhiên',
+    not_remove_data: false,
+  })
 
-  const updateForm = (updates) => setForm((prev) => ({ ...prev, ...updates }))
+  const updateForm = useCallback((updates) => setForm((prev) => ({ ...prev, ...updates })), [])
 
   const [supportData, setSupportData] = useState({})
   const [loadingSupport, setLoadingSupport] = useState(false)
+  const [loadingNoIsp, setLoadingNoIsp] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
   const passwordInvalid = useMemo(() => {
@@ -37,31 +37,53 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
     return !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{10,}$/.test(form.password)
   }, [form.random_password, form.password])
 
-  useEffect(() => {
-    if (!isOpen) return
-
-    const fetchSupport = async () => {
+  // Fetch support data (OS, range IP) optionally filtered by ISP
+  const fetchSupport = useCallback(
+    async (ispParam = null) => {
       try {
         setLoadingSupport(true)
-        const res = await axiosInstance.get(`/vps/change-ip-params?ip=${currentData.ip}`)
+        let url = `/vps/change-ip-params?ip=${currentData.ip}`
+        if (ispParam) {
+          setLoadingNoIsp(true)
+          url += `&isp=${encodeURIComponent(ispParam)}`
+        } else setLoadingNoIsp(false)
+        const res = await axiosInstance.get(url)
         if (!res.data?.success) {
           return
         }
         const data = res.data.info
         setSupportData(data)
-        updateForm({
-          os_id: data.current_os || data.support_os?.[0]?.id,
-          remote_port: data.current_remote_port || '',
-          range_ip: data.range_ip?.[0] || 'Ngẫu nhiên',
-          isp: data.isp?.[0] || 'Ngẫu nhiên',
-        })
+        // Update dependent form fields (OS and range IP)
+        if (ispParam)
+          updateForm({
+            os_id: data.current_os || data.support_os?.[0]?.id,
+            remote_port: data.current_remote_port || '',
+            range_ip: data.range_ip?.[0] || 'Ngẫu nhiên',
+          })
+        else
+          updateForm({
+            os_id: data.current_os || data.support_os?.[0]?.id,
+            remote_port: data.current_remote_port || '',
+            range_ip: data.range_ip?.[0] || 'Ngẫu nhiên',
+            isp: data.isp?.[0] || 'Ngẫu nhiên',
+          })
       } finally {
         setLoadingSupport(false)
       }
-    }
+    },
+    [currentData.ip, updateForm]
+  )
 
+  useEffect(() => {
+    if (!isOpen) return
     fetchSupport()
-  }, [isOpen, addToast, currentData.ip, t])
+  }, [isOpen, fetchSupport])
+
+  const handleIspChange = (val) => {
+    if (val === 'Ngẫu nhiên') fetchSupport()
+    else fetchSupport(val)
+    updateForm({ isp: val })
+  }
 
   const handleCancel = () => {
     onClose()
@@ -90,8 +112,8 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
       install_firefox: form.install_firefox,
       random_password: form.random_password,
       random_remote_port: form.random_remote_port,
-      password: form.random_password ? '' : form.password,
-      remote_port: form.random_remote_port ? '' : form.remote_port,
+      password: form.random_password ? undefined : form.password,
+      remote_port: form.random_remote_port ? undefined : form.remote_port,
       isProxy: false,
     }
 
@@ -122,7 +144,30 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
   return (
     <Dialog isOpen={isOpen} onClose={handleCancel} title="Change IP" className="text-text-primary">
       <div className="max-sm:overflow-y-auto">
-        <span className="mt-2 text-base font-medium">{t('current')}</span>
+        <div className="border-orange/30 bg-orange/10 rounded-lg border p-3">
+          <div className="flex items-center gap-2">
+            <svg
+              className="text-orange mt-0.5 size-5 shrink-0"
+              viewBox="0 0 24 24"
+              fill="none"
+              strokeWidth={1.5}
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+              />
+            </svg>
+            <p className="text-orange text-md font-semibold">{t('changeIp.note')}</p>
+          </div>
+          <p className="text-text-muted mt-1 text-sm leading-relaxed">
+            {t('changeIp.noteContent')}{' '}
+            <span className="text-highlight">{3 - (supportData?.change_remind || 3)}</span>{' '}
+            {t('changeIp.changeTimes')}
+          </p>
+        </div>
+        <span className="mt-4 block text-base font-medium">{t('current')}</span>
         <div className="mt-2 flex flex-wrap gap-4">
           <div className="bg-terminal border-border grow rounded-lg border p-2 shadow-xl sm:p-4">
             <p className="text-text-muted mb-1">IP</p>
@@ -139,21 +184,21 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
             </div>
           </div>
         </div>
-        <div className="mt-4 flex flex-wrap items-center gap-x-6">
+        <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2">
           <span className="text-base font-medium">{t('buyVps.software')}</span>
-          <div className="flex flex-wrap justify-center gap-4 sm:justify-start">
+          <div className="flex gap-2 sm:gap-4">
             <button
               type="button"
               aria-pressed={form.install_chrome}
               onClick={() => updateForm({ install_chrome: !form.install_chrome })}
-              className={`relative flex w-48 items-center justify-center rounded-full border px-6 py-3 text-base font-semibold select-none hover:bg-[color-mix(in_srgb,var(--bg-terminal),var(--color-blue)_25%)] ${
+              className={`hover:bg-blue/10 relative flex items-center justify-center rounded-full border px-8 py-3 text-base font-semibold select-none ${
                 form.install_chrome
                   ? 'border-blue text-blue bg-[color-mix(in_srgb,var(--bg-terminal),var(--color-blue)_12%)]'
                   : 'border-border text-text-muted bg-terminal'
               }`}
             >
               <span
-                className={`slide-reveal-ease flex items-center gap-3 ${
+                className={`slide-reveal-ease flex items-center gap-2 ${
                   form.install_chrome ? '-translate-x-4' : 'translate-x-0'
                 }`}
               >
@@ -168,7 +213,7 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
               </span>
 
               <svg
-                className={`slide-reveal-ease absolute right-6 size-5 ${
+                className={`slide-reveal-ease absolute right-4 size-5 ${
                   form.install_chrome
                     ? 'translate-x-0 scale-100 opacity-100'
                     : 'translate-x-5 scale-0 opacity-0'
@@ -190,14 +235,14 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
               type="button"
               aria-pressed={form.install_firefox}
               onClick={() => updateForm({ install_firefox: !form.install_firefox })}
-              className={`relative flex w-48 items-center justify-center rounded-full border px-6 py-3 text-base font-semibold select-none hover:bg-[color-mix(in_srgb,var(--bg-terminal),var(--color-orange)_25%)] ${
+              className={`hover:bg-orange/10 relative flex items-center justify-center rounded-full border px-8 py-3 text-base font-semibold select-none ${
                 form.install_firefox
                   ? 'border-orange text-orange bg-[color-mix(in_srgb,var(--bg-terminal),var(--color-orange)_12%)]'
                   : 'border-border text-text-muted bg-terminal'
               }`}
             >
               <span
-                className={`slide-reveal-ease flex items-center gap-3 ${
+                className={`slide-reveal-ease flex items-center gap-2 ${
                   form.install_firefox ? '-translate-x-4' : 'translate-x-0'
                 }`}
               >
@@ -212,7 +257,7 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
               </span>
 
               <svg
-                className={`slide-reveal-ease absolute right-6 size-5 ${
+                className={`slide-reveal-ease absolute right-4 size-5 ${
                   form.install_firefox
                     ? 'translate-x-0 scale-100 opacity-100'
                     : 'translate-x-5 scale-0 opacity-0'
@@ -271,12 +316,12 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
           <div className="grow">
             <span className="mt-2 text-base font-medium">{t('buy.provider')}</span>
             <Skeleton
-              isLoading={loadingSupport}
+              isLoading={loadingSupport && !loadingNoIsp}
               element={
                 <DropDown
                   value={form.isp}
                   options={supportData?.isp || []}
-                  onChange={(val) => updateForm({ isp: val })}
+                  onChange={handleIspChange}
                   className="rounded-lg text-base sm:text-lg"
                   menuClassName="sm:text-lg text-base"
                 />
@@ -286,7 +331,7 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
           </div>
         </div>
 
-        <div className="mt-2 grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="mt-4 mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <label className="flex grow flex-col gap-2">
             <div className="flex items-center gap-2">
               <Checkbox
@@ -332,21 +377,41 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
           </label>
         </div>
 
-        <div className="flex justify-end gap-2 pt-2 text-base">
-          <button
-            onClick={handleCancel}
-            className="text-text-muted hover:text-text-primary rounded-lg px-4 py-2"
-            disabled={submitting}
+        <div className="flex flex-wrap items-center justify-between gap-y-4">
+          <label
+            className={`flex cursor-pointer items-center gap-2 text-sm hover:brightness-120 ${form.not_remove_data ? 'text-highlight' : 'text-text-muted'}`}
           >
-            {t('cancel')}
-          </button>
-          <button
-            onClick={handleSubmit}
-            className="text-text-secondary group enabled:bg-blue flex items-center gap-2 rounded-lg px-6 py-2 font-semibold hover:brightness-90 disabled:bg-gray-500"
-            disabled={submitting || loadingSupport}
-          >
-            {submitting ? t('processing') : t('manager.changeIp')}
-          </button>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 -960 960 960"
+              className="size-6 fill-current"
+            >
+              <path d="M480-120q-151 0-255.5-46.5T120-280v-400q0-66 105.5-113T480-840q149 0 254.5 47T840-680v400q0 67-104.5 113.5T480-120Zm0-479q89 0 179-25.5T760-679q-11-29-100.5-55T480-760q-91 0-178.5 25.5T200-679q14 30 101.5 55T480-599Zm0 199q42 0 81-4t74.5-11.5q35.5-7.5 67-18.5t57.5-25v-120q-26 14-57.5 25t-67 18.5Q600-528 561-524t-81 4q-42 0-82-4t-75.5-11.5Q287-543 256-554t-56-25v120q25 14 56 25t66.5 18.5Q358-408 398-404t82 4Zm0 200q46 0 93.5-7t87.5-18.5q40-11.5 67-26t32-29.5v-98q-26 14-57.5 25t-67 18.5Q600-328 561-324t-81 4q-42 0-82-4t-75.5-11.5Q287-343 256-354t-56-25v99q5 15 31.5 29t66.5 25.5q40 11.5 88 18.5t94 7Z" />
+            </svg>
+
+            <span className="font-medium select-none">{t('changeIp.notRemoveData')}</span>
+
+            <ToggleButton
+              isOn={form.not_remove_data}
+              onClick={() => updateForm({ not_remove_data: !form.not_remove_data })}
+            />
+          </label>
+          <div className="ml-auto flex items-center justify-center gap-2 text-base">
+            <button
+              onClick={handleCancel}
+              className="text-text-muted hover:text-text-primary rounded-lg px-4 py-2"
+              disabled={submitting}
+            >
+              {t('cancel')}
+            </button>
+            <button
+              onClick={handleSubmit}
+              className="text-text-secondary group enabled:bg-blue flex items-center gap-2 rounded-lg px-6 py-2 font-semibold hover:brightness-90 disabled:bg-gray-500"
+              disabled={submitting || loadingSupport}
+            >
+              {submitting ? t('processing') : t('manager.changeIp')}
+            </button>
+          </div>
         </div>
       </div>
     </Dialog>

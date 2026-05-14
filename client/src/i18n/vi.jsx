@@ -13,6 +13,7 @@ const vi = {
   error: 'Lỗi',
   type: 'Loại',
   processing: 'Đang xử lý...',
+  current: 'Hiện tại',
 
   // UserMenu
   'menu.login': 'Đăng nhập',
@@ -321,6 +322,11 @@ const vi = {
   'upgradePlan.days': 'ngày',
   'upgradePlan.calculationDetail': 'Chi tiết tính toán',
   'upgradePlan.noUpgradePlans': 'Không có gói nâng cấp phù hợp',
+  'upgradePlan.errorCalculate': (
+    <span>
+      Lỗi tính toán giá <span className="text-highlight">nâng cấp</span>
+    </span>
+  ),
 
   // Account Page
   'account.title': 'Tài khoản của tôi',
@@ -393,6 +399,13 @@ const vi = {
   ),
   'history.numTransaction': 'Số giao dịch',
   'history.totalPrice': 'Tổng tiền đã giao dịch',
+
+  'reinstall.errorLoadOS': 'Không thể tải danh sách hệ điều hành',
+  'reinstall.selectOS': 'Vui lòng chọn hệ điều hành',
+  'changeIp.note': 'Lưu ý',
+  'changeIp.noteContent': 'Mỗi IP có 3 lần đổi 1 tháng. Bạn đã đổi',
+  'changeIp.changeTimes': 'lần trong tháng',
+  'changeIp.notRemoveData': 'Không xoá dữ liệu',
 }
 
 export default vi

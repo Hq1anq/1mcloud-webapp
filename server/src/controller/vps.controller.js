@@ -85,6 +85,34 @@ export async function support(req, res) {
   }
 }
 
+export async function supportOs(req, res) {
+  const url = `${process.env.BASE_URL}/server/vps/support/os`;
+  const headers = { ...HEADERS, authorization: `Bearer ${req.token}` };
+
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers,
+    });
+
+    if (!response.ok) {
+      console.error(`Failed to GET SUPPORT:`, response.status);
+      return res.status(response.status).json({
+        success: false,
+        error: "GET SUPPORT request failed",
+      });
+    }
+
+    const data = await response.json();
+    return res.json({ success: true, info: data });
+  } catch (error) {
+    console.error("Failed to GET SUPPORT", error.message);
+    return res
+      .status(500)
+      .json({ success: false, error: "Internal server error" });
+  }
+}
+
 /**
  * Resolve the user_id from the Bearer token.
  */
@@ -354,6 +382,41 @@ export async function upgrade(req, res) {
     return res.json({ success: true, info: data });
   } catch (error) {
     console.error("Failed to UPGRADE", error.message);
+    return res
+      .status(500)
+      .json({ success: false, error: "Internal server error" });
+  }
+}
+
+export async function supportChangeIp(req, res) {
+  const url = `${process.env.BASE_URL}/server/change-ip-params`;
+  const { ip, isp } = req.query;
+  const headers = { ...HEADERS, authorization: `Bearer ${req.token}` };
+
+  const params = new URLSearchParams({
+    ip: ip,
+  });
+
+  if (isp) params.append("isp", isp);
+
+  try {
+    const response = await fetch(`${url}?${params.toString()}`, {
+      method: "GET",
+      headers,
+    });
+
+    if (!response.ok) {
+      console.error(`Failed to GET CHANGE IP SUPPORT:`, response.status);
+      return res.status(response.status).json({
+        success: false,
+        error: "GET CHANGE IP SUPPORT request failed",
+      });
+    }
+
+    const data = await response.json();
+    return res.json({ success: true, info: data });
+  } catch (error) {
+    console.error("Failed to GET CHANGE IP SUPPORT", error.message);
     return res
       .status(500)
       .json({ success: false, error: "Internal server error" });

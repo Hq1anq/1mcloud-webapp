@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
+import { useToast } from '../../context/ToastContext'
+import { useTranslation } from '../../i18n'
+import { vpsNations, vpsSpecialOptions, getDefaultPlans } from '../../data/vpsNations.jsx'
 import axiosInstance from '../../lib/axios'
 import Dialog from '../ui/Dialog'
 import DropDown from '../ui/DropDown'
 import Checkbox from '../ui/Checkbox'
-import { useToast } from '../../context/ToastContext'
-import { useTranslation } from '../../i18n'
-import { vpsNations, vpsSpecialOptions, getDefaultPlans } from '../../data/vpsNations.jsx'
+import Skeleton from '../ui/Skeleton.jsx'
+import getOS from '../../data/osMap'
 
 export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
   const { addToast, removeToast } = useToast()
@@ -17,7 +19,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
 
   // Plans fetched from API
   const [plans, setPlans] = useState([])
-  const [plansLoading, setPlansLoading] = useState(false)
+  const [plansLoading, setPlansLoading] = useState(true)
   const [selectedPlanId, setSelectedPlanId] = useState(null)
 
   // Support data fetched ONCE after first plan is selected
@@ -75,12 +77,19 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
     warning: '',
     must_pay: '',
   })
+  const [isCalculating, setIsCalculating] = useState(true)
 
   // Reset when dialog reopens
   useEffect(() => {
     if (isOpen) {
       setStep('grid')
-      setSummary({})
+      setSummary({
+        original_price: '',
+        discount: '',
+        coupon: '',
+        warning: '',
+        must_pay: '',
+      })
     }
   }, [isOpen])
 
@@ -156,6 +165,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
   useEffect(() => {
     if (isOpen && selectedPlanId && Number(amount) > 0) {
       const delayFn = setTimeout(() => {
+        setIsCalculating(true)
         axiosInstance
           .post('/server/create/calculate', {
             quantity: Number(amount),
@@ -167,7 +177,10 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
             if (res.data.success) setSummary(res.data.info)
           })
           .catch(() => {})
-      }, 500)
+          .finally(() => {
+            setIsCalculating(false)
+          })
+      }, 300)
       return () => clearTimeout(delayFn)
     }
   }, [isOpen, selectedPlanId, amount, selectedDuration, appliedDiscount])
@@ -179,7 +192,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
 
   const handleBack = () => {
     setStep('grid')
-    setSummary({})
+    setIsCalculating(true)
   }
 
   const handlePay = async () => {
@@ -233,7 +246,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
         const extraConfig = {
           plan_number: selectedPlanObj?.name,
           country: selectedNation,
-          he_dieu_hanh: supportData?.os?.option?.[selectedOs],
+          he_dieu_hanh: getOS(supportData?.os?.option?.[selectedOs]),
           price_vnd: selectedPlanObj?.price,
           note: note,
         }
@@ -272,7 +285,8 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
         value={displayValue}
         options={options}
         onChange={onSelect}
-        className="rounded-lg text-lg"
+        className="rounded-lg text-base sm:text-lg"
+        menuClassName="sm:text-lg text-base"
       />
     )
   }
@@ -727,36 +741,63 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
 
                 <div className="flex flex-col gap-4">
                   {/* Selected Plan info */}
-                  {selectedPlanObj && (
-                    <div className="flex items-start justify-between">
-                      <div className="flex flex-col">
-                        <span className="text-text-muted">{t('buyVps.selectedPlan')}</span>
-                        <span className="text-orange mt-0.5 text-[11px]">
-                          {selectedPlanObj.cpu} - {selectedPlanObj.ram}
-                        </span>
-                      </div>
-                      <span className="font-medium">{selectedPlanObj.name}</span>
+                  <div className="flex items-start justify-between">
+                    <div className="flex flex-col">
+                      <span className="text-text-muted">{t('buyVps.selectedPlan')}</span>
+                      <Skeleton
+                        isLoading={plansLoading}
+                        element={
+                          <span className="text-orange mt-0.5 text-[11px]">
+                            {selectedPlanObj?.cpu} - {selectedPlanObj?.ram}
+                          </span>
+                        }
+                        className="bg-text-muted h-4 w-16"
+                      />
                     </div>
-                  )}
+                    <Skeleton
+                      isLoading={plansLoading}
+                      element={<span className="font-medium">{selectedPlanObj?.name}</span>}
+                      className="bg-text-muted h-4 w-7"
+                    />
+                  </div>
 
                   <div className="flex items-center justify-between">
                     <span className="text-text-muted">{t('buyVps.originalPrice')}</span>
-                    <span className="font-medium">{summary.original_price}</span>
+                    <Skeleton
+                      isLoading={isCalculating}
+                      element={<span className="font-medium">{summary.original_price}</span>}
+                      className="bg-text-muted h-4 w-20"
+                    />
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-text-muted">{t('buyVps.discount')}</span>
-                    <span className="text-green font-medium">
-                      {summary.discount && `-${summary.discount}`}
-                    </span>
+                    <Skeleton
+                      isLoading={isCalculating}
+                      element={<span className="text-green font-medium">-{summary.discount}</span>}
+                      className="bg-text-muted h-4 w-20"
+                    />
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-text-muted">{t('buyVps.coupon')}</span>
-                    <span className="text-green font-medium">{summary.coupon}</span>
+                    <Skeleton
+                      isLoading={isCalculating}
+                      element={<span className="text-green font-medium">{summary.coupon}</span>}
+                      className="bg-text-muted h-4 w-12"
+                    />
                   </div>
                   <div className="bg-border my-1 h-px" />
                   <div className="flex items-center justify-between text-base">
                     <span className="font-bold">{t('buyVps.totalToPay')}</span>
-                    <h1 className="font-bold">{summary.must_pay}</h1>
+                    <Skeleton
+                      isLoading={isCalculating}
+                      element={
+                        <span className="text-blue text-3xl font-bold">
+                          {summary.must_pay.split(' ')[0]}{' '}
+                          <span className="text-lg font-normal">VND</span>
+                        </span>
+                      }
+                      className="bg-text-muted h-[37.6px] w-40"
+                    />
                   </div>
                   {summary.warning && (
                     <div className="text-red mt-1 text-sm">{summary.warning}</div>

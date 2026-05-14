@@ -13,6 +13,7 @@ const en = {
   error: 'Error',
   type: 'Type',
   processing: 'Processing...',
+  current: 'Current',
 
   // UserMenu
   'menu.login': 'Login',
@@ -321,6 +322,11 @@ const en = {
   'upgradePlan.days': 'days',
   'upgradePlan.calculationDetail': 'Calculation Detail',
   'upgradePlan.noUpgradePlans': 'No upgrade plans available',
+  'upgradePlan.errorCalculate': (
+    <span>
+      Error calculating <span className="text-highlight">upgrade</span> cost
+    </span>
+  ),
 
   // Account Page
   'account.title': 'My Account',
@@ -390,6 +396,13 @@ const en = {
   ),
   'history.numTransaction': 'Number of transaction',
   'history.totalPrice': 'Total price',
+
+  'reinstall.errorLoadOS': 'Failed to load OS list',
+  'reinstall.selectOS': 'Please select an OS',
+  'changeIp.note': 'Note',
+  'changeIp.noteContent': 'Each IP can be changed 3 times per month. You have changed',
+  'changeIp.changeTimes': 'times this month',
+  'changeIp.notRemoveData': 'Not remove data',
 }
 
 export default en

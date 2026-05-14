@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react'
-import axiosInstance from '../../lib/axios'
+import { useState, useEffect, useRef } from 'react'
 import { useToast } from '../../context/ToastContext'
+import { useTranslation } from '../../i18n'
+import axiosInstance from '../../lib/axios'
 import Dialog from '../ui/Dialog'
 import DropDown from '../ui/DropDown'
 import Checkbox from '../ui/Checkbox'
-import { useTranslation } from '../../i18n'
+import Skeleton from '../ui/Skeleton'
 
 export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
   const { addToast, removeToast } = useToast()
@@ -62,15 +63,21 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
     warning: '',
     must_pay: '',
   })
+  const [isCalculating, setIsCalculating] = useState(true)
+
+  const fetchedNationsRef = useRef(null)
+  const lastPayloadRef = useRef(null)
 
   // Fetch support data whenever dialog is open and selectedNation changes
   useEffect(() => {
     if (!isOpen) return
+    if (fetchedNationsRef.current === selectedNation) return
 
     const fetchSupportData = async () => {
       try {
         const res = await axiosInstance.get(`/server/proxy/support?nation=${selectedNation}`)
         if (res.data?.success) {
+          fetchedNationsRef.current = selectedNation
           const info = res.data.info
           setSupportData(info)
 
@@ -102,25 +109,36 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
 
   // Calculate effect
   useEffect(() => {
-    if (isOpen && supportData && Number(amount) > 0) {
+    if (isOpen && Number(amount) > 0) {
+      const payload = {
+        plan_id: 0,
+        is_proxy: true,
+        quantity: Number(amount),
+        nation: selectedNation,
+        duration: Number(selectedDuration),
+        coupon: appliedDiscount,
+      }
+      const payloadStr = JSON.stringify(payload)
+
+      if (lastPayloadRef.current === payloadStr) return
+      lastPayloadRef.current = payloadStr
+
       const delayFn = setTimeout(() => {
+        setIsCalculating(true)
         axiosInstance
-          .post('/server/create/calculate', {
-            plan_id: 0,
-            is_proxy: true,
-            quantity: Number(amount),
-            nation: selectedNation,
-            duration: Number(selectedDuration),
-            coupon: appliedDiscount,
-          })
+          .post('/server/create/calculate', payload)
           .then((res) => {
             if (res.data.success) setSummary(res.data.info)
           })
           .catch(() => {})
-      }, 500)
+          .finally(() => {
+            setIsCalculating(false)
+          })
+      }, 300)
+
       return () => clearTimeout(delayFn)
     }
-  }, [isOpen, supportData, amount, selectedNation, selectedDuration, appliedDiscount])
+  }, [isOpen, amount, selectedNation, selectedDuration, appliedDiscount])
 
   const handleNationChange = (e) => {
     setSelectedNation(e.target.value)
@@ -129,7 +147,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
   const handlePay = async () => {
     // Validate inputs
     if (!randomUsername && usernameInput && !/^[a-z0-9]+$/.test(usernameInput)) {
-      addToast(t('buy.invalidUsername'), 'error')
+      addToast(t('buy.invalidUsername'), 'warning')
       return
     }
 
@@ -138,7 +156,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
       passwordInput &&
       !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{10,}$/.test(passwordInput)
     ) {
-      addToast(t('buy.invalidPassword'), 'error')
+      addToast(t('buy.invalidPassword'), 'warning')
       return
     }
 
@@ -420,22 +438,41 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
             <div className="flex flex-col gap-4">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-text-muted">{t('buy.originalPrice')}</span>
-                <span className="font-medium">{summary.original_price}</span>
+                <Skeleton
+                  isLoading={isCalculating}
+                  element={<span className="font-medium">{summary.original_price}</span>}
+                  className="bg-text-muted h-4 w-20"
+                />
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-text-muted">{t('discount')}</span>
-                <span className="font-medium text-green-500">
-                  {summary.discount && `-${summary.discount}`}
-                </span>
+                <Skeleton
+                  isLoading={isCalculating}
+                  element={<span className="font-medium text-green-500">-{summary.discount}</span>}
+                  className="bg-text-muted h-4 w-20"
+                />
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-text-muted">{t('buy.coupon')}</span>
-                <span className="font-medium text-green-500">{summary.coupon}</span>
+                <Skeleton
+                  isLoading={isCalculating}
+                  element={<span className="font-medium text-green-500">{summary.coupon}</span>}
+                  className="bg-text-muted h-4 w-12"
+                />
               </div>
               <div className="bg-border my-1 h-px"></div>
               <div className="flex items-center justify-between text-base">
                 <span className="font-bold">{t('totalToPay')}</span>
-                <h1 className="font-bold">{summary.must_pay}</h1>
+                <Skeleton
+                  isLoading={isCalculating}
+                  element={
+                    <span className="text-blue text-3xl font-bold">
+                      {summary.must_pay.split(' ')[0]}{' '}
+                      <span className="text-lg font-normal">VND</span>
+                    </span>
+                  }
+                  className="bg-text-muted h-[37.6px] w-40"
+                />
               </div>
               {summary.warning && (
                 <div className="mt-1 text-xs text-red-500">{summary.warning}</div>

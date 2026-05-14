@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 
-export default function DropDown({ options, value, onChange, className }) {
+export default function DropDown({ options, value, onChange, className, menuClassName }) {
   const [open, setOpen] = useState(false)
   const containerRef = useRef(null)
 
@@ -47,7 +47,7 @@ export default function DropDown({ options, value, onChange, className }) {
 
       {/* Dropdown Menu */}
       <div
-        className={`scroll-container absolute top-full right-0 z-50 mt-1 w-full rounded-lg border-0 shadow-lg ${open ? 'max-h-60 translate-y-0 scale-100 overflow-y-auto opacity-100' : 'pointer-events-none max-h-0 -translate-y-3 scale-95 overflow-hidden opacity-0'}`}
+        className={`scroll-container absolute top-full right-0 z-50 mt-1 w-full rounded-lg border-0 shadow-lg ${menuClassName || ''} ${open ? 'max-h-60 translate-y-0 scale-100 overflow-y-auto opacity-100' : 'pointer-events-none max-h-0 -translate-y-3 scale-95 overflow-hidden opacity-0'}`}
       >
         {options.map((option) => (
           <div

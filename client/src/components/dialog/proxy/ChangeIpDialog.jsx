@@ -7,18 +7,22 @@ import Dialog from '../../ui/Dialog'
 import DropDown from '../../ui/DropDown'
 import Skeleton from '../../ui/Skeleton'
 
+const createInitialForm = (data) => ({
+  random_password: true,
+  random_remote_port: true,
+  password: data?.password || '',
+  remote_port: data?.remote_port || '',
+
+  range_ip: 'Ngẫu nhiên',
+  isp: 'Ngẫu nhiên',
+  type: data?.type === 'HTTPS Proxy' ? 'proxy_https' : 'proxy_sock_5',
+})
+
 export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess }) {
   const { addToast, removeToast } = useToast()
   const t = useTranslation()
 
-  const [form, setForm] = useState({
-    random_password: true,
-    random_remote_port: true,
-    password: '',
-    remote_port: '',
-    range_ip: 'Ngẫu nhiên',
-    isp: 'Ngẫu nhiên',
-  })
+  const [form, setForm] = useState(() => createInitialForm(currentData))
 
   const updateForm = useCallback((updates) => setForm((prev) => ({ ...prev, ...updates })), [])
 
@@ -69,16 +73,6 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
 
   useEffect(() => {
     if (!isOpen) return
-    setForm((prev) => ({
-      ...prev,
-      type: currentData?.type === 'HTTPS Proxy' ? 'proxy_https' : 'proxy_sock_5',
-      password: currentData?.password || '',
-      remote_port: currentData?.remote_port || '',
-    }))
-  }, [isOpen, currentData?.password, currentData?.remote_port, currentData?.type])
-
-  useEffect(() => {
-    if (!isOpen) return
     fetchSupport()
   }, [isOpen, fetchSupport])
 
@@ -86,22 +80,6 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
     if (val === 'Ngẫu nhiên') fetchSupport()
     else fetchSupport(val)
     updateForm({ isp: val })
-  }
-
-  const handleCancel = () => {
-    onClose()
-    setTimeout(() => {
-      setForm({
-        os_id: 0,
-        random_password: true,
-        random_remote_port: true,
-        password: currentData?.password || '',
-        remote_port: currentData?.remote_port || '',
-        range_ip: 'Ngẫu nhiên',
-        isp: 'Ngẫu nhiên',
-      })
-      setLoadingSupport(true)
-    }, 300)
   }
 
   const handleSubmit = async () => {
@@ -133,7 +111,7 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
             ...res.data.info,
             type: form.type === 'proxy_https' ? 'HTTPS Proxy' : 'SOCKS5 Proxy',
           })
-          handleCancel()
+          onClose()
         } else {
           addToast(t('manager.changeIp') + ' ' + t('manager.failed'), 'error')
         }
@@ -151,7 +129,7 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
   return (
     <Dialog
       isOpen={isOpen}
-      onClose={handleCancel}
+      onClose={onClose}
       title={t('manager.changeIp')}
       className="text-text-primary"
     >
@@ -292,7 +270,7 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
 
         <div className="flex items-center justify-end gap-2 text-base">
           <button
-            onClick={handleCancel}
+            onClick={onClose}
             className="text-text-muted hover:text-text-primary rounded-lg px-4 py-2"
             disabled={submitting}
           >

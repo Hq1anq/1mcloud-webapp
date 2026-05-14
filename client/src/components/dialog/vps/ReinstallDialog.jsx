@@ -1,25 +1,27 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useToast } from '../../context/ToastContext'
-import { useTranslation } from '../../i18n'
-import axiosInstance from '../../lib/axios'
-import Checkbox from '../ui/Checkbox'
-import Dialog from '../ui/Dialog'
-import DropDown from '../ui/DropDown'
-import Skeleton from '../ui/Skeleton'
+import { useToast } from '../../../context/ToastContext'
+import { useTranslation } from '../../../i18n'
+import axiosInstance from '../../../lib/axios'
+import Checkbox from '../../ui/Checkbox'
+import Dialog from '../../ui/Dialog'
+import DropDown from '../../ui/DropDown'
+import Skeleton from '../../ui/Skeleton'
+
+const createInitialForm = (data) => ({
+  install_chrome: false,
+  install_firefox: false,
+  os: null,
+  random_password: true,
+  random_remote_port: true,
+  password: data?.password || '',
+  remote_port: data?.remote_port || '',
+})
 
 export default function ReinstallDialog({ isOpen, onClose, currentData, onSuccess }) {
   const { addToast, removeToast } = useToast()
   const t = useTranslation()
 
-  const [form, setForm] = useState({
-    install_chrome: false,
-    install_firefox: false,
-    os: null,
-    random_password: true,
-    random_remote_port: true,
-    password: '',
-    remote_port: '',
-  })
+  const [form, setForm] = useState(() => createInitialForm(currentData))
 
   const updateForm = (updates) => setForm((prev) => ({ ...prev, ...updates }))
 
@@ -31,15 +33,6 @@ export default function ReinstallDialog({ isOpen, onClose, currentData, onSucces
     if (form.random_password || !form.password) return false
     return !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{10,}$/.test(form.password)
   }, [form.random_password, form.password])
-
-  useEffect(() => {
-    if (!isOpen) return
-    setForm((prev) => ({
-      ...prev,
-      password: currentData?.password || '',
-      remote_port: currentData?.remote_port || '',
-    }))
-  }, [isOpen, currentData?.password, currentData?.remote_port])
 
   useEffect(() => {
     if (!isOpen) return
@@ -66,22 +59,6 @@ export default function ReinstallDialog({ isOpen, onClose, currentData, onSucces
 
     fetchOs()
   }, [isOpen, addToast, t])
-
-  const handleCancel = () => {
-    onClose()
-    setTimeout(() => {
-      setForm({
-        install_chrome: false,
-        install_firefox: false,
-        os: null,
-        random_password: true,
-        random_remote_port: true,
-        password: currentData?.password || '',
-        remote_port: currentData?.remote_port || '',
-      })
-      setLoadingOs(true)
-    }, 300)
-  }
 
   const handleSubmit = async () => {
     if (!form.os) {
@@ -114,7 +91,7 @@ export default function ReinstallDialog({ isOpen, onClose, currentData, onSucces
         if (res.data?.success) {
           addToast(t('manager.reinstall') + ' ' + t('manager.success'), 'success')
           onSuccess({ ...res.data.info, os: osOptions[form.os] })
-          handleCancel()
+          onClose()
         } else {
           addToast(t('manager.reinstall') + ' ' + t('manager.failed'), 'error')
         }
@@ -132,7 +109,7 @@ export default function ReinstallDialog({ isOpen, onClose, currentData, onSucces
   return (
     <Dialog
       isOpen={isOpen}
-      onClose={handleCancel}
+      onClose={onClose}
       title={t('manager.reinstall')}
       className="text-text-primary"
     >
@@ -311,7 +288,7 @@ export default function ReinstallDialog({ isOpen, onClose, currentData, onSucces
 
         <div className="flex justify-end gap-2 pt-2 text-base">
           <button
-            onClick={handleCancel}
+            onClick={onClose}
             className="text-text-muted hover:text-text-primary rounded-lg px-4 py-2"
             disabled={submitting}
           >

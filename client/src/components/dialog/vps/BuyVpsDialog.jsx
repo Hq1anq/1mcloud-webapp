@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react'
-import { useToast } from '../../context/ToastContext'
-import { useTranslation } from '../../i18n'
-import { vpsNations, vpsSpecialOptions, getDefaultPlans } from '../../data/vpsNations.jsx'
-import axiosInstance from '../../lib/axios'
-import Dialog from '../ui/Dialog'
-import DropDown from '../ui/DropDown'
-import Checkbox from '../ui/Checkbox'
-import Skeleton from '../ui/Skeleton.jsx'
-import getOS from '../../data/osMap'
+import { useToast } from '../../../context/ToastContext.jsx'
+import { useTranslation } from '../../../i18n/index.js'
+import { vpsNations, vpsSpecialOptions, getDefaultPlans } from '../../../data/vpsNations.jsx'
+import axiosInstance from '../../../lib/axios.js'
+import Dialog from '../../ui/Dialog.jsx'
+import DropDown from '../../ui/DropDown.jsx'
+import Checkbox from '../../ui/Checkbox.jsx'
+import Skeleton from '../../ui/Skeleton.jsx'
+import getOS from '../../../data/osMap.js'
 
 export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
   const { addToast, removeToast } = useToast()

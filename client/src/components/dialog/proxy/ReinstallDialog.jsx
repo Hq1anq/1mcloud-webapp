@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useToast } from '../../../context/ToastContext'
 import { useTranslation } from '../../../i18n'
 import axiosInstance from '../../../lib/axios'
@@ -6,18 +6,23 @@ import Checkbox from '../../ui/Checkbox'
 import Dialog from '../../ui/Dialog'
 import DropDown from '../../ui/DropDown'
 
+const createInitialForm = (data) => ({
+  random_remote_port: true,
+  random_username: true,
+  random_password: true,
+
+  remote_port: data?.remote_port || '',
+  username: data?.username || '',
+  password: data?.password || '',
+
+  type: data?.type === 'HTTPS Proxy' ? 'proxy_https' : 'proxy_sock_5',
+})
+
 export default function ReinstallDialog({ isOpen, onClose, currentData, onSuccess }) {
   const { addToast, removeToast } = useToast()
   const t = useTranslation()
 
-  const [form, setForm] = useState({
-    random_remote_port: true,
-    random_username: true,
-    random_password: true,
-    remote_port: '',
-    username: '',
-    password: '',
-  })
+  const [form, setForm] = useState(() => createInitialForm(currentData))
 
   const updateForm = (updates) => setForm((prev) => ({ ...prev, ...updates }))
   const [submitting, setSubmitting] = useState(false)
@@ -26,32 +31,6 @@ export default function ReinstallDialog({ isOpen, onClose, currentData, onSucces
     if (form.random_password || !form.password) return false
     return !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{10,}$/.test(form.password)
   }, [form.random_password, form.password])
-
-  useEffect(() => {
-    if (!isOpen) return
-    setForm((prev) => ({
-      ...prev,
-      remote_port: currentData?.remote_port || '',
-      username: currentData?.username || '',
-      password: currentData?.password || '',
-      type: currentData?.type === 'HTTPS Proxy' ? 'proxy_https' : 'proxy_sock_5',
-    }))
-  }, [isOpen, currentData?.remote_port, currentData?.username, currentData?.password])
-
-  const handleCancel = () => {
-    onClose()
-    setTimeout(() => {
-      setForm({
-        random_remote_port: true,
-        random_username: true,
-        random_password: true,
-        remote_port: currentData?.remote_port || '',
-        username: currentData?.username || '',
-        password: currentData?.password || '',
-        type: currentData?.type === 'HTTPS Proxy' ? 'proxy_https' : 'proxy_sock_5',
-      })
-    }, 300)
-  }
 
   const handleSubmit = async () => {
     if (passwordInvalid) {
@@ -82,7 +61,7 @@ export default function ReinstallDialog({ isOpen, onClose, currentData, onSucces
             ...res.data.info,
             type: form.type === 'proxy_https' ? 'HTTPS Proxy' : 'SOCKS5 Proxy',
           })
-          handleCancel()
+          onClose()
         } else {
           addToast(t('manager.reinstall') + ' ' + t('manager.failed'), 'error')
         }
@@ -100,7 +79,7 @@ export default function ReinstallDialog({ isOpen, onClose, currentData, onSucces
   return (
     <Dialog
       isOpen={isOpen}
-      onClose={handleCancel}
+      onClose={onClose}
       title={t('manager.reinstall')}
       className="text-text-primary"
     >
@@ -198,7 +177,7 @@ export default function ReinstallDialog({ isOpen, onClose, currentData, onSucces
           </div>
           <div className="ml-auto flex items-center justify-center gap-2 text-base">
             <button
-              onClick={handleCancel}
+              onClick={onClose}
               className="text-text-muted hover:text-text-primary rounded-lg px-4 py-2"
               disabled={submitting}
             >

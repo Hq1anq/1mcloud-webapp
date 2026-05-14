@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
-import { useToast } from '../../context/ToastContext'
-import { useTranslation } from '../../i18n'
-import axiosInstance from '../../lib/axios'
-import Dialog from '../ui/Dialog'
-import DropDown from '../ui/DropDown'
-import Checkbox from '../ui/Checkbox'
-import Skeleton from '../ui/Skeleton'
+import { useToast } from '../../../context/ToastContext'
+import { useTranslation } from '../../../i18n'
+import axiosInstance from '../../../lib/axios'
+import Dialog from '../../ui/Dialog'
+import DropDown from '../../ui/DropDown'
+import Checkbox from '../../ui/Checkbox'
+import Skeleton from '../../ui/Skeleton'
 
 export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
   const { addToast, removeToast } = useToast()

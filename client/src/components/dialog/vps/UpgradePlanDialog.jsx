@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
-import { useToast } from '../../context/ToastContext'
-import { useTranslation } from '../../i18n'
-import axiosInstance from '../../lib/axios'
-import Dialog from '../ui/Dialog'
-import Skeleton from '../ui/Skeleton'
+import { useToast } from '../../../context/ToastContext'
+import { useTranslation } from '../../../i18n'
+import axiosInstance from '../../../lib/axios'
+import Dialog from '../../ui/Dialog'
+import Skeleton from '../../ui/Skeleton'
 
 export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
   const { addToast, removeToast } = useToast()
@@ -23,18 +23,6 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
   const [calculationError, setCalculationError] = useState(false)
   const [isCalculating, setIsCalculating] = useState(true)
   const [processing, setProcessing] = useState(false)
-
-  const handleClose = () => {
-    onClose()
-    // Reset state after dialog animation finishes
-    setTimeout(() => {
-      setPlans(null)
-      setSelectedPlanId(null)
-      setIsCalculating(true)
-      setCalculationError(false)
-      setProcessing(false)
-    }, 300)
-  }
 
   const handleSelectPlan = (id) => {
     if (id === selectedPlanId) return
@@ -100,7 +88,7 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
         if (res.data?.success) {
           addToast(t('vpsManager.upgrade') + ' ' + t('manager.success'), 'success')
           onSuccess(res.data)
-          handleClose()
+          onClose()
         } else {
           addToast(
             res.data?.message || t('vpsManager.upgrade') + ' ' + t('manager.failed'),
@@ -121,7 +109,7 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
   return (
     <Dialog
       isOpen={isOpen}
-      onClose={handleClose}
+      onClose={onClose}
       className="text-text-primary w-full max-w-6xl overflow-hidden! p-0!"
     >
       <div className="flex h-[85vh] flex-col">
@@ -482,7 +470,7 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
             {/* Actions */}
             <div className="border-border mt-6 flex justify-end gap-3 border-t pt-5">
               <button
-                onClick={handleClose}
+                onClick={onClose}
                 className="text-text-muted hover:bg-surface hover:text-text-primary rounded-lg px-4 py-2 text-base transition-colors"
               >
                 {t('cancel')}

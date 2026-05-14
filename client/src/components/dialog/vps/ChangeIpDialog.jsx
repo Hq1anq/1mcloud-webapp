@@ -1,29 +1,31 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useToast } from '../../context/ToastContext'
-import { useTranslation } from '../../i18n'
-import axiosInstance from '../../lib/axios'
-import Checkbox from '../ui/Checkbox'
-import Dialog from '../ui/Dialog'
-import DropDown from '../ui/DropDown'
-import Skeleton from '../ui/Skeleton'
-import ToggleButton from '../ui/ToggleButton'
+import { useToast } from '../../../context/ToastContext'
+import { useTranslation } from '../../../i18n'
+import axiosInstance from '../../../lib/axios'
+import Checkbox from '../../ui/Checkbox'
+import Dialog from '../../ui/Dialog'
+import DropDown from '../../ui/DropDown'
+import Skeleton from '../../ui/Skeleton'
+import ToggleButton from '../../ui/ToggleButton'
+
+const createInitialForm = (data) => ({
+  install_chrome: false,
+  install_firefox: false,
+  os_id: null,
+  random_password: true,
+  random_remote_port: true,
+  password: data?.password || '',
+  remote_port: data?.remote_port || '',
+  range_ip: 'Ngẫu nhiên',
+  isp: 'Ngẫu nhiên',
+  not_remove_data: false,
+})
 
 export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess }) {
   const { addToast, removeToast } = useToast()
   const t = useTranslation()
 
-  const [form, setForm] = useState({
-    install_chrome: false,
-    install_firefox: false,
-    os_id: null,
-    random_password: true,
-    random_remote_port: true,
-    password: '',
-    remote_port: '',
-    range_ip: 'Ngẫu nhiên',
-    isp: 'Ngẫu nhiên',
-    not_remove_data: false,
-  })
+  const [form, setForm] = useState(() => createInitialForm(currentData))
 
   const updateForm = useCallback((updates) => setForm((prev) => ({ ...prev, ...updates })), [])
 
@@ -76,15 +78,6 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
 
   useEffect(() => {
     if (!isOpen) return
-    setForm((prev) => ({
-      ...prev,
-      password: currentData?.password || '',
-      remote_port: currentData?.remote_port || '',
-    }))
-  }, [isOpen, currentData?.password, currentData?.remote_port])
-
-  useEffect(() => {
-    if (!isOpen) return
     fetchSupport()
   }, [isOpen, fetchSupport])
 
@@ -92,25 +85,6 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
     if (val === 'Ngẫu nhiên') fetchSupport()
     else fetchSupport(val)
     updateForm({ isp: val })
-  }
-
-  const handleCancel = () => {
-    onClose()
-    setTimeout(() => {
-      setForm({
-        install_chrome: false,
-        install_firefox: false,
-        os_id: null,
-        random_password: true,
-        random_remote_port: true,
-        password: currentData?.password || '',
-        remote_port: currentData?.remote_port || '',
-        range_ip: 'Ngẫu nhiên',
-        isp: 'Ngẫu nhiên',
-        not_remove_data: false,
-      })
-      setLoadingSupport(true)
-    }, 300)
   }
 
   const handleSubmit = async () => {
@@ -147,7 +121,7 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
             ...res.data.info,
             os: supportData?.support_os?.find((os) => os.id === form.os_id)?.display_name,
           })
-          handleCancel()
+          onClose()
         } else {
           addToast(t('manager.changeIp') + ' ' + t('manager.failed'), 'error')
         }
@@ -165,7 +139,7 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
   return (
     <Dialog
       isOpen={isOpen}
-      onClose={handleCancel}
+      onClose={onClose}
       title={t('manager.changeIp')}
       className="text-text-primary"
     >
@@ -422,7 +396,7 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
           </label>
           <div className="ml-auto flex items-center justify-center gap-2 text-base">
             <button
-              onClick={handleCancel}
+              onClick={onClose}
               className="text-text-muted hover:text-text-primary rounded-lg px-4 py-2"
               disabled={submitting}
             >

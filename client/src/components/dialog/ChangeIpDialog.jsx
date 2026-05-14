@@ -18,8 +18,8 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
     os_id: null,
     random_password: true,
     random_remote_port: true,
-    password: currentData?.password || '',
-    remote_port: currentData?.remote_port || '',
+    password: '',
+    remote_port: '',
     range_ip: 'Ngẫu nhiên',
     isp: 'Ngẫu nhiên',
     not_remove_data: false,
@@ -76,6 +76,15 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
 
   useEffect(() => {
     if (!isOpen) return
+    setForm((prev) => ({
+      ...prev,
+      password: currentData?.password || '',
+      remote_port: currentData?.remote_port || '',
+    }))
+  }, [isOpen, currentData?.password, currentData?.remote_port])
+
+  useEffect(() => {
+    if (!isOpen) return
     fetchSupport()
   }, [isOpen, fetchSupport])
 
@@ -88,6 +97,18 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
   const handleCancel = () => {
     onClose()
     setTimeout(() => {
+      setForm({
+        install_chrome: false,
+        install_firefox: false,
+        os_id: null,
+        random_password: true,
+        random_remote_port: true,
+        password: currentData?.password || '',
+        remote_port: currentData?.remote_port || '',
+        range_ip: 'Ngẫu nhiên',
+        isp: 'Ngẫu nhiên',
+        not_remove_data: false,
+      })
       setLoadingSupport(true)
     }, 300)
   }
@@ -341,7 +362,7 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
               <span className="font-medium whitespace-nowrap">{t('buyVps.randomPassword')}</span>
             </div>
             {!form.random_password && (
-              <div className="flex flex-col gap-1 text-lg">
+              <div className="flex flex-col gap-1">
                 <input
                   type="text"
                   className={`${
@@ -366,20 +387,18 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
               <span className="font-medium">{t('buyVps.randomPort')}</span>
             </div>
             {!form.random_remote_port && (
-              <div className="flex flex-col gap-1 text-lg">
-                <input
-                  type="number"
-                  value={form.remote_port}
-                  onChange={(e) => updateForm({ remote_port: e.target.value })}
-                />
-              </div>
+              <input
+                type="number"
+                value={form.remote_port}
+                onChange={(e) => updateForm({ remote_port: e.target.value })}
+              />
             )}
           </label>
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-y-4">
           <label
-            className={`flex cursor-pointer items-center gap-2 text-sm hover:brightness-120 ${form.not_remove_data ? 'text-highlight' : 'text-text-muted'}`}
+            className={`flex cursor-pointer items-center gap-2 hover:brightness-120 ${form.not_remove_data ? 'text-highlight' : 'text-text-muted'}`}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"

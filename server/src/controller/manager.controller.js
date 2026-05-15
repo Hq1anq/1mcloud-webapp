@@ -255,14 +255,16 @@ export async function changeIp(req, res) {
   const {
     ip,
     type,
+    random_remote_port,
+    random_username,
+    random_password,
+    remote_port,
+    username,
+    password,
     isProxy,
     install_chrome,
     install_firefox,
     os_id,
-    random_password,
-    random_remote_port,
-    password,
-    remote_port,
     range_ip,
     isp,
     not_remove_data,
@@ -276,10 +278,14 @@ export async function changeIp(req, res) {
       ip: ip,
       os_id: 0,
       proxy_type: type,
-      range_ip: "Ngẫu nhiên",
-      random_password: true,
-      random_remote_port: true,
-      isp: "Ngẫu nhiên",
+      random_remote_port: random_remote_port,
+      random_username: random_username,
+      random_password: random_password,
+      remote_port: random_remote_port ? undefined : remote_port,
+      username: random_username ? undefined : username,
+      password: random_password ? undefined : password,
+      range_ip: range_ip || "Ngẫu nhiên",
+      isp: isp || "Ngẫu nhiên",
     };
   } else {
     data = {
@@ -287,12 +293,14 @@ export async function changeIp(req, res) {
       os_id: os_id,
       install_chrome: install_chrome,
       install_firefox: install_firefox,
-      random_password: random_password,
       random_remote_port: random_remote_port,
+      random_username: random_username,
+      random_password: random_password,
+      remote_port: random_remote_port ? undefined : remote_port,
+      random_username: random_username ? undefined : username,
       password: random_password ? undefined : password,
-      remote_port: random_password ? undefined : remote_port,
-      range_ip: range_ip,
-      isp: isp,
+      range_ip: range_ip || "Ngẫu nhiên",
+      isp: isp || "Ngẫu nhiên",
       not_remove_data: not_remove_data,
     };
   }
@@ -336,16 +344,17 @@ export async function changeIp(req, res) {
 export async function reinstall(req, res) {
   const {
     sid,
-    custom_info,
     type,
     isProxy,
     install_chrome,
     install_firefox,
     os,
-    random_password,
     random_remote_port,
-    password,
+    random_username,
+    random_password,
     remote_port,
+    username,
+    password,
   } = req.body;
   const url = `${process.env.BASE_URL}/server/reinstall`;
   const headers = { ...HEADERS, authorization: `Bearer ${req.token}` };
@@ -353,43 +362,13 @@ export async function reinstall(req, res) {
   let data = {};
 
   if (isProxy) {
-    let range_ip = "",
-      proxy_remote_port = "",
-      username = "",
-      proxy_password = "";
-    let proxy_random_remote_port = "on",
-      random_username = "on",
-      proxy_random_password = "on";
-    if (custom_info) {
-      const reinstallInfo = custom_info.split(":");
-      if (reinstallInfo.length === 4) {
-        [range_ip, proxy_remote_port, username, proxy_password] = reinstallInfo;
-        proxy_random_remote_port = "";
-        random_username = "";
-        proxy_random_password = "";
-      } else if (reinstallInfo.length === 3) {
-        [proxy_remote_port, username, proxy_password] = reinstallInfo;
-        proxy_random_remote_port = "";
-        random_username = "";
-        proxy_random_password = "";
-      } else if (reinstallInfo.length === 2) {
-        [username, proxy_password] = reinstallInfo;
-        random_username = "";
-        proxy_random_password = "";
-      } else {
-        return res.status(400).json({
-          error:
-            "Invalid custom_info format. Expected format: remote_port:username:password or range_ip:remote_port:username:password or username:password",
-        });
-      }
-    }
     data = {
-      random_remote_port: proxy_random_remote_port,
-      remote_port: proxy_remote_port,
-      random_username,
-      username,
-      random_password: proxy_random_password,
-      password: proxy_password,
+      random_remote_port: random_remote_port ? "on" : "",
+      random_username: random_username ? "on" : "",
+      random_password: random_password ? "on" : "",
+      remote_port: random_remote_port ? "" : remote_port,
+      password: random_password ? "" : password,
+      username: random_username ? "" : username,
       type,
       sid,
     };
@@ -398,10 +377,12 @@ export async function reinstall(req, res) {
       install_chrome,
       install_firefox,
       os: Number(os),
-      random_password,
-      random_remote_port,
-      password,
-      remote_port,
+      random_remote_port: random_remote_port ? "on" : "",
+      random_username: random_username ? "on" : "",
+      random_password: random_password ? "on" : "",
+      remote_port: random_remote_port ? "" : remote_port,
+      password: random_password ? "" : password,
+      username: random_username ? "" : username,
       sid: String(sid),
     };
   }

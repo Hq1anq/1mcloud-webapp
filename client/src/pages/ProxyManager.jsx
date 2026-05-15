@@ -2,6 +2,8 @@ import DropDown from '../components/ui/DropDown'
 import Table from '../components/ui/Table'
 import ControlButton from '../components/ui/ControlButton'
 import StatusMetricsMeter from '../components/ui/StatusMetricsMeter'
+import ChangeIpDialog from '../components/dialog/proxy/ChangeIpDialog'
+import ReinstallDialog from '../components/dialog/proxy/ReinstallDialog'
 import axiosInstance from '../lib/axios'
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useToast } from '../context/ToastContext'
@@ -43,6 +45,16 @@ export default function ProxyManager({ onBuySuccessRef }) {
   const loadFromDb = useProxyStore((s) => s.loadFromDb)
   const fetchData = useProxyStore((s) => s.fetchData)
   const handleBuySuccessStore = useProxyStore((s) => s.handleBuySuccess)
+
+  const [changeIpState, setChangeIpState] = useState({
+    isOpen: false,
+    data: { sid: '', ip: '', remote_port: '', password: '', type: '', note: '' },
+  })
+
+  const [reinstallState, setReinstallState] = useState({
+    isOpen: false,
+    data: { sid: '', ip: '', remote_port: '', username: '', password: '', type: '', note: '' },
+  })
 
   // Shared selection & processing logic
   const {
@@ -156,7 +168,14 @@ export default function ProxyManager({ onBuySuccessRef }) {
       rows,
       async (row) => {
         const ip = row.ip_port?.split(':')[0]
-        const res = await axiosInstance.post('/server/change-ip', { ip, type, isProxy: true })
+        const res = await axiosInstance.post('/server/change-ip', {
+          ip,
+          type,
+          random_remote_port: 'on',
+          random_username: 'on',
+          random_password: 'on',
+          isProxy: true,
+        })
         if (res.data?.success) {
           const info = res.data.info
           const updates = {
@@ -277,9 +296,43 @@ export default function ProxyManager({ onBuySuccessRef }) {
     await processSequential(
       rows,
       async (row) => {
+        let range_ip = '',
+          remote_port = '',
+          username = '',
+          password = ''
+        let random_remote_port = 'on',
+          random_username = 'on',
+          random_password = 'on'
+        if (reinstallInput) {
+          const reinstallInfo = reinstallInput.split(':')
+          if (reinstallInfo.length === 4) {
+            ;[range_ip, remote_port, username, password] = reinstallInfo
+            random_remote_port = ''
+            random_username = ''
+            random_password = ''
+          } else if (reinstallInfo.length === 3) {
+            ;[remote_port, username, password] = reinstallInfo
+            random_remote_port = ''
+            random_username = ''
+            random_password = ''
+          } else if (reinstallInfo.length === 2) {
+            ;[username, password] = reinstallInfo
+            random_username = ''
+            random_password = ''
+          } else {
+            addToast(t('manager.invalidReinstall'), 'warning')
+            return
+          }
+        }
+
         const res = await axiosInstance.post('/server/reinstall', {
           sid: row.sid.toString(),
-          custom_info: reinstallInput || undefined,
+          random_remote_port,
+          random_username,
+          random_password,
+          remote_port,
+          username,
+          password,
           type,
           isProxy: true,
         })
@@ -1172,61 +1225,32 @@ export default function ProxyManager({ onBuySuccessRef }) {
                     )
                 : undefined
             }
+            onReinstall={async () => {
+              setReinstallState({
+                isOpen: true,
+                data: {
+                  sid: row.sid,
+                  ip: row.ip_port.split(':')[0],
+                  remote_port: row.ip_port.split(':')[1],
+                  username: row.user_pass ? row.user_pass.split(':')[0] : '',
+                  password: row.user_pass ? row.user_pass.split(':')[1] : '',
+                  type: row.type,
+                  note: row.note,
+                },
+              })
+            }}
             onChangeIp={async () => {
-              addToast(t('manager.comingSoon'), 'info')
-              return
-              const type = changeIpType === 'HTTPS' ? 'proxy_https' : 'proxy_sock_5'
-              const ip = row.ip_port?.split(':')[0]
-
-              const loadingId = addToast(t('manager.changeIp').toUpperCase() + '...', 'loading')
-              setIsProcessing(true)
-
-              try {
-                const res = await axiosInstance.post('/server/change-ip', {
-                  ip,
-                  type,
-                  isProxy: true,
-                })
-                if (res.data?.success) {
-                  const [newIp, port, username, password] = res.data.info
-                  const updates = {
-                    ip_port: `${newIp}:${port}`,
-                    user_pass: `${username}:${password}`,
-                    type: changeIpType + ' Proxy',
-                    status: 'Running',
-                  }
-                  updateRowBySid(row.sid, () => updates)
-                  setRowClassMap((prev) => ({ ...prev, [row.sid]: 'bg-success-cell' }))
-                  syncToDb([{ ...row, ...updates }])
-                  addToast(
-                    <>
-                      {t('manager.changeIp').toUpperCase()} {t('manager.completed')} <br />
-                      <span className="text-text-toast-success">1 {t('manager.success')}</span>
-                    </>,
-                    'success'
-                  )
-                } else {
-                  setRowClassMap((prev) => ({ ...prev, [row.sid]: 'bg-error-cell' }))
-                  addToast(
-                    <>
-                      {t('manager.changeIp').toUpperCase()} {t('manager.completed')} <br />
-                      <span className="text-text-toast-error">1 {t('manager.failed')}</span>
-                    </>,
-                    'error'
-                  )
-                }
-              } catch {
-                setRowClassMap((prev) => ({ ...prev, [row.sid]: 'bg-error-cell' }))
-                addToast(
-                  <>
-                    {t('manager.changeIp').toUpperCase()} {t('manager.completed')} <br />
-                    <span className="text-text-toast-error">1 {t('manager.failed')}</span>
-                  </>,
-                  'error'
-                )
-              }
-              removeToast(loadingId)
-              setIsProcessing(false)
+              setChangeIpState({
+                isOpen: true,
+                data: {
+                  sid: row.sid,
+                  ip: row.ip_port.split(':')[0],
+                  remote_port: row.ip_port.split(':')[1],
+                  password: row.user_pass ? row.user_pass.split(':')[1] : '',
+                  type: row.type,
+                  note: row.note,
+                },
+              })
             }}
           />
         )}
@@ -1271,6 +1295,66 @@ export default function ProxyManager({ onBuySuccessRef }) {
           </div>
         }
         onSelectionChange={onSelectionChange}
+      />
+
+      <ReinstallDialog
+        isOpen={reinstallState.isOpen}
+        onClose={() =>
+          setReinstallState({
+            isOpen: false,
+            data: {
+              sid: '',
+              ip: '',
+              remote_port: '',
+              username: '',
+              password: '',
+              type: '',
+              note: '',
+            },
+          })
+        }
+        currentData={reinstallState.data}
+        onSuccess={(responseData) => {
+          const changes = {
+            ip_port: `${responseData.ip}:${responseData.port}`,
+            user_pass: `${responseData.username}:${responseData.password}`,
+            type: responseData.type,
+            status: 'Running',
+          }
+          updateRowBySid(reinstallState.data.sid, () => changes)
+          setRowClassMap({ [reinstallState.data.sid]: 'bg-success-cell' })
+          const row = data.find((r) => r.sid === reinstallState.data.sid)
+          syncToDb([{ ...row, ...changes }])
+          safeCopy(
+            `${responseData.ip}:${responseData.port}:${responseData.username}:${responseData.password}`
+          )
+        }}
+      />
+
+      <ChangeIpDialog
+        isOpen={changeIpState.isOpen}
+        onClose={() =>
+          setChangeIpState({
+            isOpen: false,
+            data: { sid: '', ip: '', remote_port: '', password: '', type: '', note: '' },
+          })
+        }
+        currentData={changeIpState.data}
+        onSuccess={(responseData) => {
+          const changes = {
+            ip_port: `${responseData.ip}:${responseData.port}`,
+            user_pass: `${responseData.username}:${responseData.password}`,
+            type: responseData.type,
+            status: 'Running',
+          }
+          updateRowBySid(changeIpState.data.sid, () => changes)
+          setRowClassMap({ [changeIpState.data.sid]: 'bg-success-cell' })
+          const row = data.find((r) => r.sid === changeIpState.data.sid)
+          syncToDb([{ ...row, ...changes }])
+          safeCopy(
+            `${responseData.ip}:${responseData.port}:${responseData.username}:${responseData.password}`
+          )
+        }}
       />
     </>
   )

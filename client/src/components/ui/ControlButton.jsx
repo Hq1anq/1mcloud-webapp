@@ -135,6 +135,7 @@ export default function ControlButton({
           onAction: onChangeIp,
         },
       ],
+      direction: [-1, 0],
     })
   }
 

@@ -53,7 +53,7 @@ export function PopConfirmProvider({ children }) {
         <AnchorPopup
           isOpen={active.isOpen}
           anchorRect={active.anchorRect}
-          direction={active.config.direction || [-1, 0]}
+          direction={active.config.direction}
           zIndex={12}
           onClose={hide}
           bgClassName="bg-terminal"

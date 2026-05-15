@@ -898,6 +898,7 @@ export default function VpsManager({ onBuySuccessRef }) {
                 data: {
                   sid: row.sid,
                   ip: row.ip_port.split(':')[0],
+                  remote_port: row.ip_port.split(':')[1],
                   password: row.user_pass ? row.user_pass.split('/')[1] : '',
                   os: row.he_dieu_hanh,
                   note: row.note,
@@ -978,8 +979,9 @@ export default function VpsManager({ onBuySuccessRef }) {
               calculatedPrice = (expense / (expense + discount)) * toPlanPrice
 
               const price_vnd = Math.round(calculatedPrice).toLocaleString('en-US')
-              const changes = { plan_number, price_vnd }
+              const changes = { plan_number, price_vnd, status: 'Running' }
               updateRowBySid(upgradeDialogState.sid, () => changes)
+              setRowClassMap({ [upgradeDialogState.sid]: 'bg-success-cell' })
               const row = data.find((r) => r.sid === upgradeDialogState.sid)
               if (row) syncToDb([{ ...row, ...changes }])
             } else {
@@ -1006,8 +1008,10 @@ export default function VpsManager({ onBuySuccessRef }) {
             ip_port: `${responseData.ip}:${responseData.port}`,
             user_pass: `${responseData.username}/${responseData.password}`,
             he_dieu_hanh: getOS(responseData.os),
+            status: 'Running',
           }
           updateRowBySid(reinstallState.data.sid, () => changes)
+          setRowClassMap({ [reinstallState.data.sid]: 'bg-success-cell' })
           const row = data.find((r) => r.sid === reinstallState.data.sid)
           syncToDb([{ ...row, ...changes }])
           safeCopy(
@@ -1021,7 +1025,7 @@ export default function VpsManager({ onBuySuccessRef }) {
         onClose={() =>
           setChangeIpState({
             isOpen: false,
-            data: { sid: '', ip: '', password: '', os: '', note: '' },
+            data: { sid: '', ip: '', remote_port: '', password: '', os: '', note: '' },
           })
         }
         currentData={changeIpState.data}
@@ -1030,8 +1034,10 @@ export default function VpsManager({ onBuySuccessRef }) {
             ip_port: `${responseData.ip}:${responseData.port}`,
             user_pass: `${responseData.username}/${responseData.password}`,
             he_dieu_hanh: getOS(responseData.os),
+            status: 'Running',
           }
           updateRowBySid(changeIpState.data.sid, () => changes)
+          setRowClassMap({ [changeIpState.data.sid]: 'bg-success-cell' })
           const row = data.find((r) => r.sid === changeIpState.data.sid)
           syncToDb([{ ...row, ...changes }])
           safeCopy(

@@ -130,7 +130,12 @@ export default function ReinstallDialog({ isOpen, onClose, currentData, onSucces
   }
 
   return (
-    <Dialog isOpen={isOpen} onClose={handleCancel} title="Reinstall" className="text-text-primary">
+    <Dialog
+      isOpen={isOpen}
+      onClose={handleCancel}
+      title={t('manager.reinstall')}
+      className="text-text-primary"
+    >
       <div className="max-sm:overflow-y-auto">
         <span className="text-base font-medium">{t('current')}</span>
         <div className="flex flex-wrap gap-4">
@@ -317,7 +322,7 @@ export default function ReinstallDialog({ isOpen, onClose, currentData, onSucces
             className="text-text-secondary group enabled:bg-blue flex items-center gap-2 rounded-lg px-6 py-2 font-semibold hover:brightness-90 disabled:bg-gray-500"
             disabled={submitting || loadingOs}
           >
-            {submitting ? 'Processing...' : 'Reinstall'}
+            {submitting ? t('processing') : t('manager.reinstall')}
           </button>
         </div>
       </div>

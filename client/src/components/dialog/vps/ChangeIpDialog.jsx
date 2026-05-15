@@ -32,6 +32,7 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
   const [supportData, setSupportData] = useState({})
   const [loadingSupport, setLoadingSupport] = useState(false)
   const [loadingNoIsp, setLoadingNoIsp] = useState(false)
+  const [loadSupportError, setLoadSupportError] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
   const passwordInvalid = useMemo(() => {
@@ -51,6 +52,7 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
         } else setLoadingNoIsp(false)
         const res = await axiosInstance.get(url)
         if (!res.data?.success) {
+          setLoadSupportError(true)
           return
         }
         const data = res.data.info
@@ -69,6 +71,8 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
             range_ip: data.range_ip?.[0] || 'Ngẫu nhiên',
             isp: data.isp?.[0] || 'Ngẫu nhiên',
           })
+      } catch {
+        setLoadSupportError(true)
       } finally {
         setLoadingSupport(false)
       }
@@ -78,6 +82,7 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
 
   useEffect(() => {
     if (!isOpen) return
+    setLoadSupportError(false)
     fetchSupport()
   }, [isOpen, fetchSupport])
 
@@ -280,6 +285,7 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
         <span className="mt-4 mb-2 block text-base font-medium">{t('buyVps.os')}</span>
         <Skeleton
           isLoading={loadingSupport}
+          isError={loadSupportError}
           element={
             <DropDown
               value={supportData?.support_os?.find((os) => os.id === form.os_id)?.display_name}
@@ -300,6 +306,7 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
             <span className="mt-2 text-base font-medium">{t('buy.rangeIp')}</span>
             <Skeleton
               isLoading={loadingSupport}
+              isError={loadSupportError}
               element={
                 <DropDown
                   value={form.range_ip}
@@ -317,6 +324,7 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
             <span className="mt-2 text-base font-medium">{t('buy.provider')}</span>
             <Skeleton
               isLoading={loadingSupport && !loadingNoIsp}
+              isError={loadSupportError}
               element={
                 <DropDown
                   value={form.isp}

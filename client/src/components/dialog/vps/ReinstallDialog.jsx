@@ -27,6 +27,7 @@ export default function ReinstallDialog({ isOpen, onClose, currentData, onSucces
 
   const [osOptions, setOsOptions] = useState({})
   const [loadingOs, setLoadingOs] = useState(true)
+  const [loadOsError, setLoadOsError] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
   const passwordInvalid = useMemo(() => {
@@ -41,6 +42,7 @@ export default function ReinstallDialog({ isOpen, onClose, currentData, onSucces
       try {
         const res = await axiosInstance.get('/vps/support/os')
         if (!res.data?.success) {
+          setLoadOsError(true)
           return addToast(t('reinstall.errorLoadOS'), 'error')
         }
         const osMap = res?.data?.info.os || {}
@@ -51,12 +53,14 @@ export default function ReinstallDialog({ isOpen, onClose, currentData, onSucces
             os: firstKey,
           })
       } catch {
+        setLoadOsError(true)
         addToast(t('reinstall.errorLoadOS'), 'error')
       } finally {
         setLoadingOs(false)
       }
     }
 
+    setLoadOsError(false)
     fetchOs()
   }, [isOpen, addToast, t])
 
@@ -227,6 +231,7 @@ export default function ReinstallDialog({ isOpen, onClose, currentData, onSucces
         <span className="mt-2 text-base font-medium">{t('buyVps.os')}</span>
         <Skeleton
           isLoading={loadingOs}
+          isError={loadOsError}
           element={
             <DropDown
               value={osOptions?.[form.os] || ''}

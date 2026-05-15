@@ -129,6 +129,7 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
             <div className="bg-thead border-border flex flex-wrap items-center gap-5 rounded-lg border p-4">
               <Skeleton
                 isLoading={isCalculating}
+                isError={calculationError}
                 element={
                   <div className="flex items-center gap-2">
                     <span className="bg-surface border-border rounded border px-2 py-1 text-base font-semibold">
@@ -157,6 +158,7 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
               </svg>
               <Skeleton
                 isLoading={isCalculating}
+                isError={calculationError}
                 element={
                   <div className="flex items-center gap-2">
                     <span className="text-blue bg-blue/10 border-blue/20 rounded border px-2 py-1 text-base font-semibold">
@@ -314,6 +316,7 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
                   <span className="text-text-muted">{t('upgradePlan.currentPlan')}</span>
                   <Skeleton
                     isLoading={isCalculating}
+                    isError={calculationError}
                     element={
                       <span className="decoration-text-muted line-through">
                         {calculation.from_plan.split(' : ').slice(1).join(' : ')}
@@ -326,6 +329,7 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
                   <span className="text-text-muted">{t('upgradePlan.targetPlan')}</span>
                   <Skeleton
                     isLoading={isCalculating}
+                    isError={calculationError}
                     element={
                       <span className="font-semibold">
                         {calculation.to_plan.split(' : ').slice(1).join(' : ')}
@@ -338,6 +342,7 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
                   <span className="text-text-muted">{t('upgradePlan.daysRemaining')}</span>
                   <Skeleton
                     isLoading={isCalculating}
+                    isError={calculationError}
                     element={
                       <span className="text-purple">
                         {calculation.days_left + ' ' + t('upgradePlan.days')}
@@ -350,6 +355,7 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
                   <span>{t('discount')}</span>
                   <Skeleton
                     isLoading={isCalculating}
+                    isError={calculationError}
                     element={<span>-{calculation.discount.replace('.0', '')}</span>}
                     className="bg-text-muted h-4 w-18"
                   />
@@ -361,6 +367,7 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
                   <span className="text-text-muted text-base">{t('totalToPay')}</span>
                   <Skeleton
                     isLoading={isCalculating}
+                    isError={calculationError}
                     element={
                       <span className="text-blue text-3xl font-bold">
                         {calculation.expense.split(' ')[0].replace('.0', '')}{' '}
@@ -394,6 +401,7 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
                 </span>
                 <Skeleton
                   isLoading={isCalculating}
+                  isError={calculationError}
                   element={(() => {
                     if (!calculation) return null
                     function renderExpenseMath(expr) {

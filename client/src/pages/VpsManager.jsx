@@ -951,7 +951,7 @@ export default function VpsManager({ onBuySuccessRef }) {
       />
 
       <UpgradePlanDialog
-        key={`${upgradeDialogState?.sid}-${upgradeDialogState?.isOpen}`}
+        key={`upgrade-${upgradeDialogState?.sid}-${upgradeDialogState?.isOpen}`}
         isOpen={upgradeDialogState.isOpen}
         onClose={() => setUpgradeDialogState({ isOpen: false, sid: null })}
         sid={upgradeDialogState.sid}
@@ -996,7 +996,7 @@ export default function VpsManager({ onBuySuccessRef }) {
       />
 
       <ReinstallDialog
-        key={`${reinstallState?.sid}-${reinstallState?.isOpen}`}
+        key={`reinstall-${reinstallState?.sid}-${reinstallState?.isOpen}`}
         isOpen={reinstallState.isOpen}
         onClose={() =>
           setReinstallState({
@@ -1023,7 +1023,7 @@ export default function VpsManager({ onBuySuccessRef }) {
       />
 
       <ChangeIpDialog
-        key={`${changeIpState?.sid}-${changeIpState?.isOpen}`}
+        key={`change-ip-${changeIpState?.sid}-${changeIpState?.isOpen}`}
         isOpen={changeIpState.isOpen}
         onClose={() =>
           setChangeIpState({

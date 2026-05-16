@@ -305,7 +305,7 @@ const vi = {
   'buyVps.selectedPlan': 'Gói đã chọn',
   'buyVps.rangeIp': 'Dải IP',
   'buyVps.location': 'Bang',
-  'buyVps.software': 'Cài đặt tiện ích',
+  installExtension: 'Cài đặt tiện ích',
   'buyVps.none': 'Không',
   'buyVps.randomPort': 'Port ngẫu nhiên',
   'buyVps.soldOut': 'Hết hàng',

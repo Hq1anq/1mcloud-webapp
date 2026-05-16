@@ -93,6 +93,7 @@ const useProxyStore = create((set, get) => ({
     const params = { proxy: 'true' }
     if (parsedIps) params.ips = parsedIps
     if (amount) params.amount = +amount
+    else params.amount = get().data.filter((row) => row.status !== 'Refunded').length + 20
 
     set({ isLoading: true })
     try {

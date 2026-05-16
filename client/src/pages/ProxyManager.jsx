@@ -1297,7 +1297,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
       />
 
       <ReinstallDialog
-        key={`${reinstallState?.sid}-${reinstallState?.isOpen}`}
+        key={`reinstall-${reinstallState?.sid}-${reinstallState?.isOpen}`}
         isOpen={reinstallState.isOpen}
         onClose={() =>
           setReinstallState({
@@ -1332,7 +1332,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
       />
 
       <ChangeIpDialog
-        key={`${changeIpState?.sid}-${changeIpState?.isOpen}`}
+        key={`change-ip-${changeIpState?.sid}-${changeIpState?.isOpen}`}
         isOpen={changeIpState.isOpen}
         onClose={() =>
           setChangeIpState({

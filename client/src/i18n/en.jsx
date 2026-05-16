@@ -305,7 +305,7 @@ const en = {
   'buyVps.selectedPlan': 'Selected Plan',
   'buyVps.rangeIp': 'IP Range',
   'buyVps.location': 'State',
-  'buyVps.software': 'Install Extension',
+  installExtension: 'Install Extension',
   'buyVps.none': 'None',
   'buyVps.randomPort': 'Random port',
   'buyVps.soldOut': 'Sold Out',

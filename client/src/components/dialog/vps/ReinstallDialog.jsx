@@ -136,7 +136,7 @@ export default function ReinstallDialog({ isOpen, onClose, currentData, onSucces
           </div>
         </div>
         <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2">
-          <span className="text-base font-medium">{t('buyVps.software')}</span>
+          <span className="text-base font-medium">{t('installExtension')}</span>
           <div className="flex gap-2 sm:gap-4">
             <button
               type="button"

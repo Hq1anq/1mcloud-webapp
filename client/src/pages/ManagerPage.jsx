@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from 'react'
-import BuyProxyDialog from '../components/dialog/BuyProxyDialog'
-import BuyVpsDialog from '../components/dialog/BuyVpsDialog'
+import BuyProxyDialog from '../components/dialog/proxy/BuyProxyDialog'
+import BuyVpsDialog from '../components/dialog/vps/BuyVpsDialog'
 import ProxyManager from './ProxyManager'
 import VpsManager from './VpsManager'
 import { useTranslation } from '../i18n'

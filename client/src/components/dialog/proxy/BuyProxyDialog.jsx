@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
-import { useToast } from '../../context/ToastContext'
-import { useTranslation } from '../../i18n'
-import axiosInstance from '../../lib/axios'
-import Dialog from '../ui/Dialog'
-import DropDown from '../ui/DropDown'
-import Checkbox from '../ui/Checkbox'
-import Skeleton from '../ui/Skeleton'
+import { useToast } from '../../../context/ToastContext'
+import { useTranslation } from '../../../i18n'
+import axiosInstance from '../../../lib/axios'
+import Dialog from '../../ui/Dialog'
+import DropDown from '../../ui/DropDown'
+import Checkbox from '../../ui/Checkbox'
+import Skeleton from '../../ui/Skeleton'
 
 export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
   const { addToast, removeToast } = useToast()
@@ -64,6 +64,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
     must_pay: '',
   })
   const [isCalculating, setIsCalculating] = useState(true)
+  const [calculationError, setCalculationError] = useState(false)
 
   const fetchedNationsRef = useRef(null)
   const lastPayloadRef = useRef(null)
@@ -124,13 +125,17 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
       lastPayloadRef.current = payloadStr
 
       const delayFn = setTimeout(() => {
+        setCalculationError(false)
         setIsCalculating(true)
         axiosInstance
           .post('/server/create/calculate', payload)
           .then((res) => {
             if (res.data.success) setSummary(res.data.info)
+            else setCalculationError(true)
           })
-          .catch(() => {})
+          .catch(() => {
+            setCalculationError(true)
+          })
           .finally(() => {
             setIsCalculating(false)
           })
@@ -440,6 +445,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
                 <span className="text-text-muted">{t('buy.originalPrice')}</span>
                 <Skeleton
                   isLoading={isCalculating}
+                  isError={calculationError}
                   element={<span className="font-medium">{summary.original_price}</span>}
                   className="bg-text-muted h-4 w-20"
                 />
@@ -448,6 +454,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
                 <span className="text-text-muted">{t('discount')}</span>
                 <Skeleton
                   isLoading={isCalculating}
+                  isError={calculationError}
                   element={<span className="font-medium text-green-500">-{summary.discount}</span>}
                   className="bg-text-muted h-4 w-20"
                 />
@@ -456,6 +463,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
                 <span className="text-text-muted">{t('buy.coupon')}</span>
                 <Skeleton
                   isLoading={isCalculating}
+                  isError={calculationError}
                   element={<span className="font-medium text-green-500">{summary.coupon}</span>}
                   className="bg-text-muted h-4 w-12"
                 />
@@ -465,6 +473,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
                 <span className="font-bold">{t('totalToPay')}</span>
                 <Skeleton
                   isLoading={isCalculating}
+                  isError={calculationError}
                   element={
                     <span className="text-blue text-3xl font-bold">
                       {summary.must_pay.split(' ')[0]}{' '}

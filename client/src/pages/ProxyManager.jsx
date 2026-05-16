@@ -313,8 +313,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
     await processSequential(
       rows,
       async (row) => {
-        let range_ip = '',
-          remote_port = '',
+        let remote_port = '',
           username = '',
           password = ''
         let random_remote_port = 'on',
@@ -323,7 +322,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
         if (reinstallInput) {
           const reinstallInfo = reinstallInput.split(':')
           if (reinstallInfo.length === 4) {
-            ;[range_ip, remote_port, username, password] = reinstallInfo
+            ;[remote_port, username, password] = reinstallInfo.slice(1)
             random_remote_port = ''
             random_username = ''
             random_password = ''
@@ -1507,6 +1506,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
       />
 
       <ReinstallDialog
+        key={`reinstall-${reinstallState?.sid}-${reinstallState?.isOpen}`}
         isOpen={reinstallState.isOpen}
         onClose={() =>
           setReinstallState({
@@ -1541,6 +1541,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
       />
 
       <ChangeIpDialog
+        key={`change-ip-${changeIpState?.sid}-${changeIpState?.isOpen}`}
         isOpen={changeIpState.isOpen}
         onClose={() =>
           setChangeIpState({

@@ -294,10 +294,8 @@ export async function changeIp(req, res) {
       install_chrome: install_chrome,
       install_firefox: install_firefox,
       random_remote_port: random_remote_port,
-      random_username: random_username,
       random_password: random_password,
       remote_port: random_remote_port ? undefined : remote_port,
-      random_username: random_username ? undefined : username,
       password: random_password ? undefined : password,
       range_ip: range_ip || "Ngẫu nhiên",
       isp: isp || "Ngẫu nhiên",
@@ -378,11 +376,9 @@ export async function reinstall(req, res) {
       install_firefox,
       os: Number(os),
       random_remote_port: random_remote_port ? "on" : "",
-      random_username: random_username ? "on" : "",
       random_password: random_password ? "on" : "",
       remote_port: random_remote_port ? "" : remote_port,
       password: random_password ? "" : password,
-      username: random_username ? "" : username,
       sid: String(sid),
     };
   }

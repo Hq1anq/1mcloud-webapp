@@ -1,8 +1,8 @@
 import Table from '../components/ui/Table'
 import ControlButton from '../components/ui/ControlButton'
-import UpgradePlanDialog from '../components/dialog/UpgradePlanDialog'
-import ReinstallDialog from '../components/dialog/ReinstallDialog'
-import ChangeIpDialog from '../components/dialog/ChangeIpDialog'
+import UpgradePlanDialog from '../components/dialog/vps/UpgradePlanDialog'
+import ReinstallDialog from '../components/dialog/vps/ReinstallDialog'
+import ChangeIpDialog from '../components/dialog/vps/ChangeIpDialog'
 import StatusMetricsMeter from '../components/ui/StatusMetricsMeter'
 import axiosInstance from '../lib/axios'
 import { useState, useEffect, useCallback, useMemo } from 'react'
@@ -951,6 +951,7 @@ export default function VpsManager({ onBuySuccessRef }) {
       />
 
       <UpgradePlanDialog
+        key={`upgrade-${upgradeDialogState?.sid}-${upgradeDialogState?.isOpen}`}
         isOpen={upgradeDialogState.isOpen}
         onClose={() => setUpgradeDialogState({ isOpen: false, sid: null })}
         sid={upgradeDialogState.sid}
@@ -995,6 +996,7 @@ export default function VpsManager({ onBuySuccessRef }) {
       />
 
       <ReinstallDialog
+        key={`reinstall-${reinstallState?.sid}-${reinstallState?.isOpen}`}
         isOpen={reinstallState.isOpen}
         onClose={() =>
           setReinstallState({
@@ -1021,6 +1023,7 @@ export default function VpsManager({ onBuySuccessRef }) {
       />
 
       <ChangeIpDialog
+        key={`change-ip-${changeIpState?.sid}-${changeIpState?.isOpen}`}
         isOpen={changeIpState.isOpen}
         onClose={() =>
           setChangeIpState({

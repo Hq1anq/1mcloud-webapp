@@ -214,9 +214,10 @@ export default function useManagerActions(store) {
           setRowClassMap((prev) => ({ ...prev, [row.sid]: 'bg-error-cell' }))
         }
 
-        const isReinstallOrChangeIp = [t('manager.reinstall'), t('manager.changeIp')].includes(
-          actionName
-        )
+        const isReinstallOrChangeIp = [
+          t('manager.reinstall').toUpperCase(),
+          t('manager.changeIp').toUpperCase(),
+        ].includes(actionName)
         const shouldUncheck = isReinstallOrChangeIp ? !isSuccess : isSuccess
 
         if (shouldUncheck) {

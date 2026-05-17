@@ -529,18 +529,40 @@ export default function VpsManager({ onBuySuccessRef }) {
                     </label>
                   </label>
                   <button
-                    onClick={() => setIps('')}
+                    onClick={async () => {
+                      if (!ips.trim()) {
+                        try {
+                          const text = await navigator.clipboard.readText()
+                          setIps(text)
+                        } catch (err) {
+                          console.error('Failed to read clipboard contents: ', err)
+                        }
+                      } else setIps('')
+                    }}
                     className="bg-action static right-0 flex items-center justify-center rounded-lg px-3 py-1 text-sm font-medium transition-colors duration-200 md:absolute lg:static"
-                    style={{ '--action-color': 'var(--red)' }}
+                    style={{ '--action-color': !ips.trim() ? 'var(--blue)' : 'var(--red)' }}
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 640 640"
-                      className="mr-1 size-5 shrink-0 fill-current"
-                    >
-                      <path d="M232.7 69.9L224 96L128 96C110.3 96 96 110.3 96 128C96 145.7 110.3 160 128 160L512 160C529.7 160 544 145.7 544 128C544 110.3 529.7 96 512 96L416 96L407.3 69.9C402.9 56.8 390.7 48 376.9 48L263.1 48C249.3 48 237.1 56.8 232.7 69.9zM512 208L128 208L149.1 531.1C150.7 556.4 171.7 576 197 576L443 576C468.3 576 489.3 556.4 490.9 531.1L512 208z" />
-                    </svg>
-                    {t('manager.delete')}
+                    {!ips.trim() ? (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 32 32"
+                        className="mr-1 size-5 shrink-0 fill-current"
+                      >
+                        <g>
+                          <path d="m26 8v19a3.009 3.009 0 0 1 -3 3h-14a3.009 3.009 0 0 1 -3-3v-19a3.009 3.009 0 0 1 3-3v2a3.009 3.009 0 0 0 3 3h8a3.009 3.009 0 0 0 3-3v-2a3.009 3.009 0 0 1 3 3z" />
+                          <path d="m12 8a1 1 0 0 1 -1-1v-2a1 1 0 0 1 1-1h1.125l.29-.5a2.959 2.959 0 0 1 2.185-1.459 1.9 1.9 0 0 1 .384-.041 2.139 2.139 0 0 1 .418.037 2.963 2.963 0 0 1 2.184 1.463l.289.5h1.125a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1z" />
+                        </g>
+                      </svg>
+                    ) : (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 640 640"
+                        className="mr-1 size-5 shrink-0 fill-current"
+                      >
+                        <path d="M232.7 69.9L224 96L128 96C110.3 96 96 110.3 96 128C96 145.7 110.3 160 128 160L512 160C529.7 160 544 145.7 544 128C544 110.3 529.7 96 512 96L416 96L407.3 69.9C402.9 56.8 390.7 48 376.9 48L263.1 48C249.3 48 237.1 56.8 232.7 69.9zM512 208L128 208L149.1 531.1C150.7 556.4 171.7 576 197 576L443 576C468.3 576 489.3 556.4 490.9 531.1L512 208z" />
+                      </svg>
+                    )}
+                    {!ips.trim() ? t('paste') : t('delete')}
                   </button>
                 </div>
                 <textarea

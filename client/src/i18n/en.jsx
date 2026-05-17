@@ -14,6 +14,8 @@ const en = {
   type: 'Type',
   processing: 'Processing...',
   current: 'Current',
+  delete: 'Delete',
+  paste: 'Paste',
 
   // UserMenu
   'menu.login': 'Login',
@@ -158,7 +160,6 @@ const en = {
   // Proxy Checker
   'checker.proxyList': 'Enter Proxy',
   'checker.checkProxy': 'Check Proxy',
-  'checker.delete': 'Delete',
   'checker.checkNow': 'Check Now',
   'checker.checking': 'Checking...',
   'checker.copyIp': 'Copy IP',
@@ -180,7 +181,6 @@ const en = {
   // Proxy Manager
   'manager.enterIps': 'Enter IP',
   'manager.onePerLine': '(one per line)',
-  'manager.delete': 'Delete',
   'manager.enterAmount': 'Amount',
   'manager.enterNote': 'Enter note',
   'manager.portUserPass': 'port:username:password',

@@ -14,6 +14,8 @@ const vi = {
   type: 'Loại',
   processing: 'Đang xử lý...',
   current: 'Hiện tại',
+  delete: 'Xóa',
+  paste: 'Dán',
 
   // UserMenu
   'menu.login': 'Đăng nhập',
@@ -159,7 +161,6 @@ const vi = {
   // Proxy Checker
   'checker.proxyList': 'Nhập Proxy',
   'checker.checkProxy': 'Kiểm tra Proxy',
-  'checker.delete': 'Xóa',
   'checker.checkNow': 'Kiểm tra',
   'checker.checking': 'Đang kiểm tra...',
   'checker.copyIp': 'Sao chép IP',
@@ -181,7 +182,6 @@ const vi = {
   // Proxy Manager
   'manager.enterIps': 'Nhập IP',
   'manager.onePerLine': '(mỗi dòng một IP)',
-  'manager.delete': 'Xóa',
   'manager.enterAmount': 'Số lượng',
   'manager.enterNote': 'Nhập ghi chú',
   'manager.portUserPass': 'port:username:password',

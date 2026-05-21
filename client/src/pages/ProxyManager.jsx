@@ -954,7 +954,10 @@ export default function ProxyManager({ onBuySuccessRef }) {
                     const rows = selectedRowsRef.current
                     if (rows.length === 0) return addToast(t('manager.noRowsSelected'), 'warning')
                     const text = rows
-                      .map((r) => r.ip_port?.split(':')[0])
+                      .map((r) => {
+                        const latestRow = data.find((d) => d.sid === r.sid) || r
+                        return latestRow.ip_port?.split(':')[0]
+                      })
                       .filter(Boolean)
                       .join('\n')
                     safeCopy(text).then(
@@ -995,8 +998,9 @@ export default function ProxyManager({ onBuySuccessRef }) {
                     if (rows.length === 0) return addToast(t('manager.noRowsSelected'), 'warning')
                     const text = rows
                       .map((r) => {
-                        const [ip, port] = (r.ip_port || '').split(':')
-                        const [username, password] = (r.user_pass || '').split(':')
+                        const latestRow = data.find((d) => d.sid === r.sid) || r
+                        const [ip, port] = (latestRow.ip_port || '').split(':')
+                        const [username, password] = (latestRow.user_pass || '').split(':')
                         return [ip, port, username, password].filter(Boolean).join(':')
                       })
                       .join('\n')

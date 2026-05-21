@@ -254,6 +254,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
           note: note,
         }
         if (onSuccess) onSuccess(res.data?.data, extraConfig)
+        setAgreeTerms(false)
         onClose()
       } else {
         addToast(res.data?.message || t('buyVps.purchaseFailed'), 'error')

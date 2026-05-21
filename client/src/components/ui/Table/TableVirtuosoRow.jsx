@@ -11,7 +11,7 @@ const TableRow = ({ context, ...props }) => {
 
   const isSelected = selectable && selectedIds.has(index)
   const overrideClass = row && rowClassMap?.[row.sid]
-  const isRefunded = row?.status?.toLowerCase() === 'refunded'
+  const isRefunded = row?.status === 'Refunded'
 
   return (
     <tr
@@ -48,7 +48,7 @@ export const itemContent = (index, row, context) => {
   } = context
 
   const isSelected = selectable && selectedIds?.has(index)
-  const isRefunded = row?.status?.toLowerCase() === 'refunded'
+  const isRefunded = row?.status === 'Refunded'
 
   return (
     <>

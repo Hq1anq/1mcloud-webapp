@@ -144,7 +144,10 @@ export default function VpsManager({ onBuySuccessRef }) {
     }
 
     const ipsToCopy = rows
-      .map((r) => r.ip_port?.split(':')[0])
+      .map((r) => {
+        const latestRow = data.find((d) => d.sid === r.sid) || r
+        return latestRow.ip_port?.split(':')[0]
+      })
       .filter(Boolean)
       .join('\n')
 
@@ -681,8 +684,9 @@ export default function VpsManager({ onBuySuccessRef }) {
                     if (rows.length === 0) return addToast(t('manager.noRowsSelected'), 'warning')
                     const text = rows
                       .map((r) => {
-                        const [username, password] = (r.user_pass || '').split('/')
-                        return [r.ip_port, username, password].join('/')
+                        const latestRow = data.find((d) => d.sid === r.sid) || r
+                        const [username, password] = (latestRow.user_pass || '').split('/')
+                        return [latestRow.ip_port, username, password].join('/')
                       })
                       .join('\n')
                     safeCopy(text).then(

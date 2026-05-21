@@ -209,6 +209,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
           note: note,
         }
         if (onSuccess) onSuccess(res.data?.data, extraConfig)
+        setAgreeTerms(false)
         onClose()
       } else {
         removeToast(loadingId)

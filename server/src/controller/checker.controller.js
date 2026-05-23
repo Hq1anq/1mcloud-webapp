@@ -252,7 +252,5 @@ export async function checkProxies(req, res) {
   );
 
   await limitConcurrency(tasks, MAX_CONCURRENT);
-
-  res.write("event: done\ndata: {}\n\n");
   res.end();
 }

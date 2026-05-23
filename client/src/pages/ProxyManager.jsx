@@ -612,8 +612,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
                   const newStatus = result.status === 'Active' ? 'Running' : 'Off'
                   updateRowBySid(matchedRow.sid, () => ({ status: newStatus }))
                   updatedRows.push({ ...matchedRow, status: newStatus })
-                  classUpdates[matchedRow.sid] =
-                    newStatus === 'Running' ? 'bg-success-cell' : 'bg-error-cell'
+                  classUpdates[matchedRow.sid] = newStatus === 'bg-success-cell'
 
                   // Uncheck the row
                   setSelectedIds((prev) => {
@@ -1455,7 +1454,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
                     )
                 : undefined
             }
-            onReinstall={async () => {
+            onReinstall={() => {
               setReinstallState({
                 isOpen: true,
                 data: {
@@ -1469,7 +1468,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
                 },
               })
             }}
-            onChangeIp={async () => {
+            onChangeIp={() => {
               setChangeIpState({
                 isOpen: true,
                 data: {
@@ -1481,6 +1480,67 @@ export default function ProxyManager({ onBuySuccessRef }) {
                   note: row.note,
                 },
               })
+            }}
+            onCheck={async () => {
+              const latestRow = data.find((d) => d.sid === row.sid) || row
+              const [ip, port] = (latestRow.ip_port || '').split(':')
+              const [username, password] = (latestRow.user_pass || '').split(':')
+              const proxies = [`${ip}:${port}:${username}:${password}`]
+              setIsProcessing(true)
+              setRowClassMap({})
+              const loadingId = addToast(t('checker.checking'), 'loading')
+              let newStatus
+
+              try {
+                await axiosInstance.post(
+                  '/check',
+                  { type: 'auto', proxies },
+                  {
+                    timeout: 0,
+                    responseType: 'text',
+                    onDownloadProgress: (e) => {
+                      const text = e.event.target.responseText
+                      const jsonStr = text.slice(6)
+                      const result = JSON.parse(jsonStr)
+
+                      newStatus = result.status === 'Active' ? 'Running' : 'Off'
+                      updateRowBySid(row.sid, () => ({ status: newStatus }))
+                      setRowClassMap({
+                        [row.sid]: 'bg-success-cell',
+                      })
+
+                      // Uncheck the row
+                      setSelectedIds(new Set())
+                      setSelectedRows([])
+                    },
+                  }
+                )
+
+                syncToDb([{ ...latestRow, status: newStatus }])
+
+                if (newStatus === 'Running')
+                  addToast(
+                    <>
+                      {t('checker.checkCompleted')} <br />
+                      <span className="text-text-toast-success">Proxy {t('checker.active')}</span>
+                    </>,
+                    'success'
+                  )
+                else
+                  addToast(
+                    <>
+                      {t('checker.checkCompleted')} <br />
+                      <span className="text-text-toast-success">Proxy {t('checker.inactive')}</span>
+                    </>,
+                    'success'
+                  )
+              } catch (err) {
+                console.error('Proxy check failed:', err)
+                addToast(t('checker.checkFailed'), 'error')
+              } finally {
+                setIsProcessing(false)
+                removeToast(loadingId)
+              }
             }}
           />
         )}

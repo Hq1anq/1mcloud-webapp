@@ -16,7 +16,7 @@ const TableRow = ({ context, ...props }) => {
   return (
     <tr
       {...props}
-      className={`${isRefunded ? 'cursor-not-allowed opacity-50 select-none' : 'hover:bg-bg-hover'} ${isSelected ? 'bg-bg-selected' : overrideClass || ''} ${props.className || ''}`}
+      className={`${isRefunded ? 'cursor-not-allowed opacity-50 select-none' : 'hover:bg-bg-hover'} ${overrideClass ? overrideClass : isSelected ? 'bg-bg-selected' : ''} ${props.className || ''}`}
       onClick={(e) => {
         if (isRefunded || !selectable) return
         if (e.target.closest('input') || e.target.closest('button') || e.target.closest('label'))

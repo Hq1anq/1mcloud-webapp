@@ -194,6 +194,7 @@ const en = {
   'manager.renew': 'Renew',
   'manager.getInfo': 'Get Info',
   'manager.reboot': 'Reboot',
+  'manager.check': 'Check',
   'manager.buyMore': 'Buy more',
   'manager.proxyManager': 'Proxy Manager',
   'manager.fetchingData': 'Fetching data...',
@@ -229,6 +230,8 @@ const en = {
   'manager.toLoadInfo': 'to load information',
   'manager.copied': 'Copied',
   'manager.comingSoon': 'Coming Soon',
+  syncFailed: 'Fail to save data',
+  retry: 'Retry',
 
   'dialog.confirm': 'Confirm',
   'dialog.close': 'Close',

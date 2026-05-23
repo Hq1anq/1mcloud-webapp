@@ -23,7 +23,7 @@ const OPERATOR_CONFIG = {
 export default function ProxyManager({ onBuySuccessRef }) {
   const [reinstallType, setReinstallType] = useState('HTTPS')
   const [changeIpType, setChangeIpType] = useState('HTTPS')
-  const { addToast, removeToast } = useToast()
+  const { addToast, removeToast, updateToast } = useToast()
   const { safeCopy } = useSafeCopy()
   const { confirmAction } = useConfirm()
   const t = useTranslation()
@@ -42,7 +42,40 @@ export default function ProxyManager({ onBuySuccessRef }) {
   const setRenderingReceived = useProxyStore((s) => s.setRenderingReceived)
   const isLoading = useProxyStore((s) => s.isLoading)
   const updateRowBySid = useProxyStore((s) => s.updateRowBySid)
-  const syncToDb = useProxyStore((s) => s.syncToDb)
+  const rawSyncToDb = useProxyStore((s) => s.syncToDb)
+
+  const syncToDb = useCallback(
+    async (rows, attempt = 1) => {
+      try {
+        await rawSyncToDb(rows)
+      } catch (err) {
+        console.error(`[DB Sync] Save failed (attempt ${attempt}):`, err.message)
+        if (attempt === 1) {
+          return syncToDb(rows, 2)
+        } else {
+          let toastId = null
+          const handleRetry = () => {
+            if (toastId) removeToast(toastId)
+            syncToDb(rows, 2) // only call once each time click retry button
+          }
+          toastId = addToast(
+            <>
+              <div>{t('syncFailed')}</div>
+              <button
+                onClick={handleRetry}
+                className="bg-bg-warning/20 border-bg-warning/30 hover:bg-bg-warning/40 mt-1 rounded border px-3 py-1"
+              >
+                {t('retry')}
+              </button>
+            </>,
+            'warning',
+            { keepAlive: true }
+          )
+        }
+      }
+    },
+    [rawSyncToDb, addToast, removeToast, t]
+  )
   const loadFromDb = useProxyStore((s) => s.loadFromDb)
   const fetchData = useProxyStore((s) => s.fetchData)
   const handleBuySuccessStore = useProxyStore((s) => s.handleBuySuccess)
@@ -65,6 +98,8 @@ export default function ProxyManager({ onBuySuccessRef }) {
     rowClassMap,
     setRowClassMap,
     setIsProcessing,
+    setSelectedIds,
+    setSelectedRows,
     clearSelection,
     deselectRows,
     onSelectionChange,
@@ -548,6 +583,160 @@ export default function ProxyManager({ onBuySuccessRef }) {
       })),
     [handleBatchAction, t]
   )
+
+  const handleCheck = useCallback(async () => {
+    const rows = [...selectedRowsRef.current]
+    if (rows.length === 0) {
+      addToast(t('manager.noRowsSelected'), 'warning')
+      return
+    }
+
+    const proxies = rows.map((r) => {
+      const latestRow = data.find((d) => d.sid === r.sid) || r
+      const [ip, port] = (latestRow.ip_port || '').split(':')
+      const [username, password] = (latestRow.user_pass || '').split(':')
+      return [ip, port, username, password].filter(Boolean).join(':')
+    })
+
+    setIsProcessing(true)
+    setRowClassMap({}) // Clear previous highlighting if any
+
+    let processed = 0
+    let activeCount = 0
+    let inactiveCount = 0
+    const updatedRows = []
+    const classUpdates = {}
+
+    const total = rows.length
+    const loadingId = addToast(
+      <>
+        {t('manager.check')} <span className="text-text-toast-success">1/{total}</span>
+      </>,
+      'loading'
+    )
+
+    try {
+      await axiosInstance.post(
+        '/check',
+        { type: 'auto', proxies },
+        {
+          timeout: 0,
+          responseType: 'text',
+          onDownloadProgress: (e) => {
+            const text = e.event?.target?.responseText || ''
+            const lines = text.split('\n')
+
+            let count = 0
+            for (const line of lines) {
+              if (!line.startsWith('data: ')) continue
+              count++
+              if (count <= processed) continue
+
+              const jsonStr = line.slice(6)
+              if (jsonStr === '{}') continue
+              try {
+                const result = JSON.parse(jsonStr)
+
+                // Find matching row by IP
+                const matchedRow = rows.find((r) => {
+                  const latestRow = data.find((d) => d.sid === r.sid) || r
+                  return (
+                    latestRow.ip_port?.startsWith(result.ip + ':') ||
+                    latestRow.ip_port === result.ip
+                  )
+                })
+
+                if (matchedRow) {
+                  const newStatus = result.status === 'Active' ? 'Running' : 'Off'
+                  updateRowBySid(matchedRow.sid, () => ({ status: newStatus }))
+                  updatedRows.push({ ...matchedRow, status: newStatus })
+                  classUpdates[matchedRow.sid] = 'bg-success-cell'
+
+                  // Uncheck the row
+                  setSelectedIds((prev) => {
+                    const newSet = new Set(prev)
+                    newSet.delete(matchedRow._index)
+                    return newSet
+                  })
+                  setSelectedRows((prev) => prev.filter((r) => r._index !== matchedRow._index))
+                }
+
+                if (result.status === 'Active') activeCount++
+                else inactiveCount++
+                processed++
+
+                updateToast(
+                  loadingId,
+                  <>
+                    {t('manager.check')}{' '}
+                    <span className="text-text-toast-success">
+                      {Math.min(processed + 1, total)}/{total}
+                    </span>
+                  </>
+                )
+              } catch {
+                // skip malformed JSON
+              }
+            }
+
+            if (Object.keys(classUpdates).length > 0) {
+              setRowClassMap((prev) => ({ ...prev, ...classUpdates }))
+            }
+          },
+        }
+      )
+
+      if (updatedRows.length > 0) {
+        syncToDb(updatedRows)
+      }
+
+      if (processed > 0) {
+        if (inactiveCount === 0)
+          addToast(
+            <>
+              {t('checker.checkCompleted')} <br />
+              <span className="text-text-toast-success">
+                {activeCount} {t('checker.active')}
+              </span>
+            </>,
+            'success'
+          )
+        else
+          addToast(
+            <>
+              {t('checker.checkCompleted')} <br />
+              <span className="text-text-toast-success">
+                {activeCount} {t('checker.active')}
+              </span>
+              ,{' '}
+              <span className="text-text-toast-error">
+                {inactiveCount} {t('checker.inactive')}
+              </span>
+            </>,
+            'success'
+          )
+      }
+    } catch (err) {
+      console.error('Proxy check failed:', err)
+      addToast(t('checker.checkFailed'), 'error')
+    } finally {
+      setIsProcessing(false)
+      removeToast(loadingId)
+    }
+  }, [
+    selectedRowsRef,
+    data,
+    t,
+    addToast,
+    updateToast,
+    removeToast,
+    updateRowBySid,
+    setRowClassMap,
+    setSelectedIds,
+    setSelectedRows,
+    syncToDb,
+    setIsProcessing,
+  ])
 
   const handleRenew = useCallback(async () => {
     const rows = [...selectedRowsRef.current]
@@ -1128,6 +1317,23 @@ export default function ProxyManager({ onBuySuccessRef }) {
                       {t('manager.reboot')}
                     </button>
 
+                    {/* Check */}
+                    <button
+                      className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium"
+                      style={{ '--action-color': 'var(--green)' }}
+                      onClick={handleCheck}
+                      disabled={isProcessing}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 640 640"
+                        className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:size-6"
+                      >
+                        <path d="M530.8 134.1C545.1 144.5 548.3 164.5 537.9 178.8L281.9 530.8C276.4 538.4 267.9 543.1 258.5 543.9C249.1 544.7 240 541.2 233.4 534.6L105.4 406.6C92.9 394.1 92.9 373.8 105.4 361.3C117.9 348.8 138.2 348.8 150.7 361.3L252.2 462.8L486.2 141.1C496.6 126.8 516.6 123.6 530.9 134z" />
+                      </svg>
+                      {t('manager.check')}
+                    </button>
+
                     {/* Renew */}
                     <button
                       className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium transition-colors duration-200"
@@ -1457,7 +1663,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
                     )
                 : undefined
             }
-            onReinstall={async () => {
+            onReinstall={() => {
               setReinstallState({
                 isOpen: true,
                 data: {
@@ -1471,7 +1677,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
                 },
               })
             }}
-            onChangeIp={async () => {
+            onChangeIp={() => {
               setChangeIpState({
                 isOpen: true,
                 data: {
@@ -1483,6 +1689,67 @@ export default function ProxyManager({ onBuySuccessRef }) {
                   note: row.note,
                 },
               })
+            }}
+            onCheck={async () => {
+              const latestRow = data.find((d) => d.sid === row.sid) || row
+              const [ip, port] = (latestRow.ip_port || '').split(':')
+              const [username, password] = (latestRow.user_pass || '').split(':')
+              const proxies = [`${ip}:${port}:${username}:${password}`]
+              setIsProcessing(true)
+              setRowClassMap({})
+              const loadingId = addToast(t('checker.checking'), 'loading')
+              let newStatus
+
+              try {
+                await axiosInstance.post(
+                  '/check',
+                  { type: 'auto', proxies },
+                  {
+                    timeout: 0,
+                    responseType: 'text',
+                    onDownloadProgress: (e) => {
+                      const text = e.event.target.responseText
+                      const jsonStr = text.slice(6)
+                      const result = JSON.parse(jsonStr)
+
+                      newStatus = result.status === 'Active' ? 'Running' : 'Off'
+                      updateRowBySid(row.sid, () => ({ status: newStatus }))
+                      setRowClassMap({
+                        [row.sid]: 'bg-success-cell',
+                      })
+
+                      // Uncheck the row
+                      setSelectedIds(new Set())
+                      setSelectedRows([])
+                    },
+                  }
+                )
+
+                syncToDb([{ ...latestRow, status: newStatus }])
+
+                if (newStatus === 'Running')
+                  addToast(
+                    <>
+                      {t('checker.checkCompleted')} <br />
+                      <span className="text-text-toast-success">Proxy {t('checker.active')}</span>
+                    </>,
+                    'success'
+                  )
+                else
+                  addToast(
+                    <>
+                      {t('checker.checkCompleted')} <br />
+                      <span className="text-text-toast-success">Proxy {t('checker.inactive')}</span>
+                    </>,
+                    'success'
+                  )
+              } catch (err) {
+                console.error('Proxy check failed:', err)
+                addToast(t('checker.checkFailed'), 'error')
+              } finally {
+                setIsProcessing(false)
+                removeToast(loadingId)
+              }
             }}
           />
         )}

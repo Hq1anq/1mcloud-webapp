@@ -24,11 +24,7 @@ const useVpsStore = create((set, get) => ({
   syncToDb: async (rowsToSync) => {
     const isAuthenticated = useAuthStore.getState().isAuthenticated
     if (!isAuthenticated || !rowsToSync || rowsToSync.length === 0) return
-    try {
-      await axiosInstance.post('/vps', { vpsList: rowsToSync })
-    } catch (err) {
-      console.error('[DB Sync] Save failed:', err.message)
-    }
+    await axiosInstance.post('/vps', { vpsList: rowsToSync })
   },
 
   deleteFromDb: async (sids) => {

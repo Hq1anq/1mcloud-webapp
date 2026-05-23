@@ -24,11 +24,7 @@ const useProxyStore = create((set, get) => ({
   syncToDb: async (rowsToSync) => {
     const isAuthenticated = useAuthStore.getState().isAuthenticated
     if (!isAuthenticated || !rowsToSync || rowsToSync.length === 0) return
-    try {
-      await axiosInstance.post('/proxy', { proxies: rowsToSync })
-    } catch (err) {
-      console.error('[DB Sync] Save failed:', err.message)
-    }
+    await axiosInstance.post('/proxy', { proxies: rowsToSync })
   },
 
   deleteFromDb: async (sids) => {

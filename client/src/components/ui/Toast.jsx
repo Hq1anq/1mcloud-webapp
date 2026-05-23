@@ -60,13 +60,13 @@ const statusStyles = {
   },
 }
 
-const Toast = ({ id, message, type, removeToast, style }) => {
+const Toast = ({ id, message, type, keepAlive, removeToast, style }) => {
   const [isExiting, setIsExiting] = useState(false)
   const [isPaused, setIsPaused] = useState(false)
   const { icon, bg } = statusStyles[type] || statusStyles.info
 
   useEffect(() => {
-    if (type === 'loading') return // Loading toasts don't auto-dismiss
+    if (type === 'loading' || keepAlive) return // Loading and keepAlive toasts don't auto-dismiss
 
     let timer
     if (!isPaused) {
@@ -78,7 +78,7 @@ const Toast = ({ id, message, type, removeToast, style }) => {
     }
 
     return () => clearTimeout(timer)
-  }, [type, removeToast, id, isPaused])
+  }, [type, keepAlive, removeToast, id, isPaused])
 
   const handleDismiss = () => {
     setIsExiting(true)

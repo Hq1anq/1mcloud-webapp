@@ -195,6 +195,7 @@ const vi = {
   'manager.renew': 'Gia hạn',
   'manager.getInfo': 'Lấy thông tin',
   'manager.reboot': 'Khởi động lại',
+  'manager.check': 'Kiểm tra',
   'manager.buyMore': 'Mua thêm',
   'manager.proxyManager': 'Quản lý Proxy',
   'manager.fetchingData': 'Đang tải dữ liệu...',
@@ -229,6 +230,8 @@ const vi = {
   'manager.clickGetData': 'Nhấn',
   'manager.toLoadInfo': 'để tải thông tin',
   'manager.copied': 'Đã sao chép',
+  syncFailed: 'Lưu dữ liệu thất bại',
+  retry: 'Thử lại',
 
   'dialog.confirm': 'Xác nhận',
   'dialog.close': 'Đóng',

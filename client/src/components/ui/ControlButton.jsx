@@ -135,8 +135,8 @@ export default function ControlButton({
           ),
           onAction: onChangeIp,
         },
-        {
-          label: t('manager.check'),
+        onCheck && {
+          label: t('check'),
           icon: (
             <svg
               xmlns="http://www.w3.org/2000/svg"

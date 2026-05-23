@@ -160,9 +160,8 @@ const vi = {
 
   // Proxy Checker
   'checker.proxyList': 'Nhập Proxy',
-  'checker.checkProxy': 'Kiểm tra Proxy',
-  'checker.checkNow': 'Kiểm tra',
-  'checker.checking': 'Đang kiểm tra...',
+  check: 'Kiểm tra',
+  checking: 'Đang kiểm tra...',
   'checker.copyIp': 'Sao chép IP',
   'checker.copyFullProxy': 'Sao chép Proxy',
   'checker.selectActive': 'Chọn Active',
@@ -195,7 +194,6 @@ const vi = {
   'manager.renew': 'Gia hạn',
   'manager.getInfo': 'Lấy thông tin',
   'manager.reboot': 'Khởi động lại',
-  'manager.check': 'Kiểm tra',
   'manager.buyMore': 'Mua thêm',
   'manager.proxyManager': 'Quản lý Proxy',
   'manager.fetchingData': 'Đang tải dữ liệu...',

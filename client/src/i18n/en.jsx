@@ -159,9 +159,8 @@ const en = {
 
   // Proxy Checker
   'checker.proxyList': 'Enter Proxy',
-  'checker.checkProxy': 'Check Proxy',
-  'checker.checkNow': 'Check Now',
-  'checker.checking': 'Checking...',
+  check: 'Check',
+  checking: 'Checking...',
   'checker.copyIp': 'Copy IP',
   'checker.copyFullProxy': 'Copy Full Proxy',
   'checker.selectActive': 'Select Active',
@@ -194,7 +193,6 @@ const en = {
   'manager.renew': 'Renew',
   'manager.getInfo': 'Get Info',
   'manager.reboot': 'Reboot',
-  'manager.check': 'Check',
   'manager.buyMore': 'Buy more',
   'manager.proxyManager': 'Proxy Manager',
   'manager.fetchingData': 'Fetching data...',

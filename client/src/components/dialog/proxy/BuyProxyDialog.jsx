@@ -65,6 +65,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
   })
   const [isCalculating, setIsCalculating] = useState(true)
   const [calculationError, setCalculationError] = useState(false)
+  const [isBuying, setIsBuying] = useState(false)
 
   const fetchedNationsRef = useRef(null)
   const lastPayloadRef = useRef(null)
@@ -189,12 +190,12 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
       is_proxy: true,
     }
 
+    setIsBuying(true)
     const loadingId = addToast(t('processing'), 'loading')
 
     try {
       const res = await axiosInstance.post('/server/create', proxyDataBuying)
       if (res.data.success) {
-        removeToast(loadingId)
         addToast(
           <>
             {t('buy.purchased')}{' '}
@@ -211,13 +212,13 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
         if (onSuccess) onSuccess(res.data?.data, extraConfig)
         setAgreeTerms(false)
         onClose()
-      } else {
-        removeToast(loadingId)
-        addToast(res.data?.message || t('buy.purchaseFailed'), 'error')
-      }
+      } else addToast(res.data?.message || t('buy.purchaseFailed'), 'error')
     } catch (err) {
-      removeToast(loadingId)
+      console.error('Buy Proxy Error: ', err)
       addToast(err.response?.data?.message || err.message || t('buy.errorOccurred'), 'error')
+    } finally {
+      removeToast(loadingId)
+      setIsBuying(false)
     }
   }
 
@@ -529,7 +530,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
           <div className="mt-4 flex flex-col gap-3">
             <button
               onClick={handlePay}
-              disabled={!agreeTerms || summary.warning === 'Tài khoản không đủ'}
+              disabled={!agreeTerms || isBuying || summary.warning === 'Tài khoản không đủ'}
               className="group enabled:bg-blue flex h-12 w-full items-center justify-center gap-2 rounded-lg font-semibold text-white shadow-sm transition-all disabled:bg-gray-500"
             >
               <span>{t('buy.payNow')}</span>

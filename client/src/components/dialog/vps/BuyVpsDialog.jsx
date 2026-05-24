@@ -82,6 +82,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
     must_pay: '',
   })
   const [isCalculating, setIsCalculating] = useState(true)
+  const [isBuying, setIsBuying] = useState(false)
 
   // Reset when dialog reopens
   useEffect(() => {
@@ -234,6 +235,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
       is_proxy: false,
     }
 
+    setIsBuying(true)
     const loadingId = addToast(t('processing'), 'loading')
 
     try {
@@ -260,9 +262,11 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
         addToast(res.data?.message || t('buyVps.purchaseFailed'), 'error')
       }
     } catch (err) {
+      console.error('Buy VPS Error: ', err)
       addToast(err.response?.data?.message || err.message || t('buyVps.errorOccurred'), 'error')
     } finally {
       removeToast(loadingId)
+      setIsBuying(false)
     }
   }
 
@@ -940,6 +944,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                 onClick={handlePay}
                 disabled={
                   !agreeTerms ||
+                  isBuying ||
                   !selectedPlanId ||
                   summary.warning === 'Tài khoản không đủ' ||
                   !plans.some((p) => p.status === 'available')

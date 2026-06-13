@@ -91,16 +91,16 @@ export default function StatusMetricsMeter({ total, running, off, className }) {
         return (
           <article
             key={item.key}
-            className="group border-border bg-navbar relative overflow-hidden rounded-2xl border p-3 shadow-[0_8px_20px_rgba(16,58,120,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_14px_30px_rgba(16,58,120,0.16)] sm:p-4"
+            className="group border-border bg-navbar relative overflow-hidden rounded-2xl border p-3 shadow-[0_8px_20px_rgba(16,58,120,0.08)] transition-all hover:-translate-y-1 hover:shadow-[0_14px_30px_rgba(16,58,120,0.16)] sm:p-4"
           >
             <span
-              className="pointer-events-none absolute -top-6 -right-6 size-18 rounded-full opacity-70 transition-all duration-500 group-hover:scale-110 group-hover:opacity-95 sm:size-20"
+              className="pointer-events-none absolute -top-6 -right-6 size-18 rounded-full opacity-70 transition-all group-hover:scale-110 group-hover:opacity-95 sm:size-20"
               style={{ background: `color-mix(in srgb, ${item.tone}, var(--color-navbar) 78%)` }}
             />
 
             <div className="flex items-center gap-2">
               <span
-                className="grid size-7 place-items-center rounded-full transition-transform duration-300 group-hover:scale-110 group-hover:rotate-15"
+                className="grid size-7 place-items-center rounded-full transition-transform group-hover:scale-110 group-hover:rotate-15"
                 style={{
                   color: `color-mix(in srgb, ${item.tone}, #111 10%)`,
                   background: `color-mix(in srgb, ${item.tone}, var(--color-navbar) 82%)`,
@@ -117,7 +117,7 @@ export default function StatusMetricsMeter({ total, running, off, className }) {
 
             <div className="mt-1 h-1 overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--border),transparent_70%)]">
               <div
-                className="h-full rounded-full transition-all duration-700 ease-out"
+                className="h-full rounded-full transition-all duration-700"
                 style={{
                   width: `${percent}%`,
                   background: item.tone,

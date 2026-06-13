@@ -77,7 +77,7 @@ export default function AccountPage() {
 
   return (
     <div className="flex flex-1 justify-center px-4 py-5 md:px-6 lg:px-40">
-      <div className="flex w-full max-w-[960px] flex-1 flex-col gap-6">
+      <div className="flex w-full max-w-240 flex-1 flex-col gap-6">
         {/* Page Title */}
         <div className="border-border flex flex-wrap items-end justify-between gap-3 border-b pb-2">
           <div className="flex min-w-72 flex-col gap-2">
@@ -168,7 +168,7 @@ export default function AccountPage() {
             <div className="mt-4 flex flex-wrap gap-3">
               <button
                 onClick={() => setShowAddFunds(true)}
-                className="text-blue bg-text-secondary flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-bold shadow-sm transition-colors hover:scale-105"
+                className="text-blue bg-text-secondary flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-bold shadow-sm transition-transform hover:scale-105"
               >
                 <svg
                   className="size-5 fill-none"
@@ -181,7 +181,7 @@ export default function AccountPage() {
                 {t('account.addfunds')}
               </button>
               <button
-                className="text-text-secondary hover:border-primary flex items-center gap-2 rounded-lg border border-white/20 bg-blue-700/50 px-5 py-2.5 text-sm font-semibold backdrop-blur-md transition-colors"
+                className="text-text-secondary hover:border-primary flex items-center gap-2 rounded-lg border border-white/20 bg-blue-700 px-5 py-2.5 text-sm font-semibold backdrop-blur-md transition-colors"
                 onClick={() => navigate('/history')}
               >
                 <svg

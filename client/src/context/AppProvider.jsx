@@ -16,14 +16,5 @@ export function AppProvider({ children }) {
     document.documentElement.setAttribute('lang', language)
   }, [language])
 
-  // 3. Enable transitions exactly once after the initial render settles
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      document.documentElement.classList.add('theme-transitions')
-    }, 200)
-
-    return () => clearTimeout(timeout)
-  }, [])
-
   return <>{children}</>
 }

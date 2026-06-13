@@ -3,6 +3,7 @@ import { useToast } from '../../../context/ToastContext'
 import { useTranslation } from '../../../i18n'
 import axiosInstance from '../../../lib/axios'
 import Dialog from '../../ui/Dialog'
+import Radio from '../../ui/Radio'
 import Skeleton from '../../ui/Skeleton'
 
 export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
@@ -222,7 +223,7 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
                           <tr
                             key={plan.id}
                             onClick={() => handleSelectPlan(plan.id)}
-                            className={`relative cursor-pointer transition-colors ${
+                            className={`group relative cursor-pointer transition-colors ${
                               isSelected
                                 ? 'bg-bg-selected border-l-blue border-l-4'
                                 : 'hover:bg-bg-hover border-l-4 border-l-transparent'
@@ -230,13 +231,10 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
                           >
                             <td className="p-4 text-center">
                               <div className="flex items-center justify-center">
-                                {isSelected ? (
-                                  <div className="bg-blue border-blue mx-auto flex size-5 items-center justify-center rounded-full border-2">
-                                    <div className="size-2 rounded-full bg-white" />
-                                  </div>
-                                ) : (
-                                  <div className="border-text-muted group-hover:border-blue mx-auto flex size-5 items-center justify-center rounded-full border-2 transition-colors" />
-                                )}
+                                <Radio
+                                  checked={isSelected}
+                                  onChange={() => handleSelectPlan(plan.id)}
+                                />
                               </div>
                             </td>
                             <td className="p-4">

@@ -47,13 +47,13 @@ export default function Dialog({ isOpen, onClose, title, children, className = '
 
   return createPortal(
     <div
-      className={`fixed inset-0 z-50 grid place-items-center bg-black/50 p-4 text-lg backdrop-blur-sm transition-opacity duration-200 ${
+      className={`fixed inset-0 z-50 grid place-items-center bg-black/50 p-4 text-lg backdrop-blur-sm transition-opacity ${
         animating ? 'opacity-100' : 'opacity-0'
       }`}
     >
       <div className="fixed inset-0" onClick={onClose} aria-hidden="true" />
       <div
-        className={`bg-dialog relative flex max-h-[90vh] w-fit max-w-[95vw] transform flex-col rounded-xl p-6 shadow-2xl ${
+        className={`bg-dialog relative flex max-h-[90vh] w-fit max-w-[95vw] flex-col rounded-xl p-6 shadow-2xl transition-all ${
           animating ? 'scale-100 opacity-100' : 'scale-90 opacity-0'
         } ${className}`}
         role="dialog"

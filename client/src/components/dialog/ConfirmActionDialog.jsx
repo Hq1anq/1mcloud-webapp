@@ -202,14 +202,14 @@ export default function ConfirmActionDialog({
           <button
             onClick={onClose}
             disabled={isProcessing}
-            className="rounded-lg bg-gray-500 px-4 py-2 font-medium transition-colors hover:bg-gray-600 disabled:opacity-50"
+            className="rounded-lg bg-gray-500 px-4 py-2 font-medium disabled:opacity-50"
           >
             {t('cancel')}
           </button>
           <button
             onClick={handleConfirmClick}
             disabled={isProcessing || !!fetchError}
-            className="flex items-center rounded-lg bg-blue-600 px-4 py-2 font-medium transition-colors hover:bg-blue-700 disabled:opacity-50"
+            className="bg-blue flex items-center rounded-lg px-4 py-2 font-medium disabled:opacity-50"
           >
             {isProcessing && (
               <svg

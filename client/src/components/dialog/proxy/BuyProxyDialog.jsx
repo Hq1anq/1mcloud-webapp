@@ -531,11 +531,11 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
             <button
               onClick={handlePay}
               disabled={!agreeTerms || isBuying || summary.warning === 'Tài khoản không đủ'}
-              className="group enabled:bg-blue flex h-12 w-full items-center justify-center gap-2 rounded-lg font-semibold text-white shadow-sm transition-all disabled:bg-gray-500"
+              className="group enabled:bg-blue flex h-12 w-full items-center justify-center gap-2 rounded-lg font-semibold text-white shadow-sm disabled:bg-gray-500"
             >
               <span>{t('buy.payNow')}</span>
               <svg
-                className="size-5 group-hover:translate-x-1"
+                className="size-5 transition-transform ease-in-out group-hover:translate-x-2"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -550,7 +550,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
             </button>
             <button
               onClick={onClose}
-              className="text-text-muted hover:text-text-primary h-12 w-full rounded-lg bg-transparent font-medium transition-colors"
+              className="text-text-muted hover:text-text-primary h-12 font-medium transition-colors"
             >
               {t('cancel')}
             </button>

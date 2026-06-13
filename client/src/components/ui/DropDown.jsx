@@ -53,7 +53,7 @@ export default function DropDown({ options, value, onChange, className, menuClas
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
-          className={`ml-2 size-4 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+          className={`ml-2 size-4 transition-transform ${open ? 'rotate-180' : ''}`}
         >
           <path
             strokeLinecap="round"
@@ -66,7 +66,7 @@ export default function DropDown({ options, value, onChange, className, menuClas
 
       {/* Dropdown Menu */}
       <div
-        className={`scroll-container absolute right-0 z-50 w-full rounded-lg border-0 shadow-lg ${dropUp ? 'bottom-full mb-1 origin-bottom' : 'top-full mt-1 origin-top'} ${menuClassName || ''} ${open ? 'max-h-60 translate-y-0 scale-100 overflow-y-auto opacity-100' : `pointer-events-none max-h-0 scale-95 overflow-hidden opacity-0 ${dropUp ? 'translate-y-3' : '-translate-y-3'}`}`}
+        className={`scroll-container absolute right-0 z-50 w-full rounded-lg border-0 shadow-lg transition-all ${dropUp ? 'bottom-full mb-1 origin-bottom' : 'top-full mt-1 origin-top'} ${menuClassName || ''} ${open ? 'max-h-60 translate-y-0 scale-100 overflow-y-auto opacity-100' : `pointer-events-none max-h-0 scale-95 overflow-hidden opacity-0 ${dropUp ? 'translate-y-3' : '-translate-y-3'}`}`}
       >
         {options.map((option) => (
           <div

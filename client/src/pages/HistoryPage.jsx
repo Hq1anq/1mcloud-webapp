@@ -143,7 +143,7 @@ export default function HistoryPage() {
             <button
               type="button"
               onClick={() => handleTabChange('transaction')}
-              className={`rounded-md px-4 py-2 text-sm font-semibold transition ${
+              className={`rounded-md px-4 py-2 text-sm font-semibold transition-colors ${
                 activeTab === 'transaction'
                   ? 'bg-blue text-text-secondary'
                   : 'border-border bg-thead text-text-primary border'
@@ -154,7 +154,7 @@ export default function HistoryPage() {
             <button
               type="button"
               onClick={() => handleTabChange('change_ip')}
-              className={`rounded-md px-4 py-2 text-sm font-semibold transition ${
+              className={`rounded-md px-4 py-2 text-sm font-semibold transition-colors ${
                 activeTab === 'change_ip'
                   ? 'bg-blue text-text-secondary'
                   : 'border-border bg-thead text-text-primary border'

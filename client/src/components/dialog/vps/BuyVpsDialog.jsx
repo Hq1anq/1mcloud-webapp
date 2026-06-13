@@ -337,7 +337,11 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
         }}
       >
         {/* ─── PAGE 1: Nation Grid ──────────────────────── */}
-        <div className="scroll-container flex max-h-[80vh] w-full flex-none shrink-0 flex-col overflow-y-auto">
+        <div
+          className={`flex w-full flex-none shrink-0 flex-col overflow-y-auto transition-[max-height] duration-350 ease-in-out ${
+            step === 'grid' ? 'max-h-[80vh]' : 'max-h-116!'
+          }`}
+        >
           {/* Header */}
           <div className="flex items-center gap-4 border-b border-white/10 px-6 py-4">
             <div className="bg-blue flex items-center justify-center rounded-lg p-2 text-white">
@@ -405,11 +409,15 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
         </div>
 
         {/* ─── PAGE 2: Config + Summary ─────────────────── */}
-        <div className="flex max-h-[80vh] w-full flex-none shrink-0 flex-col overflow-y-auto md:flex-row md:overflow-hidden">
+        <div
+          className={`w-full flex-none shrink-0 flex-col overflow-y-auto transition-[max-height] duration-350 ease-in-out md:flex-row md:overflow-hidden ${
+            step === 'config' ? 'flex max-h-[80vh]' : 'max-h-116!'
+          }`}
+        >
           {/* Left: Plan table + config */}
           <div className="flex h-fit min-w-0 flex-1 flex-col md:h-auto">
             {/* Header with back */}
-            <header className="border-border flex shrink-0 items-center gap-3 border-b px-6 py-4">
+            <header className="border-border flex shrink-0 items-center gap-3 border-b p-4">
               <svg
                 onClick={handleBack}
                 xmlns="http://www.w3.org/2000/svg"

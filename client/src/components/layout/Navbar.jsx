@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { NavLink, Link } from 'react-router-dom'
-import UserMenu, { LanguageToggle, ThemeToggle } from './UserMenu'
+import UserMenu, { LanguageToggle } from './UserMenu'
+import ThemeToggle from '../ui/ThemeToggle'
 import useAuthStore from '../../store/useAuthStore'
 import { useTranslation } from '../../i18n'
 

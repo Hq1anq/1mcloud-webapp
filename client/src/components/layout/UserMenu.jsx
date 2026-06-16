@@ -1,65 +1,9 @@
 import ThemeToggle from '../ui/ThemeToggle'
+import LanguageToggle from '../ui/LanguageToggle'
 import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import useAuthStore from '../../store/useAuthStore'
-import useLanguageStore from '../../store/useLanguageStore'
 import { useTranslation } from '../../i18n'
-
-const FlagVN = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 320" className="rounded-sm">
-    <rect width="640" height="320" fill="#da251d" />
-    <path
-      fill="#ff0"
-      d="M320 70 l23.5 72.3 H420 l-61.8 44.9 L381.8 260 L320 215.1 L258.2 260 l23.6-72.8 L220 142.3 h76.5 Z"
-    />
-  </svg>
-)
-
-const FlagUK = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 30" className="rounded-sm">
-    <clipPath id="s">
-      <path d="M0,0 v30 h60 v-30 z" />
-    </clipPath>
-    <clipPath id="t">
-      <path d="M30,15 h30 v15 z v15 h-30 z h-30 v-15 z v-15 h30 z" />
-    </clipPath>
-    <g clipPath="url(#s)">
-      <path d="M0,0 v30 h60 v-30 z" fill="#012169" />
-      <path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" strokeWidth="6" />
-      <path d="M0,0 L60,30 M60,0 L0,30" clipPath="url(#t)" stroke="#C8102E" strokeWidth="4" />
-      <path d="M30,0 v30 M0,15 h60" stroke="#fff" strokeWidth="10" />
-      <path d="M30,0 v30 M0,15 h60" stroke="#C8102E" strokeWidth="6" />
-    </g>
-  </svg>
-)
-
-export const LanguageToggle = () => {
-  const { language, toggleLanguage } = useLanguageStore()
-  const [isAnimating, setIsAnimating] = useState(false)
-
-  const handleToggle = (e) => {
-    e.stopPropagation()
-    setIsAnimating(true)
-    setTimeout(() => {
-      toggleLanguage()
-      setTimeout(() => setIsAnimating(false), 200)
-    }, 180)
-  }
-
-  return (
-    <span
-      onClick={handleToggle}
-      className="inline-flex h-6 scale-110 cursor-pointer"
-      style={{
-        transition: 'transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease',
-        transform: isAnimating ? 'scale(0.3) rotate(-20deg)' : 'scale(1) rotate(0deg)',
-        opacity: isAnimating ? 0 : 1,
-      }}
-    >
-      {language === 'vi' ? <FlagVN /> : <FlagUK />}
-    </span>
-  )
-}
 
 export default function UserMenu() {
   const { user, logout } = useAuthStore()

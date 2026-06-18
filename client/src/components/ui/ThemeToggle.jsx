@@ -42,8 +42,8 @@ export default function ThemeToggle() {
     visible: {
       opacity: [0, 1, 0],
       strokeDashoffset: [0, -50, -100],
-      filter: ['blur(2px)', 'blur(2px)', 'blur(0px)'],
-
+      // No CSS filter here — Safari does not support filter on SVG child elements.
+      // Blur is applied via a native SVG <feGaussianBlur> filter attribute instead.
       transition: {
         duration: 0.75,
         ease: 'linear',
@@ -52,9 +52,8 @@ export default function ThemeToggle() {
     hidden: {
       opacity: 0,
       scale: 2,
-      strokeDasharray: '20, 1000',
+      strokeDasharray: '30, 1000',
       strokeDashoffset: 0,
-      filter: 'blur(0px)',
     },
   }
 
@@ -71,12 +70,21 @@ export default function ThemeToggle() {
         xmlns="http://www.w3.org/2000/svg"
         strokeWidth="4"
         strokeLinecap="round"
-        className="relative"
+        className="relative size-10"
       >
+        {/* SVG-native blur filter — works in Safari unlike CSS filter on child elements */}
+        <defs>
+          <filter id="moonGlow" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="2" />
+          </filter>
+        </defs>
+
+        {/* Moon shine overlay — blur via SVG filter attribute, not CSS filter */}
         <m.path
           variants={shineVariant}
           d={moonPath}
-          className={'absolute top-0 left-0 stroke-blue-100'}
+          className="stroke-blue-100"
+          filter="url(#moonGlow)"
           initial="hidden"
           animate={isDark ? 'visible' : 'hidden'}
         />

@@ -8,7 +8,7 @@ export default function HeroSection() {
       id="hero"
       className="text-text-muted flex w-full justify-center overflow-hidden bg-[linear-gradient(to_bottom,var(--home-hero-gradient-from),var(--home-hero-gradient-to))] px-4 py-12 md:py-20"
     >
-      <div className="flex max-w-[1280px] flex-1 flex-col">
+      <div className="flex max-w-7xl flex-1 flex-col">
         <div className="flex flex-col items-center gap-10 lg:flex-row">
           {/*  Left: Text Content  */}
           <div className="home-animate-fade-up z-10 flex flex-1 flex-col text-center lg:text-left">
@@ -54,7 +54,7 @@ export default function HeroSection() {
           </div>
 
           {/*  Right: Server Rack Illustration  */}
-          <div className="home-animate-slide-right relative flex w-full max-w-[600px] flex-1 items-center justify-center lg:max-w-none">
+          <div className="home-animate-slide-right relative flex w-full max-w-150 flex-1 items-center justify-center lg:max-w-none">
             <div className="border-border bg-terminal relative flex w-full items-center justify-center overflow-hidden rounded-xl border py-16 shadow-2xl">
               {/* Grid overlay */}
               <div className="home-grid-bg absolute inset-0 opacity-20" />

@@ -4,7 +4,7 @@ import { formatInputDate } from '../../../lib/utils.js'
 import { useTranslation } from '../../../i18n'
 
 import { applyFilters, operatorCycle } from './filterUtils.jsx'
-import { VIRTUOSO_COMPONENTS, itemContent } from './TableVirtuosoRow.jsx'
+import { VIRTUOSO_COMPONENTS, itemContent, TableRow } from './TableVirtuosoRow.jsx'
 import TableFilterHeader from './TableFilterHeader.jsx'
 import TableSkeleton from './TableSkeleton.jsx'
 
@@ -23,6 +23,7 @@ const Table = forwardRef(function Table(
     // Feature toggles
     selectable = true, // false → no checkboxes, no selection state/logic
     useFilter, // false/omitted → no filter inputs
+    virtualized = true,
 
     // Column config
     title,
@@ -371,20 +372,34 @@ const Table = forwardRef(function Table(
         <div className="scroll-container overflow-x-auto overflow-y-hidden rounded-b-lg [&_td]:transition-colors!">
           {isLoading ? (
             <TableSkeleton headers={headers} selectable={selectable} fixedHeader={fixedHeader} />
-          ) : (
-            scrollParent !== undefined && (
-              <TableVirtuoso
-                data={filteredData}
-                customScrollParent={scrollParent}
-                context={virtuosoContext}
-                components={VIRTUOSO_COMPONENTS}
-                fixedHeaderContent={fixedHeader}
-                itemContent={itemContent}
-                overscan={150}
-                increaseViewportBy={{ top: 80, bottom: 80 }}
-              />
-            )
-          )}
+          ) : virtualized && scrollParent !== undefined ? (
+            <TableVirtuoso
+              data={filteredData}
+              customScrollParent={scrollParent}
+              context={virtuosoContext}
+              components={VIRTUOSO_COMPONENTS}
+              fixedHeaderContent={fixedHeader}
+              itemContent={itemContent}
+              overscan={150}
+              increaseViewportBy={{ top: 80, bottom: 80 }}
+            />
+          ) : !virtualized ? (
+            <table className="w-full border-collapse text-left">
+              <thead>{fixedHeader()}</thead>
+              <tbody>
+                {filteredData.map((row, index) => (
+                  <TableRow
+                    key={row.sid !== undefined ? row.sid : index}
+                    context={virtuosoContext}
+                    item={row}
+                    data-index={index}
+                  >
+                    {itemContent(index, row, virtuosoContext)}
+                  </TableRow>
+                ))}
+              </tbody>
+            </table>
+          ) : null}
         </div>
 
         {!isLoading && isError && errorMessage}

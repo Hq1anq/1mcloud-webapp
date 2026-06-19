@@ -251,11 +251,16 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
           </>,
           'success'
         )
+        const parsedMustPay = parseFloat((summary.must_pay || '0').toString().replace(/,/g, '').replace(/[^\d.-]/g, '')) || 0
+        const qty = Number(amount) || 1
+        const calculatedPrice = parsedMustPay / qty
+        const formattedPrice = Math.round(calculatedPrice).toLocaleString('en-US')
+
         const extraConfig = {
           plan_number: selectedPlanObj?.name,
           country: selectedNation,
           he_dieu_hanh: getOS(supportData?.os?.option?.[selectedOs]),
-          price_vnd: selectedPlanObj?.price,
+          price_vnd: formattedPrice,
           note: note,
         }
         if (onSuccess) onSuccess(res.data?.data, extraConfig)
@@ -317,7 +322,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
     <Dialog
       isOpen={isOpen}
       onClose={onClose}
-      className="max-w-full overflow-hidden! p-0! text-sm md:w-[850px] lg:w-[1080px]"
+      className="max-w-full overflow-hidden! p-0! text-sm md:w-212.5 lg:w-270"
     >
       {/* Slider track */}
       <div
@@ -576,7 +581,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                 <section className="my-2">
                   <div className="flex flex-wrap items-center gap-5">
                     {/* OS */}
-                    <div className="flex min-w-[314px] grow flex-col gap-1.5 text-lg">
+                    <div className="flex min-w-78.5 grow flex-col gap-1.5 text-lg">
                       <span className="text-sm font-medium">{t('buyVps.os')}</span>
                       {renderSelect(
                         selectedOs,
@@ -811,7 +816,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
           </div>
 
           {/* Right: Summary Panel */}
-          <div className="bg-surface border-border flex w-full shrink-0 flex-col justify-between rounded-b-xl border-t p-4 md:w-[380px] md:rounded-r-xl md:rounded-bl-none md:border-l md:p-6 lg:border-t-0">
+          <div className="bg-surface border-border flex w-full shrink-0 flex-col justify-between rounded-b-xl border-t p-4 md:w-95 md:rounded-r-xl md:rounded-bl-none md:border-l md:p-6 lg:border-t-0">
             {!plans.some((p) => p.status === 'available') ? (
               <div className="text-text-muted mt-10 flex h-full flex-col items-center justify-center gap-4 text-center md:mt-0">
                 <svg

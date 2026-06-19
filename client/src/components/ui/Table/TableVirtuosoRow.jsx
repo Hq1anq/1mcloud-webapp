@@ -4,7 +4,7 @@ import { getNationFlag } from './filterUtils.jsx'
 import Checkbox from '../Checkbox.jsx'
 import RenewToggle from '../RenewToggle.jsx'
 
-const TableRow = ({ context, ...props }) => {
+export const TableRow = ({ context, ...props }) => {
   const { selectable, selectedIds, handleSelectRow, rowClassMap } = context
   const index = props['data-index']
   const row = props.item

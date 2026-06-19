@@ -111,7 +111,7 @@ export default function TableFilterHeader({
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 640 640"
-                      className="bg-blue filter-operator fill-text-secondary absolute top-[-2px] right-[-6px] size-4 cursor-pointer rounded-full p-0.5"
+                      className="bg-blue filter-operator fill-text-secondary absolute -top-0.5 -right-1.5 size-4 cursor-pointer rounded-full p-0.5"
                       onClick={() => onOperatorToggle(header)}
                       title={`Filter: ${operator}`}
                     >

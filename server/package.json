@@ -25,11 +25,11 @@
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "mssql": "^12.2.0",
-    "socks-proxy-agent": "^8.0.5"
+    "socks-proxy-agent": "^8.0.5",
+    "tsx": "^4.23.12"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
-    "@types/node": "^26.2.0",
-    "tsx": "^4.19.2"
+    "@types/node": "^26.2.0"
   }
 }

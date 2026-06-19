@@ -23,7 +23,6 @@
   },
   "homepage": "https://github.com/Hq1anq/1mcloud_tools#readme",
   "devDependencies": {
-    "concurrently": "^9.2.1",
-    "tsx": "^4.23.12"
+    "concurrently": "^9.2.1"
   }
 }

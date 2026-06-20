@@ -6,28 +6,18 @@ export default function VpsSection() {
   const features = [
     {
       icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
-          <path
-            d="M4 8L12 4L20 8L12 12L4 8Z"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M4 12L12 16L20 12"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M4 16L12 20L20 16"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M4 8L12 4L20 8L12 12L4 8Z" />
+          <path d="M4 12L12 16L20 12" />
+          <path d="M4 16L12 20L20 16" />
         </svg>
       ),
       title: t('vps.feat1.title'),
@@ -114,6 +104,7 @@ export default function VpsSection() {
     {
       label: 'vCPU Usage',
       value: '24%',
+      width: '24%',
       color: 'from-green-500 to-green-400',
       valueColor: 'text-green-400',
       animClass: 'home-bar-cpu',
@@ -121,6 +112,7 @@ export default function VpsSection() {
     {
       label: 'RAM Allocation',
       value: '12GB / 32GB',
+      width: '45%',
       color: 'from-blue-600 to-blue-400',
       valueColor: 'text-blue-400',
       animClass: 'home-bar-ram',
@@ -128,6 +120,7 @@ export default function VpsSection() {
     {
       label: 'NVMe I/O',
       value: '4500 MB/s',
+      width: '78%',
       color: 'from-purple-600 to-purple-400',
       valueColor: 'text-purple-400',
       animClass: 'home-bar-nvme',
@@ -168,6 +161,7 @@ export default function VpsSection() {
                     <div className="h-3 w-full overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--color-terminal)_80%,var(--border))]">
                       <div
                         className={`h-full rounded-full bg-linear-to-r ${bar.color} ${bar.animClass}`}
+                        style={{ width: bar.width }}
                       />
                     </div>
                   </div>
@@ -196,8 +190,12 @@ export default function VpsSection() {
             </div>
 
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-              {features.map((feat) => (
-                <div key={feat.title} className="home-animate-fade-up-delay-1 flex gap-4">
+              {features.map((feat, i) => (
+                <div
+                  key={feat.title}
+                  className="home-animate-fade-up flex gap-4"
+                  style={{ animationDelay: `${0.1 + i * 0.1}s` }}
+                >
                   <div className="bg-primary/15 text-primary home-icon-hover flex size-12 shrink-0 items-center justify-center rounded-lg p-2">
                     {feat.icon}
                   </div>

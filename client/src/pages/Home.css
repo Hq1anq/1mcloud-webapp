@@ -1,9 +1,13 @@
+/* Easing tokens */
+:root {
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 /* Grid background overlay */
 .home-grid-bg {
   background-size: 40px 40px;
-
   --grid-color: color-mix(in srgb, var(--color-border) 50%, var(--color-terminal));
-
   background-image:
     linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
     linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
@@ -14,7 +18,7 @@
 @keyframes home-fade-in-up {
   from {
     opacity: 0;
-    transform: translateY(28px);
+    transform: translateY(24px);
   }
   to {
     opacity: 1;
@@ -22,30 +26,15 @@
   }
 }
 
-@keyframes home-fill-bar-cpu {
+/* Unified slide-in: direction controlled via custom property */
+@keyframes home-slide-in {
   from {
-    width: 0;
+    opacity: 0;
+    transform: translateX(var(--slide-from, -28px));
   }
   to {
-    width: 24%;
-  }
-}
-
-@keyframes home-fill-bar-ram {
-  from {
-    width: 0;
-  }
-  to {
-    width: 45%;
-  }
-}
-
-@keyframes home-fill-bar-nvme {
-  from {
-    width: 0;
-  }
-  to {
-    width: 78%;
+    opacity: 1;
+    transform: translateX(0);
   }
 }
 
@@ -55,112 +44,154 @@
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-12px);
+    transform: translateY(-10px);
   }
 }
 
 @keyframes home-glow-pulse {
   0%,
   100% {
-    opacity: 0.3;
+    opacity: 0.25;
   }
   50% {
-    opacity: 0.6;
+    opacity: 0.55;
   }
 }
 
-@keyframes home-slide-in-left {
+/* Bar fills: use scaleX on a transform-origin left element — GPU only, no layout */
+@keyframes home-fill-bar {
   from {
-    opacity: 0;
-    transform: translateX(-30px);
+    transform: scaleX(0);
   }
   to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes home-slide-in-right {
-  from {
-    opacity: 0;
-    transform: translateX(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
+    transform: scaleX(1);
   }
 }
 
 /*  Utility classes  */
 
 .home-animate-fade-up {
-  animation: home-fade-in-up 0.7s ease-out both;
+  animation: home-fade-in-up 0.65s var(--ease-out-expo) both;
 }
 
 .home-animate-fade-up-delay-1 {
-  animation: home-fade-in-up 0.7s 0.15s ease-out both;
+  animation: home-fade-in-up 0.65s 0.12s var(--ease-out-expo) both;
 }
 
 .home-animate-fade-up-delay-2 {
-  animation: home-fade-in-up 0.7s 0.3s ease-out both;
+  animation: home-fade-in-up 0.65s 0.24s var(--ease-out-expo) both;
 }
 
 .home-animate-fade-up-delay-3 {
-  animation: home-fade-in-up 0.7s 0.45s ease-out both;
+  animation: home-fade-in-up 0.65s 0.36s var(--ease-out-expo) both;
 }
 
 .home-animate-slide-left {
-  animation: home-slide-in-left 0.7s 0.2s ease-out both;
+  --slide-from: -28px;
+  animation: home-slide-in 0.65s 0.15s var(--ease-out-expo) both;
 }
 
 .home-animate-slide-right {
-  animation: home-slide-in-right 0.7s 0.2s ease-out both;
+  --slide-from: 28px;
+  animation: home-slide-in 0.65s 0.15s var(--ease-out-expo) both;
 }
 
+/* Ambient / looping */
+
 .home-animate-float {
-  animation: home-float 4s ease-in-out infinite;
+  will-change: transform;
+  animation: home-float 5s var(--ease-out-quart) infinite;
 }
 
 .home-animate-glow {
-  animation: home-glow-pulse 3s ease-in-out infinite;
+  will-change: opacity;
+  animation: home-glow-pulse 4s ease-in-out infinite;
 }
 
+/* ─── Progress bars ──────────────────────────────────────────── */
+/*  Wrapper element must be `overflow: hidden`                   */
+/*  Bar element: transform-origin left; scaleX driven by class   */
+
 .home-bar-cpu {
-  animation: home-fill-bar-cpu 1.2s 0.5s ease-out both;
+  transform-origin: left center;
+  animation: home-fill-bar 1.1s 0.4s var(--ease-out-expo) both;
 }
 
 .home-bar-ram {
-  animation: home-fill-bar-ram 1.2s 0.7s ease-out both;
+  transform-origin: left center;
+  animation: home-fill-bar 1.1s 0.6s var(--ease-out-expo) both;
 }
 
 .home-bar-nvme {
-  animation: home-fill-bar-nvme 1.2s 0.9s ease-out both;
+  transform-origin: left center;
+  animation: home-fill-bar 1.1s 0.8s var(--ease-out-expo) both;
 }
 
-/* Hover lift for cards */
+/* Card hover lift */
+
 .home-card-hover {
   transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease,
-    border-color 0.3s ease;
+    transform 0.28s var(--ease-out-quart),
+    box-shadow 0.28s var(--ease-out-quart),
+    border-color 0.28s var(--ease-out-quart);
 }
 
 .home-card-hover:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+  transform: translateY(-5px);
+  box-shadow: 0 16px 40px color-mix(in srgb, var(--color-border) 30%, transparent);
 }
 
-/* Icon container scale */
-.home-icon-hover,
+/* Icon interactions */
+
+.home-icon-hover {
+  transition: transform 0.22s var(--ease-out-quart);
+}
+
 .home-largeicon-hover {
-  transition: transform 0.25s ease;
+  transition:
+    transform 0.28s var(--ease-out-quart),
+    opacity 0.28s ease;
 }
 
 .home-card-hover:hover .home-icon-hover {
-  transform: scale(1.1);
+  transform: scale(1.12);
 }
 
 .home-card-hover:hover .home-largeicon-hover {
-  transform: scale(1.1);
-  opacity: 20%;
+  transform: scale(1.08);
+  opacity: 0.18;
+}
+
+/* ─── Reduced motion ─────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .home-animate-fade-up,
+  .home-animate-fade-up-delay-1,
+  .home-animate-fade-up-delay-2,
+  .home-animate-fade-up-delay-3,
+  .home-animate-slide-left,
+  .home-animate-slide-right {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .home-animate-float,
+  .home-animate-glow {
+    animation: none;
+    will-change: auto;
+  }
+
+  .home-bar-cpu,
+  .home-bar-ram,
+  .home-bar-nvme {
+    animation: none;
+    transform: scaleX(1);
+  }
+
+  .home-card-hover,
+  .home-icon-hover,
+  .home-largeicon-hover {
+    transition: none;
+  }
 }

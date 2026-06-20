@@ -37,7 +37,7 @@ export default function HeroSection() {
             </div>
 
             {/* Feature Checks */}
-            <div className="home-animate-fade-up-delay-1 flex flex-col justify-center gap-4 pt-4 sm:flex-row lg:justify-start">
+            <div className="home-animate-fade-up-delay-2 flex flex-col justify-center gap-4 pt-4 sm:flex-row lg:justify-start">
               {[t('hero.feature1'), t('hero.feature2'), t('hero.feature3')].map((label) => (
                 <div key={label} className="flex items-center gap-2">
                   <svg

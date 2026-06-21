@@ -244,7 +244,7 @@ export default function ReinstallDialog({ isOpen, onClose, currentData, onSucces
               menuClassName="sm:text-lg text-base"
             />
           }
-          className="bg-text-muted h-11 w-full"
+          className="bg-dropdown/70 h-11 w-full"
         />
 
         <div className="mt-4 mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">

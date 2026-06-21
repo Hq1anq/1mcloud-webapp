@@ -57,16 +57,18 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
         }
         const data = res.data.info
         setSupportData(data)
+        const hasCurrentOs = data.support_os?.some((os) => os.id === data.current_os)
+        const targetOsId = hasCurrentOs ? data.current_os : data.support_os?.[0]?.id || null
         // Update dependent form fields (OS and range IP)
         if (ispParam)
           updateForm({
-            os_id: data.current_os || data.support_os?.[0]?.id,
+            os_id: targetOsId,
             remote_port: data.current_remote_port || '',
             range_ip: data.range_ip?.[0] || 'Ngẫu nhiên',
           })
         else
           updateForm({
-            os_id: data.current_os || data.support_os?.[0]?.id,
+            os_id: targetOsId,
             remote_port: data.current_remote_port || '',
             range_ip: data.range_ip?.[0] || 'Ngẫu nhiên',
             isp: data.isp?.[0] || 'Ngẫu nhiên',
@@ -298,7 +300,7 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
               menuClassName="sm:text-lg text-base"
             />
           }
-          className="bg-text-muted h-11 w-full"
+          className="bg-dropdown/70 h-11 w-full"
         />
 
         <div className="mt-4 flex flex-wrap gap-4">
@@ -316,27 +318,29 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
                   menuClassName="sm:text-lg text-base"
                 />
               }
-              className="bg-text-muted h-11 w-full"
+              className="bg-dropdown/70 h-11 w-full"
             />
           </div>
 
-          <div className="grow">
-            <span className="mt-2 text-base font-medium">{t('buy.provider')}</span>
-            <Skeleton
-              isLoading={loadingSupport && !loadingNoIsp}
-              isError={loadSupportError}
-              element={
-                <DropDown
-                  value={form.isp}
-                  options={supportData?.isp || []}
-                  onChange={handleIspChange}
-                  className="rounded-lg text-base sm:text-lg"
-                  menuClassName="sm:text-lg text-base"
-                />
-              }
-              className="bg-text-muted h-11 w-full"
-            />
-          </div>
+          {(!supportData?.isp || supportData.isp.length > 0) && (
+            <div className="grow">
+              <span className="mt-2 text-base font-medium">{t('buy.provider')}</span>
+              <Skeleton
+                isLoading={loadingSupport && !loadingNoIsp}
+                isError={loadSupportError}
+                element={
+                  <DropDown
+                    value={form.isp}
+                    options={supportData?.isp || []}
+                    onChange={handleIspChange}
+                    className="rounded-lg text-base sm:text-lg"
+                    menuClassName="sm:text-lg text-base"
+                  />
+                }
+                className="bg-dropdown/70 h-11 w-full"
+              />
+            </div>
+          )}
         </div>
 
         <div className="mt-4 mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">

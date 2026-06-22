@@ -1,4 +1,9 @@
+import { motion as m } from 'motion/react'
 import { useTranslation } from '../../i18n'
+import { fadeUp, slideRight, stagger, cardVariants, iconHover } from './homeVariants'
+
+const featureStagger = stagger(0.1, 0.05)
+const vp = { margin: '-80px' }
 
 export default function ProxySection() {
   const t = useTranslation()
@@ -44,7 +49,13 @@ export default function ProxySection() {
       <div className="flex max-w-7xl flex-1 flex-col">
         <div className="flex flex-col items-center gap-12 lg:flex-row">
           {/*  Left: Header + Feature Cards  */}
-          <div className="home-animate-fade-up flex flex-1 flex-col gap-8">
+          <m.div
+            className="flex flex-1 flex-col gap-8"
+            variants={fadeUp}
+            initial="hidden"
+            whileInView="visible"
+            viewport={vp}
+          >
             <div className="flex flex-col gap-4">
               <div className="text-primary flex items-center gap-2 font-bold tracking-wider uppercase">
                 <svg
@@ -63,32 +74,48 @@ export default function ProxySection() {
               <p className="leading-relaxed">{t('proxy.subtitle')}</p>
             </div>
 
-            <div className="flex flex-col gap-6">
+            {/* Feature cards — staggered */}
+            <m.div
+              className="flex flex-col gap-6"
+              variants={featureStagger}
+              initial="hidden"
+              whileInView="visible"
+              viewport={vp}
+            >
               {features.map((feat) => (
-                <div
+                <m.div
                   key={feat.title}
-                  className="bg-navbar home-card-hover border-card-border flex items-start gap-4 rounded-xl border p-4 shadow-sm"
+                  className="bg-navbar border-card-border flex items-start gap-4 rounded-xl border p-4 shadow-sm"
+                  variants={cardVariants}
+                  whileHover="hover"
                 >
-                  <div
-                    className="home-icon-hover flex size-10 shrink-0 items-center justify-center rounded-full p-1"
+                  <m.div
+                    className="flex size-10 shrink-0 items-center justify-center rounded-full p-1"
                     style={{
                       background: `color-mix(in srgb, ${feat.iconColor} 15%, transparent)`,
                       color: feat.iconColor,
                     }}
+                    variants={iconHover}
                   >
                     {feat.icon}
-                  </div>
+                  </m.div>
                   <div>
                     <h3 className="text-text-primary font-bold">{feat.title}</h3>
                     <p className="mt-1 text-sm">{feat.desc}</p>
                   </div>
-                </div>
+                </m.div>
               ))}
-            </div>
-          </div>
+            </m.div>
+          </m.div>
 
           {/*  Right: Network Topology Diagram  */}
-          <div className="home-animate-slide-right relative w-full flex-1">
+          <m.div
+            className="relative z-0 w-full flex-1"
+            variants={slideRight}
+            initial="hidden"
+            whileInView="visible"
+            viewport={vp}
+          >
             <div className="border-border bg-terminal relative flex flex-col items-center justify-center gap-6 overflow-hidden rounded-xl border p-4 shadow-2xl sm:px-8 sm:py-14">
               <div className="home-grid-bg absolute inset-0 opacity-20" />
 
@@ -169,9 +196,9 @@ export default function ProxySection() {
               </div>
             </div>
 
-            {/* Glow effect */}
-            <div className="home-animate-glow absolute -top-10 -right-10 -z-10 h-full w-full rounded-full bg-linear-to-br from-green-500/20 to-blue-500/20 opacity-50 blur-3xl" />
-          </div>
+            {/* Glow effect — looping ambient, kept as CSS class */}
+            <div className="home-animate-glow absolute -top-10 -right-10 -z-10 h-full w-full rounded-full bg-linear-to-br from-green-500 to-blue-500 blur-3xl" />
+          </m.div>
         </div>
       </div>
     </section>

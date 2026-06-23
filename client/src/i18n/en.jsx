@@ -16,6 +16,7 @@ const en = {
   current: 'Current',
   delete: 'Delete',
   paste: 'Paste',
+  filter: 'Filter',
 
   // UserMenu
   'menu.login': 'Login',

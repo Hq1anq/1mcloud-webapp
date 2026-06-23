@@ -15,8 +15,6 @@ import useProxyStore from '../store/useProxyStore'
 import useManagerActions from '../hooks/useManagerActions'
 
 const OPERATOR_CONFIG = {
-  sid: ['equal', 'greater-equal', 'less-equal'],
-  created: ['equal', 'greater-equal', 'less-equal'],
   expired: ['equal', 'greater-equal', 'less-equal'],
 }
 
@@ -1405,7 +1403,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
         isLoading={isLoading}
         useFilter={true}
         headers={[
-          'sid',
+          'control',
           'ip_port',
           'country',
           'type',
@@ -1413,7 +1411,6 @@ export default function ProxyManager({ onBuySuccessRef }) {
           'expired',
           'status',
           'note',
-          'control',
           'is_auto_renew',
         ]}
         controlButton={(row) => (

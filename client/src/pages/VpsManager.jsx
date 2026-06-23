@@ -16,8 +16,6 @@ import useManagerActions from '../hooks/useManagerActions'
 import getOS from '../data/osMap'
 
 const OPERATOR_CONFIG = {
-  sid: ['equal', 'greater-equal', 'less-equal'],
-  created: ['equal', 'greater-equal', 'less-equal'],
   expired: ['equal', 'greater-equal', 'less-equal'],
 }
 
@@ -881,6 +879,7 @@ export default function VpsManager({ onBuySuccessRef }) {
         isLoading={isLoading}
         useFilter={true}
         headers={[
+          'control',
           'plan_number',
           'ip_port',
           'country',
@@ -890,7 +889,6 @@ export default function VpsManager({ onBuySuccessRef }) {
           'expired',
           'status',
           'note',
-          'control',
           'is_auto_renew',
         ]}
         controlButton={(row) => (

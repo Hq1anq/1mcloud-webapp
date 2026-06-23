@@ -16,6 +16,7 @@ const vi = {
   current: 'Hiện tại',
   delete: 'Xóa',
   paste: 'Dán',
+  filter: 'Lọc',
 
   // UserMenu
   'menu.login': 'Đăng nhập',

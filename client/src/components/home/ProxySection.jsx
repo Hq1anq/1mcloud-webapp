@@ -1,6 +1,7 @@
+import { useState } from 'react'
 import { motion as m } from 'motion/react'
 import { useTranslation } from '../../i18n'
-import { fadeUp, slideRight, stagger, cardVariants, iconHover } from './homeVariants'
+import { fadeUp, slideRight, stagger, iconHover } from './homeVariants'
 
 const featureStagger = stagger(0.1, 0.05)
 const vp = { margin: '-80px' }
@@ -15,6 +16,40 @@ const flowNode = {
 const flowArrow = {
   hidden: { opacity: 0, scaleX: 0 },
   visible: { opacity: 1, scaleX: 1, transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] } },
+}
+
+function ProxyCard({ feat }) {
+  const [isHovered, setIsHovered] = useState(false)
+
+  return (
+    <m.div
+      className="bg-navbar border-card-border flex items-start gap-4 rounded-xl border p-4 shadow-sm"
+      variants={fadeUp}
+      whileHover={{
+        y: -5,
+        boxShadow: '0 16px 40px color-mix(in srgb, var(--color-border) 30%, transparent)',
+      }}
+      transition={{ duration: 0.28, ease: [0.25, 1, 0.5, 1] }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <m.div
+        className="flex size-10 shrink-0 items-center justify-center rounded-full p-1"
+        style={{
+          background: `color-mix(in srgb, ${feat.iconColor} 15%, transparent)`,
+          color: feat.iconColor,
+        }}
+        variants={iconHover}
+        animate={isHovered ? 'hover' : 'initial'}
+      >
+        {feat.icon}
+      </m.div>
+      <div>
+        <h3 className="text-text-primary font-bold">{feat.title}</h3>
+        <p className="mt-1 text-sm">{feat.desc}</p>
+      </div>
+    </m.div>
+  )
 }
 
 export default function ProxySection() {
@@ -95,32 +130,7 @@ export default function ProxySection() {
               viewport={{ margin: '-100px' }}
             >
               {features.map((feat) => (
-                <m.div
-                  key={feat.title}
-                  className="bg-navbar border-card-border flex items-start gap-4 rounded-xl border p-4 shadow-sm"
-                  variants={cardVariants}
-                  whileHover={{
-                    y: -5,
-                    boxShadow:
-                      '0 16px 40px color-mix(in srgb, var(--color-border) 30%, transparent)',
-                    transition: { duration: 0.28, ease: [0.25, 1, 0.5, 1] },
-                  }}
-                >
-                  <m.div
-                    className="flex size-10 shrink-0 items-center justify-center rounded-full p-1"
-                    style={{
-                      background: `color-mix(in srgb, ${feat.iconColor} 15%, transparent)`,
-                      color: feat.iconColor,
-                    }}
-                    variants={iconHover}
-                  >
-                    {feat.icon}
-                  </m.div>
-                  <div>
-                    <h3 className="text-text-primary font-bold">{feat.title}</h3>
-                    <p className="mt-1 text-sm">{feat.desc}</p>
-                  </div>
-                </m.div>
+                <ProxyCard key={feat.title} feat={feat} />
               ))}
             </m.div>
           </m.div>

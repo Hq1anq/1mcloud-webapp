@@ -85,7 +85,7 @@ export default function Navbar() {
               <Link
                 to="https://1mcloud.vn/"
                 target="_blank"
-                className="bg-blue rounded-lg px-4 py-2 font-medium text-white shadow-sm"
+                className="w-28 rounded-lg bg-blue-600 px-4 py-2 text-center font-medium text-white shadow-sm hover:bg-blue-700"
               >
                 {t('menu.login')}
               </Link>
@@ -95,20 +95,20 @@ export default function Navbar() {
           {/* Row 2 (mobile only): Menu button left, toggles right */}
           <div className="flex w-full items-center justify-between md:hidden">
             {MenuButton}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <LanguageToggle />
               <ThemeToggle />
             </div>
           </div>
 
           {/* Desktop: all controls on one line */}
-          <div className="hidden items-center gap-3 md:order-2 md:flex">
+          <div className="hidden items-center gap-4 md:order-2 md:flex">
             <LanguageToggle />
             <ThemeToggle />
             <Link
               to="https://1mcloud.vn/"
               target="_blank"
-              className="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white shadow-sm hover:bg-blue-700"
+              className="w-32 rounded-lg bg-blue-600 px-4 py-2 text-center font-medium text-white shadow-sm hover:bg-blue-700"
             >
               {t('menu.login')}
             </Link>

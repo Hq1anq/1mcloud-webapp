@@ -37,7 +37,7 @@ export default function LanguageToggle() {
       whileHover={{ scale: 1.15 }}
       whileTap={{ scale: 0.9 }}
       onClick={toggleLanguage}
-      className="relative h-7 w-14 cursor-pointer overflow-hidden rounded-sm"
+      className="relative h-6 w-12 cursor-pointer overflow-hidden rounded-sm md:h-7 md:w-14"
     >
       <AnimatePresence mode="popLayout" initial={false}>
         <motion.div

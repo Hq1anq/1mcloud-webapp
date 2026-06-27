@@ -1,0 +1,17 @@
+# <type>: <short summary>
+# Example: feat: support system preferred theme fallback
+#
+# Types:
+#   feat:     A new feature
+#   fix:      A bug fix
+#   refactor: A code change that neither fixes a bug nor adds a feature
+#   style:    Formatting, linting, or styling (no logic change)
+#   docs:     Documentation updates (e.g. README.md, DESIGN.md)
+#   test:     Adding or correcting tests
+#   chore:    Build system, packages, config, or auxiliary updates
+# -------------------------------------------------------------
+# Guidelines:
+# - Subject must be 50 characters or less.
+# - Capitalize the subject line.
+# - Do not end the subject line with a period.
+# - Use the imperative mood in the subject line (e.g. "Add" instead of "Added").

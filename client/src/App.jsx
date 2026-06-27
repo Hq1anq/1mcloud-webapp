@@ -17,7 +17,7 @@ import SignupPage from './pages/SignupPage.jsx'
 import Contact from './pages/Contact.jsx'
 import AccountPage from './pages/AccountPage.jsx'
 import HistoryPage from './pages/HistoryPage.jsx'
-import { ThemeProvider } from './context/ThemeProvider'
+import { AppProvider } from './context/AppProvider'
 
 function App() {
   const { checkAuth, isAuthenticated } = useAuthStore()
@@ -27,7 +27,7 @@ function App() {
   }, [checkAuth])
 
   return (
-    <ThemeProvider>
+    <AppProvider>
       <div className="bg-body text-text-secondary flex h-full flex-col overflow-hidden font-sans text-base sm:text-lg">
         <BrowserRouter>
           <ScrollToTop />
@@ -103,7 +103,7 @@ function App() {
           </div>
         </BrowserRouter>
       </div>
-    </ThemeProvider>
+    </AppProvider>
   )
 }
 

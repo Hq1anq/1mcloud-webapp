@@ -338,7 +338,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
       >
         {/* ─── PAGE 1: Nation Grid ──────────────────────── */}
         <div
-          className={`flex w-full flex-none shrink-0 flex-col overflow-y-auto transition-[max-height] duration-350 ease-in-out ${
+          className={`no-scrollbar flex w-full flex-none shrink-0 flex-col overflow-y-auto transition-[max-height] duration-350 ease-in-out ${
             step === 'grid' ? 'max-h-[80vh]' : 'max-h-116!'
           }`}
         >

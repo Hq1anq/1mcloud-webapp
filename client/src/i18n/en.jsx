@@ -211,6 +211,7 @@ const en = {
   'manager.failed': 'failed',
   'manager.renewCalcError': 'Failed to calculate renew data.',
   'manager.refundCalcError': 'Failed to calculate refund data.',
+  confirm: 'Confirm',
   'manager.confirmChangeIp': 'Confirm Change IP',
   'manager.confirmReinstall': 'Confirm Reinstall',
   'manager.confirmRenew': 'Confirm Renew',
@@ -357,6 +358,7 @@ const en = {
   // VPS Manager
   'vpsManager.title': 'VPS Manager',
   'vpsManager.resetPassword': 'Reset Password',
+  to: 'to',
   'vpsManager.autoFix': 'Auto Fix',
   'vpsManager.upgrade': 'Upgrade',
 

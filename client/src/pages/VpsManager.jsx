@@ -211,24 +211,45 @@ export default function VpsManager({ onBuySuccessRef }) {
     [handleBatchAction, t]
   )
 
-  const handleResetPassword = useCallback(
-    () =>
-      handleBatchAction(
-        '/server/reset-password',
-        t('vpsManager.resetPassword').toUpperCase(),
-        (row) => {
-          const [username] = (row.user_pass || '').split('/')
-          const newUserPass = username ? `${username}/Httv1234` : `/Httv1234`
-          return { user_pass: newUserPass }
-        }
+  const handleResetPassword = useCallback(async () => {
+    const rows = [...selectedRowsRef.current]
+    const confirmed = await confirmAction({
+      title: t('confirm'),
+      infoText: (
+        <>
+          {t('vpsManager.resetPassword')} {t('to')}{' '}
+          <span className="text-highlight font-bold">Httv1234</span>
+        </>
       ),
-    [handleBatchAction, t]
-  )
+      isProxy: false,
+      isRenew: false,
+      selectedRows: rows,
+    })
 
-  const handleAutoFix = useCallback(
-    () => handleBatchAction('/server/auto-fix', t('vpsManager.autoFix').toUpperCase()),
-    [handleBatchAction, t]
-  )
+    if (!confirmed) return
+    handleBatchAction(
+      '/server/reset-password',
+      t('vpsManager.resetPassword').toUpperCase(),
+      (row) => {
+        const [username] = (row.user_pass || '').split('/')
+        const newUserPass = username ? `${username}/Httv1234` : `/Httv1234`
+        return { user_pass: newUserPass }
+      }
+    )
+  }, [handleBatchAction, t])
+
+  const handleAutoFix = useCallback(async () => {
+    const rows = [...selectedRowsRef.current]
+    const confirmed = await confirmAction({
+      title: `${t('confirm')} ${t('vpsManager.autoFix')}`,
+      isProxy: false,
+      isRenew: false,
+      selectedRows: rows,
+    })
+
+    if (!confirmed) return
+    handleBatchAction('/server/auto-fix', t('vpsManager.autoFix').toUpperCase())
+  }, [handleBatchAction, t])
 
   // --- Change Note handler ---
   const handleChangeNote = useCallback(async () => {

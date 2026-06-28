@@ -210,6 +210,7 @@ const vi = {
   'manager.completed': 'hoàn tất',
   'manager.success': 'thành công',
   'manager.failed': 'thất bại',
+  confirm: 'Xác nhận',
   'manager.confirmChangeIp': 'Xác nhận đổi IP',
   'manager.confirmReinstall': 'Xác nhận cài lại',
   'manager.confirmRenew': 'Xác nhận gia hạn',
@@ -357,7 +358,8 @@ const vi = {
   // VPS Manager
   'vpsManager.title': 'Quản lý VPS',
   'vpsManager.resetPassword': 'Đặt lại mật khẩu',
-  'vpsManager.autoFix': 'Sửa tự động',
+  to: 'thành',
+  'vpsManager.autoFix': 'Sửa lỗi tự động',
   'vpsManager.upgrade': 'Nâng cấp',
   'manager.comingSoon': 'Sắp ra mắt',
 

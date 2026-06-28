@@ -10,7 +10,7 @@ const specStagger = stagger(0.1, 0.05)
 
 // Viewport config: no root needed — #main-scroll-container fills the full browser
 // frame, so the default visual viewport and the container boundary are identical.
-const vp = { margin: '-80px' }
+const vp = { margin: '-70px' }
 
 function VpsCard({ card }) {
   const [isHovered, setIsHovered] = useState(false)
@@ -196,7 +196,6 @@ export default function VpsSection() {
             variants={slideLeft}
             initial="hidden"
             whileInView="visible"
-            viewport={vp}
           >
             {/* Resource monitor */}
             <div className="border-border bg-terminal relative flex flex-col justify-center overflow-hidden rounded-xl border px-8 py-12 shadow-xl sm:p-16">

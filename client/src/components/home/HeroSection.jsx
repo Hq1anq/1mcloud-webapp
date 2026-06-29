@@ -81,8 +81,16 @@ export default function HeroSection() {
               {/* Grid overlay */}
               <div className="home-grid-bg absolute inset-0 opacity-20" />
 
-              {/* Server panel — float is a looping CSS animation, kept in CSS */}
-              <div className="home-animate-float border-border bg-wrapper relative z-10 flex w-64 flex-col gap-3 rounded-lg border p-4 shadow-lg">
+              {/* Server panel — float loop managed via motion WAAPI */}
+              <m.div
+                className="border-border bg-wrapper relative z-10 flex w-64 flex-col gap-3 rounded-lg border p-4 shadow-lg"
+                animate={{ y: [0, -10, 0] }}
+                transition={{
+                  repeat: Infinity,
+                  duration: 5,
+                  ease: 'easeInOut',
+                }}
+              >
                 {/* Server rows */}
                 {[
                   {
@@ -125,7 +133,7 @@ export default function HeroSection() {
                   <span>RACK-01</span>
                   <span className="text-green">ONLINE</span>
                 </div>
-              </div>
+              </m.div>
 
               {/* Decorative lines */}
               <div className="absolute top-1/2 right-12 h-px w-20 bg-[linear-gradient(to_left,var(--primary),transparent)]" />

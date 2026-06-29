@@ -1,6 +1,14 @@
 import { motion as m } from 'motion/react'
 import { useTranslation } from '../../i18n'
-import { fadeUp, slideLeft, stagger, barFill, cardVariants, iconHover, largeIconHover } from './homeVariants'
+import {
+  fadeUp,
+  slideLeft,
+  stagger,
+  barFill,
+  cardVariants,
+  iconHover,
+  largeIconHover,
+} from './homeVariants'
 
 // Stagger presets — defined once, not recreated per render
 const featureStagger = stagger(0.09, 0.05)

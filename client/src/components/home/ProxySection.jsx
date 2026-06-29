@@ -196,8 +196,16 @@ export default function ProxySection() {
               </div>
             </div>
 
-            {/* Glow effect — looping ambient, kept as CSS class */}
-            <div className="home-animate-glow absolute -top-10 -right-10 -z-10 h-full w-full rounded-full bg-linear-to-br from-green-500 to-blue-500 blur-3xl" />
+            {/* Glow effect — looping ambient, managed via motion WAAPI */}
+            <m.div
+              className="absolute -top-10 -right-10 -z-10 h-full w-full rounded-full bg-linear-to-br from-green-500 to-blue-500 blur-3xl"
+              animate={{ opacity: [0.15, 0.35, 0.15] }}
+              transition={{
+                repeat: Infinity,
+                duration: 4,
+                ease: 'easeInOut',
+              }}
+            />
           </m.div>
         </div>
       </div>

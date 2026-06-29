@@ -1,8 +1,7 @@
 /**
  * Shared Motion variants for the Home page.
  *
- * All entrance animations use expo-out easing (0.16, 1, 0.3, 1) —
- * the same curve defined in Home.css for hover/looping animations.
+ * All entrance animations use expo-out easing (0.16, 1, 0.3, 1)
  *
  * Usage:
  *   import { fadeUp, slideLeft, slideRight, stagger, barFill } from './homeVariants'
@@ -12,19 +11,19 @@ const expo = [0.16, 1, 0.3, 1]
 
 /** Fade in from below */
 export const fadeUp = {
-  hidden:  { opacity: 0, y: 22 },
+  hidden: { opacity: 0, y: 22 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: expo } },
 }
 
 /** Slide in from the left */
 export const slideLeft = {
-  hidden:  { opacity: 0, x: -28 },
+  hidden: { opacity: 0, x: -28 },
   visible: { opacity: 1, x: 0, transition: { duration: 0.65, ease: expo } },
 }
 
 /** Slide in from the right */
 export const slideRight = {
-  hidden:  { opacity: 0, x: 28 },
+  hidden: { opacity: 0, x: 28 },
   visible: { opacity: 1, x: 0, transition: { duration: 0.65, ease: expo } },
 }
 
@@ -34,7 +33,7 @@ export const slideRight = {
  * @param {number} delayChildren    initial delay before the first child (default 0.05)
  */
 export const stagger = (staggerChildren = 0.08, delayChildren = 0.05) => ({
-  hidden:  {},
+  hidden: {},
   visible: { transition: { staggerChildren, delayChildren } },
 })
 
@@ -44,7 +43,7 @@ export const stagger = (staggerChildren = 0.08, delayChildren = 0.05) => ({
  * The bar's actual fill percentage is set via `style={{ width: '...' }}` on the element.
  */
 export const barFill = {
-  hidden:  { scaleX: 0 },
+  hidden: { scaleX: 0 },
   visible: { scaleX: 1, transition: { duration: 1.05, ease: expo } },
 }
 

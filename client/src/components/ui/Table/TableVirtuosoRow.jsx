@@ -3,6 +3,7 @@ import { handleCopy, getStatusClasses } from '../../../lib/utils.js'
 import { getNationFlag } from './filterUtils.jsx'
 import Checkbox from '../Checkbox.jsx'
 import RenewToggle from '../RenewToggle.jsx'
+import { getExpiryStyle } from '../../../lib/utils.js'
 
 export const TableRow = ({ context, ...props }) => {
   const { selectable, selectedIds, handleSelectRow, rowClassMap } = context
@@ -13,10 +14,15 @@ export const TableRow = ({ context, ...props }) => {
   const overrideClass = row && rowClassMap?.[row.sid]
   const isRefunded = row?.status === 'Refunded'
 
+  // Expiry style is only applied when no action-override class is present.
+  const expiryStyle = !overrideClass ? getExpiryStyle(row?.expired) : null
+  const bgClass = overrideClass ? overrideClass : isSelected ? 'bg-bg-selected' : ''
+
   return (
     <tr
       {...props}
-      className={`transition-colors ${isRefunded ? 'cursor-not-allowed opacity-50 select-none' : 'hover:bg-bg-hover'} ${overrideClass ? overrideClass : isSelected ? 'bg-bg-selected' : ''} ${props.className || ''}`}
+      style={expiryStyle ?? undefined}
+      className={`transition-colors ${isRefunded ? 'cursor-not-allowed opacity-50 select-none' : 'hover:bg-bg-hover'} ${bgClass} ${props.className || ''}`}
       onClick={(e) => {
         if (isRefunded || !selectable) return
         if (e.target.closest('input') || e.target.closest('button') || e.target.closest('label'))

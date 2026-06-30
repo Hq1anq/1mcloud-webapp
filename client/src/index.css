@@ -136,8 +136,8 @@
   --text-toast-success: #86efac;
   --text-toast-error: #fca5a5;
 
-  --bg-hover: color-mix(in srgb, var(--bg-thead), white 80%);
-  --bg-selected: color-mix(in srgb, var(--bg-thead), white 70%);
+  --bg-hover: color-mix(in srgb, var(--bg-surface), white 50%);
+  --bg-selected: white;
 
   --scrollbar-track: #f5f0cd;
   --scrollbar-thumb: var(--color-sky-400);

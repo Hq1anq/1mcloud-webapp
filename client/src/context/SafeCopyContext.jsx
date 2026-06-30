@@ -7,27 +7,38 @@ const SafeCopyContext = createContext(null)
 export const SafeCopyProvider = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false)
   const [text, setText] = useState('')
+  const [initialCopyState, setInitialCopyState] = useState('idle')
 
   const safeCopy = useCallback(async (content) => {
+    let state = 'idle'
     try {
       await navigator.clipboard.writeText(content)
+      state = 'copied'
       return true
     } catch {
-      // Clipboard API failed — show fallback dialog
+      // Clipboard API failed
+      // state = 'failed'
+    } finally {
       setText(content)
+      setInitialCopyState(state)
       setIsOpen(true)
-      return false
     }
   }, [])
 
   const onClose = useCallback(() => {
     setIsOpen(false)
+    setInitialCopyState('idle')
   }, [])
 
   return (
     <SafeCopyContext.Provider value={{ safeCopy }}>
       {children}
-      <CopyDialog isOpen={isOpen} onClose={onClose} text={text} />
+      <CopyDialog
+        isOpen={isOpen}
+        onClose={onClose}
+        text={text}
+        initialCopyState={initialCopyState}
+      />
     </SafeCopyContext.Provider>
   )
 }

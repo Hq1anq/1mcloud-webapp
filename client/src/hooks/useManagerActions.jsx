@@ -3,6 +3,7 @@ import axiosInstance from '../lib/axios'
 import { randomDelay } from '../lib/utils'
 import { useToast } from '../context/ToastContext'
 import { useTranslation } from '../i18n'
+import useProfileStore from '../store/useProfileStore'
 
 /**
  * Shared hook for batch/sequential processing actions used by VpsManager and ProxyManager.
@@ -16,6 +17,7 @@ export default function useManagerActions(store) {
 
   const { addToast, updateToast, removeToast } = useToast()
   const t = useTranslation()
+  const fetchBalance = useProfileStore((s) => s.fetchBalance)
 
   // Selection state
   const [selectedRows, setSelectedRows] = useState([])
@@ -77,6 +79,7 @@ export default function useManagerActions(store) {
 
           setRowClassMap(classUpdates)
           deselectRows(rows)
+          fetchBalance()
           addToast(
             <>
               {actionName} {t('manager.completed')} <br />
@@ -139,6 +142,7 @@ export default function useManagerActions(store) {
             updateRowBySid(row.sid, () => updates)
           }
           setRowClassMap((prev) => ({ ...prev, [row.sid]: 'bg-success-cell' }))
+          fetchBalance()
           addToast(
             <>
               {actionName} {t('manager.completed')} <br />
@@ -231,6 +235,7 @@ export default function useManagerActions(store) {
 
       removeToast(loadingId)
       setIsProcessing(false)
+      if (successCount > 0) fetchBalance()
       if (failCount === 0)
         addToast(
           <>
@@ -266,7 +271,7 @@ export default function useManagerActions(store) {
           failCount === 0 ? 'success' : 'error'
         )
     },
-    [addToast, updateToast, removeToast, t]
+    [addToast, updateToast, removeToast, t, fetchBalance]
   )
 
   return {

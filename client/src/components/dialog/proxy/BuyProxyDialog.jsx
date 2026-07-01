@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useToast } from '../../../context/ToastContext'
 import { useTranslation } from '../../../i18n'
 import axiosInstance from '../../../lib/axios'
+import useProfileStore from '../../../store/useProfileStore'
 import Dialog from '../../ui/Dialog'
 import DropDown from '../../ui/DropDown'
 import Checkbox from '../../ui/Checkbox'
@@ -10,6 +11,7 @@ import Skeleton from '../../ui/Skeleton'
 export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
   const { addToast, removeToast } = useToast()
   const t = useTranslation()
+  const fetchBalance = useProfileStore((s) => s.fetchBalance)
 
   const [supportData, setSupportData] = useState({
     type: { option: { HTTPS: 'HTTPS' } },
@@ -204,6 +206,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
           </>,
           'success'
         )
+        fetchBalance()
         const extraConfig = {
           country: selectedNation,
           type: selectedType === 'proxy_https' ? 'HTTPS Proxy' : 'SOCKS5 Proxy',

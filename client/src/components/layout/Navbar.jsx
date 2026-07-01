@@ -1,22 +1,43 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { NavLink, Link } from 'react-router-dom'
 import UserMenu from './UserMenu'
 import ThemeToggle from '../ui/ThemeToggle'
 import LanguageToggle from '../ui/LanguageToggle'
 import useAuthStore from '../../store/useAuthStore'
+import useProfileStore from '../../store/useProfileStore'
 import { useTranslation } from '../../i18n'
 
 export default function Navbar() {
   const t = useTranslation()
-  const { isAuthenticated } = useAuthStore()
-  const linkBase = 'text-text-primary py-2 px-3 rounded-sm md:p-0 flex items-center'
+  const { isAuthenticated, user } = useAuthStore()
+  const { balance, fetchBalance } = useProfileStore()
+  const username = user?.username || user?.email || 'User'
+  const linkBase =
+    'text-text-primary py-2 px-3 rounded-sm md:p-0 flex items-center whitespace-nowrap'
   const active = 'bg-wrapper md:bg-transparent text-[#cbd5e1] md:text-primary'
   const inactive = 'md:hover:text-primary hover:bg-bg-hover md:hover:bg-transparent'
 
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen)
-  }
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
+  const menuRef = useRef(null)
+
+  // Fetch balance once on mount when authenticated
+  useEffect(() => {
+    if (isAuthenticated) fetchBalance()
+  }, [isAuthenticated, fetchBalance])
+
+  // Close user menu on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setIsUserMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
 
   const navLinkClass = ({ isActive }) => `${linkBase} ${isActive ? active : inactive}`
 
@@ -66,14 +87,41 @@ export default function Navbar() {
 
   return (
     <nav
-      className={`bg-navbar border-b-card-border z-50 flex items-center justify-between gap-1 border-b-2 px-3 py-1 shadow-md select-none md:px-5 md:py-3 ${isAuthenticated ? 'flex-row flex-wrap md:flex-nowrap' : 'flex-col md:flex-row'}`}
+      className={`bg-navbar border-b-card-border z-50 flex items-center gap-1 border-b-2 px-3 py-1 shadow-md select-none md:px-5 md:py-3 ${isAuthenticated ? 'flex-row flex-wrap md:flex-nowrap' : 'flex-col md:flex-row'}`}
     >
       {isAuthenticated ? (
         <>
-          {Logo}
-          <div className="flex items-center gap-3 md:order-2">
+          <div className="flex grow items-center justify-between md:w-auto md:grow-0">
+            {Logo}
             {MenuButton}
-            <UserMenu />
+          </div>
+          <div className="mx-auto flex items-center gap-3 md:order-2 md:mx-0 md:ml-auto">
+            {/* Balance + Username pill */}
+            <div
+              className="border-border bg-surface relative flex items-center gap-1 rounded-lg border p-1 shadow-sm"
+              ref={menuRef}
+            >
+              {/* Balance */}
+              <div className="text-green px-3 py-1 font-mono text-sm font-semibold">
+                {balance != null ? balance + ' VND' : '--'}
+              </div>
+              <div className="bg-border h-6 w-px" />
+              {/* Username trigger */}
+              <button
+                onClick={() => setIsUserMenuOpen((o) => !o)}
+                className="hover:bg-bg-hover flex items-center gap-1.5 rounded-md px-3 py-1 transition-colors focus:outline-none"
+              >
+                <span className="text-text-primary text-sm font-bold">{username}</span>
+                <svg className="text-text-muted size-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fillRule="evenodd"
+                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
+              <UserMenu isOpen={isUserMenuOpen} setIsOpen={setIsUserMenuOpen} />
+            </div>
           </div>
         </>
       ) : (
@@ -118,7 +166,7 @@ export default function Navbar() {
 
       {/* Menu Items */}
       <ul
-        className={`bg-surface flex w-full flex-col justify-end overflow-hidden rounded-lg font-medium md:mr-8 md:max-h-none md:w-auto md:flex-1 md:flex-row md:items-center md:space-x-8 md:bg-transparent ${isMenuOpen ? 'mt-4 max-h-125 p-4' : 'max-h-0'}`}
+        className={`bg-surface flex w-full flex-col justify-end rounded-lg font-medium md:mr-4 md:ml-6 md:max-h-none md:w-auto md:flex-1 md:flex-row md:items-center md:space-x-6 md:overflow-visible md:bg-transparent ${isMenuOpen ? 'mt-4 max-h-125 overflow-hidden p-4' : 'max-h-0 overflow-hidden md:max-h-none'}`}
       >
         <li>
           <NavLink to="/" className={navLinkClass} onClick={() => setIsMenuOpen(false)}>

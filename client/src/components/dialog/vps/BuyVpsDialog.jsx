@@ -3,6 +3,7 @@ import { useToast } from '../../../context/ToastContext.jsx'
 import { useTranslation } from '../../../i18n/index.js'
 import { vpsNations, vpsSpecialOptions, getDefaultPlans } from '../../../data/vpsNations.jsx'
 import axiosInstance from '../../../lib/axios.js'
+import useProfileStore from '../../../store/useProfileStore.js'
 import Dialog from '../../ui/Dialog.jsx'
 import DropDown from '../../ui/DropDown.jsx'
 import Checkbox from '../../ui/Checkbox.jsx'
@@ -13,6 +14,7 @@ import getOS from '../../../data/osMap.js'
 export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
   const { addToast, removeToast } = useToast()
   const t = useTranslation()
+  const fetchBalance = useProfileStore((s) => s.fetchBalance)
 
   // Step: 'grid' | 'config'
   const [step, setStep] = useState('grid')
@@ -249,6 +251,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
           </>,
           'success'
         )
+        fetchBalance()
         const parsedMustPay =
           parseFloat(
             (summary.must_pay || '0')

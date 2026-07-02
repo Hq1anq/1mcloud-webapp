@@ -261,7 +261,11 @@ export default function VpsSection() {
               key={card.title}
               className="border-card-border bg-navbar relative flex flex-1 flex-col overflow-hidden rounded-2xl border p-6 text-left shadow-sm"
               variants={cardVariants}
-              whileHover="hover"
+              whileHover={{
+                y: -5,
+                boxShadow: '0 16px 40px color-mix(in srgb, var(--color-border) 30%, transparent)',
+                transition: { duration: 0.28, ease: [0.25, 1, 0.5, 1] },
+              }}
             >
               {/* Background icon */}
               <m.div

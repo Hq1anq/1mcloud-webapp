@@ -219,8 +219,15 @@ const vi = {
   'checker.copiedIp': 'IP',
   'checker.noProxyToCheck': 'Chưa có proxy để kiểm tra',
   'checker.enterAndClick': 'Nhập proxy và nhấn',
+  'checker.emptyTitle': 'Chưa có kết quả kiểm tra proxy',
+  'checker.emptyDescPrefix': 'Dán danh sách proxy vào ô phía trên và nhấn',
+  'checker.emptyDescSuffix': ', hoặc mua thêm proxy tốc độ cao.',
 
   // Proxy Manager
+  'manager.noProxiesFound': 'Chưa có proxy nào đang hoạt động',
+  'manager.noVpsFound': 'Chưa có máy chủ VPS nào',
+  'manager.buyProxy': 'Mua Proxy',
+  'manager.buyVps': 'Mua VPS',
   'manager.enterIps': 'Nhập IP',
   'manager.onePerLine': '(mỗi dòng một IP)',
   'manager.enterAmount': 'Số lượng',

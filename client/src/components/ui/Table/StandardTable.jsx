@@ -7,23 +7,27 @@ const StandardTable = forwardRef(function StandardTable(props, ref) {
     <BaseTable
       {...props}
       ref={ref}
-      renderBody={({ filteredData, virtuosoContext, fixedHeader }) => (
-        <table className="w-full border-collapse text-left">
-          <thead>{fixedHeader()}</thead>
-          <tbody>
-            {filteredData.map((row, index) => (
-              <TableRow
-                key={row.sid !== undefined ? row.sid : index}
-                context={virtuosoContext}
-                item={row}
-                data-index={index}
-              >
-                {itemContent(index, row, virtuosoContext)}
-              </TableRow>
-            ))}
-          </tbody>
-        </table>
-      )}
+      renderBody={({ filteredData, virtuosoContext, fixedHeader }) => {
+        if (filteredData.length === 0) return null
+
+        return (
+          <table className="w-full border-collapse text-left">
+            <thead>{fixedHeader()}</thead>
+            <tbody>
+              {filteredData.map((row, index) => (
+                <TableRow
+                  key={row.sid !== undefined ? row.sid : index}
+                  context={virtuosoContext}
+                  item={row}
+                  data-index={index}
+                >
+                  {itemContent(index, row, virtuosoContext)}
+                </TableRow>
+              ))}
+            </tbody>
+          </table>
+        )
+      }}
     />
   )
 })

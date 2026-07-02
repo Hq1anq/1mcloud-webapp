@@ -112,6 +112,10 @@ const PaginatedTableInternal = forwardRef(function PaginatedTableInternal(
           ? filteredData
           : filteredData.slice(pageStartIndex, pageStartIndex + activePageSize)
 
+        if (filteredData.length === 0) {
+          return null
+        }
+
         return (
           <table className="w-full border-collapse text-left">
             <thead>{fixedHeader()}</thead>

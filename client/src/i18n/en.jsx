@@ -219,8 +219,15 @@ const en = {
   'checker.copiedIp': 'IP to clipboard',
   'checker.noProxyToCheck': 'No proxy to check',
   'checker.enterAndClick': 'Enter your proxy and click',
+  'checker.emptyTitle': 'No proxy test results yet',
+  'checker.emptyDescPrefix': 'Paste your proxy list above and click',
+  'checker.emptyDescSuffix': ', or purchase high-speed proxies.',
 
   // Proxy Manager
+  'manager.noProxiesFound': 'No active proxies found',
+  'manager.noVpsFound': 'No active VPS servers found',
+  'manager.buyProxy': 'Buy Proxy',
+  'manager.buyVps': 'Buy VPS',
   'manager.enterIps': 'Enter IP',
   'manager.onePerLine': '(one per line)',
   'manager.enterAmount': 'Amount',

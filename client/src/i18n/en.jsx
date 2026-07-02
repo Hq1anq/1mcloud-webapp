@@ -471,6 +471,9 @@ const en = {
   'vpsPrice.title': 'VPS Pricing',
   'vpsPrice.subtitle':
     'Instant server deployment with stable Intel Xeon CPUs, GPU vRAM graphics, high-capacity PTU Storage, and unlimited bandwidth.',
+  'vpsPrice.pillDDoS': 'Enterprise Anti-DDoS',
+  'vpsPrice.pillStorage': 'High-Speed NVMe Storage',
+  'vpsPrice.pillBandwidth': '1 Gbps Unlimited Bandwidth',
   'vpsPrice.categoriesTitle': 'Categories & Countries',
   'vpsPrice.categoriesSummary': 'Countries + 2 Specialized Lines',
   'vpsPrice.locations': 'Locations',
@@ -486,6 +489,9 @@ const en = {
   'proxyPrice.title': 'Proxy Pricing',
   'proxyPrice.subtitle':
     'Private IPv4 proxy supporting HTTP & SOCKS5, unlimited devices & bandwidth, 1 Gbps Ethernet speed. Choose your preferred location.',
+  'proxyPrice.pillDedicatedIp': 'Dedicated Private IPv4',
+  'proxyPrice.pillProtocols': 'HTTP & SOCKS5 Protocols',
+  'proxyPrice.pillUnlimited': 'Unlimited Bandwidth & Devices',
   'proxyPrice.sectionTitle': 'Proxy List',
   'proxyPrice.countriesUnit': 'countries',
   'proxyPrice.durationUnit': '1 month / IP',

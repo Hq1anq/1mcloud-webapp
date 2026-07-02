@@ -85,7 +85,7 @@ export default function Navbar() {
   )
 
   const Logo = (
-    <div className="flex items-center space-x-4">
+    <Link to="/" className="flex items-center space-x-4">
       <svg
         id="1mcloud-icon"
         viewBox="0 0 1024 1024"
@@ -106,7 +106,7 @@ export default function Navbar() {
         />
       </svg>
       <h1 className="font-bold">1MCLOUD</h1>
-    </div>
+    </Link>
   )
 
   return (

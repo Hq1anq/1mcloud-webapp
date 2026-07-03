@@ -59,6 +59,7 @@ export function PopMenuProvider({ children }) {
           isOpen={active.isOpen}
           anchorRect={active.anchorRect}
           direction={active.config.direction}
+          align={active.config.align}
           zIndex={10}
           onClose={hide}
           bgClassName="bg-terminal"

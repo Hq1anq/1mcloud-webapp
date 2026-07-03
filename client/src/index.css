@@ -509,10 +509,32 @@
 
   /* Hide scrollbar utility */
   .no-scrollbar {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
   }
   .no-scrollbar::-webkit-scrollbar {
     display: none; /* Chrome, Safari and Opera */
+  }
+
+  /* FAB pulse glow animation */
+  @keyframes pulse-glow {
+    0% {
+      box-shadow:
+        0 0 0 0 rgba(19, 127, 236, 0.7),
+        0 0 20px rgba(19, 127, 236, 0.4);
+    }
+    70% {
+      box-shadow:
+        0 0 0 14px rgba(19, 127, 236, 0),
+        0 0 20px rgba(19, 127, 236, 0.4);
+    }
+    100% {
+      box-shadow:
+        0 0 0 0 rgba(19, 127, 236, 0),
+        0 0 20px rgba(19, 127, 236, 0.4);
+    }
+  }
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-out infinite;
   }
 }

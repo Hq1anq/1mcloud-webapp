@@ -70,7 +70,7 @@ export default function AddFundsDialog({ isOpen, onClose }) {
 
           <button
             onClick={onClose}
-            className="text-text-muted hover:text-text-primary h-10 w-full rounded-lg bg-transparent font-medium transition-colors"
+            className="text-text-muted hover:text-text-primary font-medium transition-colors"
           >
             {t('dialog.close')}
           </button>

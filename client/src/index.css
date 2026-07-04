@@ -274,32 +274,13 @@
 }
 
 @layer base {
-  /* Base theme colors without transitions */
-  [data-theme] * {
-    /* Disable all color transitions by default */
-    transition: none;
-  }
-
-  /* Enable transitions only after adding this class */
-  .theme-transitions * {
-    transition-property: all;
-    transition-timing-function: ease-out;
-    transition-duration: 0.3s;
-  }
-
-  .theme-transitions .all-fast {
-    transition-property: all;
-    transition-timing-function: ease-out;
-    transition-duration: 0.2s;
-  }
-
-  .theme-transitions .social-link {
+  .social-link {
     transition:
       transform 0.2s ease,
       color 0.2s ease;
   }
 
-  .theme-transitions .social-link:hover {
+  .social-link:hover {
     transform: translateY(-3px);
     color: var(--primary);
   }
@@ -318,8 +299,10 @@
   input[type='text'],
   input[type='number'],
   input[type='password'],
+  input[type='email'],
+  input[type='tel'],
   textarea {
-    @apply bg-navbar text-text-primary border-border w-full rounded-lg border-2 px-3 py-2 whitespace-nowrap placeholder-gray-400 focus:border-(--logo-ring) focus:outline-none;
+    @apply bg-navbar text-text-primary border-border w-full rounded-lg border-2 px-3 py-2 whitespace-nowrap placeholder-gray-400 transition-colors focus:border-(--logo-ring) focus:outline-none;
   }
 
   /* Hides the arrows in Chrome, Safari, Edge */
@@ -334,7 +317,7 @@
   }
 
   button {
-    @apply cursor-pointer text-nowrap hover:brightness-120 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100;
+    @apply cursor-pointer text-nowrap transition-[filter] duration-300 hover:brightness-120 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:brightness-100;
   }
 
   h1 {

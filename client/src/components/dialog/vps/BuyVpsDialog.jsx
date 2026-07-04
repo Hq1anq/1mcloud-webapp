@@ -6,6 +6,7 @@ import axiosInstance from '../../../lib/axios.js'
 import Dialog from '../../ui/Dialog.jsx'
 import DropDown from '../../ui/DropDown.jsx'
 import Checkbox from '../../ui/Checkbox.jsx'
+import Radio from '../../ui/Radio.jsx'
 import Skeleton from '../../ui/Skeleton.jsx'
 import getOS from '../../../data/osMap.js'
 
@@ -251,7 +252,13 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
           </>,
           'success'
         )
-        const parsedMustPay = parseFloat((summary.must_pay || '0').toString().replace(/,/g, '').replace(/[^\d.-]/g, '')) || 0
+        const parsedMustPay =
+          parseFloat(
+            (summary.must_pay || '0')
+              .toString()
+              .replace(/,/g, '')
+              .replace(/[^\d.-]/g, '')
+          ) || 0
         const qty = Number(amount) || 1
         const calculatedPrice = parsedMustPay / qty
         const formattedPrice = Math.round(calculatedPrice).toLocaleString('en-US')
@@ -333,7 +340,11 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
         }}
       >
         {/* ─── PAGE 1: Nation Grid ──────────────────────── */}
-        <div className="scroll-container flex max-h-[80vh] w-full flex-none shrink-0 flex-col overflow-y-auto">
+        <div
+          className={`flex w-full flex-none shrink-0 flex-col overflow-y-auto transition-[max-height] duration-350 ease-in-out ${
+            step === 'grid' ? 'max-h-[80vh]' : 'max-h-116!'
+          }`}
+        >
           {/* Header */}
           <div className="flex items-center gap-4 border-b border-white/10 px-6 py-4">
             <div className="bg-blue flex items-center justify-center rounded-lg p-2 text-white">
@@ -401,11 +412,15 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
         </div>
 
         {/* ─── PAGE 2: Config + Summary ─────────────────── */}
-        <div className="flex max-h-[80vh] w-full flex-none shrink-0 flex-col overflow-y-auto md:flex-row md:overflow-hidden">
+        <div
+          className={`w-full flex-none shrink-0 flex-col overflow-y-auto transition-[max-height] duration-350 ease-in-out md:flex-row md:overflow-hidden ${
+            step === 'config' ? 'flex max-h-[80vh]' : 'max-h-116!'
+          }`}
+        >
           {/* Left: Plan table + config */}
           <div className="flex h-fit min-w-0 flex-1 flex-col md:h-auto">
             {/* Header with back */}
-            <header className="border-border flex shrink-0 items-center gap-3 border-b px-6 py-4">
+            <header className="border-border flex shrink-0 items-center gap-3 border-b p-4">
               <svg
                 onClick={handleBack}
                 xmlns="http://www.w3.org/2000/svg"
@@ -493,7 +508,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                               onClick={() => {
                                 if (!isSoldOut) setSelectedPlanId(plan.id)
                               }}
-                              className={`border-border border-b last:border-0 ${
+                              className={`group border-border border-b last:border-0 ${
                                 isSoldOut
                                   ? 'bg-thead cursor-not-allowed opacity-60'
                                   : isSelected
@@ -502,37 +517,13 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                               }`}
                             >
                               <td className="px-3 py-2 text-center">
-                                {isSoldOut ? (
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    className="mx-auto size-5"
-                                  >
-                                    <circle
-                                      className="fill-text-muted text-text-muted"
-                                      cx="12"
-                                      cy="12"
-                                      r="11"
-                                    />
-                                    <line
-                                      className="text-thead"
-                                      x1="5.93"
-                                      y1="5.93"
-                                      x2="18.07"
-                                      y2="18.07"
-                                    />
-                                  </svg>
-                                ) : isSelected ? (
-                                  <div className="bg-blue border-blue mx-auto flex size-5 items-center justify-center rounded-full border-2">
-                                    <div className="size-2 rounded-full bg-white" />
-                                  </div>
-                                ) : (
-                                  <div className="border-text-muted group-hover:border-blue mx-auto flex size-5 items-center justify-center rounded-full border-2 transition-colors" />
-                                )}
+                                <Radio
+                                  checked={isSelected}
+                                  disabled={isSoldOut}
+                                  onChange={() => {
+                                    if (!isSoldOut) setSelectedPlanId(plan.id)
+                                  }}
+                                />
                               </td>
                               <td className="px-3 py-2 font-semibold whitespace-nowrap">
                                 <div className="flex items-center gap-2">
@@ -957,7 +948,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                   summary.warning === 'Tài khoản không đủ' ||
                   !plans.some((p) => p.status === 'available')
                 }
-                className="group enabled:bg-blue flex h-12 w-full items-center justify-center gap-2 rounded-lg font-semibold text-white shadow-sm transition-all duration-200 disabled:bg-gray-500"
+                className="group enabled:bg-blue flex h-12 w-full items-center justify-center gap-2 rounded-lg font-semibold text-white shadow-sm transition-all disabled:bg-gray-500"
               >
                 <span>{t('buyVps.payNow')}</span>
                 <svg

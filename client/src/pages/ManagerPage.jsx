@@ -79,7 +79,7 @@ export default function ManagerPage() {
 
           {/* Right: Buy More button */}
           <button
-            className="flex items-center gap-2 rounded-full bg-linear-to-r from-green-500 to-emerald-400 px-5 py-2 font-bold text-white shadow-lg shadow-green-500/30 transition-all hover:brightness-110 active:scale-95 sm:px-6 sm:text-lg"
+            className="flex items-center gap-2 rounded-full bg-linear-to-r from-green-500 to-emerald-400 px-5 py-2 font-bold text-white shadow-lg shadow-green-500/30 transition-all hover:scale-110 sm:px-6 sm:text-lg"
             onClick={() =>
               activeView === 'VPS' ? setBuyVpsDialogOpen(true) : setBuyProxyDialogOpen(true)
             }

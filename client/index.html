@@ -7,6 +7,43 @@
     <link rel="icon" type="image/svg+xml" href="/1mcloud.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>1MCLOUD</title>
+
+    <script>
+      try {
+        // 1. Restore theme
+        const themeStorage = localStorage.getItem('theme-storage')
+        if (themeStorage) {
+          const parsed = JSON.parse(themeStorage)
+          if (parsed?.state?.theme) {
+            document.documentElement.setAttribute('data-theme', parsed.state.theme)
+          }
+        } else {
+          // Default fallback (system preference or dark)
+          const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+          document.documentElement.setAttribute('data-theme', systemPrefersDark ? 'dark' : 'light')
+        }
+
+        // 2. Restore language attribute (lang)
+        const languageStorage = localStorage.getItem('language-storage')
+        if (languageStorage) {
+          const parsed = JSON.parse(languageStorage)
+          if (parsed?.state?.language) {
+            document.documentElement.setAttribute('lang', parsed.state.language)
+          }
+        } else {
+          // Detect user browser's preferred language fallback (en or vi)
+          const browserLang = navigator.language || navigator.userLanguage
+          const defaultLang = browserLang && browserLang.startsWith('vi') ? 'vi' : 'en'
+          document.documentElement.setAttribute('lang', defaultLang)
+        }
+      } catch (e) {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        // Fallback default language
+        const browserLang = typeof navigator !== 'undefined' ? (navigator.language || navigator.userLanguage) : ''
+        const defaultLang = browserLang && browserLang.startsWith('vi') ? 'vi' : 'en'
+        document.documentElement.setAttribute('lang', defaultLang)
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

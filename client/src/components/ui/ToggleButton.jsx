@@ -7,11 +7,9 @@ export default function ToggleButton({ isOn, onClick }) {
       <div
         className={`absolute inset-0 transition-colors duration-500 ${isOn ? 'bg-highlight' : 'bg-white/20'}`}
       />
-      <div className="absolute inset-0 z-0 flex items-center justify-between px-2.5 text-[0.6rem] uppercase"></div>
-
       <div
         className={`elastic-out absolute top-1 left-1 z-10 size-5 rounded-full bg-white shadow-md transition-all duration-400 group-active:w-8 ${
-          isOn ? 'bg-oncheck translate-x-7 group-active:translate-x-4' : 'translate-x-0'
+          isOn ? 'translate-x-7 group-active:translate-x-4' : 'translate-x-0'
         }`}
       />
     </button>

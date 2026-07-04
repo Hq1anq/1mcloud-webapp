@@ -369,7 +369,7 @@ const Table = forwardRef(function Table(
         </div>
 
         {/* ── Table body ── */}
-        <div className="scroll-container overflow-x-auto overflow-y-hidden rounded-b-lg [&_td]:transition-colors!">
+        <div className="scroll-container overflow-x-auto overflow-y-hidden rounded-b-lg">
           {isLoading ? (
             <TableSkeleton headers={headers} selectable={selectable} fixedHeader={fixedHeader} />
           ) : virtualized && scrollParent !== undefined ? (

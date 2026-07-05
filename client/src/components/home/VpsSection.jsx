@@ -1,4 +1,23 @@
+import { motion as m } from 'motion/react'
 import { useTranslation } from '../../i18n'
+import {
+  fadeUp,
+  slideLeft,
+  stagger,
+  barFill,
+  cardVariants,
+  iconHover,
+  largeIconHover,
+} from './homeVariants'
+
+// Stagger presets — defined once, not recreated per render
+const featureStagger = stagger(0.09, 0.05)
+const barsStagger = stagger(0.18, 0.3)
+const specStagger = stagger(0.1, 0.05)
+
+// Viewport config: no root needed — #main-scroll-container fills the full browser
+// frame, so the default visual viewport and the container boundary are identical.
+const vp = { margin: '-80px' }
 
 export default function VpsSection() {
   const t = useTranslation()
@@ -6,28 +25,18 @@ export default function VpsSection() {
   const features = [
     {
       icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none">
-          <path
-            d="M4 8L12 4L20 8L12 12L4 8Z"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M4 12L12 16L20 12"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M4 16L12 20L20 16"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M4 8L12 4L20 8L12 12L4 8Z" />
+          <path d="M4 12L12 16L20 12" />
+          <path d="M4 16L12 20L20 16" />
         </svg>
       ),
       title: t('vps.feat1.title'),
@@ -114,23 +123,23 @@ export default function VpsSection() {
     {
       label: 'vCPU Usage',
       value: '24%',
+      width: '24%',
       color: 'from-green-500 to-green-400',
       valueColor: 'text-green-400',
-      animClass: 'home-bar-cpu',
     },
     {
       label: 'RAM Allocation',
       value: '12GB / 32GB',
+      width: '45%',
       color: 'from-blue-600 to-blue-400',
       valueColor: 'text-blue-400',
-      animClass: 'home-bar-ram',
     },
     {
       label: 'NVMe I/O',
       value: '4500 MB/s',
+      width: '78%',
       color: 'from-purple-600 to-purple-400',
       valueColor: 'text-purple-400',
-      animClass: 'home-bar-nvme',
     },
   ]
 
@@ -141,8 +150,14 @@ export default function VpsSection() {
     >
       <div className="flex max-w-7xl flex-1 flex-col">
         <div className="flex flex-col items-center gap-12 lg:flex-row">
-          {/*  Left: Monitoring Panel + Spec Cards  */}
-          <div className="home-animate-slide-left order-2 w-full flex-1 lg:order-1">
+          {/*  Left: Monitoring Panel  */}
+          <m.div
+            className="order-2 w-full flex-1 lg:order-1"
+            variants={slideLeft}
+            initial="hidden"
+            whileInView="visible"
+            viewport={vp}
+          >
             {/* Resource monitor */}
             <div className="border-border bg-terminal relative flex flex-col justify-center overflow-hidden rounded-xl border px-8 py-12 shadow-xl sm:p-16">
               <div className="home-grid-bg absolute inset-0 opacity-20" />
@@ -158,26 +173,41 @@ export default function VpsSection() {
                 {t('vps.monitor')}
               </h3>
 
-              <div className="z-10 mx-auto w-full max-w-md space-y-4 sm:space-y-6">
+              {/* Bars — stagger container triggers when panel slides in */}
+              <m.div
+                className="z-10 mx-auto w-full max-w-md space-y-4 sm:space-y-6"
+                variants={barsStagger}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ margin: '-110px' }}
+              >
                 {bars.map((bar) => (
-                  <div key={bar.label}>
+                  <m.div key={bar.label} variants={fadeUp}>
                     <div className="mb-2 flex justify-between font-mono text-xs sm:text-sm">
                       <span>{bar.label}</span>
                       <span className={bar.valueColor}>{bar.value}</span>
                     </div>
                     <div className="h-3 w-full overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--color-terminal)_80%,var(--border))]">
-                      <div
-                        className={`h-full rounded-full bg-linear-to-r ${bar.color} ${bar.animClass}`}
+                      <m.div
+                        className={`h-full rounded-full bg-linear-to-r ${bar.color}`}
+                        style={{ width: bar.width, transformOrigin: 'left center' }}
+                        variants={barFill}
                       />
                     </div>
-                  </div>
+                  </m.div>
                 ))}
-              </div>
+              </m.div>
             </div>
-          </div>
+          </m.div>
 
           {/*  Right: Description + Features  */}
-          <div className="home-animate-fade-up order-1 flex flex-1 flex-col gap-8 lg:order-2">
+          <m.div
+            className="order-1 flex flex-1 flex-col gap-8 lg:order-2"
+            variants={fadeUp}
+            initial="hidden"
+            whileInView="visible"
+            viewport={vp}
+          >
             <div className="flex flex-col gap-4">
               <div className="text-primary flex items-center gap-2 font-bold tracking-wider uppercase">
                 <svg
@@ -195,9 +225,16 @@ export default function VpsSection() {
               <p className="leading-relaxed">{t('vps.subtitle')}</p>
             </div>
 
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            {/* Features — staggered grid */}
+            <m.div
+              className="grid grid-cols-1 gap-6 sm:grid-cols-2"
+              variants={featureStagger}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ margin: '-100px' }}
+            >
               {features.map((feat) => (
-                <div key={feat.title} className="home-animate-fade-up-delay-1 flex gap-4">
+                <m.div key={feat.title} className="flex gap-4" variants={fadeUp}>
                   <div className="bg-primary/15 text-primary home-icon-hover flex size-12 shrink-0 items-center justify-center rounded-lg p-2">
                     {feat.icon}
                   </div>
@@ -205,32 +242,45 @@ export default function VpsSection() {
                     <h3 className="text-text-primary text-lg font-bold">{feat.title}</h3>
                     <p className="mt-1 text-sm">{feat.desc}</p>
                   </div>
-                </div>
+                </m.div>
               ))}
-            </div>
-          </div>
+            </m.div>
+          </m.div>
         </div>
-        {/* Spec cards grid */}
-        <div className="mx-auto mt-8 flex flex-col gap-6 md:flex-row">
+
+        {/* Spec cards — staggered row */}
+        <m.div
+          className="mx-auto mt-8 flex flex-col gap-6 md:flex-row"
+          variants={specStagger}
+          initial="hidden"
+          whileInView="visible"
+          viewport={vp}
+        >
           {specCards.map((card) => (
-            <div
+            <m.div
               key={card.title}
-              className="border-card-border bg-navbar home-card-hover relative flex flex-1 flex-col overflow-hidden rounded-2xl border p-6 text-left shadow-sm"
+              className="border-card-border bg-navbar relative flex flex-1 flex-col overflow-hidden rounded-2xl border p-6 text-left shadow-sm"
+              variants={cardVariants}
+              whileHover="hover"
             >
               {/* Background icon */}
-              <div className="text-text-primary home-largeicon-hover absolute top-0 right-0 size-35 p-4 opacity-10">
+              <m.div
+                className="text-text-primary absolute top-0 right-0 size-35 p-4 opacity-10"
+                variants={largeIconHover}
+              >
                 {card.icon}
-              </div>
+              </m.div>
 
-              <div
-                className="home-icon-hover mb-4 flex size-10 items-center justify-center rounded-lg p-1"
+              <m.div
+                className="mb-4 flex size-10 items-center justify-center rounded-lg p-1"
                 style={{
                   background: `color-mix(in srgb, ${card.iconColor} 15%, transparent)`,
                   color: card.iconColor,
                 }}
+                variants={iconHover}
               >
                 {card.icon}
-              </div>
+              </m.div>
 
               <h3 className="text-text-primary mb-2 text-xl font-bold">{card.title}</h3>
               <p className="mb-4">{card.desc}</p>
@@ -239,9 +289,9 @@ export default function VpsSection() {
                 <span>{card.statLabel}</span>
                 <span className="text-text-primary font-mono font-bold">{card.statValue}</span>
               </div>
-            </div>
+            </m.div>
           ))}
-        </div>
+        </m.div>
       </div>
     </section>
   )

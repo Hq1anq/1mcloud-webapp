@@ -6,6 +6,7 @@ client1/
 test/
 .agent/
 footer'.jsx
+*.md
 
 # Node.js
 node_modules/

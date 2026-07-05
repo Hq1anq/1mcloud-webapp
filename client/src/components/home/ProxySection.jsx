@@ -91,9 +91,9 @@ export default function ProxySection() {
   return (
     <section
       id="proxy"
-      className="text-text-muted flex w-full justify-center overflow-hidden px-4 pt-16"
+      className="text-text-muted flex w-full justify-center overflow-hidden px-6 pt-16"
     >
-      <div className="flex max-w-7xl flex-1 flex-col">
+      <div className="flex max-w-380 flex-1 flex-col">
         <div className="flex flex-col items-center gap-12 lg:flex-row">
           {/*  Left: Header + Feature Cards  */}
           <m.div
@@ -152,7 +152,7 @@ export default function ProxySection() {
                 variants={flowStagger}
                 initial="hidden"
                 whileInView="visible"
-                viewport={{ amount: 'all' }}
+                viewport={{ margin: '-100px' }}
               >
                 {/* User node */}
                 <m.div className="flex flex-col items-center gap-2" variants={flowNode}>

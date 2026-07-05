@@ -539,7 +539,7 @@ export default function VpsManager({ onBuySuccessRef }) {
     <>
       {/* ========== TOP CONTROLS ========== */}
       <div className="bg-surface border-border z-40 border-b pb-4 select-none">
-        <div className="mx-auto max-w-7xl px-4">
+        <div className="mx-auto max-w-380 px-4">
           {/* ========== FEATURE CONTROLS ========== */}
           <div className="bg-wrapper rounded-lg p-4">
             <div className="flex flex-col gap-4 sm:flex-row">

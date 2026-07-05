@@ -82,7 +82,7 @@ export default function StatusMetricsMeter({ total, running, off, className }) {
 
   return (
     <div
-      className={`mx-auto grid max-w-7xl grid-cols-2 gap-2 px-8 sm:grid-cols-4 sm:gap-4 ${className}`}
+      className={`mx-auto grid max-w-380 grid-cols-2 gap-2 px-8 sm:grid-cols-4 sm:gap-4 ${className}`}
     >
       {items.map((item) => {
         const value = values[item.key]

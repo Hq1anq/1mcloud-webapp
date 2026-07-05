@@ -138,7 +138,7 @@ export default function HistoryPage() {
   return (
     <>
       <div className="bg-surface border-border border-b">
-        <div className="mx-auto max-w-7xl px-2 py-4 sm:px-4">
+        <div className="mx-auto max-w-380 px-2 py-4 sm:px-4">
           <div className="flex gap-3">
             <button
               type="button"

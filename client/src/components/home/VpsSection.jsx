@@ -1,14 +1,7 @@
 import { useState } from 'react'
 import { motion as m } from 'motion/react'
 import { useTranslation } from '../../i18n'
-import {
-  fadeUp,
-  slideLeft,
-  stagger,
-  barFill,
-  iconHover,
-  largeIconHover,
-} from './homeVariants'
+import { fadeUp, slideLeft, stagger, barFill, iconHover, largeIconHover } from './homeVariants'
 
 // Stagger presets — defined once, not recreated per render
 const featureStagger = stagger(0.09, 0.05)
@@ -193,9 +186,9 @@ export default function VpsSection() {
   return (
     <section
       id="vps"
-      className="text-text-muted bg-home-section-alt border-card-border flex w-full justify-center overflow-hidden border-t border-b px-4 py-16"
+      className="text-text-muted bg-home-section-alt border-card-border flex w-full justify-center overflow-hidden border-t border-b px-6 py-16"
     >
-      <div className="flex max-w-7xl flex-1 flex-col">
+      <div className="flex max-w-380 flex-1 flex-col">
         <div className="flex flex-col items-center gap-12 lg:flex-row">
           {/*  Left: Monitoring Panel  */}
           <m.div

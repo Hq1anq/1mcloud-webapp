@@ -323,7 +323,7 @@ const Table = forwardRef(function Table(
 
   // ── Render ─────────────────────────────────────────────────────────────
   return (
-    <div className={`text-text-primary mx-auto max-w-7xl ${className}`}>
+    <div className={`text-text-primary mx-auto max-w-380 ${className}`}>
       <div
         id="table-container"
         ref={tableRef}

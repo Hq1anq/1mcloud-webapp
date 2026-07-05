@@ -11,9 +11,9 @@ export default function HeroSection() {
   return (
     <section
       id="hero"
-      className="text-text-muted flex w-full justify-center overflow-hidden bg-[linear-gradient(to_bottom,var(--home-hero-gradient-from),var(--home-hero-gradient-to))] px-4 py-12 md:py-20"
+      className="text-text-muted flex w-full justify-center overflow-hidden bg-[linear-gradient(to_bottom,var(--home-hero-gradient-from),var(--home-hero-gradient-to))] px-6 py-12 md:py-20"
     >
-      <div className="flex max-w-7xl flex-1 flex-col">
+      <div className="flex max-w-380 flex-1 flex-col">
         <div className="flex flex-col items-center gap-10 lg:flex-row">
           {/*  Left: Text Content  */}
           <m.div

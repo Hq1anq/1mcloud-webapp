@@ -149,7 +149,7 @@ export default function ControlButton({
           onAction: onCheck,
         },
       ],
-      direction: [-1, 0],
+      direction: [1, 0],
     })
   }
 

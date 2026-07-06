@@ -163,3 +163,42 @@ export function mergeProxyData(data, res) {
 
   return Array.from(dataMap.values())
 }
+
+/**
+ * Parse a date string formatted as DD-MM-YYYY and return a Date at midnight.
+ */
+function parseDDMMYYYY(str) {
+  if (!str) return null
+  const parts = str.split('-')
+  if (parts.length !== 3) return null
+  const [dd, mm, yyyy] = parts
+  const d = new Date(Number(yyyy), Number(mm) - 1, Number(dd))
+  return isNaN(d.getTime()) ? null : d
+}
+
+/**
+ * Returns an inline style with a `color-mix()` background that scales linearly
+ * by urgency. Each step adds 10-12 percentage points of the base expiry color.
+ */
+export function getExpiryStyle(expiredStr) {
+  const expiry = parseDDMMYYYY(expiredStr)
+  if (!expiry) return null
+
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  expiry.setHours(0, 0, 0, 0)
+
+  const msPerDay = 1000 * 60 * 60 * 24
+  const daysLeft = Math.round((expiry - today) / msPerDay)
+
+  let pct = null
+  if (daysLeft < 1) pct = 45
+  else if (daysLeft === 1) pct = 35
+  else if (daysLeft === 2) pct = 25
+  else if (daysLeft === 3) pct = 15
+
+  if (pct === null) return null
+  return {
+    backgroundColor: `color-mix(in srgb, var(--red) ${pct}%, transparent)`,
+  }
+}

@@ -50,8 +50,8 @@ const cardsData = [
       },
       {
         name: 'Facebook',
-        title: 'Đam Nguyễn',
-        link: 'https://www.facebook.com/vnvpsmmo',
+        title: '1mcloud.vn',
+        link: 'https://web.facebook.com/1mcloudvn',
         icon: facebookSvg,
         colorClass: 'rounded-full',
       },

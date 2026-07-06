@@ -15,8 +15,6 @@ import useProxyStore from '../store/useProxyStore'
 import useManagerActions from '../hooks/useManagerActions'
 
 const OPERATOR_CONFIG = {
-  sid: ['equal', 'greater-equal', 'less-equal'],
-  created: ['equal', 'greater-equal', 'less-equal'],
   expired: ['equal', 'greater-equal', 'less-equal'],
 }
 
@@ -1044,7 +1042,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
     <>
       {/* ========== TOP CONTROLS ========== */}
       <div className="bg-surface border-border z-40 border-b pb-4 select-none">
-        <div className="mx-auto max-w-7xl px-4">
+        <div className="mx-auto max-w-380 px-4">
           {/* ========== FEATURE CONTROLS ========== */}
           <div className="bg-wrapper rounded-lg p-4">
             <div className="flex flex-col gap-4 sm:flex-row">
@@ -1634,7 +1632,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
         isLoading={isLoading}
         useFilter={true}
         headers={[
-          'sid',
+          'control',
           'ip_port',
           'country',
           'type',
@@ -1642,7 +1640,6 @@ export default function ProxyManager({ onBuySuccessRef }) {
           'expired',
           'status',
           'note',
-          'control',
           'is_auto_renew',
         ]}
         controlButton={(row) => (

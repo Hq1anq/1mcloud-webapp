@@ -6,7 +6,7 @@ export default function Footer() {
 
   return (
     <div className="text-text-muted border-border mt-16 w-full border-t px-4 pt-12">
-      <div className="mx-auto flex max-w-7xl flex-wrap gap-10">
+      <div className="mx-auto flex max-w-380 flex-wrap gap-10">
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
             <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" className="size-12">
@@ -56,7 +56,7 @@ export default function Footer() {
           </div>
         </div>
       </div>
-      <div className="border-border mx-auto mt-12 max-w-7xl border-t text-center">
+      <div className="border-border mx-auto mt-12 max-w-380 border-t text-center">
         {t('footer.copyright')}
       </div>
     </div>

@@ -63,14 +63,14 @@ export default function ThemeToggle() {
     'M48.5 67.5C58.9934 67.5 67.5 58.9934 67.5 48.5C49.4492 54.786 42.3163 45.0026 48.5 29.5C38.0066 29.5 29.5 38.0066 29.5 48.5C29.5 58.9934 38.0066 67.5 48.5 67.5Z'
 
   return (
-    <button onClick={toggleTheme} className="flex size-10 items-center justify-center">
+    <button onClick={toggleTheme} className="flex size-8 items-center justify-center md:size-10">
       <m.svg
         viewBox="0 0 97 97"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         strokeWidth="4"
         strokeLinecap="round"
-        className="relative size-10"
+        className="relative size-8 md:size-10"
       >
         {/* SVG-native blur filter — works in Safari unlike CSS filter on child elements */}
         <defs>

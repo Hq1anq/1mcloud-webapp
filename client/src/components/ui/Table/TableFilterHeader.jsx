@@ -120,7 +120,7 @@ export default function TableFilterHeader({
                   )}
                   <input
                     type="text"
-                    placeholder="Filter"
+                    placeholder={t('filter')}
                     className={`filter-input bg-dropdown mt-1 w-full px-2 py-1 ${
                       [
                         'ip_port',

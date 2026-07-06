@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import Dialog from '../ui/Dialog'
 import { useTranslation } from '../../i18n'
 
@@ -59,10 +59,19 @@ const FailedIcon = () => (
   </svg>
 )
 
-export default function CopyDialog({ isOpen, onClose, text }) {
+export default function CopyDialog({ isOpen, onClose, text, initialCopyState = 'idle' }) {
   // 'idle' | 'copied' | 'failed'
   const [copyState, setCopyState] = useState('idle')
   const t = useTranslation()
+
+  // Reflect clipboard result from SafeCopyContext when the dialog opens
+  useEffect(() => {
+    if (initialCopyState !== 'idle') {
+      setCopyState(initialCopyState)
+      const timer = setTimeout(() => setCopyState('idle'), 1000)
+      return () => clearTimeout(timer)
+    }
+  }, [initialCopyState])
 
   const handleCopy = useCallback(async () => {
     try {
@@ -83,12 +92,12 @@ export default function CopyDialog({ isOpen, onClose, text }) {
     <Dialog isOpen={isOpen} onClose={handleClose} title={t('dialog.copy')}>
       <button
         onClick={handleCopy}
-        className={`hover:text-text-primary absolute top-6 right-6 inline-flex cursor-pointer items-center justify-center rounded-lg px-1 py-0.5 ${
+        className={`absolute top-6 right-6 inline-flex cursor-pointer items-center justify-center rounded-lg px-1 py-0.5 ${
           copyState === 'copied'
             ? 'text-text-toast-success'
             : copyState === 'failed'
               ? 'text-text-toast-error'
-              : 'text-text-muted'
+              : 'hover:text-text-primary text-text-muted'
         }`}
       >
         {copyState === 'copied' ? (

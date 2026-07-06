@@ -1,14 +1,7 @@
+import { useState } from 'react'
 import { motion as m } from 'motion/react'
 import { useTranslation } from '../../i18n'
-import {
-  fadeUp,
-  slideLeft,
-  stagger,
-  barFill,
-  cardVariants,
-  iconHover,
-  largeIconHover,
-} from './homeVariants'
+import { fadeUp, slideLeft, stagger, barFill, iconHover, largeIconHover } from './homeVariants'
 
 // Stagger presets — defined once, not recreated per render
 const featureStagger = stagger(0.09, 0.05)
@@ -18,6 +11,53 @@ const specStagger = stagger(0.1, 0.05)
 // Viewport config: no root needed — #main-scroll-container fills the full browser
 // frame, so the default visual viewport and the container boundary are identical.
 const vp = { margin: '-80px' }
+
+function VpsCard({ card }) {
+  const [isHovered, setIsHovered] = useState(false)
+
+  return (
+    <m.div
+      className="border-card-border bg-navbar relative flex flex-1 flex-col overflow-hidden rounded-2xl border p-6 text-left shadow-sm"
+      variants={fadeUp}
+      whileHover={{
+        y: -5,
+        boxShadow: '0 16px 40px color-mix(in srgb, var(--color-border) 30%, transparent)',
+      }}
+      transition={{ duration: 0.28, ease: [0.25, 1, 0.5, 1] }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {/* Background icon */}
+      <m.div
+        className="text-text-primary absolute top-0 right-0 size-35 p-4 opacity-10"
+        variants={largeIconHover}
+        animate={isHovered ? 'hover' : 'initial'}
+      >
+        {card.icon}
+      </m.div>
+
+      <m.div
+        className="mb-4 flex size-10 items-center justify-center rounded-lg p-1"
+        style={{
+          background: `color-mix(in srgb, ${card.iconColor} 15%, transparent)`,
+          color: card.iconColor,
+        }}
+        variants={iconHover}
+        animate={isHovered ? 'hover' : 'initial'}
+      >
+        {card.icon}
+      </m.div>
+
+      <h3 className="text-text-primary mb-2 text-xl font-bold">{card.title}</h3>
+      <p className="mb-4">{card.desc}</p>
+
+      <div className="border-card-border mt-auto flex items-center justify-between border-t pt-4 text-base">
+        <span>{card.statLabel}</span>
+        <span className="text-text-primary font-mono font-bold">{card.statValue}</span>
+      </div>
+    </m.div>
+  )
+}
 
 export default function VpsSection() {
   const t = useTranslation()
@@ -146,9 +186,9 @@ export default function VpsSection() {
   return (
     <section
       id="vps"
-      className="text-text-muted bg-home-section-alt border-card-border flex w-full justify-center overflow-hidden border-t border-b px-4 py-16"
+      className="text-text-muted bg-home-section-alt border-card-border flex w-full justify-center overflow-hidden border-t border-b px-6 py-16"
     >
-      <div className="flex max-w-7xl flex-1 flex-col">
+      <div className="flex max-w-380 flex-1 flex-col">
         <div className="flex flex-col items-center gap-12 lg:flex-row">
           {/*  Left: Monitoring Panel  */}
           <m.div
@@ -257,39 +297,7 @@ export default function VpsSection() {
           viewport={vp}
         >
           {specCards.map((card) => (
-            <m.div
-              key={card.title}
-              className="border-card-border bg-navbar relative flex flex-1 flex-col overflow-hidden rounded-2xl border p-6 text-left shadow-sm"
-              variants={cardVariants}
-              whileHover="hover"
-            >
-              {/* Background icon */}
-              <m.div
-                className="text-text-primary absolute top-0 right-0 size-35 p-4 opacity-10"
-                variants={largeIconHover}
-              >
-                {card.icon}
-              </m.div>
-
-              <m.div
-                className="mb-4 flex size-10 items-center justify-center rounded-lg p-1"
-                style={{
-                  background: `color-mix(in srgb, ${card.iconColor} 15%, transparent)`,
-                  color: card.iconColor,
-                }}
-                variants={iconHover}
-              >
-                {card.icon}
-              </m.div>
-
-              <h3 className="text-text-primary mb-2 text-xl font-bold">{card.title}</h3>
-              <p className="mb-4">{card.desc}</p>
-
-              <div className="border-card-border mt-auto flex items-center justify-between border-t pt-4 text-base">
-                <span>{card.statLabel}</span>
-                <span className="text-text-primary font-mono font-bold">{card.statValue}</span>
-              </div>
-            </m.div>
+            <VpsCard key={card.title} card={card} />
           ))}
         </m.div>
       </div>

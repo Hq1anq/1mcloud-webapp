@@ -51,11 +51,6 @@ export const barFill = {
 export const cardVariants = {
   hidden: { opacity: 0, y: 22 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: expo } },
-  hover: {
-    y: -5,
-    boxShadow: '0 16px 40px color-mix(in srgb, var(--color-border) 30%, transparent)',
-    transition: { duration: 0.28, ease: [0.25, 1, 0.5, 1] },
-  },
 }
 
 /** Foreground icon scale on parent hover */

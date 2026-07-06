@@ -162,7 +162,7 @@ export default function ProxyChecker() {
   return (
     <div>
       <div className="bg-surface border-border z-40 border-b select-none">
-        <div className="mx-auto max-w-7xl px-2 py-4 sm:px-4">
+        <div className="mx-auto max-w-380 px-2 py-4 sm:px-4">
           {/* Top Controls Area */}
           <div className="bg-wrapper rounded-lg p-4">
             <div className="flex flex-wrap items-stretch gap-3">

@@ -104,7 +104,7 @@ export default function HistoryMetricsCards({
   ]
 
   return (
-    <div className={`mx-auto grid max-w-7xl grid-cols-2 gap-3 sm:grid-cols-4 ${className}`}>
+    <div className={`grid grid-cols-2 gap-3 sm:grid-cols-4 ${className}`}>
       {cards.map((card) => (
         <article
           key={card.key}

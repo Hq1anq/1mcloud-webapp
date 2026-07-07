@@ -15,14 +15,15 @@
   "type": "module",
   "main": "src/server.js",
   "scripts": {
-    "dev": "node --env-file=../.env --import tsx/esm --watch src/server.js",
-    "start": "node --env-file=../.env --import tsx/esm src/server.js",
+    "dev": "node --env-file=.env --import tsx/esm --watch src/server.js",
+    "dev:debug": "node --inspect --env-file=.env --import tsx/esm --watch src/server.js",
+    "start": "node --env-file=.env --import tsx/esm src/server.js",
     "sync-mmdb": "node scripts/syncMmdb.js",
-    "sync-prices": "node --env-file=../.env scripts/sync-prices.js",
-    "update-proxies": "node --env-file=../.env scripts/updateProxyList.js",
-    "clean-refunded": "node --env-file=../.env scripts/cleanRefundedRows.js",
-    "encrypt-passwords": "node --env-file=../.env --import tsx/esm scripts/encrypt-passwords.ts",
-    "rotate-encryption-key": "node --env-file=../.env --import tsx/esm scripts/rotate-encryption-key.ts"
+    "sync-prices": "node --env-file=.env scripts/sync-prices.js",
+    "update-proxies": "node --env-file=.env scripts/updateProxyList.js",
+    "clean-refunded": "node --env-file=.env scripts/cleanRefundedRows.js",
+    "encrypt-passwords": "node --env-file=.env --import tsx/esm scripts/encrypt-passwords.ts",
+    "rotate-encryption-key": "node --env-file=.env --import tsx/esm scripts/rotate-encryption-key.ts"
   },
   "dependencies": {
     "@maxmind/geoip2-node": "^6.3.4",

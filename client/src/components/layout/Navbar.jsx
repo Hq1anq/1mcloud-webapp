@@ -98,11 +98,11 @@ export default function Navbar() {
           <div className="mx-auto flex items-center gap-3 md:order-2 md:mx-0 md:ml-auto">
             {/* Balance + Username pill */}
             <div
-              className="border-border bg-surface relative flex items-center gap-1 rounded-lg border p-1 shadow-sm"
+              className="border-border bg-surface relative flex items-center gap-1 rounded-lg border p-1 text-base shadow-sm"
               ref={menuRef}
             >
               {/* Balance */}
-              <div className="text-green px-3 py-1 font-mono text-sm font-semibold">
+              <div className="text-green px-3 py-1 font-mono font-semibold">
                 {balance != null ? balance + ' VND' : '--'}
               </div>
               <div className="bg-border h-6 w-px" />
@@ -111,8 +111,12 @@ export default function Navbar() {
                 onClick={() => setIsUserMenuOpen((o) => !o)}
                 className="hover:bg-bg-hover flex items-center gap-1.5 rounded-md px-3 py-1 transition-colors focus:outline-none"
               >
-                <span className="text-text-primary text-sm font-bold">{username}</span>
-                <svg className="text-text-muted size-4" fill="currentColor" viewBox="0 0 20 20">
+                <span className="text-text-primary font-bold">{username}</span>
+                <svg
+                  className={`text-text-muted size-3 transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`}
+                  fill="currentColor"
+                  viewBox="5 5 10 10"
+                >
                   <path
                     fillRule="evenodd"
                     d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"

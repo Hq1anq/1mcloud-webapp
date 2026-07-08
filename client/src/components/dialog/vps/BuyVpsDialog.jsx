@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useToast } from '../../../context/ToastContext.jsx'
 import { useTranslation } from '../../../i18n/index.js'
 import { vpsNations, vpsSpecialOptions, getDefaultPlans } from '../../../data/vpsNations.jsx'
@@ -9,7 +9,9 @@ import DropDown from '../../ui/DropDown.jsx'
 import Checkbox from '../../ui/Checkbox.jsx'
 import Radio from '../../ui/Radio.jsx'
 import Skeleton from '../../ui/Skeleton.jsx'
-import getOS from '../../../data/osMap.js'
+import WindowsKeyInput, { maskProductKey } from '../../ui/WindowsKeyInput.jsx'
+
+const NEW_KEY_OPTION = '+ Nhập key mới'
 
 export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
   const { addToast, removeToast } = useToast()
@@ -77,6 +79,79 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
   const [autoRenew, setAutoRenew] = useState(false)
   const [agreeTerms, setAgreeTerms] = useState(false)
 
+  // Windows License BYOL state
+  const [userLicenses, setUserLicenses] = useState([])
+  const [licensesLoading, setLicensesLoading] = useState(false)
+  const [selectedLicenseOption, setSelectedLicenseOption] = useState(NEW_KEY_OPTION)
+  const [customLicenseKey, setCustomLicenseKey] = useState('')
+  const [agreeBYOL, setAgreeBYOL] = useState(false)
+
+  const osName = supportData?.os?.option?.[selectedOs] || ''
+  const isWindowsOs = Boolean(osName && /win/i.test(osName))
+
+  const dropdownOptions = useMemo(() => {
+    if (!userLicenses || userLicenses.length === 0) return [NEW_KEY_OPTION]
+    return [
+      ...userLicenses.map(
+        (lic) =>
+          `${maskProductKey(lic.license_key)} ${
+            lic.server ? `(server: ${lic.server.ip})` : '(Chưa dùng)'
+          }`
+      ),
+      NEW_KEY_OPTION,
+    ]
+  }, [userLicenses])
+
+  const effectiveLicenseKey = useMemo(() => {
+    if (!isWindowsOs) return ''
+    if (userLicenses.length === 0 || selectedLicenseOption === NEW_KEY_OPTION) {
+      return customLicenseKey
+    }
+    const idx = dropdownOptions.indexOf(selectedLicenseOption)
+    if (idx !== -1 && idx < userLicenses.length) {
+      return userLicenses[idx].license_key
+    }
+    return customLicenseKey
+  }, [isWindowsOs, userLicenses, selectedLicenseOption, dropdownOptions, customLicenseKey])
+
+  const isValidWindowsKey =
+    /^[a-zA-Z0-9]{5}-[a-zA-Z0-9]{5}-[a-zA-Z0-9]{5}-[a-zA-Z0-9]{5}-[a-zA-Z0-9]{5}$/.test(
+      effectiveLicenseKey
+    )
+  const isLicenseValidForPay = !isWindowsOs || (isValidWindowsKey && agreeBYOL)
+
+  // Fetch licenses when Windows OS is selected
+  useEffect(() => {
+    if (isOpen && step === 'config' && isWindowsOs) {
+      setLicensesLoading(true)
+      axiosInstance
+        .get('/user/licenses')
+        .then((res) => {
+          if (res.data?.success && Array.isArray(res.data.licenses)) {
+            const sorted = [...res.data.licenses].sort((a, b) =>
+              (a.license_key || '').localeCompare(b.license_key || '')
+            )
+            setUserLicenses(sorted)
+            if (sorted.length > 0) {
+              const firstLic = sorted[0]
+              const label = `${maskProductKey(firstLic.license_key)} ${
+                firstLic.server ? `(server: ${firstLic.server.ip})` : '(Chưa dùng)'
+              }`
+              setSelectedLicenseOption(label)
+            } else {
+              setSelectedLicenseOption(NEW_KEY_OPTION)
+            }
+          }
+        })
+        .catch((err) => {
+          console.error('Failed to fetch user licenses:', err)
+        })
+        .finally(() => {
+          setLicensesLoading(false)
+        })
+    }
+  }, [isOpen, step, isWindowsOs])
+
   const [summary, setSummary] = useState({
     original_price: '',
     discount: '',
@@ -91,6 +166,8 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
   useEffect(() => {
     if (isOpen) {
       setStep('grid')
+      setAgreeBYOL(false)
+      setCustomLicenseKey('')
       setSummary({
         original_price: '',
         discount: '',
@@ -218,6 +295,17 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
       return
     }
 
+    if (isWindowsOs) {
+      if (!isValidWindowsKey) {
+        addToast('Vui lòng nhập key bản quyền Windows!', 'error')
+        return
+      }
+      if (!agreeBYOL) {
+        addToast('Vui lòng đồng ý điều khoản bản quyền BYOL Windows!', 'error')
+        return
+      }
+    }
+
     const vpsDataBuying = {
       plan_id: selectedPlanId,
       duration: Number(selectedDuration),
@@ -236,6 +324,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
       coupon: appliedDiscount,
       auto_renew: autoRenew,
       is_proxy: false,
+      windows_license_key: isWindowsOs ? effectiveLicenseKey : undefined,
     }
 
     setIsBuying(true)
@@ -604,6 +693,87 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                       />
                     </label>
 
+                    {/* Windows License Section (BYOL) */}
+                    {isWindowsOs && (
+                      <div className="border-border bg-surface/50 my-2 flex w-full flex-col gap-3 rounded-xl border p-4 shadow-xs">
+                        <div className="flex items-center gap-2">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 640 640"
+                            className="text-primary size-5 shrink-0 fill-current"
+                          >
+                            <path d="M64 128L288 96V304H64V128ZM64 336H288V544L64 512V336ZM320 91.5L576 56V304H320V91.5ZM320 336H576V584L320 548.5V336Z" />
+                          </svg>
+                          <span className="text-text-primary text-base font-bold">
+                            Bản quyền Windows
+                          </span>
+                        </div>
+
+                        {/* Dropdown if loading or user has existing licenses */}
+                        {(licensesLoading || userLicenses.length > 0) && (
+                          <div className="flex flex-col gap-1.5 text-lg">
+                            <span className="text-text-muted text-sm font-medium">
+                              Chọn key bản quyền đã có hoặc nhập key mới
+                            </span>
+                            <Skeleton
+                              isLoading={licensesLoading}
+                              element={
+                                <DropDown
+                                  options={dropdownOptions}
+                                  value={selectedLicenseOption}
+                                  onChange={setSelectedLicenseOption}
+                                  className="rounded-lg text-xs sm:text-lg"
+                                  menuClassName="text-xs sm:text-lg"
+                                />
+                              }
+                              className="bg-text-muted h-10 w-full rounded-lg"
+                            />
+                          </div>
+                        )}
+
+                        {/* Key input if "Sử dụng key mới" or no licenses */}
+                        {(userLicenses.length === 0 ||
+                          selectedLicenseOption === NEW_KEY_OPTION) && (
+                          <div className="flex flex-col gap-1 text-lg">
+                            <span className="text-text-muted text-sm font-medium">
+                              Nhập Windows Product Key
+                            </span>
+                            <WindowsKeyInput
+                              value={customLicenseKey}
+                              onChange={(e) => setCustomLicenseKey(e.target.value)}
+                              className={`rounded-lg px-3 py-2 font-mono text-base tracking-wider uppercase ${
+                                customLicenseKey && !isValidWindowsKey
+                                  ? 'border-orange focus:border-orange focus:ring-orange/20'
+                                  : ''
+                              }`}
+                            />
+                            {customLicenseKey && !isValidWindowsKey && (
+                              <span className="text-orange text-xs font-medium">
+                                Định dạng key không hợp lệ (Ví dụ: XXXXX-XXXXX-XXXXX-XXXXX-XXXXX)
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                        {/* BYOL Checkbox Disclaimer */}
+                        <label className="hover:text-text-primary flex cursor-pointer items-start gap-2.5 pt-1 transition-colors">
+                          <div className="shrink-0 pt-0.5">
+                            <Checkbox
+                              checked={agreeBYOL}
+                              onChange={(e) => setAgreeBYOL(e.target.checked)}
+                            />
+                          </div>
+                          <span className="text-orange text-sm leading-relaxed select-none">
+                            Khách hàng sử dụng Windows theo hình thức BYOL - Bring Your Own License
+                            phải tự cung cấp và chịu trách nhiệm về tính hợp lệ của giấy phép.
+                            <br />
+                            Chúng tôi chỉ cung cấp hạ tầng và không chịu trách nhiệm đối với key bản
+                            quyền do khách hàng tự sử dụng.
+                          </span>
+                        </label>
+                      </div>
+                    )}
+
                     {/* Range IP */}
                     {ips.length > 0 && (
                       <div className="flex grow flex-col gap-1.5 text-lg">
@@ -946,7 +1116,8 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                   isBuying ||
                   !selectedPlanId ||
                   summary.warning === 'Tài khoản không đủ' ||
-                  !plans.some((p) => p.status === 'available')
+                  !plans.some((p) => p.status === 'available') ||
+                  !isLicenseValidForPay
                 }
                 className="group enabled:bg-blue flex h-12 w-full items-center justify-center gap-2 rounded-lg font-semibold text-white shadow-sm transition-all disabled:bg-gray-500"
               >

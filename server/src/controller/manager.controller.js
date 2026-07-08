@@ -125,6 +125,7 @@ export async function create(req, res) {
     coupon,
     auto_renew,
     is_proxy,
+    windows_license_key,
   } = req.body;
 
   const url = `${process.env.BASE_URL}/server/create`;
@@ -152,6 +153,7 @@ export async function create(req, res) {
     provider: isp || undefined,
     proxy_type: proxy_type || "proxy_https",
     is_proxy: is_proxy,
+    windows_license_key: is_proxy ? undefined : windows_license_key,
   };
 
   try {

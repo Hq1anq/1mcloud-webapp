@@ -314,6 +314,18 @@ const en = {
   'buyVps.soldOut': 'Sold Out',
   'buyVps.soldOutMessage':
     'This plan is currently sold out. Please check back later or contact support.',
+  'buyVps.winLicenseTitle': 'Windows License',
+  'buyVps.selectExistingLicense': 'Select an existing license key or enter a new one',
+  'buyVps.enterWinProductKey': 'Enter Windows Product Key',
+  'buyVps.enterNewKeyOption': '+ Enter new key',
+  'buyVps.unusedLicense': '(Unused)',
+  'buyVps.invalidWinKeyFormat': 'Invalid key format (Example: XXXXX-XXXXX-XXXXX-XXXXX-XXXXX)',
+  'buyVps.byolDisclaimerLine1':
+    'Customers using Windows under BYOL - Bring Your Own License must provide and take full responsibility for the validity of their license.',
+  'buyVps.byolDisclaimerLine2':
+    'We only provide infrastructure and are not responsible for license keys provided and used by customers.',
+  'buyVps.enterWinKey': 'Please enter a Windows license key!',
+  'buyVps.agreeByolToast': 'Please agree to the Windows BYOL license terms!',
 
   'upgradePlan.title': 'Upgrade Your Plan',
   'upgradePlan.subtitle':

@@ -314,6 +314,18 @@ const vi = {
   'buyVps.soldOut': 'Hết hàng',
   'buyVps.soldOutMessage':
     'Gói dịch vụ này hiện đã hết. Vui lòng kiểm tra lại sau hoặc liên hệ bộ phận hỗ trợ.',
+  'buyVps.winLicenseTitle': 'Bản quyền Windows',
+  'buyVps.selectExistingLicense': 'Chọn key bản quyền đã có hoặc nhập key mới',
+  'buyVps.enterWinProductKey': 'Nhập Windows Product Key',
+  'buyVps.enterNewKeyOption': '+ Nhập key mới',
+  'buyVps.unusedLicense': '(Chưa dùng)',
+  'buyVps.invalidWinKeyFormat': 'Định dạng key không hợp lệ (Ví dụ: XXXXX-XXXXX-XXXXX-XXXXX-XXXXX)',
+  'buyVps.byolDisclaimerLine1':
+    'Khách hàng sử dụng Windows theo hình thức BYOL - Bring Your Own License phải tự cung cấp và chịu trách nhiệm về tính hợp lệ của giấy phép.',
+  'buyVps.byolDisclaimerLine2':
+    'Chúng tôi chỉ cung cấp hạ tầng và không chịu trách nhiệm đối với key bản quyền do khách hàng tự sử dụng.',
+  'buyVps.enterWinKey': 'Vui lòng nhập key bản quyền Windows!',
+  'buyVps.agreeByolToast': 'Vui lòng đồng ý điều khoản bản quyền BYOL Windows!',
 
   'upgradePlan.title': 'Nâng cấp cấu hình',
   'upgradePlan.subtitle':

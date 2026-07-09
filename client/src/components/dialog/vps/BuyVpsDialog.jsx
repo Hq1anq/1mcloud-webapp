@@ -11,12 +11,13 @@ import Radio from '../../ui/Radio.jsx'
 import Skeleton from '../../ui/Skeleton.jsx'
 import WindowsKeyInput, { maskProductKey } from '../../ui/WindowsKeyInput.jsx'
 
-const NEW_KEY_OPTION = '+ Nhập key mới'
-
 export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
   const { addToast, removeToast } = useToast()
   const t = useTranslation()
   const fetchBalance = useProfileStore((s) => s.fetchBalance)
+
+  const newKeyOption = t('buyVps.enterNewKeyOption')
+  const unusedLabel = t('buyVps.unusedLicense')
 
   // Step: 'grid' | 'config'
   const [step, setStep] = useState('grid')
@@ -82,7 +83,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
   // Windows License BYOL state
   const [userLicenses, setUserLicenses] = useState([])
   const [licensesLoading, setLicensesLoading] = useState(false)
-  const [selectedLicenseOption, setSelectedLicenseOption] = useState(NEW_KEY_OPTION)
+  const [selectedLicenseOption, setSelectedLicenseOption] = useState(newKeyOption)
   const [customLicenseKey, setCustomLicenseKey] = useState('')
   const [agreeBYOL, setAgreeBYOL] = useState(false)
 
@@ -90,21 +91,21 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
   const isWindowsOs = Boolean(osName && /win/i.test(osName))
 
   const dropdownOptions = useMemo(() => {
-    if (!userLicenses || userLicenses.length === 0) return [NEW_KEY_OPTION]
+    if (!userLicenses || userLicenses.length === 0) return [newKeyOption]
     return [
       ...userLicenses.map(
         (lic) =>
           `${maskProductKey(lic.license_key)} ${
-            lic.server ? `(server: ${lic.server.ip})` : '(Chưa dùng)'
+            lic.server ? `(server: ${lic.server.ip})` : unusedLabel
           }`
       ),
-      NEW_KEY_OPTION,
+      newKeyOption,
     ]
-  }, [userLicenses])
+  }, [userLicenses, newKeyOption, unusedLabel])
 
   const effectiveLicenseKey = useMemo(() => {
     if (!isWindowsOs) return ''
-    if (userLicenses.length === 0 || selectedLicenseOption === NEW_KEY_OPTION) {
+    if (userLicenses.length === 0 || selectedLicenseOption === newKeyOption) {
       return customLicenseKey
     }
     const idx = dropdownOptions.indexOf(selectedLicenseOption)
@@ -112,7 +113,14 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
       return userLicenses[idx].license_key
     }
     return customLicenseKey
-  }, [isWindowsOs, userLicenses, selectedLicenseOption, dropdownOptions, customLicenseKey])
+  }, [
+    isWindowsOs,
+    userLicenses,
+    selectedLicenseOption,
+    dropdownOptions,
+    customLicenseKey,
+    newKeyOption,
+  ])
 
   const isValidWindowsKey =
     /^[a-zA-Z0-9]{5}-[a-zA-Z0-9]{5}-[a-zA-Z0-9]{5}-[a-zA-Z0-9]{5}-[a-zA-Z0-9]{5}$/.test(
@@ -135,11 +143,11 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
             if (sorted.length > 0) {
               const firstLic = sorted[0]
               const label = `${maskProductKey(firstLic.license_key)} ${
-                firstLic.server ? `(server: ${firstLic.server.ip})` : '(Chưa dùng)'
+                firstLic.server ? `(server: ${firstLic.server.ip})` : unusedLabel
               }`
               setSelectedLicenseOption(label)
             } else {
-              setSelectedLicenseOption(NEW_KEY_OPTION)
+              setSelectedLicenseOption(newKeyOption)
             }
           }
         })
@@ -150,7 +158,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
           setLicensesLoading(false)
         })
     }
-  }, [isOpen, step, isWindowsOs])
+  }, [isOpen, step, isWindowsOs, newKeyOption, unusedLabel])
 
   const [summary, setSummary] = useState({
     original_price: '',
@@ -297,11 +305,11 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
 
     if (isWindowsOs) {
       if (!isValidWindowsKey) {
-        addToast('Vui lòng nhập key bản quyền Windows!', 'error')
+        addToast(t('buyVps.enterWinKey'), 'error')
         return
       }
       if (!agreeBYOL) {
-        addToast('Vui lòng đồng ý điều khoản bản quyền BYOL Windows!', 'error')
+        addToast(t('buyVps.agreeByolToast'), 'error')
         return
       }
     }
@@ -705,7 +713,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                             <path d="M64 128L288 96V304H64V128ZM64 336H288V544L64 512V336ZM320 91.5L576 56V304H320V91.5ZM320 336H576V584L320 548.5V336Z" />
                           </svg>
                           <span className="text-text-primary text-base font-bold">
-                            Bản quyền Windows
+                            {t('buyVps.winLicenseTitle')}
                           </span>
                         </div>
 
@@ -713,7 +721,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                         {(licensesLoading || userLicenses.length > 0) && (
                           <div className="flex flex-col gap-1.5 text-lg">
                             <span className="text-text-muted text-sm font-medium">
-                              Chọn key bản quyền đã có hoặc nhập key mới
+                              {t('buyVps.selectExistingLicense')}
                             </span>
                             <Skeleton
                               isLoading={licensesLoading}
@@ -732,11 +740,10 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                         )}
 
                         {/* Key input if "Sử dụng key mới" or no licenses */}
-                        {(userLicenses.length === 0 ||
-                          selectedLicenseOption === NEW_KEY_OPTION) && (
+                        {(userLicenses.length === 0 || selectedLicenseOption === newKeyOption) && (
                           <div className="flex flex-col gap-1 text-lg">
                             <span className="text-text-muted text-sm font-medium">
-                              Nhập Windows Product Key
+                              {t('buyVps.enterWinProductKey')}
                             </span>
                             <WindowsKeyInput
                               value={customLicenseKey}
@@ -749,7 +756,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                             />
                             {customLicenseKey && !isValidWindowsKey && (
                               <span className="text-orange text-xs font-medium">
-                                Định dạng key không hợp lệ (Ví dụ: XXXXX-XXXXX-XXXXX-XXXXX-XXXXX)
+                                {t('buyVps.invalidWinKeyFormat')}
                               </span>
                             )}
                           </div>
@@ -764,11 +771,9 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                             />
                           </div>
                           <span className="text-orange text-sm leading-relaxed select-none">
-                            Khách hàng sử dụng Windows theo hình thức BYOL - Bring Your Own License
-                            phải tự cung cấp và chịu trách nhiệm về tính hợp lệ của giấy phép.
+                            {t('buyVps.byolDisclaimerLine1')}
                             <br />
-                            Chúng tôi chỉ cung cấp hạ tầng và không chịu trách nhiệm đối với key bản
-                            quyền do khách hàng tự sử dụng.
+                            {t('buyVps.byolDisclaimerLine2')}
                           </span>
                         </label>
                       </div>

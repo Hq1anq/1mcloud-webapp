@@ -1,4 +1,4 @@
-import { motion as m } from 'motion/react'
+import { motion as M } from 'motion/react'
 import { useTranslation } from '../../i18n'
 import { fadeUp, slideRight, stagger } from './homeVariants'
 
@@ -16,7 +16,7 @@ export default function HeroSection() {
       <div className="flex max-w-380 flex-1 flex-col">
         <div className="flex flex-col items-center gap-10 lg:flex-row">
           {/*  Left: Text Content  */}
-          <m.div
+          <M.div
             className="z-10 flex flex-1 flex-col text-center lg:text-left"
             variants={fadeUp}
             initial="hidden"
@@ -47,7 +47,7 @@ export default function HeroSection() {
             </div>
 
             {/* Feature Checks — staggered separately, slightly after heading */}
-            <m.div
+            <M.div
               className="flex flex-col justify-center gap-4 pt-4 sm:flex-row lg:justify-start"
               variants={featureStagger}
               initial="hidden"
@@ -55,7 +55,7 @@ export default function HeroSection() {
               transition={{ delay: 0.25 }}
             >
               {[t('hero.feature1'), t('hero.feature2'), t('hero.feature3')].map((label) => (
-                <m.div key={label} className="flex items-center gap-2" variants={fadeUp}>
+                <M.div key={label} className="flex items-center gap-2" variants={fadeUp}>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 640 640"
@@ -64,13 +64,13 @@ export default function HeroSection() {
                     <path d="M320 576C178.6 576 64 461.4 64 320C64 178.6 178.6 64 320 64C461.4 64 576 178.6 576 320C576 461.4 461.4 576 320 576zM320 112C205.1 112 112 205.1 112 320C112 434.9 205.1 528 320 528C434.9 528 528 434.9 528 320C528 205.1 434.9 112 320 112zM390.7 233.9C398.5 223.2 413.5 220.8 424.2 228.6C434.9 236.4 437.3 251.4 429.5 262.1L307.4 430.1C303.3 435.8 296.9 439.4 289.9 439.9C282.9 440.4 276 437.9 271.1 433L215.2 377.1C205.8 367.7 205.8 352.5 215.2 343.2C224.6 333.9 239.8 333.8 249.1 343.2L285.1 379.2L390.7 234z" />
                   </svg>
                   <span className="text-base font-medium">{label}</span>
-                </m.div>
+                </M.div>
               ))}
-            </m.div>
-          </m.div>
+            </M.div>
+          </M.div>
 
           {/*  Right: Server Rack Illustration  */}
-          <m.div
+          <M.div
             className="relative flex w-full max-w-150 flex-1 items-center justify-center lg:max-w-none"
             variants={slideRight}
             initial="hidden"
@@ -82,7 +82,7 @@ export default function HeroSection() {
               <div className="home-grid-bg absolute inset-0 opacity-20" />
 
               {/* Server panel — float loop managed via motion WAAPI */}
-              <m.div
+              <M.div
                 className="border-border bg-wrapper relative z-10 flex w-64 flex-col gap-3 rounded-lg border p-4 shadow-lg"
                 animate={{ y: [0, -10, 0] }}
                 transition={{
@@ -133,7 +133,7 @@ export default function HeroSection() {
                   <span>RACK-01</span>
                   <span className="text-green">ONLINE</span>
                 </div>
-              </m.div>
+              </M.div>
 
               {/* Decorative lines */}
               <div className="absolute top-1/2 right-12 h-px w-20 bg-[linear-gradient(to_left,var(--primary),transparent)]" />
@@ -176,7 +176,7 @@ export default function HeroSection() {
                 </div>
               </div>
             </div>
-          </m.div>
+          </M.div>
         </div>
       </div>
     </section>

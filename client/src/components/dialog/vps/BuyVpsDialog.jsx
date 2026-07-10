@@ -9,6 +9,7 @@ import DropDown from '../../ui/DropDown.jsx'
 import Checkbox from '../../ui/Checkbox.jsx'
 import Radio from '../../ui/Radio.jsx'
 import Skeleton from '../../ui/Skeleton.jsx'
+import getOS from '../../../data/osMap.js'
 import WindowsKeyInput, { maskProductKey } from '../../ui/WindowsKeyInput.jsx'
 
 export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {

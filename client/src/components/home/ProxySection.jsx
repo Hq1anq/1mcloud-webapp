@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { motion as m } from 'motion/react'
+import { motion as M } from 'motion/react'
 import { useTranslation } from '../../i18n'
 import { fadeUp, slideRight, stagger, iconHover } from './homeVariants'
 
@@ -22,7 +22,7 @@ function ProxyCard({ feat }) {
   const [isHovered, setIsHovered] = useState(false)
 
   return (
-    <m.div
+    <M.div
       className="bg-navbar border-card-border flex items-start gap-4 rounded-xl border p-4 shadow-sm"
       variants={fadeUp}
       whileHover={{
@@ -33,7 +33,7 @@ function ProxyCard({ feat }) {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <m.div
+      <M.div
         className="flex size-10 shrink-0 items-center justify-center rounded-full p-1"
         style={{
           background: `color-mix(in srgb, ${feat.iconColor} 15%, transparent)`,
@@ -43,12 +43,12 @@ function ProxyCard({ feat }) {
         animate={isHovered ? 'hover' : 'initial'}
       >
         {feat.icon}
-      </m.div>
+      </M.div>
       <div>
         <h3 className="text-text-primary font-bold">{feat.title}</h3>
         <p className="mt-1 text-sm">{feat.desc}</p>
       </div>
-    </m.div>
+    </M.div>
   )
 }
 
@@ -96,7 +96,7 @@ export default function ProxySection() {
       <div className="flex max-w-380 flex-1 flex-col">
         <div className="flex flex-col items-center gap-12 lg:flex-row">
           {/*  Left: Header + Feature Cards  */}
-          <m.div
+          <M.div
             className="flex flex-1 flex-col gap-8"
             variants={fadeUp}
             initial="hidden"
@@ -122,7 +122,7 @@ export default function ProxySection() {
             </div>
 
             {/* Feature cards — staggered */}
-            <m.div
+            <M.div
               className="flex flex-col gap-6"
               variants={featureStagger}
               initial="hidden"
@@ -132,11 +132,11 @@ export default function ProxySection() {
               {features.map((feat) => (
                 <ProxyCard key={feat.title} feat={feat} />
               ))}
-            </m.div>
-          </m.div>
+            </M.div>
+          </M.div>
 
           {/*  Right: Network Topology Diagram  */}
-          <m.div
+          <M.div
             className="relative z-0 w-full flex-1"
             variants={slideRight}
             initial="hidden"
@@ -147,7 +147,7 @@ export default function ProxySection() {
               <div className="home-grid-bg absolute inset-0 opacity-20" />
 
               {/* Flow: User → Proxy → Internet */}
-              <m.div
+              <M.div
                 className="relative z-10 flex w-full items-center justify-between"
                 variants={flowStagger}
                 initial="hidden"
@@ -155,7 +155,7 @@ export default function ProxySection() {
                 viewport={{ margin: '-100px' }}
               >
                 {/* User node */}
-                <m.div className="flex flex-col items-center gap-2" variants={flowNode}>
+                <M.div className="flex flex-col items-center gap-2" variants={flowNode}>
                   <div className="text-primary border-primary bg-primary/20 flex size-12 items-center justify-center rounded-full border p-2 sm:size-16">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -166,10 +166,10 @@ export default function ProxySection() {
                     </svg>
                   </div>
                   <span className="font-mono text-sm sm:text-lg">User</span>
-                </m.div>
+                </M.div>
 
                 {/* Arrow: Request */}
-                <m.div
+                <M.div
                   className="bg-border relative mx-2 h-px flex-1"
                   variants={flowArrow}
                   style={{ transformOrigin: 'left center' }}
@@ -178,10 +178,10 @@ export default function ProxySection() {
                     Request
                   </div>
                   <div className="border-border absolute -top-1 -right-1 size-2 rotate-45 border-t border-r" />
-                </m.div>
+                </M.div>
 
                 {/* Proxy node */}
-                <m.div className="flex flex-col items-center gap-2" variants={flowNode}>
+                <M.div className="flex flex-col items-center gap-2" variants={flowNode}>
                   <div className="bg-primary/10 text-primary border-primary flex size-15 flex-col items-center justify-center rounded-lg border p-2 shadow-[0_0_15px_rgba(19,127,236,0.3)] sm:size-20">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -193,10 +193,10 @@ export default function ProxySection() {
                     <span className="mt-1 text-[10px] font-bold">PROXY</span>
                   </div>
                   <span className="text-primary font-mono text-sm sm:text-lg">Anonymous</span>
-                </m.div>
+                </M.div>
 
                 {/* Arrow: Forward */}
-                <m.div
+                <M.div
                   className="bg-border relative mx-2 h-px flex-1"
                   variants={flowArrow}
                   style={{ transformOrigin: 'left center' }}
@@ -205,10 +205,10 @@ export default function ProxySection() {
                     Forward
                   </div>
                   <div className="border-border absolute -top-1 -right-1 size-2 rotate-45 border-t border-r" />
-                </m.div>
+                </M.div>
 
                 {/* Internet node */}
-                <m.div className="flex flex-col items-center gap-2" variants={flowNode}>
+                <M.div className="flex flex-col items-center gap-2" variants={flowNode}>
                   <div className="text-green border-green bg-green/20 flex size-12 items-center justify-center rounded-full border p-2 sm:size-16">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -219,8 +219,8 @@ export default function ProxySection() {
                     </svg>
                   </div>
                   <span className="font-mono text-sm sm:text-lg">Internet</span>
-                </m.div>
-              </m.div>
+                </M.div>
+              </M.div>
 
               {/* IP info row */}
               <div className="border-card-border relative z-10 mt-4 w-full border-t pt-4 sm:mt-8">
@@ -238,7 +238,7 @@ export default function ProxySection() {
             </div>
 
             {/* Glow effect — looping ambient, managed via motion WAAPI */}
-            <m.div
+            <M.div
               className="absolute -top-10 -right-10 -z-10 h-full w-full rounded-full bg-linear-to-br from-green-500 to-blue-500 blur-3xl"
               animate={{ opacity: [0.15, 0.35, 0.15] }}
               transition={{
@@ -247,7 +247,7 @@ export default function ProxySection() {
                 ease: 'easeInOut',
               }}
             />
-          </m.div>
+          </M.div>
         </div>
       </div>
     </section>

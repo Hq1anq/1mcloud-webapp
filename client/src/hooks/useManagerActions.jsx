@@ -124,7 +124,7 @@ export default function useManagerActions(store) {
       removeToast(loadingId)
       setIsProcessing(false)
     },
-    [addToast, removeToast, syncToDb, updateRowBySid, deselectRows, t]
+    [addToast, removeToast, syncToDb, updateRowBySid, deselectRows, t, fetchBalance]
   )
 
   // --- Single handler: single API call for one row ---
@@ -177,7 +177,7 @@ export default function useManagerActions(store) {
       removeToast(loadingId)
       setIsProcessing(false)
     },
-    [addToast, removeToast, syncToDb, updateRowBySid, t]
+    [addToast, removeToast, syncToDb, updateRowBySid, t, fetchBalance]
   )
 
   // --- Sequential processor: one API call per row with per-row feedback ---

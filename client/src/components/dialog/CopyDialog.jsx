@@ -67,9 +67,12 @@ export default function CopyDialog({ isOpen, onClose, text, initialCopyState = '
   // Reflect clipboard result from SafeCopyContext when the dialog opens
   useEffect(() => {
     if (initialCopyState !== 'idle') {
-      setCopyState(initialCopyState)
+      const frameId = requestAnimationFrame(() => setCopyState(initialCopyState))
       const timer = setTimeout(() => setCopyState('idle'), 1000)
-      return () => clearTimeout(timer)
+      return () => {
+        cancelAnimationFrame(frameId)
+        clearTimeout(timer)
+      }
     }
   }, [initialCopyState])
 
@@ -80,7 +83,6 @@ export default function CopyDialog({ isOpen, onClose, text, initialCopyState = '
     } catch {
       setCopyState('failed')
     }
-    setTimeout(() => setCopyState('idle'), 1000)
   }, [text])
 
   const handleClose = useCallback(() => {

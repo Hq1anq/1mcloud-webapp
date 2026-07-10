@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { motion as m } from 'motion/react'
+import { motion as M } from 'motion/react'
 import { useTranslation } from '../../i18n'
 import { fadeUp, slideLeft, stagger, barFill, iconHover, largeIconHover } from './homeVariants'
 
@@ -16,7 +16,7 @@ function VpsCard({ card }) {
   const [isHovered, setIsHovered] = useState(false)
 
   return (
-    <m.div
+    <M.div
       className="border-card-border bg-navbar relative flex flex-1 flex-col overflow-hidden rounded-2xl border p-6 text-left shadow-sm"
       variants={fadeUp}
       whileHover={{
@@ -28,15 +28,15 @@ function VpsCard({ card }) {
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Background icon */}
-      <m.div
+      <M.div
         className="text-text-primary absolute top-0 right-0 size-35 p-4 opacity-10"
         variants={largeIconHover}
         animate={isHovered ? 'hover' : 'initial'}
       >
         {card.icon}
-      </m.div>
+      </M.div>
 
-      <m.div
+      <M.div
         className="mb-4 flex size-10 items-center justify-center rounded-lg p-1"
         style={{
           background: `color-mix(in srgb, ${card.iconColor} 15%, transparent)`,
@@ -46,7 +46,7 @@ function VpsCard({ card }) {
         animate={isHovered ? 'hover' : 'initial'}
       >
         {card.icon}
-      </m.div>
+      </M.div>
 
       <h3 className="text-text-primary mb-2 text-xl font-bold">{card.title}</h3>
       <p className="mb-4">{card.desc}</p>
@@ -55,7 +55,7 @@ function VpsCard({ card }) {
         <span>{card.statLabel}</span>
         <span className="text-text-primary font-mono font-bold">{card.statValue}</span>
       </div>
-    </m.div>
+    </M.div>
   )
 }
 
@@ -191,7 +191,7 @@ export default function VpsSection() {
       <div className="flex max-w-380 flex-1 flex-col">
         <div className="flex flex-col items-center gap-12 lg:flex-row">
           {/*  Left: Monitoring Panel  */}
-          <m.div
+          <M.div
             className="order-2 w-full flex-1 lg:order-1"
             variants={slideLeft}
             initial="hidden"
@@ -213,7 +213,7 @@ export default function VpsSection() {
               </h3>
 
               {/* Bars — stagger container triggers when panel slides in */}
-              <m.div
+              <M.div
                 className="z-10 mx-auto w-full max-w-md space-y-4 sm:space-y-6"
                 variants={barsStagger}
                 initial="hidden"
@@ -221,26 +221,26 @@ export default function VpsSection() {
                 viewport={{ margin: '-110px' }}
               >
                 {bars.map((bar) => (
-                  <m.div key={bar.label} variants={fadeUp}>
+                  <M.div key={bar.label} variants={fadeUp}>
                     <div className="mb-2 flex justify-between font-mono text-xs sm:text-sm">
                       <span>{bar.label}</span>
                       <span className={bar.valueColor}>{bar.value}</span>
                     </div>
                     <div className="h-3 w-full overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--color-terminal)_80%,var(--border))]">
-                      <m.div
+                      <M.div
                         className={`h-full rounded-full bg-linear-to-r ${bar.color}`}
                         style={{ width: bar.width, transformOrigin: 'left center' }}
                         variants={barFill}
                       />
                     </div>
-                  </m.div>
+                  </M.div>
                 ))}
-              </m.div>
+              </M.div>
             </div>
-          </m.div>
+          </M.div>
 
           {/*  Right: Description + Features  */}
-          <m.div
+          <M.div
             className="order-1 flex flex-1 flex-col gap-8 lg:order-2"
             variants={fadeUp}
             initial="hidden"
@@ -265,7 +265,7 @@ export default function VpsSection() {
             </div>
 
             {/* Features — staggered grid */}
-            <m.div
+            <M.div
               className="grid grid-cols-1 gap-6 sm:grid-cols-2"
               variants={featureStagger}
               initial="hidden"
@@ -273,7 +273,7 @@ export default function VpsSection() {
               viewport={{ margin: '-100px' }}
             >
               {features.map((feat) => (
-                <m.div key={feat.title} className="flex gap-4" variants={fadeUp}>
+                <M.div key={feat.title} className="flex gap-4" variants={fadeUp}>
                   <div className="bg-primary/15 text-primary home-icon-hover flex size-12 shrink-0 items-center justify-center rounded-lg p-2">
                     {feat.icon}
                   </div>
@@ -281,14 +281,14 @@ export default function VpsSection() {
                     <h3 className="text-text-primary text-lg font-bold">{feat.title}</h3>
                     <p className="mt-1 text-sm">{feat.desc}</p>
                   </div>
-                </m.div>
+                </M.div>
               ))}
-            </m.div>
-          </m.div>
+            </M.div>
+          </M.div>
         </div>
 
         {/* Spec cards — staggered row */}
-        <m.div
+        <M.div
           className="mx-auto mt-8 flex flex-col gap-6 md:flex-row"
           variants={specStagger}
           initial="hidden"
@@ -298,7 +298,7 @@ export default function VpsSection() {
           {specCards.map((card) => (
             <VpsCard key={card.title} card={card} />
           ))}
-        </m.div>
+        </M.div>
       </div>
     </section>
   )

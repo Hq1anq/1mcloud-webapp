@@ -236,7 +236,7 @@ export default function VpsManager({ onBuySuccessRef }) {
         return { user_pass: newUserPass }
       }
     )
-  }, [handleBatchAction, t])
+  }, [handleBatchAction, t, confirmAction, selectedRowsRef])
 
   const handleAutoFix = useCallback(async () => {
     const rows = [...selectedRowsRef.current]
@@ -249,7 +249,7 @@ export default function VpsManager({ onBuySuccessRef }) {
 
     if (!confirmed) return
     handleBatchAction('/server/auto-fix', t('vpsManager.autoFix').toUpperCase())
-  }, [handleBatchAction, t])
+  }, [handleBatchAction, t, confirmAction, selectedRowsRef])
 
   // --- Change Note handler ---
   const handleChangeNote = useCallback(async () => {

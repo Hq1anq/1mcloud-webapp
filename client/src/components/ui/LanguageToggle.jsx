@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from 'motion/react'
+import { motion as M, AnimatePresence } from 'motion/react'
 import useLanguageStore from '../../store/useLanguageStore'
 
 const FlagVN = () => (
@@ -33,14 +33,14 @@ export default function LanguageToggle() {
   const { language, toggleLanguage } = useLanguageStore()
 
   return (
-    <motion.div
+    <M.div
       whileHover={{ scale: 1.15 }}
       whileTap={{ scale: 0.9 }}
       onClick={toggleLanguage}
       className="relative h-6 w-12 cursor-pointer overflow-hidden rounded-sm md:h-7 md:w-14"
     >
       <AnimatePresence mode="popLayout" initial={false}>
-        <motion.div
+        <M.div
           key={language}
           initial={{ opacity: 0, scale: 0.2, rotate: -90 }}
           animate={{ opacity: 1, scale: 1, rotate: 0 }}
@@ -54,8 +54,8 @@ export default function LanguageToggle() {
           className="absolute inset-0 size-full"
         >
           {language === 'vi' ? <FlagVN /> : <FlagUK />}
-        </motion.div>
+        </M.div>
       </AnimatePresence>
-    </motion.div>
+    </M.div>
   )
 }

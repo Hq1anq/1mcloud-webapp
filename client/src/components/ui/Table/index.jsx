@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, forwardRef, useEffect, useRef } from 'react'
 import { TableVirtuoso } from 'react-virtuoso'
-import { formatInputDate } from '../../../lib/utils.js'
+import { formatInputDate } from '../../../utils/data'
 import { useTranslation } from '../../../i18n'
 
 import { applyFilters, operatorCycle } from './filterUtils.jsx'

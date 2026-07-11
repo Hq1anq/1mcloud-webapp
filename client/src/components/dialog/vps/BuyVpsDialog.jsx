@@ -10,7 +10,8 @@ import Checkbox from '../../ui/Checkbox.jsx'
 import Radio from '../../ui/Radio.jsx'
 import Skeleton from '../../ui/Skeleton.jsx'
 import getOS from '../../../data/osMap.js'
-import WindowsKeyInput, { maskProductKey } from '../../ui/WindowsKeyInput.jsx'
+import WindowsKeyInput from '../../ui/WindowsKeyInput.jsx'
+import { maskProductKey } from '../../../utils/ui.js'
 
 export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
   const { addToast, removeToast } = useToast()

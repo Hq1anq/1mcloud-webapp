@@ -53,33 +53,36 @@ export default function VpsManager({ onBuySuccessRef }) {
 
   const syncToDb = useCallback(
     async (rows, attempt = 1) => {
-      try {
-        await rawSyncToDb(rows)
-      } catch (err) {
-        console.error(`[DB Sync] Save failed (attempt ${attempt}):`, err.message)
-        if (attempt === 1) {
-          return syncToDb(rows, 2)
-        } else {
-          let toastId = null
-          const handleRetry = () => {
-            if (toastId) removeToast(toastId)
-            syncToDb(rows, 2) // only call once each time click retry button
+      async function doSync(r, att) {
+        try {
+          await rawSyncToDb(r)
+        } catch (err) {
+          console.error(`[DB Sync] Save failed (attempt ${att}):`, err.message)
+          if (att === 1) {
+            return doSync(r, 2)
+          } else {
+            let toastId = null
+            const handleRetry = () => {
+              if (toastId) removeToast(toastId)
+              doSync(r, 2)
+            }
+            toastId = addToast(
+              <>
+                <div>{t('syncFailed')}</div>
+                <button
+                  onClick={handleRetry}
+                  className="bg-bg-warning/20 border-bg-warning/30 hover:bg-bg-warning/40 mt-1 rounded border px-3 py-1"
+                >
+                  {t('retry')}
+                </button>
+              </>,
+              'warning',
+              { keepAlive: true }
+            )
           }
-          toastId = addToast(
-            <>
-              <div>{t('syncFailed')}</div>
-              <button
-                onClick={handleRetry}
-                className="bg-bg-warning/20 border-bg-warning/30 hover:bg-bg-warning/40 mt-1 rounded border px-3 py-1"
-              >
-                {t('retry')}
-              </button>
-            </>,
-            'warning',
-            { keepAlive: true }
-          )
         }
       }
+      return doSync(rows, attempt)
     },
     [rawSyncToDb, addToast, removeToast, t]
   )

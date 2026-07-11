@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import axiosInstance from '../lib/axios'
-import { randomDelay } from '../lib/utils'
+import { randomDelay } from '../utils/ui'
 import { useToast } from '../context/ToastContext'
 import { useTranslation } from '../i18n'
 import useProfileStore from '../store/useProfileStore'

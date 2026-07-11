@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getStatusClasses } from '../../lib/utils'
+import { getStatusClasses } from '../../utils/ui'
 import Dialog from '../../components/ui/Dialog'
 import axiosInstance from '../../lib/axios'
 import { useTranslation } from '../../i18n'

@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import axiosInstance from '../lib/axios'
-import { extractIP, mergeVpsData } from '../lib/utils'
+import { extractIP, mergeVpsData } from '../utils/data'
 import useAuthStore from './useAuthStore'
 
 const useVpsStore = create((set, get) => ({

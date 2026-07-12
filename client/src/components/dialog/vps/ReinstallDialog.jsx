@@ -38,30 +38,33 @@ export default function ReinstallDialog({ isOpen, onClose, currentData, onSucces
   useEffect(() => {
     if (!isOpen) return
 
-    const fetchOs = async () => {
-      try {
-        const res = await axiosInstance.get('/vps/support/os')
-        if (!res.data?.success) {
+    const id = requestAnimationFrame(() => {
+      const fetchOs = async () => {
+        try {
+          const res = await axiosInstance.get('/vps/support/os')
+          if (!res.data?.success) {
+            setLoadOsError(true)
+            return addToast(t('reinstall.errorLoadOS'), 'error')
+          }
+          const osMap = res?.data?.info.os || {}
+          setOsOptions(osMap)
+          const firstKey = Object.keys(osMap)[0]
+          if (firstKey)
+            updateForm({
+              os: firstKey,
+            })
+        } catch {
           setLoadOsError(true)
-          return addToast(t('reinstall.errorLoadOS'), 'error')
+          addToast(t('reinstall.errorLoadOS'), 'error')
+        } finally {
+          setLoadingOs(false)
         }
-        const osMap = res?.data?.info.os || {}
-        setOsOptions(osMap)
-        const firstKey = Object.keys(osMap)[0]
-        if (firstKey)
-          updateForm({
-            os: firstKey,
-          })
-      } catch {
-        setLoadOsError(true)
-        addToast(t('reinstall.errorLoadOS'), 'error')
-      } finally {
-        setLoadingOs(false)
       }
-    }
 
-    setLoadOsError(false)
-    fetchOs()
+      setLoadOsError(false)
+      fetchOs()
+    })
+    return () => cancelAnimationFrame(id)
   }, [isOpen, addToast, t])
 
   const handleSubmit = async () => {

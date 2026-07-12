@@ -268,14 +268,15 @@ export default function ProxyManager({ onBuySuccessRef }) {
       return
     }
 
-    let infoTextNode = t('manager.reinstallTarget')
-    let ip = '__',
-      port = '__',
-      username = '__',
-      password = '__'
+    let parsedInfo = null
 
     if (reinstallInput) {
       const parts = reinstallInput.split(':')
+      let ip = '__'
+      let port = '__'
+      let username
+      let password
+
       if (parts.length >= 4) [ip, port, username, password] = parts
       else if (parts.length === 3) [port, username, password] = parts
       else if (parts.length === 2) [username, password] = parts
@@ -297,23 +298,24 @@ export default function ProxyManager({ onBuySuccessRef }) {
         addToast(`Password ${t('buy.invalidPassword')}`, 'warning')
         return
       }
-      infoTextNode = (
-        <>
-          {t('type')} <span className="text-highlight font-bold">{reinstallType} </span>
-          <br />
-          {t('manager.info')}{' '}
-          <span className="text-highlight font-bold break-all">
-            {ip}:{port}:{username}:{password}
-          </span>
-        </>
-      )
-    } else {
-      infoTextNode = (
-        <>
-          {t('type')} <span className="text-highlight font-bold">{reinstallType}</span>
-        </>
-      )
+
+      parsedInfo = { ip, port, username, password }
     }
+
+    const infoTextNode = parsedInfo ? (
+      <>
+        {t('type')} <span className="text-highlight font-bold">{reinstallType} </span>
+        <br />
+        {t('manager.info')}{' '}
+        <span className="text-highlight font-bold break-all">
+          {parsedInfo.ip}:{parsedInfo.port}:{parsedInfo.username}:{parsedInfo.password}
+        </span>
+      </>
+    ) : (
+      <>
+        {t('type')} <span className="text-highlight font-bold">{reinstallType}</span>
+      </>
+    )
 
     const confirmed = await confirmAction({
       title: t('manager.confirmReinstall'),
@@ -448,7 +450,6 @@ export default function ProxyManager({ onBuySuccessRef }) {
           let evaluatedTo = replaceTo
 
           let calculatedBaseDate = null
-          let calculatedMonth = null
           let extractedDDMMText = ''
 
           const needsDateParsing = evaluatedFrom === '' || /\+(1w|2w|1m)/.test(noteInput)
@@ -468,13 +469,9 @@ export default function ProxyManager({ onBuySuccessRef }) {
             const month = parseInt(dateMatch[2], 10) - 1
             const year = now.getFullYear()
             calculatedBaseDate = new Date(year, month, day)
-            calculatedMonth = month
             extractedDDMMText = `${dateMatch[1]}${dateMatch[2]}`
 
-            if (
-              isNaN(calculatedBaseDate.getTime()) ||
-              calculatedBaseDate.getMonth() !== calculatedMonth
-            ) {
+            if (isNaN(calculatedBaseDate.getTime()) || calculatedBaseDate.getMonth() !== month) {
               return { data: { success: false, error: 'invalid date in oldNote' } }
             }
           }

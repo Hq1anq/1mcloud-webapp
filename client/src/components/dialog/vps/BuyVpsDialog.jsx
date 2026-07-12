@@ -133,32 +133,35 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
   // Fetch licenses when Windows OS is selected
   useEffect(() => {
     if (isOpen && step === 'config' && isWindowsOs) {
-      setLicensesLoading(true)
-      axiosInstance
-        .get('/user/licenses')
-        .then((res) => {
-          if (res.data?.success && Array.isArray(res.data.licenses)) {
-            const sorted = [...res.data.licenses].sort((a, b) =>
-              (a.license_key || '').localeCompare(b.license_key || '')
-            )
-            setUserLicenses(sorted)
-            if (sorted.length > 0) {
-              const firstLic = sorted[0]
-              const label = `${maskProductKey(firstLic.license_key)} ${
-                firstLic.server ? `(server: ${firstLic.server.ip})` : unusedLabel
-              }`
-              setSelectedLicenseOption(label)
-            } else {
-              setSelectedLicenseOption(newKeyOption)
+      const id = requestAnimationFrame(() => {
+        setLicensesLoading(true)
+        axiosInstance
+          .get('/user/licenses')
+          .then((res) => {
+            if (res.data?.success && Array.isArray(res.data.licenses)) {
+              const sorted = [...res.data.licenses].sort((a, b) =>
+                (a.license_key || '').localeCompare(b.license_key || '')
+              )
+              setUserLicenses(sorted)
+              if (sorted.length > 0) {
+                const firstLic = sorted[0]
+                const label = `${maskProductKey(firstLic.license_key)} ${
+                  firstLic.server ? `(server: ${firstLic.server.ip})` : unusedLabel
+                }`
+                setSelectedLicenseOption(label)
+              } else {
+                setSelectedLicenseOption(newKeyOption)
+              }
             }
-          }
-        })
-        .catch((err) => {
-          console.error('Failed to fetch user licenses:', err)
-        })
-        .finally(() => {
-          setLicensesLoading(false)
-        })
+          })
+          .catch((err) => {
+            console.error('Failed to fetch user licenses:', err)
+          })
+          .finally(() => {
+            setLicensesLoading(false)
+          })
+      })
+      return () => cancelAnimationFrame(id)
     }
   }, [isOpen, step, isWindowsOs, newKeyOption, unusedLabel])
 
@@ -175,16 +178,19 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
   // Reset when dialog reopens
   useEffect(() => {
     if (isOpen) {
-      setStep('grid')
-      setAgreeBYOL(false)
-      setCustomLicenseKey('')
-      setSummary({
-        original_price: '',
-        discount: '',
-        coupon: '',
-        warning: '',
-        must_pay: '',
+      const id = requestAnimationFrame(() => {
+        setStep('grid')
+        setAgreeBYOL(false)
+        setCustomLicenseKey('')
+        setSummary({
+          original_price: '',
+          discount: '',
+          coupon: '',
+          warning: '',
+          must_pay: '',
+        })
       })
+      return () => cancelAnimationFrame(id)
     }
   }, [isOpen])
 
@@ -192,68 +198,68 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
   useEffect(() => {
     if (!selectedNation || step !== 'config') return
 
-    const defaults = getDefaultPlans(selectedNation)
-    setPlans(defaults)
+    const id = requestAnimationFrame(() => {
+      const defaults = getDefaultPlans(selectedNation)
+      setPlans(defaults)
 
-    const fetchData = async () => {
-      setPlansLoading(true)
-      try {
-        const planRes = await axiosInstance.get(`/vps/plan?plan=${selectedNation}`)
-        if (planRes.data?.success && Array.isArray(planRes.data.info)) {
-          // Sort plans by string length first, then alphabetically (works great for D1, D9, D10)
-          const sortedPlans = planRes.data.info.sort((a, b) => a.name.localeCompare(b.name))
+      const fetchData = async () => {
+        setPlansLoading(true)
+        try {
+          const planRes = await axiosInstance.get(`/vps/plan?plan=${selectedNation}`)
+          if (planRes.data?.success && Array.isArray(planRes.data.info)) {
+            const sortedPlans = planRes.data.info.sort((a, b) => a.name.localeCompare(b.name))
 
-          setPlans(sortedPlans)
+            setPlans(sortedPlans)
 
-          const available = sortedPlans.filter((p) => p.status === 'available')
+            const available = sortedPlans.filter((p) => p.status === 'available')
 
-          if (available.length > 0) {
-            let firstSelectedPlanId = available[0].id
-            setSelectedPlanId(firstSelectedPlanId)
+            if (available.length > 0) {
+              let firstSelectedPlanId = available[0].id
+              setSelectedPlanId(firstSelectedPlanId)
 
-            // Fetch support only once using the first plan id without blocking the table render
-            axiosInstance
-              .get(`/vps/support?plan_id=${firstSelectedPlanId}`)
-              .then((suppRes) => {
-                if (suppRes.data?.success) {
-                  const info = suppRes.data.info
-                  setSupportData(info)
+              axiosInstance
+                .get(`/vps/support?plan_id=${firstSelectedPlanId}`)
+                .then((suppRes) => {
+                  if (suppRes.data?.success) {
+                    const info = suppRes.data.info
+                    setSupportData(info)
 
-                  // Initialize Defaults
-                  const osKeys = Object.keys(info.os?.option || {})
-                  if (osKeys.length > 0)
-                    setSelectedOs((prev) => (osKeys.includes(prev) ? prev : osKeys[0]))
+                    const osKeys = Object.keys(info.os?.option || {})
+                    if (osKeys.length > 0)
+                      setSelectedOs((prev) => (osKeys.includes(prev) ? prev : osKeys[0]))
 
-                  const durations = Object.keys(info.duration?.option || {})
-                  if (durations.length > 0)
-                    setSelectedDuration((prev) => (durations.includes(prev) ? prev : durations[0]))
+                    const durations = Object.keys(info.duration?.option || {})
+                    if (durations.length > 0)
+                      setSelectedDuration((prev) => (durations.includes(prev) ? prev : durations[0]))
 
-                  const ips = Array.isArray(info.ip?.option) ? info.ip.option : []
-                  if (ips.length > 0) setSelectedIp((prev) => (ips.includes(prev) ? prev : ips[0]))
+                    const ips = Array.isArray(info.ip?.option) ? info.ip.option : []
+                    if (ips.length > 0) setSelectedIp((prev) => (ips.includes(prev) ? prev : ips[0]))
 
-                  const providers = Array.isArray(info.provider?.option) ? info.provider.option : []
-                  if (providers.length > 0)
-                    setSelectedProvider((prev) => (providers.includes(prev) ? prev : providers[0]))
+                    const providers = Array.isArray(info.provider?.option) ? info.provider.option : []
+                    if (providers.length > 0)
+                      setSelectedProvider((prev) => (providers.includes(prev) ? prev : providers[0]))
 
-                  const locations = Array.isArray(info.location?.option) ? info.location.option : []
-                  if (locations.length > 0)
-                    setSelectedLocation((prev) => (locations.includes(prev) ? prev : locations[0]))
-                }
-              })
-              .catch((supportErr) => {
-                console.error('Failed to fetch VPS support:', supportErr)
-              })
+                    const locations = Array.isArray(info.location?.option) ? info.location.option : []
+                    if (locations.length > 0)
+                      setSelectedLocation((prev) => (locations.includes(prev) ? prev : locations[0]))
+                  }
+                })
+                .catch((supportErr) => {
+                  console.error('Failed to fetch VPS support:', supportErr)
+                })
+            }
           }
+        } catch (err) {
+          console.error('Failed to fetch VPS plans:', err)
+          addToast(t('buyVps.fetchPlanError'), 'error')
+        } finally {
+          setPlansLoading(false)
         }
-      } catch (err) {
-        console.error('Failed to fetch VPS plans:', err)
-        addToast(t('buyVps.fetchPlanError'), 'error')
-      } finally {
-        setPlansLoading(false)
       }
-    }
 
-    fetchData()
+      fetchData()
+    })
+    return () => cancelAnimationFrame(id)
   }, [selectedNation, step, addToast, t])
 
   // Calculate pricing
@@ -385,22 +391,14 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
   }
 
   const renderSelect = (value, onChange, optionsMap, isArray = false) => {
-    let options = []
-    let displayValue = value
-    let onSelect = onChange
-
-    if (isArray) {
-      options = optionsMap
-      displayValue = value
-      onSelect = (newValue) => onChange({ target: { value: newValue } })
-    } else {
-      options = Object.values(optionsMap || {})
-      displayValue = optionsMap?.[value] || value
-      onSelect = (newLabel) => {
-        const key = Object.keys(optionsMap || {}).find((k) => optionsMap[k] === newLabel)
-        if (key) onChange({ target: { value: key } })
-      }
-    }
+    const options = isArray ? optionsMap : Object.values(optionsMap || {})
+    const displayValue = isArray ? value : optionsMap?.[value] || value
+    const onSelect = isArray
+      ? (newValue) => onChange({ target: { value: newValue } })
+      : (newLabel) => {
+          const key = Object.keys(optionsMap || {}).find((k) => optionsMap[k] === newLabel)
+          if (key) onChange({ target: { value: key } })
+        }
 
     return (
       <DropDown

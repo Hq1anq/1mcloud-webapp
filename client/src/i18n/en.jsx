@@ -218,7 +218,6 @@ const en = {
   'manager.confirmRefund': 'Confirm Refund',
   'manager.info': 'Info',
   'manager.invalidReinstall': 'Invalid reinstall config',
-  'manager.reinstallTarget': 'Reinstall target',
   'manager.noValidProxyRenew': 'No valid Proxy to renew.',
   'manager.noValidProxyRefund': 'No valid Proxy to refund.',
   'manager.noValidVpsRenew': 'No valid VPS to renew.',

@@ -83,9 +83,13 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
   )
 
   useEffect(() => {
-    if (!isOpen) return
-    setLoadSupportError(false)
-    fetchSupport()
+    if (isOpen) {
+      const id = requestAnimationFrame(() => {
+        setLoadSupportError(false)
+        fetchSupport()
+      })
+      return () => cancelAnimationFrame(id)
+    }
   }, [isOpen, fetchSupport])
 
   const handleIspChange = (val) => {

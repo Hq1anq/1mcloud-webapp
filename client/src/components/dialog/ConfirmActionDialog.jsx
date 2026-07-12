@@ -44,10 +44,6 @@ export default function ConfirmActionDialog({
         }
       }
       fetchRenewData()
-    } else {
-      setRenewData(null)
-      setIsFetchingRenew(false)
-      setFetchError('')
     }
     if (isOpen && isRefund) {
       const fetchRefundData = async () => {
@@ -69,10 +65,6 @@ export default function ConfirmActionDialog({
         }
       }
       fetchRefundData()
-    } else {
-      setRefundData(null)
-      setIsFetchingRefund(false)
-      setFetchError('')
     }
   }, [isOpen, isRenew, isRefund, selectedRows, t])
 

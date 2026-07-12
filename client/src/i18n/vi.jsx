@@ -217,7 +217,6 @@ const vi = {
   'manager.confirmRefund': 'Xác nhận hoàn tiền',
   'manager.info': 'Thông tin',
   'manager.invalidReinstall': 'Cấu hình cài lại không hợp lệ',
-  'manager.reinstallTarget': 'Mục tiêu cài lại',
   'manager.noValidProxyRenew': 'Không có Proxy hợp lệ để gia hạn.',
   'manager.noValidProxyRefund': 'Không có Proxy hợp lệ để hoàn tiền.',
   'manager.noValidVpsRenew': 'Không có VPS hợp lệ để gia hạn.',

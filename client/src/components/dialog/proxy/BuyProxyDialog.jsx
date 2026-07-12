@@ -228,22 +228,14 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
   if (!supportData) return null
 
   const renderSelect = (value, onChange, optionsMap, isArray = false) => {
-    let options = []
-    let displayValue = value
-    let onSelect = onChange
-
-    if (isArray) {
-      options = optionsMap
-      displayValue = value
-      onSelect = (newValue) => onChange({ target: { value: newValue } })
-    } else {
-      options = Object.values(optionsMap || {})
-      displayValue = optionsMap?.[value] || value
-      onSelect = (newLabel) => {
-        const key = Object.keys(optionsMap || {}).find((k) => optionsMap[k] === newLabel)
-        if (key) onChange({ target: { value: key } })
-      }
-    }
+    const options = isArray ? optionsMap : Object.values(optionsMap || {})
+    const displayValue = isArray ? value : optionsMap?.[value] || value
+    const onSelect = isArray
+      ? (newValue) => onChange({ target: { value: newValue } })
+      : (newLabel) => {
+          const key = Object.keys(optionsMap || {}).find((k) => optionsMap[k] === newLabel)
+          if (key) onChange({ target: { value: key } })
+        }
 
     return (
       <DropDown value={displayValue} options={options} onChange={onSelect} className="rounded-lg" />

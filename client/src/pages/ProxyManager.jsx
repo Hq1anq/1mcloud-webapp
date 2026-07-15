@@ -1102,7 +1102,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
                     </button>
                     <button
                       onClick={() => {
-                        let allLines = []
+                        let allLines
                         const rawBlocks = ips.split(/\n\s*\n/)
                         if (rawBlocks.length === 2) {
                           const block1 = rawBlocks[0]

@@ -222,7 +222,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                 .get(`/vps/support?plan_id=${firstSelectedPlanId}`)
                 .then((suppRes) => {
                   if (suppRes.data?.success) {
-                    const { os, ...restInfo } = suppRes.data.info
+                    const { os: _os, ...restInfo } = suppRes.data.info
                     setSupportData((prev) => ({
                       ...prev,
                       ...restInfo,

@@ -62,12 +62,15 @@ export default function ReinstallDialog({ isOpen, onClose, currentData, onSucces
 
   useEffect(() => {
     if (!isOpen) return
-    setIsFetchedMode(false)
-    setFetchedOsList([])
-    updateForm({
-      os: 'current',
+    const id = requestAnimationFrame(() => {
+      setIsFetchedMode(false)
+      setFetchedOsList([])
+      updateForm({
+        os: 'current',
+      })
+      setLoadingOs(false)
     })
-    setLoadingOs(false)
+    return () => cancelAnimationFrame(id)
   }, [isOpen])
 
   const handleUseStaticOs = () => {

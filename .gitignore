@@ -10,6 +10,9 @@ footer'.jsx
 *.md
 cleanRefundedRows.js
 updateProxyList.js
+encrypt-passwords.ts
+rotate-encryption-key.ts
+test.*
 proxies.txt
 
 # Node.js

@@ -1,7 +1,6 @@
 import { create } from 'zustand'
 import axiosInstance from '../lib/axios'
 import { extractIP, mergeProxyData } from '../utils/data'
-import { decryptServerRows } from '../utils/crypto'
 import useAuthStore from './useAuthStore'
 
 const useProxyStore = create((set, get) => ({
@@ -44,7 +43,7 @@ const useProxyStore = create((set, get) => ({
     set({ isLoading: true })
     try {
       const res = await axiosInstance.get('/proxy')
-      const dbData = await decryptServerRows(res.data?.data || [])
+      const dbData = res.data?.data || []
 
       if (dbData.length > 0) {
         set({
@@ -58,7 +57,7 @@ const useProxyStore = create((set, get) => ({
           const listRes = await axiosInstance.get('/server/list', {
             params: { proxy: 'true' },
           })
-          const listData = await decryptServerRows(listRes.data?.data || [])
+          const listData = listRes.data?.data || []
           if (listData.length > 0) {
             set({
               data: listData,
@@ -94,7 +93,7 @@ const useProxyStore = create((set, get) => ({
     set({ isLoading: true })
     try {
       const res = await axiosInstance.get('/server/list', { params })
-      const resData = await decryptServerRows(res.data?.data || [])
+      const resData = res.data?.data || []
 
       set((state) => {
         let finalMergedData = resData
@@ -130,8 +129,7 @@ const useProxyStore = create((set, get) => ({
   // --- Buy success handler ---
   handleBuySuccess: async (newData, extraConfig) => {
     if (Array.isArray(newData) && newData.length > 0) {
-      const decryptedNewData = await decryptServerRows(newData)
-      const enrichedData = decryptedNewData.map((item) => ({
+      const enrichedData = newData.map((item) => ({
         ...item,
         ...extraConfig,
       }))

@@ -1,10 +1,6 @@
 import { getPool } from "../lib/db.js";
 import { resolveUser } from "../services/user.service.ts";
-// import {
-//   encryptDb,
-//   decryptDb,
-//   encryptPayload,
-// } from "../services/encryption.service.ts";
+import { encrypt, decrypt } from "../services/crypto.service.ts";
 
 /**
  * GET /api/proxy — Load all proxy rows for the authenticated user
@@ -23,12 +19,9 @@ export async function getProxies(req, res) {
       );
 
     const proxies = result.recordset.map((p) => {
-      // TEMPORARY: Disabled encryption/decryption
-      // const payloadUserPass = decryptDb(p.user_pass) || p.user_pass;
-
       return {
         ...p,
-        // user_pass: payloadUserPass,
+        user_pass: p.user_pass ? decrypt(p.user_pass) : null,
         is_auto_renew: !!p.is_auto_renew,
       };
     });
@@ -72,18 +65,9 @@ export async function saveProxies(req, res) {
 
         let query = "";
         chunk.forEach((proxy, idx) => {
-          // TEMPORARY: Disabled encryption/decryption
-          // let dbUserPass = null;
-          // if (proxy.user_pass) {
-          //   const payloadEnc = proxy.user_pass.startsWith("enc:")
-          //     ? proxy.user_pass
-          //     : encryptPayload(proxy.user_pass);
-          //   dbUserPass = encryptDb(payloadEnc);
-          // }
-
           request.input(`sid_${idx}`, proxy.sid);
           request.input(`ip_port_${idx}`, proxy.ip_port || null);
-          request.input(`user_pass_${idx}`, proxy.user_pass || null);
+          request.input(`user_pass_${idx}`, proxy.user_pass ? encrypt(proxy.user_pass) : null);
           request.input(`country_${idx}`, proxy.country || null);
           request.input(`type_${idx}`, proxy.type || null);
           request.input(`created_${idx}`, proxy.created || null);

@@ -148,9 +148,7 @@ export default function ReinstallDialog({ isOpen, onClose, currentData, onSucces
               <div className="flex flex-col gap-1 text-lg">
                 <input
                   type="text"
-                  className={`${
-                    passwordInvalid ? 'border-orange focus:border-orange focus:ring-orange/20' : ''
-                  }`}
+                  className={`${passwordInvalid ? 'border-orange' : ''}`}
                   value={form.password}
                   onChange={(e) => updateForm({ password: e.target.value })}
                 />
@@ -185,8 +183,8 @@ export default function ReinstallDialog({ isOpen, onClose, currentData, onSucces
             </button>
             <button
               onClick={handleSubmit}
-              className="text-text-secondary group enabled:bg-blue flex items-center gap-2 rounded-lg px-6 py-2 font-semibold hover:brightness-90 disabled:bg-gray-500"
-              disabled={submitting}
+              className="btn-primary"
+              disabled={submitting || passwordInvalid}
             >
               {submitting ? t('processing') : t('manager.reinstall')}
             </button>

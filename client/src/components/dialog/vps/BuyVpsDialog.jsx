@@ -230,18 +230,29 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
 
                     const durations = Object.keys(info.duration?.option || {})
                     if (durations.length > 0)
-                      setSelectedDuration((prev) => (durations.includes(prev) ? prev : durations[0]))
+                      setSelectedDuration((prev) =>
+                        durations.includes(prev) ? prev : durations[0]
+                      )
 
                     const ips = Array.isArray(info.ip?.option) ? info.ip.option : []
-                    if (ips.length > 0) setSelectedIp((prev) => (ips.includes(prev) ? prev : ips[0]))
+                    if (ips.length > 0)
+                      setSelectedIp((prev) => (ips.includes(prev) ? prev : ips[0]))
 
-                    const providers = Array.isArray(info.provider?.option) ? info.provider.option : []
+                    const providers = Array.isArray(info.provider?.option)
+                      ? info.provider.option
+                      : []
                     if (providers.length > 0)
-                      setSelectedProvider((prev) => (providers.includes(prev) ? prev : providers[0]))
+                      setSelectedProvider((prev) =>
+                        providers.includes(prev) ? prev : providers[0]
+                      )
 
-                    const locations = Array.isArray(info.location?.option) ? info.location.option : []
+                    const locations = Array.isArray(info.location?.option)
+                      ? info.location.option
+                      : []
                     if (locations.length > 0)
-                      setSelectedLocation((prev) => (locations.includes(prev) ? prev : locations[0]))
+                      setSelectedLocation((prev) =>
+                        locations.includes(prev) ? prev : locations[0]
+                      )
                   }
                 })
                 .catch((supportErr) => {
@@ -821,14 +832,14 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                           type="button"
                           aria-pressed={form.install_chrome}
                           onClick={() => updateForm({ install_chrome: !form.install_chrome })}
-                          className={`hover:bg-blue/10 relative flex items-center justify-center rounded-full border px-8 py-3 text-base font-semibold select-none ${
+                          className={`hover:bg-blue/10 relative flex items-center justify-center rounded-full border px-8 py-3 text-base font-semibold transition-colors select-none ${
                             form.install_chrome
                               ? 'border-blue text-blue bg-[color-mix(in_srgb,var(--bg-terminal),var(--color-blue)_12%)]'
                               : 'border-border text-text-muted bg-terminal'
                           }`}
                         >
                           <span
-                            className={`slide-reveal-ease flex items-center gap-2 ${
+                            className={`slide-reveal-ease flex items-center gap-2 transition-transform ${
                               form.install_chrome ? '-translate-x-4' : 'translate-x-0'
                             }`}
                           >
@@ -843,7 +854,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                           </span>
 
                           <svg
-                            className={`slide-reveal-ease absolute right-4 size-5 ${
+                            className={`slide-reveal-ease absolute right-4 size-5 transition-transform ${
                               form.install_chrome
                                 ? 'translate-x-0 scale-100 opacity-100'
                                 : 'translate-x-5 scale-0 opacity-0'
@@ -865,14 +876,14 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                           type="button"
                           aria-pressed={form.install_firefox}
                           onClick={() => updateForm({ install_firefox: !form.install_firefox })}
-                          className={`hover:bg-orange/10 relative flex items-center justify-center rounded-full border px-8 py-3 text-base font-semibold select-none ${
+                          className={`hover:bg-orange/10 relative flex items-center justify-center rounded-full border px-8 py-3 text-base font-semibold transition-colors select-none ${
                             form.install_firefox
                               ? 'border-orange text-orange bg-[color-mix(in_srgb,var(--bg-terminal),var(--color-orange)_12%)]'
                               : 'border-border text-text-muted bg-terminal'
                           }`}
                         >
                           <span
-                            className={`slide-reveal-ease flex items-center gap-2 ${
+                            className={`slide-reveal-ease flex items-center gap-2 transition-transform ${
                               form.install_firefox ? '-translate-x-4' : 'translate-x-0'
                             }`}
                           >
@@ -887,7 +898,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                           </span>
 
                           <svg
-                            className={`slide-reveal-ease absolute right-4 size-5 ${
+                            className={`slide-reveal-ease absolute right-4 size-5 transition-transform ${
                               form.install_firefox
                                 ? 'translate-x-0 scale-100 opacity-100'
                                 : 'translate-x-5 scale-0 opacity-0'
@@ -1124,11 +1135,11 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                   !plans.some((p) => p.status === 'available') ||
                   !isLicenseValidForPay
                 }
-                className="group enabled:bg-blue flex h-12 w-full items-center justify-center gap-2 rounded-lg font-semibold text-white shadow-sm transition-all disabled:bg-gray-500"
+                className="group btn-primary flex h-12 w-full items-center justify-center gap-2"
               >
                 <span>{t('buyVps.payNow')}</span>
                 <svg
-                  className="size-5 group-hover:translate-x-1"
+                  className="size-5 transition-transform ease-in-out group-hover:translate-x-2"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"

@@ -526,7 +526,7 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
             <button
               onClick={handlePay}
               disabled={!agreeTerms || isBuying || summary.warning === 'Tài khoản không đủ'}
-              className="group enabled:bg-blue flex h-12 w-full items-center justify-center gap-2 rounded-lg font-semibold text-white shadow-sm disabled:bg-gray-500"
+              className="group btn-primary flex h-12 w-full items-center justify-center gap-2"
             >
               <span>{t('buy.payNow')}</span>
               <svg

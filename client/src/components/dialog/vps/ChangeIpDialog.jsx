@@ -420,8 +420,8 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
             </button>
             <button
               onClick={handleSubmit}
-              className="text-text-secondary group enabled:bg-blue flex items-center gap-2 rounded-lg px-6 py-2 font-semibold hover:brightness-90 disabled:bg-gray-500"
-              disabled={submitting || loadingSupport}
+              className="btn-primary"
+              disabled={submitting || loadingSupport || passwordInvalid}
             >
               {submitting ? t('processing') : t('manager.changeIp')}
             </button>

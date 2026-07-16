@@ -111,14 +111,14 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
     <Dialog
       isOpen={isOpen}
       onClose={onClose}
-      className="text-text-primary w-full max-w-6xl overflow-hidden! p-0!"
+      className="text-text-primary w-fit overflow-hidden! p-0!"
     >
       <div className="flex h-[85vh] flex-col">
         {/* Dialog Header */}
         <div className="border-blue flex shrink-0 items-start justify-between border-b px-6 py-5 md:px-10">
           <div>
-            <h2 className="text-2xl font-bold">{t('upgradePlan.title')}</h2>
-            <p className="text-text-muted mt-1 text-base">{t('upgradePlan.subtitle')}</p>
+            <h2 className="text-xl font-bold sm:text-2xl">{t('upgradePlan.title')}</h2>
+            <p className="text-text-muted mt-1 text-sm sm:text-base">{t('upgradePlan.subtitle')}</p>
           </div>
         </div>
 
@@ -133,10 +133,10 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
                 isError={calculationError}
                 element={
                   <div className="flex items-center gap-2">
-                    <span className="bg-surface border-border rounded border px-2 py-1 text-base font-semibold">
+                    <span className="bg-surface border-border rounded border px-2 py-1 font-semibold">
                       {calculation.from_plan.split(' : ')[0]}
                     </span>
-                    <span className="text-text-muted text-base whitespace-nowrap">
+                    <span className="text-text-muted whitespace-nowrap">
                       {calculation.from_plan.split(' : ').slice(1).join(' : ')}
                     </span>
                   </div>
@@ -162,10 +162,10 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
                 isError={calculationError}
                 element={
                   <div className="flex items-center gap-2">
-                    <span className="text-blue bg-blue/10 border-blue/20 rounded border px-2 py-1 text-base font-semibold">
+                    <span className="text-blue bg-blue/10 border-blue/20 rounded border px-2 py-1 font-semibold">
                       {calculation.to_plan.split(' : ')[0]}
                     </span>
-                    <span className="text-blue text-base whitespace-nowrap">
+                    <span className="text-blue whitespace-nowrap">
                       {calculation.to_plan.split(' : ').slice(1).join(' : ')}
                     </span>
                   </div>
@@ -175,7 +175,7 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
             </div>
 
             {/* Plans Table */}
-            <div className="border-border bg-surface relative flex grow flex-col overflow-hidden rounded-lg border">
+            <div className="border-border bg-surface relative flex flex-col overflow-hidden rounded-lg border">
               {!plans ? (
                 <div className="bg-surface flex h-full items-center justify-center">
                   <div className="loader"></div>
@@ -198,7 +198,7 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
                 </div>
               ) : (
                 <div className="scroll-container flex-1 overflow-x-auto">
-                  <table className="h-full w-full min-w-full border-collapse text-left">
+                  <table className="w-full min-w-full border-collapse text-left">
                     <thead className="bg-thead text-text-muted border-border sticky top-0 z-10 border-b text-sm whitespace-nowrap">
                       <tr>
                         <th className="w-12 px-4 py-3 text-center"></th>
@@ -216,7 +216,7 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-border divide-y text-base">
+                    <tbody className="divide-border divide-y">
                       {plans.map((plan) => {
                         const isSelected = selectedPlanId === plan.id
                         return (
@@ -309,7 +309,7 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
                 {t('upgradePlan.summary')}
               </h3>
 
-              <div className="flex flex-col gap-3 text-sm">
+              <div className="flex flex-col gap-3 text-base">
                 <div className="flex items-center justify-between">
                   <span className="text-text-muted">{t('upgradePlan.currentPlan')}</span>
                   <Skeleton
@@ -362,7 +362,7 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
 
               <div className="border-border mt-2 border-t pt-4">
                 <div className="flex items-end justify-between">
-                  <span className="text-text-muted text-base">{t('totalToPay')}</span>
+                  <span className="text-text-muted">{t('totalToPay')}</span>
                   <Skeleton
                     isLoading={isCalculating}
                     isError={calculationError}
@@ -477,14 +477,14 @@ export default function UpgradePlanDialog({ isOpen, onClose, sid, onSuccess }) {
             <div className="border-border mt-6 flex justify-end gap-3 border-t pt-5">
               <button
                 onClick={onClose}
-                className="text-text-muted hover:bg-surface hover:text-text-primary rounded-lg px-4 py-2 text-base transition-colors"
+                className="text-text-muted hover:bg-surface hover:text-text-primary rounded-lg px-4 py-2 transition-colors"
               >
                 {t('cancel')}
               </button>
               <button
                 onClick={handlePay}
                 disabled={!calculation || processing || calculation.warning}
-                className="text-text-secondary group enabled:bg-blue flex items-center gap-2 rounded-lg px-6 py-2 text-base font-semibold hover:brightness-90 disabled:bg-gray-500"
+                className="group btn-primary flex items-center gap-2"
               >
                 {processing ? t('processing') : t('vpsManager.upgrade')}
                 {!processing && (

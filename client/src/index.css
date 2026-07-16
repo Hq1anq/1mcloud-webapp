@@ -364,6 +364,10 @@
     );
   }
 
+  .btn-primary {
+    @apply bg-blue text-text-secondary rounded-lg px-6 py-2 font-semibold enabled:hover:brightness-90 disabled:bg-gray-500;
+  }
+
   .home-grid-bg {
     background-size: 40px 40px;
     --grid-color: color-mix(in srgb, var(--color-border) 50%, var(--color-terminal));

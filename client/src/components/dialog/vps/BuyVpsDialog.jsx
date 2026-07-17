@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useToast } from '../../../context/ToastContext.jsx'
 import { useTranslation } from '../../../i18n/index.js'
 import { vpsNations, vpsSpecialOptions, getDefaultPlans } from '../../../data/vpsNations.jsx'
+import { isValidLicense } from '../../../utils/ui.js'
 import axiosInstance from '../../../lib/axios.js'
 import useProfileStore from '../../../store/useProfileStore.js'
 import Dialog from '../../ui/Dialog.jsx'
@@ -124,10 +125,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
     newKeyOption,
   ])
 
-  const isValidWindowsKey =
-    /^[a-zA-Z0-9]{5}-[a-zA-Z0-9]{5}-[a-zA-Z0-9]{5}-[a-zA-Z0-9]{5}-[a-zA-Z0-9]{5}$/.test(
-      effectiveLicenseKey
-    )
+  const isValidWindowsKey = isValidLicense(effectiveLicenseKey)
   const isLicenseValidForPay = !isWindowsOs || (isValidWindowsKey && agreeBYOL)
 
   // Fetch licenses when Windows OS is selected

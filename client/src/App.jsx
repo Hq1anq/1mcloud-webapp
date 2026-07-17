@@ -17,6 +17,7 @@ import SignupPage from './pages/SignupPage.jsx'
 import Contact from './pages/Contact.jsx'
 import AccountPage from './pages/AccountPage.jsx'
 import HistoryPage from './pages/HistoryPage.jsx'
+import LicensePage from './pages/LicensePage.jsx'
 import { AppProvider } from './context/AppProvider'
 
 function App() {
@@ -88,6 +89,26 @@ function App() {
                   </ToastProvider>
                 }
               />
+
+              <Route
+                path="/licenses"
+                element={
+                  isAuthenticated ? (
+                    <ToastProvider>
+                      <SafeCopyProvider>
+                        <ConfirmProvider>
+                          <PopConfirmProvider>
+                            <LicensePage />
+                          </PopConfirmProvider>
+                        </ConfirmProvider>
+                      </SafeCopyProvider>
+                    </ToastProvider>
+                  ) : (
+                    <Navigate to="/login" replace />
+                  )
+                }
+              />
+
 
               <Route
                 path="/login"

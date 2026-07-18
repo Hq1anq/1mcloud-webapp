@@ -140,7 +140,7 @@ export default function LicensePage() {
 
   return (
     <div className="bg-body text-text-primary min-h-full w-full p-4 pb-16 md:p-8">
-      <main className="mx-auto max-w-7xl">
+      <main className="mx-auto max-w-380">
         {/* PAGE HEADER */}
         <header className="border-border flex flex-col justify-between gap-4 border-b pb-5 sm:flex-row sm:items-center">
           <div>

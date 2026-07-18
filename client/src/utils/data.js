@@ -85,6 +85,21 @@ export function formatInputDate(inputValue) {
   }
 }
 
+/**
+ * Parse a Vietnamese-formatted price string (e.g. "245.000") to a raw integer.
+ * Returns 0 if the string is empty, undefined, or unparseable.
+ */
+export function parseVND(priceStr) {
+  if (!priceStr) return 0
+  const raw = String(priceStr).replace(/[^0-9]/g, '')
+  return parseInt(raw, 10) || 0
+}
+
+/** Format a raw integer back to Vietnamese dot-separated string. */
+export function formatVND(n) {
+  return Math.round(n).toLocaleString('vi-VN')
+}
+
 export function mergeVpsData(data, res) {
   const dataMap = new Map(data.map((row) => [row.sid, row]))
 

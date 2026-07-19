@@ -199,6 +199,13 @@ const vi = {
   'signup.login': 'Đăng nhập',
   'signup.passwordMismatch': 'Mật khẩu không khớp',
   'signup.passwordLength': 'Mật khẩu phải có ít nhất 8 ký tự',
+  'signup.fullnameRequired': 'Vui lòng nhập họ tên.',
+  'signup.emailRequired': 'Vui lòng nhập email.',
+  'signup.phoneRequired': 'Vui lòng nhập số điện thoại.',
+  'signup.passwordRequired': 'Vui lòng nhập mật khẩu.',
+  'signup.successRedirect': 'Đăng ký thành công! Đang chuyển hướng...',
+  'signup.failed': 'Đăng ký thất bại.',
+  'signup.tryAgain': 'Đăng ký thất bại. Vui lòng thử lại.',
 
   // Proxy Checker
   'checker.proxyList': 'Nhập Proxy',

@@ -199,6 +199,13 @@ const en = {
   'signup.login': 'Log in',
   'signup.passwordMismatch': 'Passwords do not match',
   'signup.passwordLength': 'Password must be at least 8 characters',
+  'signup.fullnameRequired': 'Full name is required.',
+  'signup.emailRequired': 'Email address is required.',
+  'signup.phoneRequired': 'Phone number is required.',
+  'signup.passwordRequired': 'Password is required.',
+  'signup.successRedirect': 'Registration successful! Redirecting...',
+  'signup.failed': 'Registration failed.',
+  'signup.tryAgain': 'Registration failed. Please try again.',
 
   // Proxy Checker
   'checker.proxyList': 'Enter Proxy',

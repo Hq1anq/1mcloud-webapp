@@ -541,4 +541,64 @@
   .animate-pulse-glow {
     animation: pulse-glow 2s ease-out infinite;
   }
+
+  /* ── VPS Pricing Page ─────────────────────────────────────────── */
+
+  /* Nation / region selector button */
+  .vps-region-btn {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .vps-region-btn:hover {
+    border-color: var(--primary);
+    background: color-mix(in srgb, var(--bg-wrapper) 20%, transparent);
+    transform: translateY(-2px);
+  }
+
+  /* Active / selected state — glow ring matching mockup */
+  .vps-region-active {
+    border-color: var(--primary) !important;
+    background: color-mix(in srgb, var(--bg-wrapper) 40%, transparent) !important;
+    box-shadow:
+      0 0 0 1px var(--primary),
+      0 0 14px color-mix(in srgb, var(--primary) 50%, transparent);
+  }
+
+  /* VPS plan card — primary-colored shadow on hover */
+  .vps-plan-card {
+    transition:
+      transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 0.25s ease,
+      border-color 0.25s ease;
+  }
+
+  /* Only hover on available (non-disabled) cards */
+  .vps-plan-card:not(.vps-plan-card--disabled):hover {
+    transform: translateY(-4px);
+    border-color: var(--primary);
+    box-shadow: 0 12px 24px -6px color-mix(in srgb, var(--primary) 60%, transparent);
+  }
+
+  /* Sold-out card: visually muted, no pointer/hover effects */
+  .vps-plan-card--disabled {
+    cursor: default;
+  }
+
+  /* Card entrance animation when nation changes.
+     Uses CSS `translate` property (NOT `transform`) so it composes
+     independently — fill-mode won't override the hover transform. */
+  @keyframes vps-float-in {
+    from {
+      opacity: 0;
+      translate: 0 34px;
+    }
+    to {
+      opacity: 1;
+      translate: 0 0;
+    }
+  }
+
+  .animate-vps-float-in {
+    animation: vps-float-in 0.45s ease-out both;
+  }
 }

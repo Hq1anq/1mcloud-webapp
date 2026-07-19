@@ -453,6 +453,59 @@ const en = {
   'changeIp.noteContent': 'Each IP can be changed 3 times per month. You have changed',
   'changeIp.changeTimes': 'times this month',
   'changeIp.notRemoveData': 'Not remove data',
+
+  // VPS Pricing Page
+  'vpsPrice.bannerBadge': 'Tier III Standard Infrastructure',
+  'vpsPrice.title': 'VPS Pricing',
+  'vpsPrice.subtitle':
+    'Instant server deployment with stable Intel Xeon CPUs, GPU vRAM graphics, high-capacity PTU Storage, and unlimited bandwidth.',
+  'vpsPrice.categoriesTitle': 'Categories & Countries',
+  'vpsPrice.categoriesSummary': 'Countries + 2 Specialized Lines',
+  'vpsPrice.locations': 'Locations',
+  'vpsPrice.specializedServers': 'Specialized Servers',
+  'vpsPrice.listTitle': 'VPS List',
+  'vpsPrice.badgeGpu': 'GPU Graphics',
+  'vpsPrice.descGpu': 'VGA Card & Graphics vRAM',
+  'vpsPrice.badgePtu': 'Large Storage',
+  'vpsPrice.descPtu': 'Pay-To-Upload / Storage',
+
+  // Proxy Pricing Page
+  'proxyPrice.bannerBadge': 'High-Speed IPv4 Proxy',
+  'proxyPrice.title': 'Proxy Pricing',
+  'proxyPrice.subtitle':
+    'Private IPv4 proxy supporting HTTP & SOCKS5, unlimited devices & bandwidth, 1 Gbps Ethernet speed. Choose your preferred location.',
+  'proxyPrice.sectionTitle': 'Proxy List by Country',
+  'proxyPrice.countriesUnit': 'countries',
+  'proxyPrice.durationUnit': '1 month / IP',
+
+  // Price Cards (VPS & Proxy)
+  'priceCard.soldOut': 'Sold Out',
+  'priceCard.error': 'Error',
+  'priceCard.buyNow': 'Buy Now',
+  'priceCard.perMonth': 'VND / month',
+  'priceCard.ipv4Text': 'IPv4 Address',
+  'priceCard.bandwidthText': 'Unlimited bandwidth',
+
+  // Proxy Card Specific
+  'proxyCard.ipAddress': 'IP Address',
+  'proxyCard.dedicatedIp': 'IPv4 Dedicated',
+  'proxyCard.protocol': 'Protocols',
+  'proxyCard.protocolVal': 'HTTP / SOCKS5',
+  'proxyCard.unlimitedDevices': 'Unlimited devices',
+
+  // Nations
+  'nation.VN': 'Vietnam(VN)',
+  'nation.US': 'USA(US)',
+  'nation.SG': 'Singapore(SG)',
+  'nation.UK': 'UK(UK)',
+  'nation.AU': 'Australia(AU)',
+  'nation.DE': 'Germany(DE)',
+  'nation.FR': 'France(FR)',
+  'nation.CA': 'Canada(CA)',
+  'nation.NL': 'Netherlands(NL)',
+  'nation.JP': 'Japan(JP)',
+  'nation.HK': 'Hong Kong(HK)',
+  'nation.VNR': 'Vietnam (Residential)',
 }
 
 export default en

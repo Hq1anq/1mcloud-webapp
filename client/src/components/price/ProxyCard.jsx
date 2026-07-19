@@ -1,4 +1,5 @@
 import CardBody from './CardBody.jsx'
+import { useTranslation } from '../../i18n'
 import {
   EarthIcon,
   ProtocolIcon,
@@ -7,19 +8,6 @@ import {
   SpeedIcon,
   CartIcon,
 } from '../../assets/icons'
-
-// ── Static item lists (same for every proxy nation) ─────────────
-
-const PRIMARY_ITEMS = [
-  { icon: <EarthIcon />, label: 'Địa chỉ IP', value: 'IPv4 Dedicated' },
-  { icon: <ProtocolIcon />, label: 'Giao thức', value: 'HTTP / SOCKS5' },
-]
-
-const OTHER_ITEMS = [
-  { icon: <DevicesIcon />, text: 'Không giới hạn thiết bị' },
-  { icon: <RouterIcon />, text: 'Băng thông không giới hạn' },
-  { icon: <SpeedIcon />, text: 'Ethernet port 1 Gbps' },
-]
 
 // ── Component ───────────────────────────────────────────────────
 
@@ -33,14 +21,27 @@ const OTHER_ITEMS = [
  *   onBuy     – optional callback
  */
 export default function ProxyCard({ nation, price, loading, error, animDelay, onBuy }) {
+  const t = useTranslation()
+
+  const primaryItems = [
+    { icon: <EarthIcon />, label: t('proxyCard.ipAddress'), value: t('proxyCard.dedicatedIp') },
+    { icon: <ProtocolIcon />, label: t('proxyCard.protocol'), value: t('proxyCard.protocolVal') },
+  ]
+
+  const otherItems = [
+    { icon: <DevicesIcon />, text: t('proxyCard.unlimitedDevices') },
+    { icon: <RouterIcon />, text: t('priceCard.bandwidthText') },
+    { icon: <SpeedIcon />, text: t('priceCard.ethernetText') },
+  ]
+
   const action = (
     <button
       type="button"
       onClick={onBuy}
-      className="bg-primary hover:bg-primary/90 shadow-primary/20 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl px-4 py-3.5 font-bold text-white shadow-sm transition-all active:scale-[0.98]"
+      className="btn-primary flex w-full items-center justify-center gap-2 active:scale-[0.98]"
     >
-      <span>Đăng ký ngay</span>
-      <CartIcon />
+      <span>{t('priceCard.buyNow')}</span>
+      <CartIcon className="size-8" />
     </button>
   )
 
@@ -59,7 +60,7 @@ export default function ProxyCard({ nation, price, loading, error, animDelay, on
             </div>
             <div>
               <h3 className="font-headline text-text-primary text-base leading-tight font-bold">
-                {nation.name}
+                {t(`nation.${nation.symbol}`) || nation.name}
               </h3>
               <p className="text-text-muted font-mono text-[10px] font-medium uppercase">
                 {nation.symbol} · Proxy
@@ -71,7 +72,7 @@ export default function ProxyCard({ nation, price, loading, error, animDelay, on
           <div className="flex items-center gap-1.5">
             <span className="bg-green h-2 w-2 animate-pulse rounded-full" />
             <span className="text-green font-mono text-[11px] font-bold tracking-wider uppercase">
-              Sẵn sàng
+              Available
             </span>
           </div>
         </div>
@@ -87,12 +88,12 @@ export default function ProxyCard({ nation, price, loading, error, animDelay, on
               {price}
             </span>
           )}
-          <span className="text-text-muted text-xs font-medium">VNĐ / tháng</span>
+          <span className="text-text-muted text-xs font-medium">{t('priceCard.perMonth')}</span>
         </div>
       </div>
 
       {/* ── Card Body (shared) ── */}
-      <CardBody primaryItems={PRIMARY_ITEMS} otherItems={OTHER_ITEMS} action={action} />
+      <CardBody primaryItems={primaryItems} otherItems={otherItems} action={action} />
     </div>
   )
 }

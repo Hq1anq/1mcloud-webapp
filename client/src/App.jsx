@@ -18,6 +18,8 @@ import Contact from './pages/Contact.jsx'
 import AccountPage from './pages/AccountPage.jsx'
 import HistoryPage from './pages/HistoryPage.jsx'
 import LicensePage from './pages/LicensePage.jsx'
+import VpsPrice from './pages/VpsPrice.jsx'
+import ProxyPrice from './pages/ProxyPrice.jsx'
 import { AppProvider } from './context/AppProvider'
 
 function App() {
@@ -109,6 +111,8 @@ function App() {
                 }
               />
 
+              <Route path="/vps-price" element={<VpsPrice />} />
+              <Route path="/proxy-price" element={<ProxyPrice />} />
 
               <Route
                 path="/login"

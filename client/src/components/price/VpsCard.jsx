@@ -1,25 +1,19 @@
 import CardBody from './CardBody.jsx'
 import CountUp from '../ui/CountUp.jsx'
 import { parseVND, formatVND } from '../../utils/data.js'
+import { useTranslation } from '../../i18n'
 import {
   CpuIcon,
   RamIcon,
-  SsdIcon,
-  VramIcon,
+  StorageIcon,
+  GpuIcon,
   EarthIcon,
   RouterIcon,
   SpeedIcon,
   CartIcon,
-  SoldOutIcon,
+  EmptyIcon,
+  ErrorIcon,
 } from '../../assets/icons'
-
-// ── Static other-detail items (same for every VPS plan) ─────────
-
-const OTHER_ITEMS = [
-  { icon: <EarthIcon />, text: '1 Địa chỉ IPv4' },
-  { icon: <RouterIcon />, text: 'Băng thông không giới hạn' },
-  { icon: <SpeedIcon />, text: 'Ethernet port 1 Gbps' },
-]
 
 // ── Component ───────────────────────────────────────────────────
 
@@ -30,7 +24,10 @@ const OTHER_ITEMS = [
  *   onBuy     – optional callback
  */
 export default function VpsCard({ card, animDelay, onBuy }) {
+  const t = useTranslation()
   const isAvailable = card.status === 'available'
+  const isError = card.status === 'error'
+  const isSoldOut = card.status === 'sold_out'
   const hasVRAM = Boolean(card.vRAM)
 
   const isPTU = card.region === 'EU'
@@ -39,11 +36,11 @@ export default function VpsCard({ card, animDelay, onBuy }) {
   const primaryItems = [
     { icon: <CpuIcon />, label: 'CPU', value: card.cpu || 'N/A' },
     { icon: <RamIcon />, label: 'RAM', value: card.ram || 'N/A' },
-    { icon: <SsdIcon />, label: 'SSD', value: card.ssd || 'N/A', highlight: isPTU },
+    { icon: <StorageIcon />, label: 'SSD', value: card.ssd || 'N/A', highlight: isPTU },
     ...(hasVRAM
       ? [
           {
-            icon: <VramIcon />,
+            icon: <GpuIcon />,
             label: 'vRAM',
             value: card.vRAM.trim().split(' ')[0],
             highlight: true,
@@ -52,11 +49,11 @@ export default function VpsCard({ card, animDelay, onBuy }) {
       : []),
   ]
 
-  // Other details: prefer API values, fall back to static labels
+  // Other details: prefer API values, fall back to translated static labels
   const otherItems = [
-    { icon: <EarthIcon />, text: card.ipv4 || '1 Địa chỉ IPv4' },
-    { icon: <RouterIcon />, text: card.bandwidth || 'Băng thông không giới hạn' },
-    { icon: <SpeedIcon />, text: card.ethernet_port || 'Ethernet port 1 Gbps' },
+    { icon: <EarthIcon />, text: `${card.ipv4?.split(' ')[0] || 1} ${t('priceCard.ipv4Text')}` },
+    { icon: <RouterIcon />, text: t('priceCard.bandwidthText') },
+    { icon: <SpeedIcon />, text: `${card.ethernet_port || '1 Gbps'} Ethernet port` },
   ]
 
   const action = (
@@ -64,14 +61,24 @@ export default function VpsCard({ card, animDelay, onBuy }) {
       type="button"
       disabled={!isAvailable}
       onClick={onBuy}
-      className={`flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3.5 font-bold shadow-sm transition-all active:scale-[0.98] ${
-        isAvailable
-          ? 'bg-primary hover:bg-primary/90 shadow-primary/20 cursor-pointer text-white'
-          : 'bg-wrapper/40 text-text-muted border-border/40 cursor-not-allowed border opacity-70'
-      }`}
+      className="btn-primary flex w-full items-center justify-center gap-2 enabled:active:scale-[0.98]"
     >
-      <span>{isAvailable ? 'Đăng ký ngay' : 'Hết hàng'}</span>
-      {isAvailable ? <CartIcon /> : <SoldOutIcon />}
+      {isAvailable ? (
+        <>
+          <span>{t('priceCard.buyNow')}</span>
+          <CartIcon className="size-8" />
+        </>
+      ) : isSoldOut ? (
+        <>
+          <span>{t('priceCard.soldOut')}</span>
+          <EmptyIcon className="size-7" />
+        </>
+      ) : (
+        <>
+          <span>{t('priceCard.error')}</span>
+          <ErrorIcon className="size-7" />
+        </>
+      )}
     </button>
   )
 
@@ -91,41 +98,46 @@ export default function VpsCard({ card, animDelay, onBuy }) {
 
           {/* Status dot */}
           <div className="flex items-center gap-1.5">
-            {isAvailable ? (
-              <span className="bg-green h-2 w-2 animate-pulse rounded-full" />
-            ) : (
-              <span className="bg-red h-2 w-2 rounded-full" />
+            {isAvailable && (
+              <>
+                <span className="bg-green h-2 w-2 animate-pulse rounded-full" />
+                <span className="text-green font-mono text-[11px] font-bold tracking-wider uppercase">
+                  Available
+                </span>
+              </>
             )}
-            <span
-              className={`font-mono text-[11px] font-bold tracking-wider uppercase ${
-                isAvailable ? 'text-green' : 'text-red'
-              }`}
-            >
-              {isAvailable ? 'Sẵn sàng' : 'Hết hàng'}
-            </span>
+            {isSoldOut && (
+              <>
+                <span className="bg-red h-2 w-2 rounded-full" />
+                <span className="text-red font-mono text-[11px] font-bold tracking-wider uppercase">
+                  {t('priceCard.soldOut')}
+                </span>
+              </>
+            )}
           </div>
         </div>
 
         {/* Price */}
         <div className="flex items-baseline gap-1.5">
-          <CountUp
-            value={parseVND(card.price)}
-            format={formatVND}
-            duration={0.5}
-            middle={100000}
-            className="font-headline text-primary text-3xl font-extrabold tracking-tight"
-          />
-          <span className="text-text-muted text-xs font-medium">VNĐ / tháng</span>
+          {isError ? (
+            <span className="font-headline text-primary text-3xl font-extrabold tracking-tight">
+              --
+            </span>
+          ) : (
+            <CountUp
+              value={parseVND(card.price)}
+              format={formatVND}
+              duration={0.5}
+              middle={100000}
+              className="font-headline text-primary text-3xl font-extrabold tracking-tight"
+            />
+          )}
+          <span className="text-text-muted text-xs font-medium">{t('priceCard.perMonth')}</span>
         </div>
       </div>
 
       {/* ── Card Body (shared) ── */}
-      <CardBody
-        primaryItems={primaryItems}
-        otherItems={otherItems}
-        action={action}
-        primaryCols={hasVRAM ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-3'}
-      />
+      <CardBody primaryItems={primaryItems} otherItems={otherItems} action={action} />
     </div>
   )
 }

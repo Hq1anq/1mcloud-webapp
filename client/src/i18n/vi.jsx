@@ -455,6 +455,59 @@ const vi = {
   'changeIp.noteContent': 'Mỗi IP có 3 lần đổi 1 tháng. Bạn đã đổi',
   'changeIp.changeTimes': 'lần trong tháng',
   'changeIp.notRemoveData': 'Không xoá dữ liệu',
+
+  // VPS Pricing Page
+  'vpsPrice.bannerBadge': 'Hạ tầng Tier III Standard',
+  'vpsPrice.title': 'Bảng Giá VPS',
+  'vpsPrice.subtitle':
+    'Khởi tạo máy chủ tức thì với CPU Intel Xeon ổn định, vRAM GPU Đồ họa, Dung lượng PTU Storage lớn và Băng thông không giới hạn.',
+  'vpsPrice.categoriesTitle': 'Danh Mục & Quốc gia',
+  'vpsPrice.categoriesSummary': 'Quốc Gia + 2 Dòng Chuyên Dụng',
+  'vpsPrice.locations': 'Quốc Gia',
+  'vpsPrice.specializedServers': 'Máy Chủ Chuyên Dụng',
+  'vpsPrice.listTitle': 'Danh Sách VPS',
+  'vpsPrice.badgeGpu': 'GPU Đồ họa',
+  'vpsPrice.descGpu': 'VGA Card & vRAM Đồ Họa',
+  'vpsPrice.badgePtu': 'Ổ cứng lớn',
+  'vpsPrice.descPtu': 'Pay-To-Upload / Lưu trữ',
+
+  // Proxy Pricing Page
+  'proxyPrice.bannerBadge': 'Proxy IPv4 Tốc Độ Cao',
+  'proxyPrice.title': 'Bảng Giá Proxy',
+  'proxyPrice.subtitle':
+    'Proxy IPv4 riêng tư, hỗ trợ HTTP & SOCKS5, không giới hạn thiết bị & băng thông, tốc độ Ethernet 1 Gbps. Chọn vị trí quốc gia phù hợp.',
+  'proxyPrice.sectionTitle': 'Danh Sách Proxy Theo Quốc Gia',
+  'proxyPrice.countriesUnit': 'quốc gia',
+  'proxyPrice.durationUnit': '1 tháng / IP',
+
+  // Price Cards (VPS & Proxy)
+  'priceCard.soldOut': 'Hết hàng',
+  'priceCard.error': 'Lỗi',
+  'priceCard.buyNow': 'Mua ngay',
+  'priceCard.perMonth': 'VNĐ / tháng',
+  'priceCard.ipv4Text': 'Địa chỉ IPv4',
+  'priceCard.bandwidthText': 'Băng thông không giới hạn',
+
+  // Proxy Card Specific
+  'proxyCard.ipAddress': 'Địa chỉ IP',
+  'proxyCard.dedicatedIp': 'IPv4 Dedicated',
+  'proxyCard.protocol': 'Giao thức',
+  'proxyCard.protocolVal': 'HTTP / SOCKS5',
+  'proxyCard.unlimitedDevices': 'Không giới hạn thiết bị',
+
+  // Nations
+  'nation.VN': 'Việt Nam(VN)',
+  'nation.US': 'Mỹ(US)',
+  'nation.SG': 'Singapore(SG)',
+  'nation.UK': 'Anh(UK)',
+  'nation.AU': 'Úc(AU)',
+  'nation.DE': 'Đức(DE)',
+  'nation.FR': 'Pháp(FR)',
+  'nation.CA': 'Canada(CA)',
+  'nation.NL': 'Hà Lan(NL)',
+  'nation.JP': 'Nhật Bản(JP)',
+  'nation.HK': 'Hồng Kông(HK)',
+  'nation.VNR': 'Việt Nam (Dân cư)',
 }
 
 export default vi

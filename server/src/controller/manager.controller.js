@@ -5,6 +5,7 @@ import { mergeProxyData, mergeVpsData } from "../services/merge.service.ts";
 import { applyRecordFilters } from "../utils/filter.ts";
 import { decrypt } from "../services/crypto.service.ts";
 import { encryptPayload } from "../services/payloadCrypto.service.ts";
+import { triggerAutoSyncIfNeeded } from "../services/sync.service.ts";
 
 const HEADERS = {
   accept: "application/json, text/plain, */*",
@@ -32,6 +33,17 @@ export async function list(req, res) {
   const isProxy = proxy === "true";
   const hasKeyword =
     keyword && typeof keyword === "string" && keyword.trim() !== "";
+
+  // Non-blocking background 24-hour auto sync trigger
+  if (req.token) {
+    resolveUser(req.token)
+      .then((userId) =>
+        triggerAutoSyncIfNeeded({ userId, userToken: req.token, isProxy }),
+      )
+      .catch((err) =>
+        console.error("[Manager Controller] AutoSync error:", err.message),
+      );
+  }
 
   try {
     // ── BRANCH 2: SEARCHING (Database-only search across all user records) ──

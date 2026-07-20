@@ -1,3 +1,5 @@
+import { getCachedProxyPrice } from "../services/cache.service.js";
+
 const HEADERS = {
   accept: "application/json, text/plain, */*",
   "content-type": "application/json",
@@ -217,7 +219,22 @@ export async function create(req, res) {
 
 export async function calculate(req, res) {
   const { plan_id, is_proxy, quantity, duration, nation, coupon } = req.body;
+
+  if (!req.token) {
+    if (is_proxy && nation) {
+      const cached = getCachedProxyPrice(nation);
+      if (cached) {
+        return res.json({ success: true, info: cached });
+      }
+    }
+    return res.status(401).json({
+      success: false,
+      error: "Access denied. No token provided.",
+    });
+  }
+
   const url = `${process.env.BASE_URL}/server/create/calculate`;
+
   const headers = { ...HEADERS, authorization: `Bearer ${req.token}` };
 
   try {

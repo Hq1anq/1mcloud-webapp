@@ -17,7 +17,8 @@
   "scripts": {
     "dev": "node --env-file=.env --watch src/server.js",
     "start": "node --env-file=.env src/server.js",
-    "sync-mmdb": "node src/utils/syncMmdb.js"
+    "sync-mmdb": "node scripts/syncMmdb.js",
+    "sync-prices": "node --env-file=.env scripts/sync-prices.js"
   },
   "dependencies": {
     "@maxmind/geoip2-node": "^6.3.4",

@@ -1,0 +1,79 @@
+{
+  "VNR": {
+    "original_price": "110,000 VNĐ",
+    "discount": "44,000 VNĐ",
+    "coupon": "0 VNĐ",
+    "warning": "",
+    "must_pay": "66,000 VNĐ"
+  },
+  "VN": {
+    "original_price": "60,000 VNĐ",
+    "discount": "24,000 VNĐ",
+    "coupon": "0 VNĐ",
+    "warning": "",
+    "must_pay": "36,000 VNĐ"
+  },
+  "SG": {
+    "original_price": "110,000 VNĐ",
+    "discount": "44,000 VNĐ",
+    "coupon": "0 VNĐ",
+    "warning": "",
+    "must_pay": "66,000 VNĐ"
+  },
+  "US": {
+    "original_price": "80,000 VNĐ",
+    "discount": "32,000 VNĐ",
+    "coupon": "0 VNĐ",
+    "warning": "",
+    "must_pay": "48,000 VNĐ"
+  },
+  "CA": {
+    "original_price": "80,000 VNĐ",
+    "discount": "32,000 VNĐ",
+    "coupon": "0 VNĐ",
+    "warning": "",
+    "must_pay": "48,000 VNĐ"
+  },
+  "AU": {
+    "original_price": "110,000 VNĐ",
+    "discount": "44,000 VNĐ",
+    "coupon": "0 VNĐ",
+    "warning": "",
+    "must_pay": "66,000 VNĐ"
+  },
+  "DE": {
+    "original_price": "120,000 VNĐ",
+    "discount": "48,000 VNĐ",
+    "coupon": "0 VNĐ",
+    "warning": "",
+    "must_pay": "72,000 VNĐ"
+  },
+  "UK": {
+    "original_price": "80,000 VNĐ",
+    "discount": "32,000 VNĐ",
+    "coupon": "0 VNĐ",
+    "warning": "",
+    "must_pay": "48,000 VNĐ"
+  },
+  "FR": {
+    "original_price": "110,000 VNĐ",
+    "discount": "44,000 VNĐ",
+    "coupon": "0 VNĐ",
+    "warning": "",
+    "must_pay": "66,000 VNĐ"
+  },
+  "JP": {
+    "original_price": "80,000 VNĐ",
+    "discount": "32,000 VNĐ",
+    "coupon": "0 VNĐ",
+    "warning": "",
+    "must_pay": "48,000 VNĐ"
+  },
+  "HK": {
+    "original_price": "80,000 VNĐ",
+    "discount": "32,000 VNĐ",
+    "coupon": "0 VNĐ",
+    "warning": "",
+    "must_pay": "48,000 VNĐ"
+  }
+}

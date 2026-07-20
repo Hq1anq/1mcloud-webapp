@@ -1,13 +1,14 @@
 import express from "express";
 
-import { authenticate } from "../middleware/auth.middleware.js";
+import { authenticate, optionalAuthenticate } from "../middleware/auth.middleware.js";
 import * as vpsController from "../controller/vps.controller.js";
 
 const router = express.Router();
 
+router.get("/plan", optionalAuthenticate, vpsController.getVpsPlan);
+
 router.use(authenticate);
 
-router.get("/plan", vpsController.getVpsPlan);
 router.get("/support", vpsController.support);
 router.get("/support/os", vpsController.supportOs);
 router.post("/upgrade/plans", vpsController.upgradePlans);

@@ -12,7 +12,7 @@
 function PrimaryItem(props) {
   const { icon, label, value, highlight } = props
   return (
-    <div className="ml-5 flex flex-1 items-center gap-1.5">
+    <div className="flex flex-1 items-center gap-1.5">
       {/* icon wrapper keeps icon at fixed size regardless of what SVG is passed */}
       <span className="text-primary size-7 shrink-0">{icon}</span>
       <div className="min-w-0">
@@ -40,11 +40,11 @@ export default function CardBody({ primaryItems = [], otherItems = [], action })
     <div className="bg-surface flex flex-1 flex-col justify-between space-y-5 p-6">
       {/* GROUP 1 – Primary specs */}
       <div className="flex flex-wrap gap-x-2 gap-y-3">
-        <div className="flex grow">
+        <div className="flex grow gap-1">
           <PrimaryItem {...primaryItems[0]} />
           <PrimaryItem {...primaryItems[1]} />
         </div>
-        <div className="flex grow">
+        <div className="flex grow gap-1">
           {primaryItems.slice(2).map((item) => (
             <PrimaryItem {...item} />
           ))}

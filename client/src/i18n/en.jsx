@@ -5,6 +5,9 @@ const en = {
   'nav.proxyManager': 'Proxy Manager',
   'nav.vpsManager': 'VPS Manager',
   'nav.manager': 'Manager',
+  'nav.price': 'Pricing',
+  'nav.vpsPrice': 'VPS Pricing',
+  'nav.proxyPrice': 'Proxy Pricing',
 
   discount: 'Discount',
   totalToPay: 'Total to Pay',

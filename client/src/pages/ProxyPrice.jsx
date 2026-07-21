@@ -81,7 +81,7 @@ export default function ProxyPrice() {
 
       <div className="mx-auto max-w-380 px-4 py-8 sm:px-6 md:py-12 lg:px-8">
         {/* Card Grid */}
-        <section className="mb-12">
+        <section>
           <div className="mb-6 flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
             <div className="flex items-center gap-2">
               <svg

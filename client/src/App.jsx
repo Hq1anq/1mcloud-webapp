@@ -111,8 +111,9 @@ function App() {
                 }
               />
 
-              <Route path="/vps-price" element={<VpsPrice />} />
-              <Route path="/proxy-price" element={<ProxyPrice />} />
+              <Route path="/price" element={<Navigate to="/price/vps" replace />} />
+              <Route path="/price/vps" element={<VpsPrice />} />
+              <Route path="/price/proxy" element={<ProxyPrice />} />
 
               <Route
                 path="/login"

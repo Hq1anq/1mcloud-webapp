@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
 import { NavLink, Link } from 'react-router-dom'
+import { useTranslation } from '../../i18n'
+import { CircleDollarIcon, ServerIcon, EarthIcon } from '../../assets/icons'
 import UserMenu from './UserMenu'
 import ThemeToggle from '../ui/ThemeToggle'
 import LanguageToggle from '../ui/LanguageToggle'
 import useAuthStore from '../../store/useAuthStore'
 import useProfileStore from '../../store/useProfileStore'
-import { useTranslation } from '../../i18n'
 
 export default function Navbar() {
   const t = useTranslation()
@@ -14,23 +15,30 @@ export default function Navbar() {
   const username = user?.username || user?.email || 'User'
   const linkBase =
     'text-text-primary py-2 px-3 rounded-sm md:p-0 flex items-center whitespace-nowrap'
-  const active = 'bg-wrapper md:bg-transparent text-[#cbd5e1] md:text-primary'
+  const active = 'bg-wrapper md:bg-transparent md:text-primary font-semibold'
   const inactive = 'md:hover:text-primary hover:bg-bg-hover md:hover:bg-transparent'
 
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
+  const [isPriceOpen, setIsPriceOpen] = useState(false)
+
   const menuRef = useRef(null)
+  const priceRef = useRef(null)
+  const priceTimeoutRef = useRef(null)
 
   // Fetch balance once on mount when authenticated
   useEffect(() => {
     if (isAuthenticated) fetchBalance()
   }, [isAuthenticated, fetchBalance])
 
-  // Close user menu on outside click
+  // Close menus on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
         setIsUserMenuOpen(false)
+      }
+      if (priceRef.current && !priceRef.current.contains(e.target)) {
+        setIsPriceOpen(false)
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
@@ -38,6 +46,22 @@ export default function Navbar() {
   }, [])
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen)
+
+  const handlePriceMouseEnter = () => {
+    if (priceTimeoutRef.current) clearTimeout(priceTimeoutRef.current)
+    setIsPriceOpen(true)
+  }
+
+  const handlePriceMouseLeave = () => {
+    priceTimeoutRef.current = setTimeout(() => {
+      setIsPriceOpen(false)
+    }, 150)
+  }
+
+  const togglePrice = (e) => {
+    e?.stopPropagation()
+    setIsPriceOpen((prev) => !prev)
+  }
 
   const navLinkClass = ({ isActive }) => `${linkBase} ${isActive ? active : inactive}`
 
@@ -170,7 +194,7 @@ export default function Navbar() {
 
       {/* Menu Items */}
       <ul
-        className={`bg-surface flex w-full flex-col justify-end rounded-lg font-medium md:mr-4 md:ml-6 md:max-h-none md:w-auto md:flex-1 md:flex-row md:items-center md:space-x-6 md:overflow-visible md:bg-transparent ${isMenuOpen ? 'mt-4 max-h-125 overflow-hidden p-4' : 'max-h-0 overflow-hidden md:max-h-none'}`}
+        className={`bg-surface flex w-full flex-col justify-end rounded-lg font-medium transition-all md:mr-4 md:ml-6 md:max-h-none md:w-auto md:flex-1 md:flex-row md:items-center md:space-x-6 md:overflow-visible md:bg-transparent ${isMenuOpen ? 'mt-4 max-h-125 overflow-hidden p-4' : 'max-h-0 overflow-hidden md:max-h-none'}`}
       >
         <li>
           <NavLink to="/" className={navLinkClass} onClick={() => setIsMenuOpen(false)}>
@@ -184,6 +208,98 @@ export default function Navbar() {
             {t('nav.home')}
           </NavLink>
         </li>
+
+        {/* Mobile Direct NavLinks */}
+        <li className="md:hidden">
+          <NavLink to="/price/vps" className={navLinkClass} onClick={() => setIsMenuOpen(false)}>
+            <ServerIcon className="mr-2 size-7 shrink-0 fill-current" />
+            {t('nav.vpsPrice')}
+          </NavLink>
+        </li>
+        <li className="md:hidden">
+          <NavLink to="/price/proxy" className={navLinkClass} onClick={() => setIsMenuOpen(false)}>
+            <EarthIcon className="mr-2 size-7 shrink-0 fill-current" />
+            {t('nav.proxyPrice')}
+          </NavLink>
+        </li>
+
+        {/* Desktop Pricing Dropdown */}
+        <li
+          ref={priceRef}
+          className="relative hidden md:block"
+          onMouseEnter={handlePriceMouseEnter}
+          onMouseLeave={handlePriceMouseLeave}
+        >
+          <NavLink
+            to="/price"
+            onClick={(e) => {
+              e.preventDefault()
+              togglePrice(e)
+            }}
+            className={navLinkClass}
+            aria-expanded={isPriceOpen}
+          >
+            <CircleDollarIcon className="mr-2 size-6" />
+            <span>{t('nav.price')}</span>
+            <svg
+              viewBox="0 0 20 20"
+              className={`text-text-muted ml-0.5 size-4 transition-transform duration-300 ${
+                isPriceOpen ? 'text-primary rotate-180' : ''
+              }`}
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </NavLink>
+
+          {/* Desktop Floating Dropdown Menu */}
+          <div
+            className={`bg-surface absolute top-full left-0 hidden origin-top-left flex-col rounded-xl p-1 whitespace-nowrap shadow-xl backdrop-blur-xl transition-all duration-200 md:flex ${
+              isPriceOpen
+                ? 'pointer-events-auto translate-y-0 scale-100 opacity-100'
+                : 'pointer-events-none -translate-y-2 scale-95 opacity-0'
+            }`}
+          >
+            <NavLink
+              to="/price/vps"
+              className={({ isActive }) =>
+                `block rounded-lg px-3 py-2 text-base font-medium transition-colors ${
+                  isActive
+                    ? 'bg-wrapper/40 text-primary font-semibold'
+                    : 'text-text-primary hover:bg-bg-hover hover:text-primary'
+                }`
+              }
+              onClick={() => {
+                setIsPriceOpen(false)
+                setIsMenuOpen(false)
+              }}
+            >
+              {t('nav.vpsPrice')}
+            </NavLink>
+
+            <NavLink
+              to="/price/proxy"
+              className={({ isActive }) =>
+                `block rounded-lg px-3 py-2 text-base font-medium transition-colors ${
+                  isActive
+                    ? 'bg-wrapper/40 text-primary font-semibold'
+                    : 'text-text-primary hover:bg-bg-hover hover:text-primary'
+                }`
+              }
+              onClick={() => {
+                setIsPriceOpen(false)
+                setIsMenuOpen(false)
+              }}
+            >
+              {t('nav.proxyPrice')}
+            </NavLink>
+          </div>
+        </li>
+
         <li>
           <NavLink to="/proxyChecker" className={navLinkClass} onClick={() => setIsMenuOpen(false)}>
             <svg

@@ -5,6 +5,9 @@ const vi = {
   'nav.proxyManager': 'Proxy Manager',
   'nav.vpsManager': 'VPS Manager',
   'nav.manager': 'Manager',
+  'nav.price': 'Bảng Giá',
+  'nav.vpsPrice': 'Bảng giá VPS',
+  'nav.proxyPrice': 'Bảng giá Proxy',
 
   discount: 'Giảm giá',
   totalToPay: 'Tổng thanh toán',

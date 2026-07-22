@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { vpsNations, vpsSpecialOptions, getDefaultPlans } from '../data/vpsNations.jsx'
 import { ServerIcon, HubIcon } from '../assets/icons'
 import axiosInstance from '../lib/axios.js'
@@ -7,6 +8,7 @@ import { useTranslation } from '../i18n'
 
 export default function VpsPrice() {
   const t = useTranslation()
+  const navigate = useNavigate()
   const [selectedNation, setSelectedNation] = useState('VN')
   const [plans, setPlans] = useState(() => getDefaultPlans('VN'))
 
@@ -106,8 +108,8 @@ export default function VpsPrice() {
                     <button
                       key={nation.symbol}
                       onClick={() => setSelectedNation(nation.symbol)}
-                      className={`vps-region-btn border-border flex cursor-pointer items-center gap-2.5 rounded-xl border p-2.5 text-left ${
-                        isActive ? 'vps-region-active' : 'bg-surface'
+                      className={`nation-btn border-border flex cursor-pointer items-center gap-2.5 rounded-xl border p-2.5 text-left ${
+                        isActive ? 'nation-btn-active' : 'bg-surface'
                       }`}
                     >
                       <div className="flex h-5 w-7 shrink-0 items-center overflow-hidden rounded-sm shadow-xs">
@@ -161,8 +163,8 @@ export default function VpsPrice() {
                     <button
                       key={opt.symbol}
                       onClick={() => setSelectedNation(opt.symbol)}
-                      className={`vps-region-btn border-border flex cursor-pointer items-center justify-between gap-3 rounded-xl border p-3 text-left ${
-                        isActive ? 'vps-region-active' : 'bg-surface'
+                      className={`nation-btn border-border flex cursor-pointer items-center justify-between gap-3 rounded-xl border p-3 text-left ${
+                        isActive ? 'nation-btn-active' : 'bg-surface'
                       }`}
                     >
                       <div className="flex min-w-0 items-center gap-3">
@@ -214,7 +216,16 @@ export default function VpsPrice() {
 
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {plans.map((card, idx) => (
-              <VpsCard key={`${selectedNation}-${idx}`} card={card} animDelay={idx * 120} />
+              <VpsCard
+                key={`${selectedNation}-${idx}`}
+                card={card}
+                animDelay={idx * 120}
+                onBuy={() =>
+                  navigate(`/price/vps/buy?nation=${selectedNation}&planId=${card.id}`, {
+                    state: { card },
+                  })
+                }
+              />
             ))}
           </div>
         </section>

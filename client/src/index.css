@@ -101,6 +101,7 @@
 :root {
   --dark-900: #0b0f19;
   --dark-800: #1a2130;
+  --dark-750: #222a3c;
   --dark-700: #293347;
   --dark-600: #39455d;
   --dark-500: #485774;
@@ -204,7 +205,7 @@
   --blue: #3b82f6;
 
   --primary: #4aa3ff;
-  --bg-dropdown: var(--dark-800);
+  --bg-dropdown: var(--dark-750);
   --bg-dialog: var(--dark-600);
   --bg-terminal: #0f172a;
   --bg-checkbox: var(--dark-600);
@@ -302,7 +303,7 @@
   input[type='email'],
   input[type='tel'],
   textarea {
-    @apply bg-navbar text-text-primary border-border w-full rounded-lg border-2 px-3 py-2 whitespace-nowrap placeholder-gray-400 transition-colors focus:border-(--logo-ring) focus:outline-none;
+    @apply bg-navbar text-text-primary border-border w-full resize-none rounded-lg border-2 px-3 py-2 whitespace-nowrap placeholder-gray-400 transition-colors focus:border-(--logo-ring) focus:outline-none;
   }
 
   /* Hides the arrows in Chrome, Safari, Edge */
@@ -310,10 +311,6 @@
   input[type='number']::-webkit-outer-spin-button {
     @apply appearance-none;
     margin: 0;
-  }
-
-  textarea {
-    @apply min-h-52 resize-none;
   }
 
   button {
@@ -545,18 +542,18 @@
   /* ── VPS Pricing Page ─────────────────────────────────────────── */
 
   /* Nation / region selector button */
-  .vps-region-btn {
+  .nation-btn {
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  .vps-region-btn:hover {
+  .nation-btn:hover {
     border-color: var(--primary);
     background: color-mix(in srgb, var(--bg-wrapper) 20%, transparent);
     transform: translateY(-2px);
   }
 
   /* Active / selected state — glow ring matching mockup */
-  .vps-region-active {
+  .nation-btn-active {
     border-color: var(--primary) !important;
     background: color-mix(in srgb, var(--bg-wrapper) 40%, transparent) !important;
     box-shadow:

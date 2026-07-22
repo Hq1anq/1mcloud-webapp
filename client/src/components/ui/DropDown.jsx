@@ -17,6 +17,9 @@ export default function DropDown({ options, value, onChange, className, menuClas
   const [dropUp, setDropUp] = useState(false)
   const containerRef = useRef(null)
 
+  const matchBgColor = className.match(/\bbg-\S+/)
+  const bgColorClass = matchBgColor ? matchBgColor[0] : null
+
   function handleClickOutside(event) {
     if (containerRef.current && !containerRef.current.contains(event.target)) {
       setOpen(false)
@@ -57,7 +60,7 @@ export default function DropDown({ options, value, onChange, className, menuClas
     <div className="text-text-primary relative flex" ref={containerRef}>
       {/* Trigger */}
       <button
-        className={`bg-dropdown flex w-full items-center justify-between border-0 px-3 py-2 focus:outline-none ${className || ''}`}
+        className={`${bgColorClass ? bgColorClass : 'bg-dropdown'} flex w-full items-center justify-between border-0 px-3 py-2 focus:outline-none ${className || ''}`}
         onClick={toggleDropdown}
       >
         <span>{value}</span>
@@ -86,7 +89,7 @@ export default function DropDown({ options, value, onChange, className, menuClas
             <div
               key={`${option}-${idx}`}
               onClick={() => handleSelect(option)}
-              className={`bg-dropdown cursor-pointer px-3 py-2 hover:brightness-125 ${selected ? 'text-highlight font-bold' : ''}`}
+              className={`${bgColorClass ? bgColorClass : 'bg-dropdown'} cursor-pointer px-3 py-2 hover:brightness-125 ${selected ? 'text-highlight font-bold' : ''}`}
             >
               {option}
             </div>

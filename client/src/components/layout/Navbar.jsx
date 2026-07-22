@@ -126,7 +126,7 @@ export default function Navbar() {
               ref={menuRef}
             >
               {/* Balance */}
-              <div className="text-green px-3 py-1 font-mono font-semibold">
+              <div className="text-green px-3 py-1 font-mono font-semibold whitespace-nowrap">
                 {balance != null ? balance + ' VND' : '--'}
               </div>
               <div className="bg-border h-6 w-px" />
@@ -258,7 +258,7 @@ export default function Navbar() {
 
           {/* Desktop Floating Dropdown Menu */}
           <div
-            className={`bg-surface absolute top-full left-0 hidden origin-top-left flex-col rounded-xl p-1 whitespace-nowrap shadow-xl backdrop-blur-xl transition-all duration-200 md:flex ${
+            className={`bg-surface absolute top-full left-0 mt-1 hidden origin-top-left flex-col rounded-xl p-1 whitespace-nowrap shadow-xl backdrop-blur-xl transition-all duration-200 md:flex ${
               isPriceOpen
                 ? 'pointer-events-auto translate-y-0 scale-100 opacity-100'
                 : 'pointer-events-none -translate-y-2 scale-95 opacity-0'

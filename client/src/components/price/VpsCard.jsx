@@ -102,7 +102,7 @@ export default function VpsCard({ card, animDelay, onBuy }) {
               <>
                 <span className="bg-green h-2 w-2 animate-pulse rounded-full" />
                 <span className="text-green font-mono text-[11px] font-bold tracking-wider uppercase">
-                  Available
+                  {t('priceCard.available')}
                 </span>
               </>
             )}

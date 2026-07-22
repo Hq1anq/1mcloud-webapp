@@ -343,7 +343,7 @@ const en = {
   'buyVps.fetchPlanError': 'Failed to load plans',
   'buyVps.selectPlanFirst': 'Please select a plan first',
   'buyVps.selectedPlan': 'Selected Plan',
-  'buyVps.rangeIp': 'IP Range',
+  'buyVps.rangeIp': 'Range IP',
   'buyVps.location': 'State',
   installExtension: 'Install Extension',
   'buyVps.none': 'None',
@@ -484,6 +484,7 @@ const en = {
   // Price Cards (VPS & Proxy)
   'priceCard.soldOut': 'Sold Out',
   'priceCard.error': 'Error',
+  'priceCard.available': 'Available',
   'priceCard.buyNow': 'Buy Now',
   'priceCard.perMonth': 'VND / month',
   'priceCard.ipv4Text': 'IPv4 Address',

@@ -484,12 +484,12 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                 <button
                   key={nation.symbol}
                   onClick={() => handleSelectNation(nation.symbol)}
-                  className="bg-thead border-card-border hover:border-blue hover:bg-surface group flex flex-col items-center justify-center gap-3 rounded-xl border p-5 active:scale-[0.97]"
+                  className="bg-surface border-border hover:border-blue hover:bg-surface group flex flex-col items-center justify-center gap-3 rounded-xl border p-5 transition-colors"
                 >
-                  <div className="aspect-4/3 w-16 shrink-0 overflow-hidden rounded-md group-hover:scale-110 sm:w-20">
+                  <div className="aspect-4/3 w-16 shrink-0 overflow-hidden rounded-md transition-transform group-hover:scale-110 sm:w-20">
                     {nation.flag}
                   </div>
-                  <span className="group-hover:text-primary leading-tight font-semibold group-hover:translate-y-1">
+                  <span className="group-hover:text-primary leading-tight font-semibold transition-all group-hover:translate-y-1">
                     {nation.name}
                   </span>
                 </button>
@@ -503,7 +503,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                 <button
                   key={item.symbol}
                   onClick={() => handleSelectNation(item.symbol)}
-                  className="bg-thead border-card-border hover:border-blue group flex flex-col items-center justify-center rounded-xl border p-3 active:scale-[0.97]"
+                  className="bg-surface border-border hover:border-blue group flex flex-col items-center justify-center rounded-xl border p-3 active:scale-[0.97]"
                 >
                   <div className="text-text-muted group-hover:text-primary flex aspect-4/3 w-16 items-center justify-center rounded-md group-hover:scale-120 sm:w-20">
                     <span className="size-12">{item.flag}</span>
@@ -759,7 +759,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                               onChange={(e) => setCustomLicenseKey(e.target.value)}
                               className={`rounded-lg px-3 py-2 font-mono text-base tracking-wider uppercase ${
                                 customLicenseKey && !isValidWindowsKey
-                                  ? 'border-orange focus:border-orange focus:ring-orange/20'
+                                  ? 'border-orange focus:border-orange'
                                   : ''
                               }`}
                             />
@@ -972,7 +972,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                       </label>
                     </div>
                     {/* Note */}
-                    <div className="flex w-full items-center gap-2 text-lg">
+                    <div className="flex w-full items-baseline gap-2 text-lg">
                       <span className="text-sm font-medium whitespace-nowrap">
                         {t('buyVps.note')}
                       </span>
@@ -1098,7 +1098,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                 </div>
 
                 {/* Checkboxes */}
-                <div className="flex flex-col gap-3 pt-2 text-lg">
+                <div className="flex flex-col gap-3 pt-2 text-base">
                   <label className="flex items-center gap-2">
                     <Checkbox
                       checked={autoRenew}

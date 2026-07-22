@@ -19,6 +19,7 @@ import AccountPage from './pages/AccountPage.jsx'
 import HistoryPage from './pages/HistoryPage.jsx'
 import LicensePage from './pages/LicensePage.jsx'
 import VpsPrice from './pages/VpsPrice.jsx'
+import BuyVpsPage from './pages/BuyVpsPage.jsx'
 import ProxyPrice from './pages/ProxyPrice.jsx'
 import { AppProvider } from './context/AppProvider'
 
@@ -113,6 +114,20 @@ function App() {
 
               <Route path="/price" element={<Navigate to="/price/vps" replace />} />
               <Route path="/price/vps" element={<VpsPrice />} />
+              <Route
+                path="/price/vps/buy"
+                element={
+                  isAuthenticated ? (
+                    <ToastProvider>
+                      <SafeCopyProvider>
+                        <BuyVpsPage />
+                      </SafeCopyProvider>
+                    </ToastProvider>
+                  ) : (
+                    <Navigate to="/login" replace />
+                  )
+                }
+              />
               <Route path="/price/proxy" element={<ProxyPrice />} />
 
               <Route

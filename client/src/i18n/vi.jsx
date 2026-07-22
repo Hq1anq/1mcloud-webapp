@@ -486,6 +486,7 @@ const vi = {
   // Price Cards (VPS & Proxy)
   'priceCard.soldOut': 'Hết hàng',
   'priceCard.error': 'Lỗi',
+  'priceCard.available': 'Sẵn hàng',
   'priceCard.buyNow': 'Mua ngay',
   'priceCard.perMonth': 'VNĐ / tháng',
   'priceCard.ipv4Text': 'Địa chỉ IPv4',

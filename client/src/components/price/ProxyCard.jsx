@@ -72,7 +72,7 @@ export default function ProxyCard({ nation, price, loading, error, animDelay, on
           <div className="flex items-center gap-1.5">
             <span className="bg-green h-2 w-2 animate-pulse rounded-full" />
             <span className="text-green font-mono text-[11px] font-bold tracking-wider uppercase">
-              Available
+              {t('priceCard.available')}
             </span>
           </div>
         </div>

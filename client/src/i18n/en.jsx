@@ -477,7 +477,7 @@ const en = {
   'proxyPrice.title': 'Proxy Pricing',
   'proxyPrice.subtitle':
     'Private IPv4 proxy supporting HTTP & SOCKS5, unlimited devices & bandwidth, 1 Gbps Ethernet speed. Choose your preferred location.',
-  'proxyPrice.sectionTitle': 'Proxy List by Country',
+  'proxyPrice.sectionTitle': 'Proxy List',
   'proxyPrice.countriesUnit': 'countries',
   'proxyPrice.durationUnit': '1 month / IP',
 

@@ -107,10 +107,10 @@ export default function ThemeToggle() {
         </M.g>
 
         <M.path
-          d={sunPath}
+          d={isDark ? moonPath : sunPath}
           fill="transparent"
           transition={{ duration: 1, type: 'spring' }}
-          initial={{ fillOpacity: 0, strokeOpacity: 0 }}
+          initial={{ d: isDark ? moonPath : sunPath, fillOpacity: 0, strokeOpacity: 0 }}
           animate={
             isDark
               ? {

@@ -479,7 +479,7 @@ const vi = {
   'proxyPrice.title': 'Bảng Giá Proxy',
   'proxyPrice.subtitle':
     'Proxy IPv4 riêng tư, hỗ trợ HTTP & SOCKS5, không giới hạn thiết bị & băng thông, tốc độ Ethernet 1 Gbps. Chọn vị trí quốc gia phù hợp.',
-  'proxyPrice.sectionTitle': 'Danh Sách Proxy Theo Quốc Gia',
+  'proxyPrice.sectionTitle': 'Danh Sách Proxy',
   'proxyPrice.countriesUnit': 'quốc gia',
   'proxyPrice.durationUnit': '1 tháng / IP',
 

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { proxyNations } from '../data/proxyNations.jsx'
 import axiosInstance from '../lib/axios.js'
 import ProxyCard from '../components/price/ProxyCard.jsx'
@@ -15,6 +16,7 @@ const buildInitialPrices = () => {
 
 export default function ProxyPrice() {
   const t = useTranslation()
+  const navigate = useNavigate()
   const [prices, setPrices] = useState(buildInitialPrices)
 
   // Batch fetch – one parallel POST per nation on mount
@@ -122,6 +124,14 @@ export default function ProxyPrice() {
                   loading={loading}
                   error={error}
                   animDelay={idx * 45}
+                  onBuy={() =>
+                    navigate(`/price/proxy/buy?nation=${nation.symbol}`, {
+                      state: {
+                        nation: { symbol: nation.symbol, name: nation.name, shortName: nation.shortName },
+                        price,
+                      },
+                    })
+                  }
                 />
               )
             })}

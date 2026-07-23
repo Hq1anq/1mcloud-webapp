@@ -484,12 +484,12 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                 <button
                   key={nation.symbol}
                   onClick={() => handleSelectNation(nation.symbol)}
-                  className="bg-surface border-border hover:border-blue hover:bg-surface group flex flex-col items-center justify-center gap-3 rounded-xl border p-5 transition-colors"
+                  className="bg-navbar border-border hover:border-blue hover:bg-surface group flex flex-col items-center justify-center gap-3 rounded-xl border p-5 transition-colors"
                 >
                   <div className="aspect-4/3 w-16 shrink-0 overflow-hidden rounded-md transition-transform group-hover:scale-110 sm:w-20">
                     {nation.flag}
                   </div>
-                  <span className="group-hover:text-primary leading-tight font-semibold transition-all group-hover:translate-y-1">
+                  <span className="group-hover:text-primary leading-tight font-semibold transition-transform group-hover:translate-y-1">
                     {nation.name}
                   </span>
                 </button>
@@ -503,12 +503,12 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                 <button
                   key={item.symbol}
                   onClick={() => handleSelectNation(item.symbol)}
-                  className="bg-surface border-border hover:border-blue group flex flex-col items-center justify-center rounded-xl border p-3 active:scale-[0.97]"
+                  className="bg-navbar border-border hover:border-blue group flex flex-col items-center justify-center rounded-xl border p-3 active:scale-[0.97]"
                 >
-                  <div className="text-text-muted group-hover:text-primary flex aspect-4/3 w-16 items-center justify-center rounded-md group-hover:scale-120 sm:w-20">
+                  <div className="text-text-muted group-hover:text-primary flex aspect-4/3 w-16 items-center justify-center rounded-md transition-transform group-hover:scale-120 sm:w-20">
                     <span className="size-12">{item.flag}</span>
                   </div>
-                  <span className="group-hover:text-primary leading-tight font-semibold group-hover:translate-y-1">
+                  <span className="group-hover:text-primary leading-tight font-semibold transition-transform group-hover:translate-y-1">
                     {item.name}
                   </span>
                 </button>
@@ -1060,7 +1060,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                     />
                   </div>
                   <div className="bg-border my-1 h-px" />
-                  <div className="flex items-center justify-between text-base">
+                  <div className="flex items-baseline justify-between text-base">
                     <span className="font-bold">{t('buyVps.totalToPay')}</span>
                     <Skeleton
                       isLoading={isCalculating}

@@ -21,6 +21,7 @@ import LicensePage from './pages/LicensePage.jsx'
 import VpsPrice from './pages/VpsPrice.jsx'
 import BuyVpsPage from './pages/BuyVpsPage.jsx'
 import ProxyPrice from './pages/ProxyPrice.jsx'
+import BuyProxyPage from './pages/BuyProxyPage.jsx'
 import { AppProvider } from './context/AppProvider'
 
 function App() {
@@ -129,6 +130,20 @@ function App() {
                 }
               />
               <Route path="/price/proxy" element={<ProxyPrice />} />
+              <Route
+                path="/price/proxy/buy"
+                element={
+                  isAuthenticated ? (
+                    <ToastProvider>
+                      <SafeCopyProvider>
+                        <BuyProxyPage />
+                      </SafeCopyProvider>
+                    </ToastProvider>
+                  ) : (
+                    <Navigate to="/login" replace />
+                  )
+                }
+              />
 
               <Route
                 path="/login"

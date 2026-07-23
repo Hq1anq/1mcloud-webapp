@@ -20,7 +20,6 @@ export default function BuyVpsPage() {
   const [searchParams] = useSearchParams()
   const location = useLocation()
   const cardFromState = location.state?.card || null
-  console.log(cardFromState)
 
   const { addToast, removeToast } = useToast()
   const { safeCopy } = useSafeCopy()
@@ -870,8 +869,8 @@ export default function BuyVpsPage() {
             <div className="bg-surface border-border space-y-5 rounded-xl border p-5 shadow-lg sm:p-6">
               <h3 className="text-text-primary border-border flex items-center justify-between border-b pb-3 text-base font-bold">
                 <span>{t('buyVps.orderSummary')}</span>
-                <span className="bg-blue/15 text-blue rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase">
-                  1MCloud
+                <span className="bg-blue/15 text-blue rounded-full px-2.5 py-0.5 text-[10px] font-bold">
+                  1MCLOUD
                 </span>
               </h3>
 
@@ -935,21 +934,17 @@ export default function BuyVpsPage() {
                 <div className="border-border/60 border-t" />
 
                 {/* Total */}
-                <div className="flex flex-col gap-1">
-                  <span className="text-text-muted text-xs font-bold tracking-wider uppercase">
-                    {t('buyVps.totalToPay')}:
-                  </span>
+                <div className="flex items-baseline justify-between text-base">
+                  <span className="font-bold">{t('buyVps.totalToPay')}</span>
                   <Skeleton
                     isLoading={isCalculating}
                     element={
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-blue text-3xl font-extrabold tracking-tight">
-                          {summary.must_pay?.split(' ')[0]}
-                        </span>
-                        <span className="text-text-muted text-sm font-medium">VND</span>
-                      </div>
+                      <span className="text-blue text-3xl font-bold">
+                        {summary.must_pay.split(' ')[0]}{' '}
+                        <span className="text-lg font-normal">VND</span>
+                      </span>
                     }
-                    className="bg-text-muted h-9 w-36 rounded"
+                    className="bg-text-muted h-[37.6px] w-40"
                   />
                 </div>
 

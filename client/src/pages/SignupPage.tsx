@@ -92,6 +92,7 @@ export default function SignupPage() {
       phone: formData.phone.trim(),
       password: formData.password,
       ref_code: formData.ref_code,
+      partner: window.location.hostname,
     }
 
     signupMutation.mutate(payload, {

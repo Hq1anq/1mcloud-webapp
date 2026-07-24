@@ -7,6 +7,7 @@ export interface SignupRequestBody {
   phone: string;
   password: string;
   ref_code?: string;
+  partner?: string;
 }
 
 if (!process.env.CLIENT_ID) {
@@ -26,9 +27,9 @@ export const signup = async (
   const url = `${BASE_URL}/user/register`;
 
   try {
-    const { fullname, email, phone, password, ref_code } = req.body;
+    const { fullname, email, phone, password, ref_code, partner } = req.body;
 
-    const partner = req.headers.host || "";
+    const partnerValue = partner || req.hostname;
     const refCodeValue = ref_code || "";
 
     const formData = new URLSearchParams({
@@ -38,7 +39,7 @@ export const signup = async (
       password: password,
       grant_type: "password",
       client_id: CLIENT_ID,
-      partner: partner,
+      partner: partnerValue,
       ref_code: refCodeValue,
     });
 

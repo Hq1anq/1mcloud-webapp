@@ -4,6 +4,7 @@ export interface SignupPayload {
   phone: string
   password: string
   ref_code?: string
+  partner?: string
 }
 
 export interface UserRegisterInfo {

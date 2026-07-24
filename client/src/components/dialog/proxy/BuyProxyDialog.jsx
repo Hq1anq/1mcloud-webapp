@@ -18,8 +18,8 @@ export default function BuyProxyDialog({ isOpen, onClose, onSuccess }) {
     duration: { option: { 1: '1 Tháng' } },
     nation: {
       option: {
-        VNR: 'Việt Nam(VN) - Dân cư',
         VN: 'Việt Nam(VN)',
+        VNR: 'Việt Nam(VN) - Dân cư',
         SG: 'Singapore(SG)',
         US: 'Mỹ(US)',
         CA: 'Canada(CA)',

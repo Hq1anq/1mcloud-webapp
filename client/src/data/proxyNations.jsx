@@ -2,8 +2,8 @@ import { getFlagIcon } from './flags.jsx'
 
 // Nations available for Proxy service (from BuyProxyDialog)
 export const proxyNations = [
-  { symbol: 'VNR', name: 'Việt Nam (Dân cư)', shortName: 'VN - Residential' },
   { symbol: 'VN', name: 'Việt Nam', shortName: 'Việt Nam' },
+  { symbol: 'VNR', name: 'Việt Nam (Dân cư)', shortName: 'VN - Residential' },
   { symbol: 'SG', name: 'Singapore', shortName: 'Singapore' },
   { symbol: 'US', name: 'Mỹ (Hoa Kỳ)', shortName: 'Hoa Kỳ' },
   { symbol: 'CA', name: 'Canada', shortName: 'Canada' },

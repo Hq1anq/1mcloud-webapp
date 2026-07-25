@@ -196,7 +196,7 @@ export const defaultPlansData = {
 export const getDefaultPlans = (symbol) => {
   const plans = defaultPlansData[symbol] || []
   return plans.map((plan) => ({
-    id: plan.name,
+    id: null,
     name: plan.name,
     price: plan.price || '0',
     cpu: plan.cpu,

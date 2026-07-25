@@ -24,7 +24,7 @@ export default function BuyProxyPage() {
   const fetchBalance = useProfileStore((s) => s.fetchBalance)
   const syncToDb = useProxyStore((s) => s.syncToDb)
 
-  const initNation = searchParams.get('nation') || nationFromState?.symbol || 'VN'
+  const selectedNation = searchParams.get('nation') || nationFromState?.symbol || 'VN'
 
   // ── Support data state (with initial fallback options) ────────────────────
   const [supportData, setSupportData] = useState({
@@ -50,7 +50,6 @@ export default function BuyProxyPage() {
   })
 
   // ── Form state ────────────────────────────────────────────────────────────
-  const [selectedNation, setSelectedNation] = useState(initNation)
   const [amount, setAmount] = useState('1')
   const [selectedType, setSelectedType] = useState('proxy_https')
   const [selectedDuration, setSelectedDuration] = useState('1')

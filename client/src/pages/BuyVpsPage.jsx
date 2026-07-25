@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useSearchParams, useLocation, Link } from 'react-router-dom'
 import { useToast } from '../context/ToastContext.jsx'
 import { useTranslation } from '../i18n/index.js'
@@ -251,42 +251,6 @@ export default function BuyVpsPage() {
     return () => cancelAnimationFrame(id)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  // ── Re-fetch support when plan selection changes ──────────────────────────
-  const handleSelectPlan = useCallback(
-    async (planId) => {
-      if (planId === selectedPlanId) return
-      setSelectedPlanId(planId)
-      try {
-        const suppRes = await axiosInstance.get(`/vps/support?plan_id=${planId}`)
-        if (suppRes.data?.success) {
-          const info = suppRes.data.info
-          setSupportData(info)
-
-          const osKeys = Object.keys(info.os?.option || {})
-          if (osKeys.length > 0) setSelectedOs((prev) => (osKeys.includes(prev) ? prev : osKeys[0]))
-
-          const durations = Object.keys(info.duration?.option || {})
-          if (durations.length > 0)
-            setSelectedDuration((prev) => (durations.includes(prev) ? prev : durations[0]))
-
-          const ipsOpt = Array.isArray(info.ip?.option) ? info.ip.option : []
-          if (ipsOpt.length > 0) setSelectedIp((prev) => (ipsOpt.includes(prev) ? prev : ipsOpt[0]))
-
-          const providersOpt = Array.isArray(info.provider?.option) ? info.provider.option : []
-          if (providersOpt.length > 0)
-            setSelectedProvider((prev) => (providersOpt.includes(prev) ? prev : providersOpt[0]))
-
-          const locationsOpt = Array.isArray(info.location?.option) ? info.location.option : []
-          if (locationsOpt.length > 0)
-            setSelectedLocation((prev) => (locationsOpt.includes(prev) ? prev : locationsOpt[0]))
-        }
-      } catch (err) {
-        console.error('Failed to fetch VPS support:', err)
-      }
-    },
-    [selectedPlanId]
-  )
 
   // ── Fetch licenses when Windows OS is selected ────────────────────────────
   useEffect(() => {

@@ -12,11 +12,14 @@ export default function VpsPrice() {
   const [selectedNation, setSelectedNation] = useState('VN')
   const [plans, setPlans] = useState(() => getDefaultPlans('VN'))
 
+  const handleSelectNation = (nationSymbol) => {
+    setSelectedNation(nationSymbol)
+    setPlans(getDefaultPlans(nationSymbol))
+  }
+
   // Fetch plans dynamically from API when selectedNation changes
   useEffect(() => {
     let isMounted = true
-    // Fallback to default static plans immediately while loading
-    setPlans(getDefaultPlans(selectedNation))
 
     axiosInstance
       .get(`/vps/plan?plan=${selectedNation}`)
@@ -107,7 +110,7 @@ export default function VpsPrice() {
                   return (
                     <button
                       key={nation.symbol}
-                      onClick={() => setSelectedNation(nation.symbol)}
+                      onClick={() => handleSelectNation(nation.symbol)}
                       className={`nation-btn border-border flex cursor-pointer items-center gap-2.5 rounded-xl border p-2.5 text-left ${
                         isActive ? 'nation-btn-active' : 'bg-surface'
                       }`}
@@ -162,7 +165,7 @@ export default function VpsPrice() {
                   return (
                     <button
                       key={opt.symbol}
-                      onClick={() => setSelectedNation(opt.symbol)}
+                      onClick={() => handleSelectNation(opt.symbol)}
                       className={`nation-btn border-border flex cursor-pointer items-center justify-between gap-3 rounded-xl border p-3 text-left ${
                         isActive ? 'nation-btn-active' : 'bg-surface'
                       }`}
@@ -220,11 +223,12 @@ export default function VpsPrice() {
                 key={`${selectedNation}-${idx}`}
                 card={card}
                 animDelay={idx * 120}
-                onBuy={() =>
+                onBuy={() => {
+                  if (!card?.id) return
                   navigate(`/price/vps/buy?nation=${selectedNation}&planId=${card.id}`, {
                     state: { card },
                   })
-                }
+                }}
               />
             ))}
           </div>

@@ -98,7 +98,9 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
           setFetchedOsList(data.support_os)
         }
         // Update dependent form fields (OS and range IP)
-        const nextOsId = useFetchedMode ? resolveOsId(data.current_os, data.support_os || []) : 'current'
+        const nextOsId = useFetchedMode
+          ? resolveOsId(data.current_os, data.support_os || [])
+          : 'current'
 
         if (ispParam)
           updateForm({
@@ -123,11 +125,15 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
   )
 
   useEffect(() => {
-    if (!isOpen) return
-    setIsFetchedMode(false)
-    setFetchedOsList([])
-    setLoadSupportError(false)
-    fetchSupport()
+    if (isOpen) {
+      const id = requestAnimationFrame(() => {
+        setIsFetchedMode(false)
+        setFetchedOsList([])
+        setLoadSupportError(false)
+        fetchSupport()
+      })
+      return () => cancelAnimationFrame(id)
+    }
   }, [isOpen, fetchSupport])
 
   const handleIspChange = (val) => {

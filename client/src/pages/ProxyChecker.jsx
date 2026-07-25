@@ -5,7 +5,7 @@ import useCapture from '../hooks/useCapture'
 import axiosInstance from '../lib/axios'
 import { useState, useCallback, useRef } from 'react'
 import { useToast } from '../context/ToastContext'
-import { parseProxy } from '../lib/utils'
+import { parseProxy } from '../utils/data'
 import { useTranslation } from '../i18n'
 
 export default function ProxyChecker() {

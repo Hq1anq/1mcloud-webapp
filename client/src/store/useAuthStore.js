@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import axiosInstance from '../lib/axios'
+import useProfileStore from './useProfileStore'
 
 const useAuthStore = create(
   persist(
@@ -74,6 +75,7 @@ const useAuthStore = create(
           error: null,
         })
         localStorage.removeItem('account-profile')
+        useProfileStore.getState().clearBalance()
       },
 
       // Helper to check if token exists and is valid (basic check)

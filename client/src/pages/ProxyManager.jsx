@@ -44,33 +44,36 @@ export default function ProxyManager({ onBuySuccessRef }) {
 
   const syncToDb = useCallback(
     async (rows, attempt = 1) => {
-      try {
-        await rawSyncToDb(rows)
-      } catch (err) {
-        console.error(`[DB Sync] Save failed (attempt ${attempt}):`, err.message)
-        if (attempt === 1) {
-          return syncToDb(rows, 2)
-        } else {
-          let toastId = null
-          const handleRetry = () => {
-            if (toastId) removeToast(toastId)
-            syncToDb(rows, 2) // only call once each time click retry button
+      async function doSync(r, att) {
+        try {
+          await rawSyncToDb(r)
+        } catch (err) {
+          console.error(`[DB Sync] Save failed (attempt ${att}):`, err.message)
+          if (att === 1) {
+            return doSync(r, 2)
+          } else {
+            let toastId = null
+            const handleRetry = () => {
+              if (toastId) removeToast(toastId)
+              doSync(r, 2)
+            }
+            toastId = addToast(
+              <>
+                <div>{t('syncFailed')}</div>
+                <button
+                  onClick={handleRetry}
+                  className="bg-bg-warning/20 border-bg-warning/30 hover:bg-bg-warning/40 mt-1 rounded border px-3 py-1"
+                >
+                  {t('retry')}
+                </button>
+              </>,
+              'warning',
+              { keepAlive: true }
+            )
           }
-          toastId = addToast(
-            <>
-              <div>{t('syncFailed')}</div>
-              <button
-                onClick={handleRetry}
-                className="bg-bg-warning/20 border-bg-warning/30 hover:bg-bg-warning/40 mt-1 rounded border px-3 py-1"
-              >
-                {t('retry')}
-              </button>
-            </>,
-            'warning',
-            { keepAlive: true }
-          )
         }
       }
+      return doSync(rows, attempt)
     },
     [rawSyncToDb, addToast, removeToast, t]
   )
@@ -293,14 +296,15 @@ export default function ProxyManager({ onBuySuccessRef }) {
       return
     }
 
-    let infoTextNode
-    let ip = '__',
-      port = '__',
-      username = '__',
-      password = '__'
+    let parsedInfo = null
 
     if (reinstallInput) {
       const parts = reinstallInput.split(':')
+      let ip = '__'
+      let port = '__'
+      let username
+      let password
+
       if (parts.length >= 4) [ip, port, username, password] = parts
       else if (parts.length === 3) [port, username, password] = parts
       else if (parts.length === 2) [username, password] = parts
@@ -322,22 +326,24 @@ export default function ProxyManager({ onBuySuccessRef }) {
         addToast(`Password ${t('buy.invalidPassword')}`, 'warning')
         return
       }
-      infoTextNode = (
-        <>
-          {t('type')} <span className="text-highlight font-bold">{reinstallType} </span>
-          <br />
-          {t('manager.info')}{' '}
-          <span className="text-highlight font-bold break-all">
-            {ip}:{port}:{username}:{password}
-          </span>
-        </>
-      )
-    } else
-      infoTextNode = (
-        <>
-          {t('type')} <span className="text-highlight font-bold">{reinstallType}</span>
-        </>
-      )
+
+      parsedInfo = { ip, port, username, password }
+    }
+
+    const infoTextNode = parsedInfo ? (
+      <>
+        {t('type')} <span className="text-highlight font-bold">{reinstallType} </span>
+        <br />
+        {t('manager.info')}{' '}
+        <span className="text-highlight font-bold break-all">
+          {parsedInfo.ip}:{parsedInfo.port}:{parsedInfo.username}:{parsedInfo.password}
+        </span>
+      </>
+    ) : (
+      <>
+        {t('type')} <span className="text-highlight font-bold">{reinstallType}</span>
+      </>
+    )
 
     const confirmed = await confirmAction({
       title: t('manager.confirmReinstall'),
@@ -490,7 +496,6 @@ export default function ProxyManager({ onBuySuccessRef }) {
           let evaluatedTo = replaceTo
 
           let calculatedBaseDate = null
-          let calculatedMonth = null
           let extractedDDMMText = ''
           let firstMatch = ''
 
@@ -511,14 +516,10 @@ export default function ProxyManager({ onBuySuccessRef }) {
             const month = parseInt(dateMatch[2], 10) - 1
             const year = now.getFullYear()
             calculatedBaseDate = new Date(year, month, day)
-            calculatedMonth = month
             extractedDDMMText = `${dateMatch[1]}${dateMatch[2]}`
             firstMatch = dateMatch[0]
 
-            if (
-              isNaN(calculatedBaseDate.getTime()) ||
-              calculatedBaseDate.getMonth() !== calculatedMonth
-            ) {
+            if (isNaN(calculatedBaseDate.getTime()) || calculatedBaseDate.getMonth() !== month) {
               return { data: { success: false, error: 'invalid date in oldNote' } }
             }
           }

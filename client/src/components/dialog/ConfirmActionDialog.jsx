@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getStatusClasses } from '../../lib/utils'
+import { getStatusClasses } from '../../utils/ui'
 import Dialog from '../../components/ui/Dialog'
 import axiosInstance from '../../lib/axios'
 import { useTranslation } from '../../i18n'
@@ -44,10 +44,6 @@ export default function ConfirmActionDialog({
         }
       }
       fetchRenewData()
-    } else {
-      setRenewData(null)
-      setIsFetchingRenew(false)
-      setFetchError('')
     }
     if (isOpen && isRefund) {
       const fetchRefundData = async () => {
@@ -69,10 +65,6 @@ export default function ConfirmActionDialog({
         }
       }
       fetchRefundData()
-    } else {
-      setRefundData(null)
-      setIsFetchingRefund(false)
-      setFetchError('')
     }
   }, [isOpen, isRenew, isRefund, selectedRows, t])
 

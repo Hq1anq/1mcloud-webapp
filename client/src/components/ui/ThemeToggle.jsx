@@ -1,4 +1,4 @@
-import { motion as m } from 'motion/react'
+import { motion as M } from 'motion/react'
 import useThemeStore from '../../store/useThemeStore'
 
 export default function ThemeToggle() {
@@ -64,7 +64,7 @@ export default function ThemeToggle() {
 
   return (
     <button onClick={toggleTheme} className="flex size-8 items-center justify-center md:size-10">
-      <m.svg
+      <M.svg
         viewBox="0 0 97 97"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
@@ -80,7 +80,7 @@ export default function ThemeToggle() {
         </defs>
 
         {/* Moon shine overlay — blur via SVG filter attribute, not CSS filter */}
-        <m.path
+        <M.path
           variants={shineVariant}
           d={moonPath}
           className="stroke-blue-100"
@@ -89,24 +89,24 @@ export default function ThemeToggle() {
           animate={isDark ? 'visible' : 'hidden'}
         />
 
-        <m.g
+        <M.g
           variants={raysVariants}
           initial="hidden"
           animate={isDark ? 'hidden' : 'visible'}
           className="stroke-yellow-600 stroke-6"
           style={{ strokeLinecap: 'round' }}
         >
-          <m.path variants={rayVariant} d="M48 12V3" />
-          <m.path variants={rayVariant} d="M73 23L80 16" />
-          <m.path variants={rayVariant} d="M84 48H93" />
-          <m.path variants={rayVariant} d="M73 73L80 80" />
-          <m.path variants={rayVariant} d="M48 84V93" />
-          <m.path variants={rayVariant} d="M23 73L16 80" />
-          <m.path variants={rayVariant} d="M12 48H3" />
-          <m.path variants={rayVariant} d="M23 23L16 16" />
-        </m.g>
+          <M.path variants={rayVariant} d="M48 12V3" />
+          <M.path variants={rayVariant} d="M73 23L80 16" />
+          <M.path variants={rayVariant} d="M84 48H93" />
+          <M.path variants={rayVariant} d="M73 73L80 80" />
+          <M.path variants={rayVariant} d="M48 84V93" />
+          <M.path variants={rayVariant} d="M23 73L16 80" />
+          <M.path variants={rayVariant} d="M12 48H3" />
+          <M.path variants={rayVariant} d="M23 23L16 16" />
+        </M.g>
 
-        <m.path
+        <M.path
           d={sunPath}
           fill="transparent"
           transition={{ duration: 1, type: 'spring' }}
@@ -133,7 +133,7 @@ export default function ThemeToggle() {
                 }
           }
         />
-      </m.svg>
+      </M.svg>
     </button>
   )
 }

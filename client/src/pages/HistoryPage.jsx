@@ -61,7 +61,8 @@ export default function HistoryPage() {
   }, [t])
 
   useEffect(() => {
-    fetchTransactions()
+    const id = requestAnimationFrame(() => fetchTransactions())
+    return () => cancelAnimationFrame(id)
   }, [fetchTransactions])
 
   const handleTabChange = (tab) => {

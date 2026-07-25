@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import axiosInstance from '../lib/axios'
-import { extractIP, mergeProxyData } from '../lib/utils'
+import { extractIP, mergeProxyData } from '../utils/data'
 import useAuthStore from './useAuthStore'
 
 const useProxyStore = create((set, get) => ({

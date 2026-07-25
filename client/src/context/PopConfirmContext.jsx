@@ -54,6 +54,7 @@ export function PopConfirmProvider({ children }) {
           isOpen={active.isOpen}
           anchorRect={active.anchorRect}
           direction={active.config.direction}
+          align={active.config.align}
           zIndex={12}
           onClose={hide}
           bgClassName="bg-terminal"

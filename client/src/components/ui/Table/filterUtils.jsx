@@ -1,5 +1,5 @@
 import { getFlagIcon } from '../../../data/flags.jsx'
-import { str2date } from '../../../lib/utils.js'
+import { str2date } from '../../../utils/data'
 
 // Operator icon SVG paths
 export const operatorIcons = {

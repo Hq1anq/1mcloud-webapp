@@ -1,18 +1,25 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useToast } from '../../../context/ToastContext.jsx'
 import { useTranslation } from '../../../i18n/index.js'
 import { vpsNations, vpsSpecialOptions, getDefaultPlans } from '../../../data/vpsNations.jsx'
 import axiosInstance from '../../../lib/axios.js'
+import useProfileStore from '../../../store/useProfileStore.js'
 import Dialog from '../../ui/Dialog.jsx'
 import DropDown from '../../ui/DropDown.jsx'
 import Checkbox from '../../ui/Checkbox.jsx'
 import Radio from '../../ui/Radio.jsx'
 import Skeleton from '../../ui/Skeleton.jsx'
 import getOS from '../../../data/osMap.js'
+import WindowsKeyInput from '../../ui/WindowsKeyInput.jsx'
+import { maskProductKey } from '../../../utils/ui.js'
 
 export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
   const { addToast, removeToast } = useToast()
   const t = useTranslation()
+  const fetchBalance = useProfileStore((s) => s.fetchBalance)
+
+  const newKeyOption = t('buyVps.enterNewKeyOption')
+  const unusedLabel = t('buyVps.unusedLicense')
 
   // Step: 'grid' | 'config'
   const [step, setStep] = useState('grid')
@@ -75,6 +82,89 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
   const [autoRenew, setAutoRenew] = useState(false)
   const [agreeTerms, setAgreeTerms] = useState(false)
 
+  // Windows License BYOL state
+  const [userLicenses, setUserLicenses] = useState([])
+  const [licensesLoading, setLicensesLoading] = useState(false)
+  const [selectedLicenseOption, setSelectedLicenseOption] = useState(newKeyOption)
+  const [customLicenseKey, setCustomLicenseKey] = useState('')
+  const [agreeBYOL, setAgreeBYOL] = useState(false)
+
+  const osName = supportData?.os?.option?.[selectedOs] || ''
+  const isWindowsOs = Boolean(osName && /win/i.test(osName))
+
+  const dropdownOptions = useMemo(() => {
+    if (!userLicenses || userLicenses.length === 0) return [newKeyOption]
+    return [
+      ...userLicenses.map(
+        (lic) =>
+          `${maskProductKey(lic.license_key)} ${
+            lic.server ? `(server: ${lic.server.ip})` : unusedLabel
+          }`
+      ),
+      newKeyOption,
+    ]
+  }, [userLicenses, newKeyOption, unusedLabel])
+
+  const effectiveLicenseKey = useMemo(() => {
+    if (!isWindowsOs) return ''
+    if (userLicenses.length === 0 || selectedLicenseOption === newKeyOption) {
+      return customLicenseKey
+    }
+    const idx = dropdownOptions.indexOf(selectedLicenseOption)
+    if (idx !== -1 && idx < userLicenses.length) {
+      return userLicenses[idx].license_key
+    }
+    return customLicenseKey
+  }, [
+    isWindowsOs,
+    userLicenses,
+    selectedLicenseOption,
+    dropdownOptions,
+    customLicenseKey,
+    newKeyOption,
+  ])
+
+  const isValidWindowsKey =
+    /^[a-zA-Z0-9]{5}-[a-zA-Z0-9]{5}-[a-zA-Z0-9]{5}-[a-zA-Z0-9]{5}-[a-zA-Z0-9]{5}$/.test(
+      effectiveLicenseKey
+    )
+  const isLicenseValidForPay = !isWindowsOs || (isValidWindowsKey && agreeBYOL)
+
+  // Fetch licenses when Windows OS is selected
+  useEffect(() => {
+    if (isOpen && step === 'config' && isWindowsOs) {
+      const id = requestAnimationFrame(() => {
+        setLicensesLoading(true)
+        axiosInstance
+          .get('/user/licenses')
+          .then((res) => {
+            if (res.data?.success && Array.isArray(res.data.licenses)) {
+              const sorted = [...res.data.licenses].sort((a, b) =>
+                (a.license_key || '').localeCompare(b.license_key || '')
+              )
+              setUserLicenses(sorted)
+              if (sorted.length > 0) {
+                const firstLic = sorted[0]
+                const label = `${maskProductKey(firstLic.license_key)} ${
+                  firstLic.server ? `(server: ${firstLic.server.ip})` : unusedLabel
+                }`
+                setSelectedLicenseOption(label)
+              } else {
+                setSelectedLicenseOption(newKeyOption)
+              }
+            }
+          })
+          .catch((err) => {
+            console.error('Failed to fetch user licenses:', err)
+          })
+          .finally(() => {
+            setLicensesLoading(false)
+          })
+      })
+      return () => cancelAnimationFrame(id)
+    }
+  }, [isOpen, step, isWindowsOs, newKeyOption, unusedLabel])
+
   const [summary, setSummary] = useState({
     original_price: '',
     discount: '',
@@ -88,14 +178,19 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
   // Reset when dialog reopens
   useEffect(() => {
     if (isOpen) {
-      setStep('grid')
-      setSummary({
-        original_price: '',
-        discount: '',
-        coupon: '',
-        warning: '',
-        must_pay: '',
+      const id = requestAnimationFrame(() => {
+        setStep('grid')
+        setAgreeBYOL(false)
+        setCustomLicenseKey('')
+        setSummary({
+          original_price: '',
+          discount: '',
+          coupon: '',
+          warning: '',
+          must_pay: '',
+        })
       })
+      return () => cancelAnimationFrame(id)
     }
   }, [isOpen])
 
@@ -103,71 +198,80 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
   useEffect(() => {
     if (!selectedNation || step !== 'config') return
 
-    const defaults = getDefaultPlans(selectedNation)
-    setPlans(defaults)
+    const id = requestAnimationFrame(() => {
+      const defaults = getDefaultPlans(selectedNation)
+      setPlans(defaults)
 
-    const fetchData = async () => {
-      setPlansLoading(true)
-      try {
-        const planRes = await axiosInstance.get(`/vps/plan?plan=${selectedNation}`)
-        if (planRes.data?.success && Array.isArray(planRes.data.info)) {
-          // Sort plans by string length first, then alphabetically (works great for D1, D9, D10)
-          const sortedPlans = planRes.data.info.sort((a, b) => a.name.localeCompare(b.name))
+      const fetchData = async () => {
+        setPlansLoading(true)
+        try {
+          const planRes = await axiosInstance.get(`/vps/plan?plan=${selectedNation}`)
+          if (planRes.data?.success && Array.isArray(planRes.data.info)) {
+            const sortedPlans = planRes.data.info.sort((a, b) => a.name.localeCompare(b.name))
 
-          setPlans(sortedPlans)
+            setPlans(sortedPlans)
 
-          const available = sortedPlans.filter((p) => p.status === 'available')
+            const available = sortedPlans.filter((p) => p.status === 'available')
 
-          if (available.length > 0) {
-            let firstSelectedPlanId = available[0].id
-            setSelectedPlanId(firstSelectedPlanId)
+            if (available.length > 0) {
+              let firstSelectedPlanId = available[0].id
+              setSelectedPlanId(firstSelectedPlanId)
 
-            // Fetch support only once using the first plan id without blocking the table render
-            axiosInstance
-              .get(`/vps/support?plan_id=${firstSelectedPlanId}`)
-              .then((suppRes) => {
-                if (suppRes.data?.success) {
-                  const { os, ...restInfo } = suppRes.data.info
-                  setSupportData((prev) => ({
-                    ...prev,
-                    ...restInfo,
-                  }))
+              // Fetch support only once using the first plan id without blocking the table render
+              axiosInstance
+                .get(`/vps/support?plan_id=${firstSelectedPlanId}`)
+                .then((suppRes) => {
+                  if (suppRes.data?.success) {
+                    const { os, ...restInfo } = suppRes.data.info
+                    setSupportData((prev) => ({
+                      ...prev,
+                      ...restInfo,
+                    }))
 
-                  // Initialize Defaults
-                  const durations = Object.keys(restInfo.duration?.option || {})
-                  if (durations.length > 0)
-                    setSelectedDuration((prev) => (durations.includes(prev) ? prev : durations[0]))
+                    // Initialize Defaults
+                    const durations = Object.keys(restInfo.duration?.option || {})
+                    if (durations.length > 0)
+                      setSelectedDuration((prev) =>
+                        durations.includes(prev) ? prev : durations[0]
+                      )
 
-                  const ips = Array.isArray(restInfo.ip?.option) ? restInfo.ip.option : []
-                  if (ips.length > 0) setSelectedIp((prev) => (ips.includes(prev) ? prev : ips[0]))
+                    const ips = Array.isArray(restInfo.ip?.option) ? restInfo.ip.option : []
+                    if (ips.length > 0)
+                      setSelectedIp((prev) => (ips.includes(prev) ? prev : ips[0]))
 
-                  const providers = Array.isArray(restInfo.provider?.option)
-                    ? restInfo.provider.option
-                    : []
-                  if (providers.length > 0)
-                    setSelectedProvider((prev) => (providers.includes(prev) ? prev : providers[0]))
+                    const providers = Array.isArray(restInfo.provider?.option)
+                      ? restInfo.provider.option
+                      : []
+                    if (providers.length > 0)
+                      setSelectedProvider((prev) =>
+                        providers.includes(prev) ? prev : providers[0]
+                      )
 
-                  const locations = Array.isArray(restInfo.location?.option)
-                    ? restInfo.location.option
-                    : []
-                  if (locations.length > 0)
-                    setSelectedLocation((prev) => (locations.includes(prev) ? prev : locations[0]))
-                }
-              })
-              .catch((supportErr) => {
-                console.error('Failed to fetch VPS support:', supportErr)
-              })
+                    const locations = Array.isArray(restInfo.location?.option)
+                      ? restInfo.location.option
+                      : []
+                    if (locations.length > 0)
+                      setSelectedLocation((prev) =>
+                        locations.includes(prev) ? prev : locations[0]
+                      )
+                  }
+                })
+                .catch((supportErr) => {
+                  console.error('Failed to fetch VPS support:', supportErr)
+                })
+            }
           }
+        } catch (err) {
+          console.error('Failed to fetch VPS plans:', err)
+          addToast(t('buyVps.fetchPlanError'), 'error')
+        } finally {
+          setPlansLoading(false)
         }
-      } catch (err) {
-        console.error('Failed to fetch VPS plans:', err)
-        addToast(t('buyVps.fetchPlanError'), 'error')
-      } finally {
-        setPlansLoading(false)
       }
-    }
 
-    fetchData()
+      fetchData()
+    })
+    return () => cancelAnimationFrame(id)
   }, [selectedNation, step, addToast, t])
 
   // Calculate pricing
@@ -219,6 +323,17 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
       return
     }
 
+    if (isWindowsOs) {
+      if (!isValidWindowsKey) {
+        addToast(t('buyVps.enterWinKey'), 'error')
+        return
+      }
+      if (!agreeBYOL) {
+        addToast(t('buyVps.agreeByolToast'), 'error')
+        return
+      }
+    }
+
     const vpsDataBuying = {
       plan_id: selectedPlanId,
       duration: Number(selectedDuration),
@@ -237,6 +352,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
       coupon: appliedDiscount,
       auto_renew: autoRenew,
       is_proxy: false,
+      windows_license_key: isWindowsOs ? effectiveLicenseKey : undefined,
     }
 
     setIsBuying(true)
@@ -252,6 +368,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
           </>,
           'success'
         )
+        fetchBalance()
         const parsedMustPay =
           parseFloat(
             (summary.must_pay || '0')
@@ -286,22 +403,14 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
   }
 
   const renderSelect = (value, onChange, optionsMap, isArray = false) => {
-    let options = []
-    let displayValue = value
-    let onSelect = onChange
-
-    if (isArray) {
-      options = optionsMap
-      displayValue = value
-      onSelect = (newValue) => onChange({ target: { value: newValue } })
-    } else {
-      options = Object.values(optionsMap || {})
-      displayValue = optionsMap?.[value] || value
-      onSelect = (newLabel) => {
-        const key = Object.keys(optionsMap || {}).find((k) => optionsMap[k] === newLabel)
-        if (key) onChange({ target: { value: key } })
-      }
-    }
+    const options = isArray ? optionsMap : Object.values(optionsMap || {})
+    const displayValue = isArray ? value : optionsMap?.[value] || value
+    const onSelect = isArray
+      ? (newValue) => onChange({ target: { value: newValue } })
+      : (newLabel) => {
+          const key = Object.keys(optionsMap || {}).find((k) => optionsMap[k] === newLabel)
+          if (key) onChange({ target: { value: key } })
+        }
 
     return (
       <DropDown
@@ -341,7 +450,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
       >
         {/* ─── PAGE 1: Nation Grid ──────────────────────── */}
         <div
-          className={`flex w-full flex-none shrink-0 flex-col overflow-y-auto transition-[max-height] duration-350 ease-in-out ${
+          className={`no-scrollbar flex w-full flex-none shrink-0 flex-col overflow-y-auto transition-[max-height] duration-350 ease-in-out ${
             step === 'grid' ? 'max-h-[80vh]' : 'max-h-116!'
           }`}
         >
@@ -603,6 +712,84 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                         onChange={(e) => setAmount(e.target.value)}
                       />
                     </label>
+
+                    {/* Windows License Section (BYOL) */}
+                    {isWindowsOs && (
+                      <div className="border-border bg-surface/50 my-2 flex w-full flex-col gap-3 rounded-xl border p-4 shadow-xs">
+                        <div className="flex items-center gap-2">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 640 640"
+                            className="text-primary size-5 shrink-0 fill-current"
+                          >
+                            <path d="M64 128L288 96V304H64V128ZM64 336H288V544L64 512V336ZM320 91.5L576 56V304H320V91.5ZM320 336H576V584L320 548.5V336Z" />
+                          </svg>
+                          <span className="text-text-primary text-base font-bold">
+                            {t('buyVps.winLicenseTitle')}
+                          </span>
+                        </div>
+
+                        {/* Dropdown if loading or user has existing licenses */}
+                        {(licensesLoading || userLicenses.length > 0) && (
+                          <div className="flex flex-col gap-1.5 text-lg">
+                            <span className="text-text-muted text-sm font-medium">
+                              {t('buyVps.selectExistingLicense')}
+                            </span>
+                            <Skeleton
+                              isLoading={licensesLoading}
+                              element={
+                                <DropDown
+                                  options={dropdownOptions}
+                                  value={selectedLicenseOption}
+                                  onChange={setSelectedLicenseOption}
+                                  className="rounded-lg text-xs sm:text-lg"
+                                  menuClassName="text-xs sm:text-lg"
+                                />
+                              }
+                              className="bg-text-muted h-10 w-full rounded-lg"
+                            />
+                          </div>
+                        )}
+
+                        {/* Key input if "Sử dụng key mới" or no licenses */}
+                        {(userLicenses.length === 0 || selectedLicenseOption === newKeyOption) && (
+                          <div className="flex flex-col gap-1 text-lg">
+                            <span className="text-text-muted text-sm font-medium">
+                              {t('buyVps.enterWinProductKey')}
+                            </span>
+                            <WindowsKeyInput
+                              value={customLicenseKey}
+                              onChange={(e) => setCustomLicenseKey(e.target.value)}
+                              className={`rounded-lg px-3 py-2 font-mono text-base tracking-wider uppercase ${
+                                customLicenseKey && !isValidWindowsKey
+                                  ? 'border-orange focus:border-orange focus:ring-orange/20'
+                                  : ''
+                              }`}
+                            />
+                            {customLicenseKey && !isValidWindowsKey && (
+                              <span className="text-orange text-xs font-medium">
+                                {t('buyVps.invalidWinKeyFormat')}
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                        {/* BYOL Checkbox Disclaimer */}
+                        <label className="hover:text-text-primary flex cursor-pointer items-start gap-2.5 pt-1 transition-colors">
+                          <div className="shrink-0 pt-0.5">
+                            <Checkbox
+                              checked={agreeBYOL}
+                              onChange={(e) => setAgreeBYOL(e.target.checked)}
+                            />
+                          </div>
+                          <span className="text-orange text-sm leading-relaxed select-none">
+                            {t('buyVps.byolDisclaimerLine1')}
+                            <br />
+                            {t('buyVps.byolDisclaimerLine2')}
+                          </span>
+                        </label>
+                      </div>
+                    )}
 
                     {/* Range IP */}
                     {ips.length > 0 && (
@@ -946,7 +1133,8 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                   isBuying ||
                   !selectedPlanId ||
                   summary.warning === 'Tài khoản không đủ' ||
-                  !plans.some((p) => p.status === 'available')
+                  !plans.some((p) => p.status === 'available') ||
+                  !isLicenseValidForPay
                 }
                 className="group enabled:bg-blue flex h-12 w-full items-center justify-center gap-2 rounded-lg font-semibold text-white shadow-sm transition-all disabled:bg-gray-500"
               >

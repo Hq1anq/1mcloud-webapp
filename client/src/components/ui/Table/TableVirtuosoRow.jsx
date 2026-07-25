@@ -1,9 +1,8 @@
 /* eslint-disable react-refresh/only-export-components */
-import { handleCopy, getStatusClasses } from '../../../lib/utils.js'
 import { getNationFlag } from './filterUtils.jsx'
 import Checkbox from '../Checkbox.jsx'
 import RenewToggle from '../RenewToggle.jsx'
-import { getExpiryStyle } from '../../../lib/utils.js'
+import { getStatusClasses, getExpiryStyle, handleCopy } from '../../../utils/ui'
 
 export const TableRow = ({ context, ...props }) => {
   const { selectable, selectedIds, handleSelectRow, rowClassMap } = context

@@ -37,11 +37,11 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
     return !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{10,}$/.test(form.password)
   }, [form.random_password, form.password])
 
-  // Fetch support data (range IP) optionally filtered by ISP
   const fetchSupport = useCallback(
     async (ispParam = null) => {
       try {
         setLoadingSupport(true)
+        setLoadSupportError(false)
         let url = `/vps/change-ip-params?ip=${currentData.ip}`
         if (ispParam) {
           setLoadingNoIsp(true)
@@ -76,9 +76,10 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
   )
 
   useEffect(() => {
-    if (!isOpen) return
-    setLoadSupportError(false)
-    fetchSupport()
+    if (isOpen) {
+      const id = requestAnimationFrame(() => fetchSupport())
+      return () => cancelAnimationFrame(id)
+    }
   }, [isOpen, fetchSupport])
 
   const handleIspChange = (val) => {

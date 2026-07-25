@@ -211,13 +211,13 @@ const en = {
   'manager.failed': 'failed',
   'manager.renewCalcError': 'Failed to calculate renew data.',
   'manager.refundCalcError': 'Failed to calculate refund data.',
+  confirm: 'Confirm',
   'manager.confirmChangeIp': 'Confirm Change IP',
   'manager.confirmReinstall': 'Confirm Reinstall',
   'manager.confirmRenew': 'Confirm Renew',
   'manager.confirmRefund': 'Confirm Refund',
   'manager.info': 'Info',
   'manager.invalidReinstall': 'Invalid reinstall config',
-  'manager.reinstallTarget': 'Reinstall target',
   'manager.noValidProxyRenew': 'No valid Proxy to renew.',
   'manager.noValidProxyRefund': 'No valid Proxy to refund.',
   'manager.noValidVpsRenew': 'No valid VPS to renew.',
@@ -313,6 +313,18 @@ const en = {
   'buyVps.soldOut': 'Sold Out',
   'buyVps.soldOutMessage':
     'This plan is currently sold out. Please check back later or contact support.',
+  'buyVps.winLicenseTitle': 'Windows License',
+  'buyVps.selectExistingLicense': 'Select an existing license key or enter a new one',
+  'buyVps.enterWinProductKey': 'Enter Windows Product Key',
+  'buyVps.enterNewKeyOption': '+ Enter new key',
+  'buyVps.unusedLicense': '(Unused)',
+  'buyVps.invalidWinKeyFormat': 'Invalid key format (Example: XXXXX-XXXXX-XXXXX-XXXXX-XXXXX)',
+  'buyVps.byolDisclaimerLine1':
+    'Customers using Windows under BYOL - Bring Your Own License must provide and take full responsibility for the validity of their license.',
+  'buyVps.byolDisclaimerLine2':
+    'We only provide infrastructure and are not responsible for license keys provided and used by customers.',
+  'buyVps.enterWinKey': 'Please enter a Windows license key!',
+  'buyVps.agreeByolToast': 'Please agree to the Windows BYOL license terms!',
 
   'upgradePlan.title': 'Upgrade Your Plan',
   'upgradePlan.subtitle':
@@ -357,6 +369,7 @@ const en = {
   // VPS Manager
   'vpsManager.title': 'VPS Manager',
   'vpsManager.resetPassword': 'Reset Password',
+  to: 'to',
   'vpsManager.autoFix': 'Auto Fix',
   'vpsManager.upgrade': 'Upgrade',
 

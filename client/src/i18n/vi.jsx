@@ -210,13 +210,13 @@ const vi = {
   'manager.completed': 'hoàn tất',
   'manager.success': 'thành công',
   'manager.failed': 'thất bại',
+  confirm: 'Xác nhận',
   'manager.confirmChangeIp': 'Xác nhận đổi IP',
   'manager.confirmReinstall': 'Xác nhận cài lại',
   'manager.confirmRenew': 'Xác nhận gia hạn',
   'manager.confirmRefund': 'Xác nhận hoàn tiền',
   'manager.info': 'Thông tin',
   'manager.invalidReinstall': 'Cấu hình cài lại không hợp lệ',
-  'manager.reinstallTarget': 'Mục tiêu cài lại',
   'manager.noValidProxyRenew': 'Không có Proxy hợp lệ để gia hạn.',
   'manager.noValidProxyRefund': 'Không có Proxy hợp lệ để hoàn tiền.',
   'manager.noValidVpsRenew': 'Không có VPS hợp lệ để gia hạn.',
@@ -313,6 +313,18 @@ const vi = {
   'buyVps.soldOut': 'Hết hàng',
   'buyVps.soldOutMessage':
     'Gói dịch vụ này hiện đã hết. Vui lòng kiểm tra lại sau hoặc liên hệ bộ phận hỗ trợ.',
+  'buyVps.winLicenseTitle': 'Bản quyền Windows',
+  'buyVps.selectExistingLicense': 'Chọn key bản quyền đã có hoặc nhập key mới',
+  'buyVps.enterWinProductKey': 'Nhập Windows Product Key',
+  'buyVps.enterNewKeyOption': '+ Nhập key mới',
+  'buyVps.unusedLicense': '(Chưa dùng)',
+  'buyVps.invalidWinKeyFormat': 'Định dạng key không hợp lệ (Ví dụ: XXXXX-XXXXX-XXXXX-XXXXX-XXXXX)',
+  'buyVps.byolDisclaimerLine1':
+    'Khách hàng sử dụng Windows theo hình thức BYOL - Bring Your Own License phải tự cung cấp và chịu trách nhiệm về tính hợp lệ của giấy phép.',
+  'buyVps.byolDisclaimerLine2':
+    'Chúng tôi chỉ cung cấp hạ tầng và không chịu trách nhiệm đối với key bản quyền do khách hàng tự sử dụng.',
+  'buyVps.enterWinKey': 'Vui lòng nhập key bản quyền Windows!',
+  'buyVps.agreeByolToast': 'Vui lòng đồng ý điều khoản bản quyền BYOL Windows!',
 
   'upgradePlan.title': 'Nâng cấp cấu hình',
   'upgradePlan.subtitle':
@@ -357,7 +369,8 @@ const vi = {
   // VPS Manager
   'vpsManager.title': 'Quản lý VPS',
   'vpsManager.resetPassword': 'Đặt lại mật khẩu',
-  'vpsManager.autoFix': 'Sửa tự động',
+  to: 'thành',
+  'vpsManager.autoFix': 'Sửa lỗi tự động',
   'vpsManager.upgrade': 'Nâng cấp',
   'manager.comingSoon': 'Sắp ra mắt',
 

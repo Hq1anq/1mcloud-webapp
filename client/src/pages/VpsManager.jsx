@@ -53,33 +53,36 @@ export default function VpsManager({ onBuySuccessRef }) {
 
   const syncToDb = useCallback(
     async (rows, attempt = 1) => {
-      try {
-        await rawSyncToDb(rows)
-      } catch (err) {
-        console.error(`[DB Sync] Save failed (attempt ${attempt}):`, err.message)
-        if (attempt === 1) {
-          return syncToDb(rows, 2)
-        } else {
-          let toastId = null
-          const handleRetry = () => {
-            if (toastId) removeToast(toastId)
-            syncToDb(rows, 2) // only call once each time click retry button
+      async function doSync(r, att) {
+        try {
+          await rawSyncToDb(r)
+        } catch (err) {
+          console.error(`[DB Sync] Save failed (attempt ${att}):`, err.message)
+          if (att === 1) {
+            return doSync(r, 2)
+          } else {
+            let toastId = null
+            const handleRetry = () => {
+              if (toastId) removeToast(toastId)
+              doSync(r, 2)
+            }
+            toastId = addToast(
+              <>
+                <div>{t('syncFailed')}</div>
+                <button
+                  onClick={handleRetry}
+                  className="bg-bg-warning/20 border-bg-warning/30 hover:bg-bg-warning/40 mt-1 rounded border px-3 py-1"
+                >
+                  {t('retry')}
+                </button>
+              </>,
+              'warning',
+              { keepAlive: true }
+            )
           }
-          toastId = addToast(
-            <>
-              <div>{t('syncFailed')}</div>
-              <button
-                onClick={handleRetry}
-                className="bg-bg-warning/20 border-bg-warning/30 hover:bg-bg-warning/40 mt-1 rounded border px-3 py-1"
-              >
-                {t('retry')}
-              </button>
-            </>,
-            'warning',
-            { keepAlive: true }
-          )
         }
       }
+      return doSync(rows, attempt)
     },
     [rawSyncToDb, addToast, removeToast, t]
   )
@@ -211,24 +214,45 @@ export default function VpsManager({ onBuySuccessRef }) {
     [handleBatchAction, t]
   )
 
-  const handleResetPassword = useCallback(
-    () =>
-      handleBatchAction(
-        '/server/reset-password',
-        t('vpsManager.resetPassword').toUpperCase(),
-        (row) => {
-          const [username] = (row.user_pass || '').split('/')
-          const newUserPass = username ? `${username}/Httv1234` : `/Httv1234`
-          return { user_pass: newUserPass }
-        }
+  const handleResetPassword = useCallback(async () => {
+    const rows = [...selectedRowsRef.current]
+    const confirmed = await confirmAction({
+      title: t('confirm'),
+      infoText: (
+        <>
+          {t('vpsManager.resetPassword')} {t('to')}{' '}
+          <span className="text-highlight font-bold">Httv1234</span>
+        </>
       ),
-    [handleBatchAction, t]
-  )
+      isProxy: false,
+      isRenew: false,
+      selectedRows: rows,
+    })
 
-  const handleAutoFix = useCallback(
-    () => handleBatchAction('/server/auto-fix', t('vpsManager.autoFix').toUpperCase()),
-    [handleBatchAction, t]
-  )
+    if (!confirmed) return
+    handleBatchAction(
+      '/server/reset-password',
+      t('vpsManager.resetPassword').toUpperCase(),
+      (row) => {
+        const [username] = (row.user_pass || '').split('/')
+        const newUserPass = username ? `${username}/Httv1234` : `/Httv1234`
+        return { user_pass: newUserPass }
+      }
+    )
+  }, [handleBatchAction, t, confirmAction, selectedRowsRef])
+
+  const handleAutoFix = useCallback(async () => {
+    const rows = [...selectedRowsRef.current]
+    const confirmed = await confirmAction({
+      title: `${t('confirm')} ${t('vpsManager.autoFix')}`,
+      isProxy: false,
+      isRenew: false,
+      selectedRows: rows,
+    })
+
+    if (!confirmed) return
+    handleBatchAction('/server/auto-fix', t('vpsManager.autoFix').toUpperCase())
+  }, [handleBatchAction, t, confirmAction, selectedRowsRef])
 
   // --- Change Note handler ---
   const handleChangeNote = useCallback(async () => {

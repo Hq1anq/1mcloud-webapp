@@ -41,12 +41,12 @@ export default function CardBody({ primaryItems = [], otherItems = [], action })
       {/* GROUP 1 – Primary specs */}
       <div className="flex flex-wrap gap-x-2 gap-y-3">
         <div className="flex grow gap-1">
-          <PrimaryItem {...primaryItems[0]} />
-          <PrimaryItem {...primaryItems[1]} />
+          <PrimaryItem key="CPU" {...primaryItems[0]} />
+          <PrimaryItem key="RAM" {...primaryItems[1]} />
         </div>
         <div className="flex grow gap-1">
           {primaryItems.slice(2).map((item) => (
-            <PrimaryItem {...item} />
+            <PrimaryItem key={item.label} {...item} />
           ))}
         </div>
       </div>

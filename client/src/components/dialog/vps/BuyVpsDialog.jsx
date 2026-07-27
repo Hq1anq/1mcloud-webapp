@@ -10,9 +10,10 @@ import DropDown from '../../ui/DropDown.jsx'
 import Checkbox from '../../ui/Checkbox.jsx'
 import Radio from '../../ui/Radio.jsx'
 import Skeleton from '../../ui/Skeleton.jsx'
-import getOS from '../../../data/osMap.js'
+import getOS, { getShortOS } from '../../../data/osMap.js'
 import WindowsKeyInput from '../../ui/WindowsKeyInput.jsx'
 import { maskProductKey } from '../../../utils/ui.js'
+import VpsPortInput from '../../price/vps/VpsPortInput.jsx'
 
 export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
   const { addToast, removeToast } = useToast()
@@ -41,7 +42,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
         3: 'Windows Server 2022 Standard',
         4: 'Windows 10 Pro',
         5: 'Win10 Enterprise',
-        6: 'CentOS 7.7',
+        6: 'CentOS 7.9',
         7: 'CentOS 8.5.2111',
         8: 'Ubuntu 18.04.4 LTS',
         10: 'Ubuntu 20.04.4 LTS',
@@ -50,7 +51,11 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
         19: 'Ubuntu 22.04.5 LTS',
         20: 'Rocky Linux 9.4',
         21: 'AlmaLinux 9.4',
+        22: 'Ubuntu 24.04.4 LTS',
+        23: 'Ubuntu 26.04 LTS',
+        24: 'Ubuntu Desktop 26.04 LTS',
       },
+      order: [1, 18, 2, 3, 4, 5, 11, 6, 7, 8, 10, 19, 22, 23, 24, 20, 21],
     },
     ip: { option: ['Ngẫu nhiên'] },
     provider: { option: ['Ngẫu nhiên'] },
@@ -73,8 +78,10 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
   const [randomPassword, setRandomPassword] = useState(true)
   const [passwordInput, setPasswordInput] = useState('')
 
-  const [randomPort, setRandomPort] = useState(true)
-  const [portInput, setPortInput] = useState('')
+  const [portPayload, setPortPayload] = useState({
+    random_remote_port: true,
+    remote_port: undefined,
+  })
 
   const [note, setNote] = useState('')
   const [discountCode, setDiscountCode] = useState('')
@@ -338,8 +345,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
       os_id: Number(selectedOs) || 1,
       random_password: randomPassword,
       password: randomPassword ? undefined : passwordInput,
-      random_remote_port: randomPort,
-      remote_port: randomPort ? undefined : portInput,
+      ...portPayload,
       range_ip: selectedIp || undefined,
       provider: selectedProvider || undefined,
       state: selectedLocation || undefined,
@@ -399,8 +405,26 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
     }
   }
 
-  const renderSelect = (value, onChange, optionsMap, isArray = false) => {
-    const options = isArray ? optionsMap : Object.values(optionsMap || {})
+  const renderSelect = (value, onChange, optionsMap, isArray = false, order = null) => {
+    let options = []
+    if (isArray) {
+      options = optionsMap || []
+    } else if (order && Array.isArray(order) && order.length > 0) {
+      const setOfKeys = new Set(Object.keys(optionsMap || {}))
+      order.forEach((id) => {
+        const keyStr = String(id)
+        if (optionsMap?.[keyStr] !== undefined) {
+          options.push(optionsMap[keyStr])
+          setOfKeys.delete(keyStr)
+        }
+      })
+      setOfKeys.forEach((keyStr) => {
+        options.push(optionsMap[keyStr])
+      })
+    } else {
+      options = Object.values(optionsMap || {})
+    }
+
     const displayValue = isArray ? value : optionsMap?.[value] || value
     const onSelect = isArray
       ? (newValue) => onChange({ target: { value: newValue } })
@@ -683,7 +707,9 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                       {renderSelect(
                         selectedOs,
                         (e) => setSelectedOs(e.target.value),
-                        supportData.os?.option || {}
+                        supportData.os?.option || {},
+                        false,
+                        supportData.os?.order
                       )}
                     </div>
 
@@ -952,24 +978,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                       </label>
 
                       {/* Port */}
-                      <label className="flex grow flex-col gap-2">
-                        <div className="flex items-center gap-2">
-                          <Checkbox
-                            checked={randomPort}
-                            onChange={(e) => setRandomPort(e.target.checked)}
-                          />
-                          <span className="font-medium">{t('buyVps.randomPort')}</span>
-                        </div>
-                        {!randomPort && (
-                          <div className="flex flex-col gap-1 text-lg">
-                            <input
-                              type="number"
-                              value={portInput}
-                              onChange={(e) => setPortInput(e.target.value)}
-                            />
-                          </div>
-                        )}
-                      </label>
+                      <VpsPortInput osName={osName} onChange={setPortPayload} />
                     </div>
                     {/* Note */}
                     <div className="flex w-full items-baseline gap-2 text-lg">
@@ -1021,18 +1030,22 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                       <Skeleton
                         isLoading={plansLoading}
                         element={
-                          <span className="text-orange mt-0.5 text-[11px]">
-                            {selectedPlanObj?.cpu} - {selectedPlanObj?.ram}
-                          </span>
+                          <>
+                            <span className="text-text-primary text-sm font-semibold">
+                              {selectedPlanObj?.name}
+                            </span>
+                            <span className="text-orange mt-0.5 text-xs font-semibold">
+                              {selectedPlanObj?.cpu} - {selectedPlanObj?.ram} (
+                              {selectedPlanObj?.ssd} NVMe)
+                            </span>
+                          </>
                         }
                         className="bg-text-muted h-4 w-16"
                       />
                     </div>
-                    <Skeleton
-                      isLoading={plansLoading}
-                      element={<span className="font-medium">{selectedPlanObj?.name}</span>}
-                      className="bg-text-muted h-4 w-7"
-                    />
+                    <span className="bg-terminal border-border rounded-lg border px-2.5 py-1 font-mono text-xs font-semibold">
+                      {getShortOS(osName) || '—'}
+                    </span>
                   </div>
 
                   <div className="flex items-center justify-between">

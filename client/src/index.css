@@ -303,7 +303,7 @@
   input[type='email'],
   input[type='tel'],
   textarea {
-    @apply bg-navbar text-text-primary border-border w-full resize-none rounded-lg border-2 px-3 py-2 whitespace-nowrap placeholder-gray-400 transition-colors focus:border-(--logo-ring) focus:outline-none;
+    @apply bg-navbar text-text-primary border-border disabled:text-text-muted w-full resize-none rounded-lg border-2 px-3 py-2 whitespace-nowrap placeholder-gray-400 transition-colors focus:border-(--logo-ring) focus:outline-none disabled:opacity-60;
   }
 
   /* Hides the arrows in Chrome, Safari, Edge */

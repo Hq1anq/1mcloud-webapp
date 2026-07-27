@@ -19,8 +19,8 @@ axiosInstance.interceptors.request.use(
     }
 
     // Set custom timeout for specific endpoints
-    if (config.url?.endsWith('/server/create')) {
-      config.timeout = 60000
+    if (config.url?.endsWith('/server/create') || config.url?.includes('/vps/support')) {
+      config.timeout = 60000 // 60 seconds
     }
 
     return config

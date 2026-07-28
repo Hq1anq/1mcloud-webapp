@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom'
 import Checkbox from '../../ui/Checkbox.jsx'
 import Skeleton from '../../ui/Skeleton.jsx'
 import { getShortOS } from '../../../data/osMap.js'
@@ -17,8 +16,7 @@ export default function VpsOrderSummary({
   setAutoRenew,
   agreeTerms,
   setAgreeTerms,
-  canPay,
-  handlePay,
+  actions,
 }) {
   const t = useTranslation()
 
@@ -145,36 +143,7 @@ export default function VpsOrderSummary({
       </div>
 
       {/* Action buttons */}
-      <div className="flex flex-col gap-2.5 pt-2">
-        <button
-          type="button"
-          onClick={handlePay}
-          disabled={!canPay}
-          className="btn-primary group flex h-11 w-full items-center justify-center gap-2 font-bold shadow-md transition-all hover:shadow-lg"
-        >
-          <span>{t('buyVps.payNow')}</span>
-          <svg
-            className="size-4 transition-transform group-hover:translate-x-1.5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M14 5l7 7m0 0l-7 7m7-7H3"
-            />
-          </svg>
-        </button>
-
-        <Link
-          to="/price/vps"
-          className="text-text-muted hover:text-text-primary w-full py-2 text-center font-medium transition-colors"
-        >
-          {t('cancel')}
-        </Link>
-      </div>
+      {actions}
     </>
   )
 }

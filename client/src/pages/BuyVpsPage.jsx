@@ -1,9 +1,8 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { useSearchParams, useLocation, Link } from 'react-router-dom'
 import { useToast } from '../context/ToastContext.jsx'
 import { useTranslation } from '../i18n/index.js'
 import { getDefaultPlans, vpsNations, vpsSpecialOptions } from '../data/vpsNations.jsx'
-import { isValidLicense, maskProductKey } from '../utils/ui.js'
 import { useSafeCopy } from '../context/SafeCopyContext.jsx'
 import axiosInstance from '../lib/axios.js'
 import useProfileStore from '../store/useProfileStore.js'
@@ -33,9 +32,6 @@ export default function BuyVpsPage() {
   // Read URL params: nation + planId pre-selected from VpsCard click
   const initNation = searchParams.get('nation') || 'VN'
   const initPlanId = searchParams.get('planId') || null
-
-  const newKeyOption = t('buyVps.enterNewKeyOption')
-  const unusedLabel = t('buyVps.unusedLicense')
 
   // ── Plans ─────────────────────────────────────────────────────────────────
   const [plans, setPlans] = useState(() => getDefaultPlans(initNation))
@@ -96,46 +92,12 @@ export default function BuyVpsPage() {
   // ── Windows BYOL ──────────────────────────────────────────────────────────
   const [userLicenses, setUserLicenses] = useState([])
   const [licensesLoading, setLicensesLoading] = useState(false)
-  const [selectedLicenseOption, setSelectedLicenseOption] = useState(newKeyOption)
-  const [customLicenseKey, setCustomLicenseKey] = useState('')
+  const [effectiveLicenseKey, setEffectiveLicenseKey] = useState('')
+  const [isValidWindowsKey, setIsValidWindowsKey] = useState(false)
   const [agreeBYOL, setAgreeBYOL] = useState(false)
 
   const osName = supportData?.os?.option?.[selectedOs] || ''
   const isWindow = Boolean(osName && /win/i.test(osName))
-
-  const dropdownOptions = useMemo(() => {
-    if (!userLicenses || userLicenses.length === 0) return [newKeyOption]
-    return [
-      ...userLicenses.map(
-        (lic) =>
-          `${maskProductKey(lic.license_key)} ${
-            lic.server ? `(server: ${lic.server.ip})` : unusedLabel
-          }`
-      ),
-      newKeyOption,
-    ]
-  }, [userLicenses, newKeyOption, unusedLabel])
-
-  const effectiveLicenseKey = useMemo(() => {
-    if (!isWindow) return ''
-    if (userLicenses.length === 0 || selectedLicenseOption === newKeyOption) {
-      return customLicenseKey
-    }
-    const idx = dropdownOptions.indexOf(selectedLicenseOption)
-    if (idx !== -1 && idx < userLicenses.length) {
-      return userLicenses[idx].license_key
-    }
-    return customLicenseKey
-  }, [
-    isWindow,
-    userLicenses,
-    selectedLicenseOption,
-    dropdownOptions,
-    customLicenseKey,
-    newKeyOption,
-  ])
-
-  const isValidWindowsKey = isValidLicense(effectiveLicenseKey)
   const isLicenseValidForPay = !isWindow || (isValidWindowsKey && agreeBYOL)
 
   // ── Pricing ───────────────────────────────────────────────────────────────
@@ -287,19 +249,7 @@ export default function BuyVpsPage() {
           .get('/user/licenses')
           .then((res) => {
             if (res.data?.success && Array.isArray(res.data.licenses)) {
-              const sorted = [...res.data.licenses].sort((a, b) =>
-                (a.license_key || '').localeCompare(b.license_key || '')
-              )
-              setUserLicenses(sorted)
-              if (sorted.length > 0) {
-                const firstLic = sorted[0]
-                const label = `${maskProductKey(firstLic.license_key)} ${
-                  firstLic.server ? `(server: ${firstLic.server.ip})` : unusedLabel
-                }`
-                setSelectedLicenseOption(label)
-              } else {
-                setSelectedLicenseOption(newKeyOption)
-              }
+              setUserLicenses(res.data.licenses)
             }
           })
           .catch((err) => console.error('Failed to fetch user licenses:', err))
@@ -307,7 +257,7 @@ export default function BuyVpsPage() {
       })
       return () => cancelAnimationFrame(id)
     }
-  }, [isWindow, newKeyOption, unusedLabel])
+  }, [isWindow])
 
   // ── Calculate pricing ─────────────────────────────────────────────────────
   useEffect(() => {
@@ -426,7 +376,6 @@ export default function BuyVpsPage() {
         // Reset form state after successful purchase
         setAgreeTerms(false)
         setAgreeBYOL(false)
-        setCustomLicenseKey('')
         setNote('')
         setDiscountCode('')
         setAppliedDiscount('')
@@ -505,7 +454,7 @@ export default function BuyVpsPage() {
 
                 {/* Duration */}
                 {supportData?.duration && (
-                  <div className="flex min-w-48 grow flex-col gap-1.5 text-lg">
+                  <div className="flex min-w-48 grow flex-col gap-1.5">
                     <span className="text-sm font-medium">{t('buyVps.duration')}</span>
                     {renderSelect(
                       selectedDuration,
@@ -516,7 +465,7 @@ export default function BuyVpsPage() {
                 )}
 
                 {/* OS */}
-                <div className="flex min-w-78.5 grow flex-col gap-1.5 text-lg">
+                <div className="flex min-w-78.5 grow flex-col gap-1.5">
                   <span className="text-sm font-medium">{t('buyVps.os')}</span>
                   {renderSelect(
                     selectedOs,
@@ -532,21 +481,18 @@ export default function BuyVpsPage() {
                   <WindowsByolSection
                     userLicenses={userLicenses}
                     licensesLoading={licensesLoading}
-                    selectedLicenseOption={selectedLicenseOption}
-                    setSelectedLicenseOption={setSelectedLicenseOption}
-                    customLicenseKey={customLicenseKey}
-                    setCustomLicenseKey={setCustomLicenseKey}
                     agreeBYOL={agreeBYOL}
                     setAgreeBYOL={setAgreeBYOL}
-                    newKeyOption={newKeyOption}
-                    dropdownOptions={dropdownOptions}
-                    isValidWindowsKey={isValidWindowsKey}
+                    onChange={({ licenseKey, isValid }) => {
+                      setEffectiveLicenseKey(licenseKey)
+                      setIsValidWindowsKey(isValid)
+                    }}
                   />
                 )}
 
                 {/* Range IP */}
                 {ips.length > 0 && (
-                  <div className="flex grow flex-col gap-1.5 text-lg">
+                  <div className="flex grow flex-col gap-1.5">
                     <span className="text-sm font-medium">{t('buyVps.rangeIp')}</span>
                     {renderSelect(selectedIp, (e) => setSelectedIp(e.target.value), ips, true)}
                   </div>
@@ -554,7 +500,7 @@ export default function BuyVpsPage() {
 
                 {/* ISP/Provider */}
                 {providers.length > 0 && (
-                  <div className="flex grow flex-col gap-1.5 text-lg">
+                  <div className="flex grow flex-col gap-1.5">
                     <span className="text-sm font-medium">{t('buyVps.provider')}</span>
                     {renderSelect(
                       selectedProvider,
@@ -583,7 +529,6 @@ export default function BuyVpsPage() {
               </div>
 
               <div className="grid grid-cols-1 gap-4 pt-2 sm:grid-cols-2">
-                {/* Password */}
                 <VpsPasswordInput
                   randomPassword={randomPassword}
                   setRandomPassword={setRandomPassword}
@@ -591,12 +536,11 @@ export default function BuyVpsPage() {
                   setPasswordInput={setPasswordInput}
                 />
 
-                {/* Port */}
                 <VpsPortInput osName={osName} onChange={setPortPayload} />
               </div>
 
               {/* Note */}
-              <div className="flex grow items-baseline gap-2 text-lg">
+              <div className="flex grow items-baseline gap-2">
                 <span className="text-sm font-medium whitespace-nowrap">{t('buyVps.note')}</span>
                 <textarea
                   value={note}
@@ -623,8 +567,38 @@ export default function BuyVpsPage() {
               setAutoRenew={setAutoRenew}
               agreeTerms={agreeTerms}
               setAgreeTerms={setAgreeTerms}
-              canPay={canPay}
-              handlePay={handlePay}
+              actions={
+                <div className="flex flex-col gap-2.5 pt-2">
+                  <button
+                    type="button"
+                    onClick={handlePay}
+                    disabled={!canPay}
+                    className="btn-primary group flex h-11 w-full items-center justify-center gap-2 font-bold shadow-md transition-all hover:shadow-lg"
+                  >
+                    <span>{t('buyVps.payNow')}</span>
+                    <svg
+                      className="size-4 transition-transform group-hover:translate-x-1.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M14 5l7 7m0 0l-7 7m7-7H3"
+                      />
+                    </svg>
+                  </button>
+
+                  <Link
+                    to="/price/vps"
+                    className="text-text-muted hover:text-text-primary w-full py-2 text-center font-medium transition-colors"
+                  >
+                    {t('cancel')}
+                  </Link>
+                </div>
+              }
             />
           </div>
         </div>

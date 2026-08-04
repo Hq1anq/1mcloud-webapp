@@ -12,3 +12,11 @@ export const authenticate = (req, res, next) => {
   req.token = token;
   next();
 };
+
+export const optionalAuthenticate = (req, res, next) => {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+
+  req.token = token || null;
+  next();
+};

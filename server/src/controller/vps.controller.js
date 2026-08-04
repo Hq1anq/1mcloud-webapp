@@ -1,4 +1,5 @@
 import { getPool } from "../lib/db.js";
+import { getCachedVpsPlans } from "../services/cache.service.js";
 
 const HEADERS = {
   accept: "application/json, text/plain, */*",
@@ -15,6 +16,12 @@ export async function getVpsPlan(req, res) {
       error: "Plan is required",
     });
   }
+
+  if (!req.token) {
+    const cachedPlans = getCachedVpsPlans(plan);
+    return res.json({ success: true, info: cachedPlans || [] });
+  }
+
   const url = `${process.env.BASE_URL}/plan/vps`;
   const headers = { ...HEADERS, authorization: `Bearer ${req.token}` };
 

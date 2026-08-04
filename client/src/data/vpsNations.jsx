@@ -198,7 +198,7 @@ export const getDefaultPlans = (symbol) => {
   return plans.map((plan) => ({
     id: plan.name,
     name: plan.name,
-    price: plan.price || '',
+    price: plan.price || '0',
     cpu: plan.cpu,
     ram: plan.ram,
     ssd: plan.ssd,

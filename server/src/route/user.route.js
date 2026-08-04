@@ -11,7 +11,7 @@ router.get("/profile", userController.getProfile);
 router.get("/licenses", userController.getLicenses);
 
 router.post("/licenses", userController.addLicenses);
-router.put("/licenses", userController.editLicenses);
+router.put("/licenses/:id", userController.editLicenses);
 router.delete("/licenses/:id", userController.deleteLicenses);
 
 export default router;

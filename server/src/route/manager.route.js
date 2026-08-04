@@ -1,16 +1,22 @@
 import express from "express";
 
-import { authenticate } from "../middleware/auth.middleware.js";
+import { authenticate, optionalAuthenticate } from "../middleware/auth.middleware.js";
 import * as managerController from "../controller/manager.controller.js";
 
 const router = express.Router();
+
+router.post(
+  "/create/calculate",
+  optionalAuthenticate,
+  managerController.calculate,
+);
 
 router.use(authenticate);
 
 router.get("/list", managerController.list);
 router.get("/proxy/support", managerController.support);
 router.post("/create", managerController.create);
-router.post("/create/calculate", managerController.calculate);
+
 router.post("/change-ip", managerController.changeIp);
 router.post("/reinstall", managerController.reinstall);
 router.post("/pause", managerController.pause);

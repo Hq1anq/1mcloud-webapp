@@ -1,10 +1,15 @@
 import http from "node:http";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { Reader } from "@maxmind/geoip2-node";
 import { SocksProxyAgent } from "socks-proxy-agent";
 import { parseProxy } from "../lib/utils.js";
 
-//  GeoIP singleton
-const MMDB_PATH = "./GeoLite2-Country.mmdb";
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+//  GeoIP singleton (stored in src/data/)
+const MMDB_PATH = path.join(__dirname, "../data/GeoLite2-Country.mmdb");
+
 const CHECK_URL = "http://httpbin.org/ip";
 const TIMEOUT = 5000;
 

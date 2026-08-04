@@ -101,6 +101,7 @@
 :root {
   --dark-900: #0b0f19;
   --dark-800: #1a2130;
+  --dark-750: #222a3c;
   --dark-700: #293347;
   --dark-600: #39455d;
   --dark-500: #485774;
@@ -204,7 +205,7 @@
   --blue: #3b82f6;
 
   --primary: #4aa3ff;
-  --bg-dropdown: var(--dark-800);
+  --bg-dropdown: var(--dark-750);
   --bg-dialog: var(--dark-600);
   --bg-terminal: #0f172a;
   --bg-checkbox: var(--dark-600);
@@ -302,7 +303,7 @@
   input[type='email'],
   input[type='tel'],
   textarea {
-    @apply bg-navbar text-text-primary border-border w-full rounded-lg border-2 px-3 py-2 whitespace-nowrap placeholder-gray-400 transition-colors focus:border-(--logo-ring) focus:outline-none;
+    @apply bg-navbar text-text-primary border-border w-full resize-none rounded-lg border-2 px-3 py-2 whitespace-nowrap placeholder-gray-400 transition-colors focus:border-(--logo-ring) focus:outline-none;
   }
 
   /* Hides the arrows in Chrome, Safari, Edge */
@@ -310,10 +311,6 @@
   input[type='number']::-webkit-outer-spin-button {
     @apply appearance-none;
     margin: 0;
-  }
-
-  textarea {
-    @apply min-h-52 resize-none;
   }
 
   button {
@@ -362,6 +359,10 @@
       var(--action-color) var(--btn-mix, 100%),
       var(--bg-surface)
     );
+  }
+
+  .btn-primary {
+    @apply bg-blue text-text-secondary rounded-lg px-6 py-2 font-semibold enabled:hover:brightness-90 disabled:bg-gray-500;
   }
 
   .home-grid-bg {
@@ -536,5 +537,65 @@
   }
   .animate-pulse-glow {
     animation: pulse-glow 2s ease-out infinite;
+  }
+
+  /* ── VPS Pricing Page ─────────────────────────────────────────── */
+
+  /* Nation / region selector button */
+  .nation-btn {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .nation-btn:hover {
+    border-color: var(--primary);
+    background: color-mix(in srgb, var(--bg-wrapper) 20%, transparent);
+    transform: translateY(-2px);
+  }
+
+  /* Active / selected state — glow ring matching mockup */
+  .nation-btn-active {
+    border-color: var(--primary) !important;
+    background: color-mix(in srgb, var(--bg-wrapper) 40%, transparent) !important;
+    box-shadow:
+      0 0 0 1px var(--primary),
+      0 0 14px color-mix(in srgb, var(--primary) 50%, transparent);
+  }
+
+  /* VPS plan card — primary-colored shadow on hover */
+  .vps-plan-card {
+    transition:
+      transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 0.25s ease,
+      border-color 0.25s ease;
+  }
+
+  /* Only hover on available (non-disabled) cards */
+  .vps-plan-card:not(.vps-plan-card--disabled):hover {
+    transform: translateY(-4px);
+    border-color: var(--primary);
+    box-shadow: 0 12px 24px -6px color-mix(in srgb, var(--primary) 60%, transparent);
+  }
+
+  /* Sold-out card: visually muted, no pointer/hover effects */
+  .vps-plan-card--disabled {
+    cursor: default;
+  }
+
+  /* Card entrance animation when nation changes.
+     Uses CSS `translate` property (NOT `transform`) so it composes
+     independently — fill-mode won't override the hover transform. */
+  @keyframes vps-float-in {
+    from {
+      opacity: 0;
+      translate: 0 34px;
+    }
+    to {
+      opacity: 1;
+      translate: 0 0;
+    }
+  }
+
+  .animate-vps-float-in {
+    animation: vps-float-in 0.45s ease-out both;
   }
 }

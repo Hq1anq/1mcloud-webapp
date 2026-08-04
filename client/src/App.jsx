@@ -17,6 +17,11 @@ import SignupPage from './pages/SignupPage.jsx'
 import Contact from './pages/Contact.jsx'
 import AccountPage from './pages/AccountPage.jsx'
 import HistoryPage from './pages/HistoryPage.jsx'
+import LicensePage from './pages/LicensePage.jsx'
+import VpsPrice from './pages/VpsPrice.jsx'
+import BuyVpsPage from './pages/BuyVpsPage.jsx'
+import ProxyPrice from './pages/ProxyPrice.jsx'
+import BuyProxyPage from './pages/BuyProxyPage.jsx'
 import { AppProvider } from './context/AppProvider'
 
 function App() {
@@ -86,6 +91,57 @@ function App() {
                       <HistoryPage />
                     </SafeCopyProvider>
                   </ToastProvider>
+                }
+              />
+
+              <Route
+                path="/licenses"
+                element={
+                  isAuthenticated ? (
+                    <ToastProvider>
+                      <SafeCopyProvider>
+                        <ConfirmProvider>
+                          <PopConfirmProvider>
+                            <LicensePage />
+                          </PopConfirmProvider>
+                        </ConfirmProvider>
+                      </SafeCopyProvider>
+                    </ToastProvider>
+                  ) : (
+                    <Navigate to="/login" replace />
+                  )
+                }
+              />
+
+              <Route path="/price" element={<Navigate to="/price/vps" replace />} />
+              <Route path="/price/vps" element={<VpsPrice />} />
+              <Route
+                path="/price/vps/buy"
+                element={
+                  isAuthenticated ? (
+                    <ToastProvider>
+                      <SafeCopyProvider>
+                        <BuyVpsPage />
+                      </SafeCopyProvider>
+                    </ToastProvider>
+                  ) : (
+                    <Navigate to="/login" replace />
+                  )
+                }
+              />
+              <Route path="/price/proxy" element={<ProxyPrice />} />
+              <Route
+                path="/price/proxy/buy"
+                element={
+                  isAuthenticated ? (
+                    <ToastProvider>
+                      <SafeCopyProvider>
+                        <BuyProxyPage />
+                      </SafeCopyProvider>
+                    </ToastProvider>
+                  ) : (
+                    <Navigate to="/login" replace />
+                  )
                 }
               />
 

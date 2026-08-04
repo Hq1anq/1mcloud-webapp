@@ -96,9 +96,9 @@ export default function CopyDialog({ isOpen, onClose, text, initialCopyState = '
         onClick={handleCopy}
         className={`absolute top-6 right-6 inline-flex cursor-pointer items-center justify-center rounded-lg px-1 py-0.5 ${
           copyState === 'copied'
-            ? 'text-text-toast-success'
+            ? 'text-status-green'
             : copyState === 'failed'
-              ? 'text-text-toast-error'
+              ? 'text-status-red'
               : 'hover:text-text-primary text-text-muted'
         }`}
       >

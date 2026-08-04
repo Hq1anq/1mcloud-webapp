@@ -7,7 +7,7 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO = "P3TERX/GeoLite.mmdb";
 const ASSET_NAME = "GeoLite2-Country.mmdb";
-const TARGET_PATH = path.join(__dirname, "../../GeoLite2-Country.mmdb");
+const TARGET_PATH = path.join(__dirname, "../src/data/GeoLite2-Country.mmdb");
 
 async function syncMmdb() {
   console.log(`Checking latest release for ${REPO}...`);

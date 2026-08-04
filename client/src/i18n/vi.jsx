@@ -5,6 +5,9 @@ const vi = {
   'nav.proxyManager': 'Proxy Manager',
   'nav.vpsManager': 'VPS Manager',
   'nav.manager': 'Manager',
+  'nav.price': 'Bảng Giá',
+  'nav.vpsPrice': 'Bảng giá VPS',
+  'nav.proxyPrice': 'Bảng giá Proxy',
 
   discount: 'Giảm giá',
   totalToPay: 'Tổng thanh toán',
@@ -15,6 +18,7 @@ const vi = {
   processing: 'Đang xử lý...',
   current: 'Hiện tại',
   delete: 'Xóa',
+  edit: 'Sửa',
   paste: 'Dán',
   filter: 'Bộ lọc',
 
@@ -22,8 +26,41 @@ const vi = {
   'menu.login': 'Đăng nhập',
   'menu.account': 'Tài khoản',
   'menu.history': 'Lịch sử',
+  'menu.licenses': 'Quản lý bản quyền',
   'menu.theme': 'Theme',
   'menu.logout': 'Đăng xuất',
+
+  // Licenses Section
+  'licenses.title': 'Quản Lý Key bản quyền',
+  'licenses.subtitle': 'Danh sách License Key Windows VPS của bạn',
+  'licenses.addLicense': 'Thêm License',
+  'licenses.all': 'Tất cả',
+  'licenses.used': 'Đang dùng',
+  'licenses.notUsed': 'Chưa dùng',
+  'licenses.searchPlaceholder': 'Tìm theo License Key...',
+  'licenses.dateAdded': 'Ngày Thêm',
+  'licenses.serviceInUse': 'Dịch Vụ Sử Dụng',
+  'licenses.actions': 'Thao Tác',
+  'licenses.noData': 'Không tìm thấy License nào phù hợp.',
+  'licenses.addTitle': 'Thêm key bản quyền Windows',
+  'licenses.editTitle': 'Chỉnh sửa key bản quyền Windows',
+  'licenses.deleteConfirmTitle': 'Xác nhận xóa key bản quyền',
+  'licenses.deleteConfirmText': 'Bạn có chắc chắn muốn xóa key bản quyền sau khỏi tài khoản?',
+  'licenses.cannotUndo': 'Hành động này không thể hoàn tác.',
+  'licenses.keyLabel': 'Key bản quyền Windows',
+  'licenses.addNote': 'Lưu ý: Bạn đang thêm thông tin key bản quyền này.',
+  'licenses.editNote': 'Lưu ý: Bạn đang thay đổi thông tin key bản quyền này.',
+  'licenses.legalNote': 'Trách nhiệm pháp lý của key bản quyền mới thuộc về quý khách.',
+  'licenses.copySuccess': 'Đã sao chép License Key',
+  'licenses.addSuccess': 'Thêm License Key thành công',
+  'licenses.addFailed': 'Thêm License Key thất bại',
+  'licenses.editSuccess': 'Chỉnh sửa License Key thành công',
+  'licenses.editFailed': 'Chỉnh sửa License Key thất bại',
+  'licenses.deleteSuccess': 'Xóa License Key thành công',
+  'licenses.deleteFailed': 'Xóa License Key thất bại',
+  'licenses.enterKey': 'Vui lòng nhập License Key',
+  'licenses.invalidKeyFormat': 'Định dạng key không hợp lệ (Ví dụ: XXXXX-XXXXX-XXXXX-XXXXX-XXXXX)',
+  'licenses.usedLicenseDeleteFailed': 'Không thể xóa license đang sử dụng',
 
   // Hero Section
   'hero.badge': 'HẠ TẦNG THẾ HỆ MỚI',
@@ -421,6 +458,60 @@ const vi = {
   'changeIp.noteContent': 'Mỗi IP có 3 lần đổi 1 tháng. Bạn đã đổi',
   'changeIp.changeTimes': 'lần trong tháng',
   'changeIp.notRemoveData': 'Không xoá dữ liệu',
+
+  // VPS Pricing Page
+  'vpsPrice.bannerBadge': 'Hạ tầng Tier III Standard',
+  'vpsPrice.title': 'Bảng Giá VPS',
+  'vpsPrice.subtitle':
+    'Khởi tạo máy chủ tức thì với CPU Intel Xeon ổn định, vRAM GPU Đồ họa, Dung lượng PTU Storage lớn và Băng thông không giới hạn.',
+  'vpsPrice.categoriesTitle': 'Danh Mục & Quốc gia',
+  'vpsPrice.categoriesSummary': 'Quốc Gia + 2 Dòng Chuyên Dụng',
+  'vpsPrice.locations': 'Quốc Gia',
+  'vpsPrice.specializedServers': 'Máy Chủ Chuyên Dụng',
+  'vpsPrice.listTitle': 'Danh Sách VPS',
+  'vpsPrice.badgeGpu': 'GPU Đồ họa',
+  'vpsPrice.descGpu': 'VGA Card & vRAM Đồ Họa',
+  'vpsPrice.badgePtu': 'Ổ cứng lớn',
+  'vpsPrice.descPtu': 'Pay-To-Upload / Lưu trữ',
+
+  // Proxy Pricing Page
+  'proxyPrice.bannerBadge': 'Proxy IPv4 Tốc Độ Cao',
+  'proxyPrice.title': 'Bảng Giá Proxy',
+  'proxyPrice.subtitle':
+    'Proxy IPv4 riêng tư, hỗ trợ HTTP & SOCKS5, không giới hạn thiết bị & băng thông, tốc độ Ethernet 1 Gbps. Chọn vị trí quốc gia phù hợp.',
+  'proxyPrice.sectionTitle': 'Danh Sách Proxy',
+  'proxyPrice.countriesUnit': 'quốc gia',
+  'proxyPrice.durationUnit': '1 tháng / IP',
+
+  // Price Cards (VPS & Proxy)
+  'priceCard.soldOut': 'Hết hàng',
+  'priceCard.error': 'Lỗi',
+  'priceCard.available': 'Sẵn hàng',
+  'priceCard.buyNow': 'Mua ngay',
+  'priceCard.perMonth': 'VNĐ / tháng',
+  'priceCard.ipv4Text': 'Địa chỉ IPv4',
+  'priceCard.bandwidthText': 'Băng thông không giới hạn',
+
+  // Proxy Card Specific
+  'proxyCard.ipAddress': 'Địa chỉ IP',
+  'proxyCard.dedicatedIp': 'IPv4 Dedicated',
+  'proxyCard.protocol': 'Giao thức',
+  'proxyCard.protocolVal': 'HTTP / SOCKS5',
+  'proxyCard.unlimitedDevices': 'Không giới hạn thiết bị',
+
+  // Nations
+  'nation.VN': 'Việt Nam(VN)',
+  'nation.US': 'Mỹ(US)',
+  'nation.SG': 'Singapore(SG)',
+  'nation.UK': 'Anh(UK)',
+  'nation.AU': 'Úc(AU)',
+  'nation.DE': 'Đức(DE)',
+  'nation.FR': 'Pháp(FR)',
+  'nation.CA': 'Canada(CA)',
+  'nation.NL': 'Hà Lan(NL)',
+  'nation.JP': 'Nhật Bản(JP)',
+  'nation.HK': 'Hồng Kông(HK)',
+  'nation.VNR': 'Việt Nam (Dân cư)',
 }
 
 export default vi

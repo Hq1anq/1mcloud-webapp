@@ -109,7 +109,7 @@ export const addLicenses = async (req, res) => {
 };
 
 export const editLicenses = async (req, res) => {
-  const url = `${process.env.BASE_URL}/user/licenses`;
+  const url = `${process.env.BASE_URL}/user/licenses/${req.params.id}`;
   const headers = { ...HEADERS, authorization: `Bearer ${req.token}` };
   const payload = {
     license_key: req.body.license_key,

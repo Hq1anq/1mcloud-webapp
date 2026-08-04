@@ -29,10 +29,10 @@ export default function ManagerPage() {
       <div className="bg-surface select-none">
         <div className="mx-auto flex max-w-380 items-center justify-between p-4">
           {/* Left: Glass Inset Toggle */}
-          <div className="bg-surface relative flex items-center rounded-xl p-1 shadow-(--glass-inset-shadow)">
+          <div className="bg-surface relative z-0 flex items-center rounded-xl p-1 shadow-(--glass-inset-shadow)">
             {/* Sliding indicator */}
             <div
-              className="absolute top-1 bottom-1 rounded-lg backdrop-blur-xl backdrop-saturate-150"
+              className="absolute top-1 bottom-1 -z-1 rounded-lg backdrop-blur-xl backdrop-saturate-150"
               style={{
                 background: 'var(--indicator-background)',
                 boxShadow: 'var(--indicator-box-shadow)',
@@ -46,7 +46,7 @@ export default function ManagerPage() {
 
             <button
               onClick={() => setActiveView('VPS')}
-              className={`relative z-10 flex w-22 items-center justify-center gap-1.5 rounded-lg py-2 font-bold transition-colors duration-300 sm:w-28 ${
+              className={`flex w-22 items-center justify-center gap-1.5 rounded-lg py-2 font-bold transition-colors duration-300 sm:w-28 ${
                 activeView === 'VPS' ? 'text-primary' : 'text-text-muted hover:text-text-primary'
               }`}
             >
@@ -62,7 +62,7 @@ export default function ManagerPage() {
 
             <button
               onClick={() => setActiveView('PROXY')}
-              className={`relative z-10 flex w-22 items-center justify-center gap-1.5 rounded-lg py-2 font-bold transition-colors duration-300 sm:w-28 ${
+              className={`flex w-22 items-center justify-center gap-1.5 rounded-lg py-2 font-bold transition-colors duration-300 sm:w-28 ${
                 activeView === 'PROXY' ? 'text-primary' : 'text-text-muted hover:text-text-primary'
               }`}
             >

@@ -5,6 +5,9 @@ const en = {
   'nav.proxyManager': 'Proxy Manager',
   'nav.vpsManager': 'VPS Manager',
   'nav.manager': 'Manager',
+  'nav.price': 'Pricing',
+  'nav.vpsPrice': 'VPS Pricing',
+  'nav.proxyPrice': 'Proxy Pricing',
 
   discount: 'Discount',
   totalToPay: 'Total to Pay',
@@ -15,15 +18,50 @@ const en = {
   processing: 'Processing...',
   current: 'Current',
   delete: 'Delete',
+  edit: 'Edit',
   paste: 'Paste',
   filter: 'Filter',
 
   // UserMenu
   'menu.login': 'Login',
   'menu.account': 'Account',
-  'menu.history': 'Lịch sử',
+  'menu.history': 'History',
+  'menu.licenses': 'Licenses',
   'menu.theme': 'Theme',
   'menu.logout': 'Logout',
+
+  // Licenses Section
+  'licenses.title': 'License Management',
+  'licenses.subtitle': 'Your Windows VPS License Keys list',
+  'licenses.addLicense': 'Add License',
+  'licenses.all': 'All',
+  'licenses.used': 'Used',
+  'licenses.notUsed': 'Not Used',
+  'licenses.searchPlaceholder': 'Search by License Key...',
+  'licenses.dateAdded': 'Date Added',
+  'licenses.serviceInUse': 'Service In Use',
+  'licenses.actions': 'Actions',
+  'licenses.noData': 'No matching license found.',
+  'licenses.addTitle': 'Add Windows License Key',
+  'licenses.editTitle': 'Edit Windows License Key',
+  'licenses.deleteConfirmTitle': 'Confirm License Key Deletion',
+  'licenses.deleteConfirmText':
+    'Are you sure you want to delete the following license key from your account?',
+  'licenses.cannotUndo': 'This action cannot be undone.',
+  'licenses.keyLabel': 'Windows License Key',
+  'licenses.addNote': 'Note: You are adding a new license key.',
+  'licenses.editNote': 'Note: You are updating this license key information.',
+  'licenses.legalNote': 'Legal responsibility for the new license key belongs to you.',
+  'licenses.copySuccess': 'Copied License Key',
+  'licenses.addSuccess': 'License Key added successfully',
+  'licenses.addFailed': 'Failed to add License Key',
+  'licenses.editSuccess': 'License Key updated successfully',
+  'licenses.editFailed': 'Failed to update License Key',
+  'licenses.deleteSuccess': 'License Key deleted successfully',
+  'licenses.deleteFailed': 'Failed to delete License Key',
+  'licenses.enterKey': 'Please enter License Key',
+  'licenses.invalidKeyFormat': 'Invalid key format (Example: XXXXX-XXXXX-XXXXX-XXXXX-XXXXX)',
+  'licenses.usedLicenseDeleteFailed': 'Cannot delete license in used',
 
   // Hero Section
   'hero.badge': 'NEXT-GEN INFRASTRUCTURE',
@@ -305,7 +343,7 @@ const en = {
   'buyVps.fetchPlanError': 'Failed to load plans',
   'buyVps.selectPlanFirst': 'Please select a plan first',
   'buyVps.selectedPlan': 'Selected Plan',
-  'buyVps.rangeIp': 'IP Range',
+  'buyVps.rangeIp': 'Range IP',
   'buyVps.location': 'State',
   installExtension: 'Install Extension',
   'buyVps.none': 'None',
@@ -418,6 +456,60 @@ const en = {
   'changeIp.noteContent': 'Each IP can be changed 3 times per month. You have changed',
   'changeIp.changeTimes': 'times this month',
   'changeIp.notRemoveData': 'Not remove data',
+
+  // VPS Pricing Page
+  'vpsPrice.bannerBadge': 'Tier III Standard Infrastructure',
+  'vpsPrice.title': 'VPS Pricing',
+  'vpsPrice.subtitle':
+    'Instant server deployment with stable Intel Xeon CPUs, GPU vRAM graphics, high-capacity PTU Storage, and unlimited bandwidth.',
+  'vpsPrice.categoriesTitle': 'Categories & Countries',
+  'vpsPrice.categoriesSummary': 'Countries + 2 Specialized Lines',
+  'vpsPrice.locations': 'Locations',
+  'vpsPrice.specializedServers': 'Specialized Servers',
+  'vpsPrice.listTitle': 'VPS List',
+  'vpsPrice.badgeGpu': 'GPU Graphics',
+  'vpsPrice.descGpu': 'VGA Card & Graphics vRAM',
+  'vpsPrice.badgePtu': 'Large Storage',
+  'vpsPrice.descPtu': 'Pay-To-Upload / Storage',
+
+  // Proxy Pricing Page
+  'proxyPrice.bannerBadge': 'High-Speed IPv4 Proxy',
+  'proxyPrice.title': 'Proxy Pricing',
+  'proxyPrice.subtitle':
+    'Private IPv4 proxy supporting HTTP & SOCKS5, unlimited devices & bandwidth, 1 Gbps Ethernet speed. Choose your preferred location.',
+  'proxyPrice.sectionTitle': 'Proxy List',
+  'proxyPrice.countriesUnit': 'countries',
+  'proxyPrice.durationUnit': '1 month / IP',
+
+  // Price Cards (VPS & Proxy)
+  'priceCard.soldOut': 'Sold Out',
+  'priceCard.error': 'Error',
+  'priceCard.available': 'Available',
+  'priceCard.buyNow': 'Buy Now',
+  'priceCard.perMonth': 'VND / month',
+  'priceCard.ipv4Text': 'IPv4 Address',
+  'priceCard.bandwidthText': 'Unlimited bandwidth',
+
+  // Proxy Card Specific
+  'proxyCard.ipAddress': 'IP Address',
+  'proxyCard.dedicatedIp': 'IPv4 Dedicated',
+  'proxyCard.protocol': 'Protocols',
+  'proxyCard.protocolVal': 'HTTP / SOCKS5',
+  'proxyCard.unlimitedDevices': 'Unlimited devices',
+
+  // Nations
+  'nation.VN': 'Vietnam(VN)',
+  'nation.US': 'USA(US)',
+  'nation.SG': 'Singapore(SG)',
+  'nation.UK': 'UK(UK)',
+  'nation.AU': 'Australia(AU)',
+  'nation.DE': 'Germany(DE)',
+  'nation.FR': 'France(FR)',
+  'nation.CA': 'Canada(CA)',
+  'nation.NL': 'Netherlands(NL)',
+  'nation.JP': 'Japan(JP)',
+  'nation.HK': 'Hong Kong(HK)',
+  'nation.VNR': 'Vietnam (Residential)',
 }
 
 export default en

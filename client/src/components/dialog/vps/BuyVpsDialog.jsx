@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useToast } from '../../../context/ToastContext.jsx'
 import { useTranslation } from '../../../i18n/index.js'
 import { vpsNations, vpsSpecialOptions, getDefaultPlans } from '../../../data/vpsNations.jsx'
+import { isValidLicense } from '../../../utils/ui.js'
 import axiosInstance from '../../../lib/axios.js'
 import useProfileStore from '../../../store/useProfileStore.js'
 import Dialog from '../../ui/Dialog.jsx'
@@ -124,10 +125,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
     newKeyOption,
   ])
 
-  const isValidWindowsKey =
-    /^[a-zA-Z0-9]{5}-[a-zA-Z0-9]{5}-[a-zA-Z0-9]{5}-[a-zA-Z0-9]{5}-[a-zA-Z0-9]{5}$/.test(
-      effectiveLicenseKey
-    )
+  const isValidWindowsKey = isValidLicense(effectiveLicenseKey)
   const isLicenseValidForPay = !isWindowsOs || (isValidWindowsKey && agreeBYOL)
 
   // Fetch licenses when Windows OS is selected
@@ -487,12 +485,12 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                 <button
                   key={nation.symbol}
                   onClick={() => handleSelectNation(nation.symbol)}
-                  className="bg-thead border-card-border hover:border-blue hover:bg-surface group flex flex-col items-center justify-center gap-3 rounded-xl border p-5 active:scale-[0.97]"
+                  className="bg-navbar border-border hover:border-blue hover:bg-surface group flex flex-col items-center justify-center gap-3 rounded-xl border p-5 transition-colors"
                 >
-                  <div className="aspect-4/3 w-16 shrink-0 overflow-hidden rounded-md group-hover:scale-110 sm:w-20">
+                  <div className="aspect-4/3 w-16 shrink-0 overflow-hidden rounded-md transition-transform group-hover:scale-110 sm:w-20">
                     {nation.flag}
                   </div>
-                  <span className="group-hover:text-primary leading-tight font-semibold group-hover:translate-y-1">
+                  <span className="group-hover:text-primary leading-tight font-semibold transition-transform group-hover:translate-y-1">
                     {nation.name}
                   </span>
                 </button>
@@ -506,12 +504,12 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                 <button
                   key={item.symbol}
                   onClick={() => handleSelectNation(item.symbol)}
-                  className="bg-thead border-card-border hover:border-blue group flex flex-col items-center justify-center rounded-xl border p-3 active:scale-[0.97]"
+                  className="bg-navbar border-border hover:border-blue group flex flex-col items-center justify-center rounded-xl border p-3 active:scale-[0.97]"
                 >
-                  <div className="text-text-muted group-hover:text-primary flex aspect-4/3 w-16 items-center justify-center rounded-md group-hover:scale-120 sm:w-20">
+                  <div className="text-text-muted group-hover:text-primary flex aspect-4/3 w-16 items-center justify-center rounded-md transition-transform group-hover:scale-120 sm:w-20">
                     <span className="size-12">{item.flag}</span>
                   </div>
-                  <span className="group-hover:text-primary leading-tight font-semibold group-hover:translate-y-1">
+                  <span className="group-hover:text-primary leading-tight font-semibold transition-transform group-hover:translate-y-1">
                     {item.name}
                   </span>
                 </button>
@@ -762,7 +760,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                               onChange={(e) => setCustomLicenseKey(e.target.value)}
                               className={`rounded-lg px-3 py-2 font-mono text-base tracking-wider uppercase ${
                                 customLicenseKey && !isValidWindowsKey
-                                  ? 'border-orange focus:border-orange focus:ring-orange/20'
+                                  ? 'border-orange focus:border-orange'
                                   : ''
                               }`}
                             />
@@ -833,14 +831,14 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                           type="button"
                           aria-pressed={form.install_chrome}
                           onClick={() => updateForm({ install_chrome: !form.install_chrome })}
-                          className={`hover:bg-blue/10 relative flex items-center justify-center rounded-full border px-8 py-3 text-base font-semibold select-none ${
+                          className={`hover:bg-blue/10 relative flex items-center justify-center rounded-full border px-8 py-3 text-base font-semibold transition-colors select-none ${
                             form.install_chrome
                               ? 'border-blue text-blue bg-[color-mix(in_srgb,var(--bg-terminal),var(--color-blue)_12%)]'
                               : 'border-border text-text-muted bg-terminal'
                           }`}
                         >
                           <span
-                            className={`slide-reveal-ease flex items-center gap-2 ${
+                            className={`slide-reveal-ease flex items-center gap-2 transition-transform ${
                               form.install_chrome ? '-translate-x-4' : 'translate-x-0'
                             }`}
                           >
@@ -855,7 +853,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                           </span>
 
                           <svg
-                            className={`slide-reveal-ease absolute right-4 size-5 ${
+                            className={`slide-reveal-ease absolute right-4 size-5 transition-transform ${
                               form.install_chrome
                                 ? 'translate-x-0 scale-100 opacity-100'
                                 : 'translate-x-5 scale-0 opacity-0'
@@ -877,14 +875,14 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                           type="button"
                           aria-pressed={form.install_firefox}
                           onClick={() => updateForm({ install_firefox: !form.install_firefox })}
-                          className={`hover:bg-orange/10 relative flex items-center justify-center rounded-full border px-8 py-3 text-base font-semibold select-none ${
+                          className={`hover:bg-orange/10 relative flex items-center justify-center rounded-full border px-8 py-3 text-base font-semibold transition-colors select-none ${
                             form.install_firefox
                               ? 'border-orange text-orange bg-[color-mix(in_srgb,var(--bg-terminal),var(--color-orange)_12%)]'
                               : 'border-border text-text-muted bg-terminal'
                           }`}
                         >
                           <span
-                            className={`slide-reveal-ease flex items-center gap-2 ${
+                            className={`slide-reveal-ease flex items-center gap-2 transition-transform ${
                               form.install_firefox ? '-translate-x-4' : 'translate-x-0'
                             }`}
                           >
@@ -899,7 +897,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                           </span>
 
                           <svg
-                            className={`slide-reveal-ease absolute right-4 size-5 ${
+                            className={`slide-reveal-ease absolute right-4 size-5 transition-transform ${
                               form.install_firefox
                                 ? 'translate-x-0 scale-100 opacity-100'
                                 : 'translate-x-5 scale-0 opacity-0'
@@ -975,7 +973,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                       </label>
                     </div>
                     {/* Note */}
-                    <div className="flex w-full items-center gap-2 text-lg">
+                    <div className="flex w-full items-baseline gap-2 text-lg">
                       <span className="text-sm font-medium whitespace-nowrap">
                         {t('buyVps.note')}
                       </span>
@@ -1063,7 +1061,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                     />
                   </div>
                   <div className="bg-border my-1 h-px" />
-                  <div className="flex items-center justify-between text-base">
+                  <div className="flex items-baseline justify-between text-base">
                     <span className="font-bold">{t('buyVps.totalToPay')}</span>
                     <Skeleton
                       isLoading={isCalculating}
@@ -1101,7 +1099,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                 </div>
 
                 {/* Checkboxes */}
-                <div className="flex flex-col gap-3 pt-2 text-lg">
+                <div className="flex flex-col gap-3 pt-2 text-base">
                   <label className="flex items-center gap-2">
                     <Checkbox
                       checked={autoRenew}
@@ -1136,11 +1134,11 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                   !plans.some((p) => p.status === 'available') ||
                   !isLicenseValidForPay
                 }
-                className="group enabled:bg-blue flex h-12 w-full items-center justify-center gap-2 rounded-lg font-semibold text-white shadow-sm transition-all disabled:bg-gray-500"
+                className="group btn-primary flex h-12 w-full items-center justify-center gap-2"
               >
                 <span>{t('buyVps.payNow')}</span>
                 <svg
-                  className="size-5 group-hover:translate-x-1"
+                  className="size-5 transition-transform ease-in-out group-hover:translate-x-2"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"

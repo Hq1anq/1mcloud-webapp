@@ -76,3 +76,6 @@ export const formatWindowsProductKey = (val) => {
   }
   return groups.join('-')
 }
+
+export const isValidLicense = (licenseKey) =>
+  /^[a-zA-Z0-9]{5}-[a-zA-Z0-9]{5}-[a-zA-Z0-9]{5}-[a-zA-Z0-9]{5}-[a-zA-Z0-9]{5}$/.test(licenseKey)

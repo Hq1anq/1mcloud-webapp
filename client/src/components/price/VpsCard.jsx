@@ -56,11 +56,19 @@ export default function VpsCard({ card, animDelay, onBuy }) {
     { icon: <SpeedIcon />, text: `${card.ethernet_port || '1 Gbps'} Ethernet port` },
   ]
 
+  const canBuy = isAvailable && typeof card.id === 'number'
+
   const action = (
     <button
       type="button"
-      disabled={!isAvailable}
-      onClick={onBuy}
+      disabled={!canBuy}
+      onClick={(e) => {
+        if (!canBuy) {
+          e.preventDefault()
+          return
+        }
+        onBuy?.()
+      }}
       className="btn-primary flex w-full items-center justify-center gap-2 enabled:active:scale-[0.98]"
     >
       {isAvailable ? (

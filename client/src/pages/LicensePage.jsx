@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import AddLicenseDialog from '../components/dialog/license/AddLicenseDialog'
 import EditLicenseDialog from '../components/dialog/license/EditLicenseDialog'
 import DeleteLicenseDialog from '../components/dialog/license/DeleteLicenseDialog'
@@ -28,28 +28,33 @@ export default function LicensePage() {
   const [deletingLicense, setDeletingLicense] = useState(null)
 
   // Fetch licenses
-  const fetchLicenses = useCallback(async () => {
-    try {
-      setLoading(true)
-      const res = await axiosInstance.get('/user/licenses')
-      if (res.data?.success && Array.isArray(res.data.licenses)) {
-        setLicenses(res.data.licenses)
-      } else if (Array.isArray(res.data)) {
-        setLicenses(res.data)
-      } else {
-        setLicenses([])
-      }
-    } catch (err) {
-      console.error('Error fetching licenses:', err)
-      addToast(t('error'), 'error')
-    } finally {
-      setLoading(false)
+  useEffect(() => {
+    let ignore = false
+    axiosInstance
+      .get('/user/licenses')
+      .then((res) => {
+        if (ignore) return
+        if (res.data?.success && Array.isArray(res.data.licenses)) {
+          setLicenses(res.data.licenses)
+        } else if (Array.isArray(res.data)) {
+          setLicenses(res.data)
+        } else {
+          setLicenses([])
+        }
+      })
+      .catch((err) => {
+        if (ignore) return
+        console.error('Error fetching licenses:', err)
+        addToast(t('error'), 'error')
+      })
+      .finally(() => {
+        if (!ignore) setLoading(false)
+      })
+
+    return () => {
+      ignore = true
     }
   }, [addToast, t])
-
-  useEffect(() => {
-    fetchLicenses()
-  }, [fetchLicenses])
 
   // Helper mask function: VK7JG-NPHTM-C97JM-9MPGT-3V6AB -> VK7JG-*****-*****-*****-3V6AB
   const formatMaskedKey = (fullKey) => {

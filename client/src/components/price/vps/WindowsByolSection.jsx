@@ -172,6 +172,7 @@ export default function WindowsByolSection({
                 value={selectedOption}
                 onChange={handleSelectOption}
                 renderItem={renderLicenseItem}
+                isEqual={(a, b) => a?.id === b?.id}
                 className="bg-wrapper rounded-lg text-xs sm:text-lg"
                 menuClassName="text-xs sm:text-lg"
               />

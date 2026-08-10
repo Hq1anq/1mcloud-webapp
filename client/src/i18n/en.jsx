@@ -166,6 +166,10 @@ const en = {
   'table.selected': 'Selected',
   'table.total': 'Total',
   'table.rows': 'rows',
+  'table.firstPage': 'First page',
+  'table.previousPage': 'Previous page',
+  'table.nextPage': 'Next page',
+  'table.lastPage': 'Last page',
 
   'table.ip': 'IP',
   'table.port': 'Port',

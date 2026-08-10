@@ -166,6 +166,10 @@ const vi = {
   'table.selected': 'Đã chọn',
   'table.total': 'Tổng',
   'table.rows': 'dòng',
+  'table.firstPage': 'Trang đầu',
+  'table.previousPage': 'Trang trước',
+  'table.nextPage': 'Trang sau',
+  'table.lastPage': 'Trang cuối',
 
   'table.ip': 'IP',
   'table.port': 'Port',

@@ -1367,6 +1367,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
         title={t('manager.proxyManager')}
         className="mt-2 px-4 text-xs sm:text-sm"
         data={data}
+        pagination={true}
         receivedData={receivedData}
         renderingReceived={renderingReceived}
         setRenderingReceived={setRenderingReceived}

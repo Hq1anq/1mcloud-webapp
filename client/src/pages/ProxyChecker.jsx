@@ -1,5 +1,5 @@
 import DropDown from '../components/ui/DropDown'
-import Table from '../components/ui/Table'
+import { StandardTable } from '../components/ui/Table'
 import { useSafeCopy } from '../context/SafeCopyContext'
 import useCapture from '../hooks/useCapture'
 import axiosInstance from '../lib/axios'
@@ -368,9 +368,8 @@ export default function ProxyChecker() {
           </div>
         </div>
       </div>
-      <Table
+      <StandardTable
         data={results}
-        virtualized={false}
         title={t('checker.proxyStatus')}
         useFilter={false}
         className="mt-4 px-4 text-base sm:text-lg"

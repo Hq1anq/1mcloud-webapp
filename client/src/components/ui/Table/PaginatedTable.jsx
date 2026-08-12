@@ -9,6 +9,9 @@ const PaginatedTable = forwardRef(function PaginatedTable(
     defaultPageSize = 20,
     page: controlledPage,
     pageSize: controlledPageSize,
+    totalCount,
+    pageCount: controlledPageCount,
+    serverSide = false,
     onPageChange,
     onPageSizeChange,
     ...props
@@ -38,6 +41,9 @@ const PaginatedTable = forwardRef(function PaginatedTable(
       ref={ref}
       controlledPage={controlledPage}
       controlledPageSize={controlledPageSize}
+      totalCount={totalCount}
+      controlledPageCount={controlledPageCount}
+      serverSide={serverSide}
       normalizedPageSizeOptions={normalizedPageSizeOptions}
       activePageSize={activePageSize}
       internalPage={internalPage}
@@ -53,6 +59,9 @@ const PaginatedTableInternal = forwardRef(function PaginatedTableInternal(
   {
     controlledPage,
     controlledPageSize,
+    totalCount,
+    controlledPageCount,
+    serverSide,
     normalizedPageSizeOptions,
     activePageSize,
     internalPage,
@@ -69,19 +78,24 @@ const PaginatedTableInternal = forwardRef(function PaginatedTableInternal(
       {...props}
       ref={ref}
       renderBody={({ filteredData, virtuosoContext, fixedHeader }) => {
-        const pageCount = Math.ceil(filteredData.length / activePageSize)
+        const isServerSide = serverSide || totalCount !== undefined || controlledPageCount !== undefined
+        const totalItemsCount = isServerSide ? (totalCount ?? filteredData.length) : filteredData.length
+        const pageCount = controlledPageCount ?? Math.max(1, Math.ceil(totalItemsCount / activePageSize))
         const requestedPage = controlledPage ?? internalPage
         const maxPage = Math.max(pageCount - 1, 0)
         const activePage = Math.min(Math.max(requestedPage, 0), maxPage)
-        const pageStartIndex = activePage * activePageSize
-        const paginatedData = filteredData.slice(pageStartIndex, pageStartIndex + activePageSize)
+
+        const pageStartIndex = isServerSide ? 0 : activePage * activePageSize
+        const paginatedData = isServerSide
+          ? filteredData
+          : filteredData.slice(pageStartIndex, pageStartIndex + activePageSize)
 
         return (
           <table className="w-full border-collapse text-left">
             <thead>{fixedHeader()}</thead>
             <tbody>
               {paginatedData.map((row, index) => {
-                const rowIndex = pageStartIndex + index
+                const rowIndex = (isServerSide ? activePage * activePageSize : pageStartIndex) + index
 
                 return (
                   <TableRow
@@ -99,7 +113,9 @@ const PaginatedTableInternal = forwardRef(function PaginatedTableInternal(
         )
       }}
       renderFooter={({ filteredData, t }) => {
-        const pageCount = Math.ceil(filteredData.length / activePageSize)
+        const isServerSide = serverSide || totalCount !== undefined || controlledPageCount !== undefined
+        const totalItemsCount = isServerSide ? (totalCount ?? filteredData.length) : filteredData.length
+        const pageCount = controlledPageCount ?? Math.max(1, Math.ceil(totalItemsCount / activePageSize))
         const requestedPage = controlledPage ?? internalPage
         const maxPage = Math.max(pageCount - 1, 0)
         const activePage = Math.min(Math.max(requestedPage, 0), maxPage)

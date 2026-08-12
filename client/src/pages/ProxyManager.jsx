@@ -1,5 +1,5 @@
 import DropDown from '../components/ui/DropDown'
-import Table from '../components/ui/Table'
+import { PaginatedTable } from '../components/ui/Table'
 import ControlButton from '../components/ui/ControlButton'
 import StatusMetricsMeter from '../components/ui/StatusMetricsMeter'
 import ChangeIpDialog from '../components/dialog/proxy/ChangeIpDialog'
@@ -13,6 +13,8 @@ import { useTranslation } from '../i18n'
 import useAuthStore from '../store/useAuthStore'
 import useProxyStore from '../store/useProxyStore'
 import useManagerActions from '../hooks/useManagerActions'
+import { useProxyListQuery } from '../hooks/useProxyQuery'
+import { extractIP } from '../utils/data'
 
 const OPERATOR_CONFIG = {
   expired: ['equal', 'greater-equal', 'less-equal'],
@@ -32,6 +34,42 @@ export default function ProxyManager({ onBuySuccessRef }) {
   const [noteInput, setNoteInput] = useState('')
   const [reinstallInput, setReinstallInput] = useState('')
 
+  // TanStack Query Pagination & Filter States
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(200)
+  const [byStatus, setByStatus] = useState('')
+  const [byTime, setByTime] = useState('all')
+  const [byCreated, setByCreated] = useState('')
+
+  const parsedIps = useMemo(() => {
+    if (!ips.trim()) return ''
+    return ips
+      .split('\n')
+      .map((line) => extractIP(line))
+      .filter(Boolean)
+      .join(',')
+  }, [ips])
+
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+
+  const {
+    data: queryResponse,
+    isLoading: isQueryLoading,
+    isFetching,
+    refetch,
+  } = useProxyListQuery(
+    {
+      page,
+      limit: Number(pageSize) || 200,
+      by_status: byStatus,
+      by_time: byTime,
+      by_created: byCreated,
+      ips: parsedIps,
+      proxy: true,
+    },
+    isAuthenticated
+  )
+
   // Data from Zustand store
   const data = useProxyStore((s) => s.data)
   const receivedData = useProxyStore((s) => s.receivedData)
@@ -40,6 +78,17 @@ export default function ProxyManager({ onBuySuccessRef }) {
   const isLoading = useProxyStore((s) => s.isLoading)
   const updateRowBySid = useProxyStore((s) => s.updateRowBySid)
   const rawSyncToDb = useProxyStore((s) => s.syncToDb)
+
+  useEffect(() => {
+    if (queryResponse?.data) {
+      useProxyStore.setState({
+        data: queryResponse.data,
+        receivedData: queryResponse.data,
+        renderingReceived: true,
+        isLoading: isQueryLoading,
+      })
+    }
+  }, [queryResponse, isQueryLoading])
 
   const syncToDb = useCallback(
     async (rows, attempt = 1) => {
@@ -108,8 +157,6 @@ export default function ProxyManager({ onBuySuccessRef }) {
     processSequential,
   } = useManagerActions({ updateRowBySid, syncToDb })
 
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
-
   const profile = useMemo(() => {
     try {
       const cached = localStorage.getItem('account-profile')
@@ -119,18 +166,16 @@ export default function ProxyManager({ onBuySuccessRef }) {
     }
   }, [])
 
-  // Load from DB on mount
-  useEffect(() => {
-    if (isAuthenticated) loadFromDb()
-  }, [isAuthenticated, loadFromDb])
-
-  // handleGetData — thin wrapper around store.fetchData with toast feedback
+  // handleGetData — thin wrapper around TanStack Query refetch with toast feedback
   const handleGetData = useCallback(async () => {
+    setPage(1)
+    if (amount) setPageSize(Number(amount))
     const loadingId = addToast(t('manager.fetchingData'), 'loading')
     try {
-      const finalResData = await fetchData({ ips, amount })
+      const res = await refetch()
       clearSelection()
       removeToast(loadingId)
+      const finalResData = res.data?.data || []
       addToast(
         <>
           {t('manager.loadedRows')}{' '}
@@ -143,7 +188,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
       removeToast(loadingId)
       addToast(`${t('manager.failedGetData')}: ${err.message}`, 'error')
     }
-  }, [ips, amount, fetchData, clearSelection, addToast, removeToast, t])
+  }, [amount, refetch, clearSelection, addToast, removeToast, t])
 
   // Register buy success handler on parent ref
   useEffect(() => {
@@ -1357,17 +1402,100 @@ export default function ProxyManager({ onBuySuccessRef }) {
       </div>
 
       <StatusMetricsMeter
-        total={data.filter((row) => row.status !== 'Refunded').length}
-        running={data.filter((row) => row.status === 'Running').length}
-        off={data.filter((row) => row.status === 'Off').length}
+        total={
+          queryResponse?.total_vps !== undefined
+            ? queryResponse.total_vps
+            : data.filter((row) => row.status !== 'Refunded').length
+        }
+        running={
+          queryResponse?.total_vps_running !== undefined
+            ? queryResponse.total_vps_running
+            : data.filter((row) => row.status === 'Running').length
+        }
+        off={
+          queryResponse?.total_vps_off !== undefined
+            ? queryResponse.total_vps_off
+            : data.filter((row) => row.status === 'Off').length
+        }
         className="mt-4"
       />
 
-      <Table
+      {/* ========== TANSTACK QUERY FILTER TOOLBAR ========== */}
+      <div className="mx-auto mt-4 max-w-380 px-4 select-none">
+        <div className="bg-wrapper border-border flex flex-col gap-3 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between">
+          {/* Filters */}
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Status Filter */}
+            <div className="flex items-center gap-1.5 text-xs font-medium sm:text-sm">
+              <span className="text-text-secondary">Status:</span>
+              <select
+                value={byStatus}
+                onChange={(e) => {
+                  setByStatus(e.target.value)
+                  setPage(1)
+                }}
+                className="bg-surface border-border text-text-primary rounded-md border px-2.5 py-1"
+              >
+                <option value="">All</option>
+                <option value="running">Running</option>
+                <option value="off">Off</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            {/* Time Filter */}
+            <div className="flex items-center gap-1.5 text-xs font-medium sm:text-sm">
+              <span className="text-text-secondary">Time:</span>
+              <select
+                value={byTime}
+                onChange={(e) => {
+                  setByTime(e.target.value)
+                  setPage(1)
+                }}
+                className="bg-surface border-border text-text-primary rounded-md border px-2.5 py-1"
+              >
+                <option value="all">All Time</option>
+                <option value="due">Due (3 days to expire)</option>
+                <option value="expired">Expired</option>
+                <option value="using">In Use</option>
+              </select>
+            </div>
+
+            {/* Sort Created */}
+            <div className="flex items-center gap-1.5 text-xs font-medium sm:text-sm">
+              <span className="text-text-secondary">Sort Created:</span>
+              <select
+                value={byCreated}
+                onChange={(e) => {
+                  setByCreated(e.target.value)
+                  setPage(1)
+                }}
+                className="bg-surface border-border text-text-primary rounded-md border px-2.5 py-1"
+              >
+                <option value="">Default</option>
+                <option value="desc">Newest First</option>
+                <option value="asc">Oldest First</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <PaginatedTable
         title={t('manager.proxyManager')}
         className="mt-2 px-4 text-xs sm:text-sm"
         data={data}
         pagination={true}
+        serverSide={true}
+        page={page - 1}
+        pageSize={pageSize}
+        totalCount={queryResponse?.total_vps ?? data.length}
+        pageSizeOptions={[10, 20, 50, 100, 200]}
+        onPageChange={(zeroBasedPage) => setPage(zeroBasedPage + 1)}
+        onPageSizeChange={(newPageSize) => {
+          setPageSize(newPageSize)
+          setPage(1)
+        }}
         receivedData={receivedData}
         renderingReceived={renderingReceived}
         setRenderingReceived={setRenderingReceived}
@@ -1401,7 +1529,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
             throw err // Re-throw for PopConfirmToggle rollback
           }
         }}
-        isLoading={isLoading}
+        isLoading={isFetching}
         useFilter={true}
         headers={[
           'control',

@@ -45,9 +45,15 @@ export function getExpiryStyle(expiredStr) {
   const msPerDay = 1000 * 60 * 60 * 24
   const daysLeft = Math.round((expiry - today) / msPerDay)
 
+  if (daysLeft < 1) {
+    return {
+      backgroundColor:
+        'color-mix(in srgb, color-mix(in srgb, var(--purple) 30%, var(--red)) 40%, transparent)',
+    }
+  }
+
   let pct = null
-  if (daysLeft < 1) pct = 45
-  else if (daysLeft === 1) pct = 35
+  if (daysLeft === 1) pct = 35
   else if (daysLeft === 2) pct = 25
   else if (daysLeft === 3) pct = 15
 

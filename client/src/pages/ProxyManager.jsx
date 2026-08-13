@@ -5,7 +5,7 @@ import StatusMetricsMeter from '../components/ui/StatusMetricsMeter'
 import ChangeIpDialog from '../components/dialog/proxy/ChangeIpDialog'
 import ReinstallDialog from '../components/dialog/proxy/ReinstallDialog'
 import axiosInstance from '../lib/axios'
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef, useLayoutEffect } from 'react'
 import { useToast } from '../context/ToastContext'
 import { useSafeCopy } from '../context/SafeCopyContext'
 import { useConfirm } from '../context/ConfirmContext'
@@ -15,6 +15,7 @@ import useProxyStore from '../store/useProxyStore'
 import useManagerActions from '../hooks/useManagerActions'
 import { useProxyListQuery } from '../hooks/useProxyQuery'
 import { extractIP } from '../utils/data'
+import useDebounce from '../hooks/useDebounce'
 
 const OPERATOR_CONFIG = {
   expired: ['equal', 'greater-equal', 'less-equal'],
@@ -36,19 +37,51 @@ export default function ProxyManager({ onBuySuccessRef }) {
 
   // TanStack Query Pagination & Filter States
   const [page, setPage] = useState(1)
-  const [pageSize, setPageSize] = useState(200)
-  const [byStatus, setByStatus] = useState('')
+  const [pageSize, setPageSize] = useState(20)
   const [byTime, setByTime] = useState('all')
-  const [byCreated, setByCreated] = useState('')
+  const [keyword, setKeyword] = useState('')
+  const [showFilterToolkit, setShowFilterToolkit] = useState(false)
+
+  // Dynamic sliding indicator style & refs for variable-width time filter buttons
+  const [indicatorStyle, setIndicatorStyle] = useState({ left: 4, width: 0 })
+  const timeFilterRefs = useRef({})
+
+  const updateTimeFilterIndicator = useCallback(() => {
+    const activeEl = timeFilterRefs.current[byTime]
+    if (activeEl) {
+      setIndicatorStyle({
+        left: activeEl.offsetLeft,
+        width: activeEl.offsetWidth,
+      })
+    }
+  }, [byTime])
+
+  useLayoutEffect(() => {
+    updateTimeFilterIndicator()
+  }, [updateTimeFilterIndicator])
+
+  useEffect(() => {
+    window.addEventListener('resize', updateTimeFilterIndicator)
+    return () => window.removeEventListener('resize', updateTimeFilterIndicator)
+  }, [updateTimeFilterIndicator])
+
+  // Debounced input states (400ms delay to prevent per-keystroke API calls)
+  const debouncedKeyword = useDebounce(keyword, 400)
+  const debouncedIps = useDebounce(ips, 400)
+
+  // Reset page to 1 whenever debounced keyword or IPs filter changes
+  useEffect(() => {
+    setPage(1)
+  }, [debouncedKeyword, debouncedIps])
 
   const parsedIps = useMemo(() => {
-    if (!ips.trim()) return ''
-    return ips
+    if (!debouncedIps.trim()) return ''
+    return debouncedIps
       .split('\n')
       .map((line) => extractIP(line))
       .filter(Boolean)
       .join(',')
-  }, [ips])
+  }, [debouncedIps])
 
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
 
@@ -61,10 +94,11 @@ export default function ProxyManager({ onBuySuccessRef }) {
     {
       page,
       limit: Number(pageSize) || 200,
-      by_status: byStatus,
+      by_status: '',
       by_time: byTime,
-      by_created: byCreated,
+      by_created: '',
       ips: parsedIps,
+      keyword: debouncedKeyword,
       proxy: true,
     },
     isAuthenticated
@@ -75,7 +109,6 @@ export default function ProxyManager({ onBuySuccessRef }) {
   const receivedData = useProxyStore((s) => s.receivedData)
   const renderingReceived = useProxyStore((s) => s.renderingReceived)
   const setRenderingReceived = useProxyStore((s) => s.setRenderingReceived)
-  const isLoading = useProxyStore((s) => s.isLoading)
   const updateRowBySid = useProxyStore((s) => s.updateRowBySid)
   const rawSyncToDb = useProxyStore((s) => s.syncToDb)
 
@@ -126,7 +159,6 @@ export default function ProxyManager({ onBuySuccessRef }) {
     [rawSyncToDb, addToast, removeToast, t]
   )
   const loadFromDb = useProxyStore((s) => s.loadFromDb)
-  const fetchData = useProxyStore((s) => s.fetchData)
   const handleBuySuccessStore = useProxyStore((s) => s.handleBuySuccess)
 
   const [changeIpState, setChangeIpState] = useState({
@@ -1031,219 +1063,287 @@ export default function ProxyManager({ onBuySuccessRef }) {
       <div className="bg-surface border-border z-40 border-b pb-4 select-none">
         <div className="mx-auto max-w-380 px-4">
           {/* ========== FEATURE CONTROLS ========== */}
-          <div className="bg-wrapper rounded-lg p-4">
-            <div className="flex flex-col gap-4 sm:flex-row">
-              {/* IPs Input */}
-              <div className="flex flex-col sm:w-3/5">
-                <div className="mb-2 flex items-center justify-between">
-                  <label className="text-text-primary flex items-center font-medium">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      className="mr-2 size-6 shrink-0 fill-current sm:size-7"
-                    >
-                      <path d="M5 5a2 2 0 0 0-2 2v3a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V7a2 2 0 0 0-2-2H5Zm9 2a1 1 0 1 0 0 2h.01a1 1 0 1 0 0-2H14Zm3 0a1 1 0 1 0 0 2h.01a1 1 0 1 0 0-2H17ZM3 17v-3a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Zm11-2a1 1 0 1 0 0 2h.01a1 1 0 1 0 0-2H14Zm3 0a1 1 0 1 0 0 2h.01a1 1 0 1 0 0-2H17Z" />
-                    </svg>
-                    <label className="flex flex-wrap">
-                      <span className="whitespace-pre">{t('manager.enterIps')} </span>
-                      <span>{t('manager.onePerLine')}</span>
-                    </label>
-                  </label>
-                  <button
-                    onClick={async () => {
-                      if (!ips.trim()) {
-                        try {
-                          const text = await navigator.clipboard.readText()
-                          setIps(text)
-                        } catch (err) {
-                          console.error('Failed to read clipboard contents: ', err)
-                        }
-                      } else setIps('')
-                    }}
-                    className="bg-action static right-0 flex items-center justify-center rounded-lg px-3 py-1 text-sm font-medium md:absolute lg:static"
-                    style={{ '--action-color': !ips.trim() ? 'var(--blue)' : 'var(--red)' }}
-                  >
-                    {!ips.trim() ? (
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 32 32"
-                        className="mr-1 size-5 shrink-0 fill-current"
-                      >
-                        <g>
-                          <path d="m26 8v19a3.009 3.009 0 0 1 -3 3h-14a3.009 3.009 0 0 1 -3-3v-19a3.009 3.009 0 0 1 3-3v2a3.009 3.009 0 0 0 3 3h8a3.009 3.009 0 0 0 3-3v-2a3.009 3.009 0 0 1 3 3z" />
-                          <path d="m12 8a1 1 0 0 1 -1-1v-2a1 1 0 0 1 1-1h1.125l.29-.5a2.959 2.959 0 0 1 2.185-1.459 1.9 1.9 0 0 1 .384-.041 2.139 2.139 0 0 1 .418.037 2.963 2.963 0 0 1 2.184 1.463l.289.5h1.125a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1z" />
-                        </g>
-                      </svg>
-                    ) : (
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 640 640"
-                        className="mr-1 size-5 shrink-0 fill-current"
-                      >
-                        <path d="M232.7 69.9L224 96L128 96C110.3 96 96 110.3 96 128C96 145.7 110.3 160 128 160L512 160C529.7 160 544 145.7 544 128C544 110.3 529.7 96 512 96L416 96L407.3 69.9C402.9 56.8 390.7 48 376.9 48L263.1 48C249.3 48 237.1 56.8 232.7 69.9zM512 208L128 208L149.1 531.1C150.7 556.4 171.7 576 197 576L443 576C468.3 576 489.3 556.4 490.9 531.1L512 208z" />
-                      </svg>
-                    )}
-                    {!ips.trim() ? t('paste') : t('delete')}
-                  </button>
-                </div>
-                <textarea
-                  className="min-h-24 grow whitespace-pre"
-                  placeholder="192.168.1.1&#10;10.0.0.1&#10;172.16.0.1"
-                  value={ips}
-                  onChange={(e) => setIps(e.target.value)}
-                />
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex w-full flex-wrap justify-center gap-2 sm:gap-3">
-                {/* Get Data */}
-                <div className="flex">
-                  <input
-                    type="number"
-                    placeholder={t('manager.enterAmount')}
-                    min="1"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    className="w-24 rounded-r-none border-r-0 py-1"
+          <div className="bg-wrapper flex w-full flex-wrap justify-center gap-2 rounded-lg p-4 sm:gap-3">
+            {/* Get Data */}
+            <div className="flex">
+              <input
+                type="number"
+                placeholder={t('manager.enterAmount')}
+                min="1"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                className="w-24 rounded-r-none border-r-0 py-1"
+              />
+              <button
+                className="bg-action flex flex-1 items-center justify-center rounded-lg rounded-l-none px-3 py-2 font-medium"
+                style={{ '--action-color': 'var(--purple)' }}
+                disabled={isProcessing}
+                onClick={handleGetData}
+              >
+                <svg
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  className="mr-1 size-5 shrink-0 fill-none sm:mr-2 sm:size-7"
+                >
+                  <path
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M12 13V4M7 14H5a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1h-2m-1-5-4 5-4-5m9 8h.01"
                   />
-                  <button
-                    className="bg-action flex flex-1 items-center justify-center rounded-lg rounded-l-none px-3 py-2 font-medium"
-                    style={{ '--action-color': 'var(--purple)' }}
-                    disabled={isProcessing}
-                    onClick={handleGetData}
-                  >
-                    <svg
-                      aria-hidden="true"
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      className="mr-1 size-5 shrink-0 fill-none sm:mr-2 sm:size-7"
-                    >
-                      <path
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M12 13V4M7 14H5a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1h-2m-1-5-4 5-4-5m9 8h.01"
-                      />
-                    </svg>
-                    {t('manager.getData')}
-                  </button>
-                </div>
+                </svg>
+                {t('manager.getData')}
+              </button>
+            </div>
 
-                {/* Pause */}
-                <button
-                  className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap"
-                  style={{ '--action-color': 'var(--red)' }}
-                  onClick={handlePause}
-                  disabled={isProcessing}
+            {/* Pause */}
+            <button
+              className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap"
+              style={{ '--action-color': 'var(--red)' }}
+              onClick={handlePause}
+              disabled={isProcessing}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 640 640"
+                className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:size-6"
+              >
+                <path d="M176 96C149.5 96 128 117.5 128 144L128 496C128 522.5 149.5 544 176 544L240 544C266.5 544 288 522.5 288 496L288 144C288 117.5 266.5 96 240 96L176 96zM400 96C373.5 96 352 117.5 352 144L352 496C352 522.5 373.5 544 400 544L464 544C490.5 544 512 522.5 512 496L512 144C512 117.5 490.5 96 464 96L400 96z" />
+              </svg>
+              {t('manager.pause')}
+            </button>
+
+            {/* Reboot */}
+            <button
+              className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap"
+              style={{ '--action-color': 'var(--orange)' }}
+              onClick={handleReboot}
+              disabled={isProcessing}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 16 16"
+                className="mr-1 h-4.5 w-4.5 shrink-0 fill-current sm:mr-2 sm:size-6"
+              >
+                <path d="m 8 0 c -0.550781 0 -1 0.449219 -1 1 v 5 c 0 0.550781 0.449219 1 1 1 s 1 -0.449219 1 -1 v -5 c 0 -0.550781 -0.449219 -1 -1 -1 z m -7 1 l 2.050781 2.050781 c -2.117187 2.117188 -2.652343 5.355469 -1.332031 8.039063 c 1.324219 2.683594 4.214844 4.238281 7.179688 3.851562 c 2.96875 -0.386718 5.367187 -2.625 5.960937 -5.554687 c 0.59375 -2.933594 -0.75 -5.929688 -3.335937 -7.433594 c -0.476563 -0.28125 -1.089844 -0.117187 -1.367188 0.359375 s -0.117188 1.089844 0.359375 1.367188 c 1.851563 1.078124 2.808594 3.207031 2.382813 5.3125 c -0.421876 2.101562 -2.128907 3.691406 -4.253907 3.96875 c -2.128906 0.273437 -4.183593 -0.828126 -5.128906 -2.753907 s -0.566406 -4.226562 0.949219 -5.742187 l 1.535156 1.535156 v -4.003906 c 0 -0.519532 -0.449219 -0.996094 -1 -0.996094 z m 0 0" />
+              </svg>
+              {t('manager.reboot')}
+            </button>
+
+            {/* Check */}
+            <button
+              className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium"
+              style={{ '--action-color': 'var(--green)' }}
+              onClick={handleCheck}
+              disabled={isProcessing}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 640 640"
+                className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:size-6"
+              >
+                <path d="M530.8 134.1C545.1 144.5 548.3 164.5 537.9 178.8L281.9 530.8C276.4 538.4 267.9 543.1 258.5 543.9C249.1 544.7 240 541.2 233.4 534.6L105.4 406.6C92.9 394.1 92.9 373.8 105.4 361.3C117.9 348.8 138.2 348.8 150.7 361.3L252.2 462.8L486.2 141.1C496.6 126.8 516.6 123.6 530.9 134z" />
+              </svg>
+              {t('check')}
+            </button>
+
+            {/* Renew */}
+            <button
+              className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap"
+              style={{ '--action-color': 'var(--purple)' }}
+              onClick={handleRenew}
+              disabled={isProcessing}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 640 640"
+                className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:size-6"
+              >
+                <path d="M160 96C124.7 96 96 124.7 96 160L96 480C96 515.3 124.7 544 160 544L480 544C515.3 544 544 515.3 544 480L544 160C544 124.7 515.3 96 480 96L160 96zM296 408L296 344L232 344C218.7 344 208 333.3 208 320C208 306.7 218.7 296 232 296L296 296L296 232C296 218.7 306.7 208 320 208C333.3 208 344 218.7 344 232L344 296L408 296C421.3 296 432 306.7 432 320C432 333.3 421.3 344 408 344L344 344L344 408C344 421.3 333.3 432 320 432C306.7 432 296 421.3 296 408z" />
+              </svg>
+              {t('manager.renew')}
+            </button>
+
+            {/* Refund */}
+            {profile?.is_refund && (
+              <button
+                className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap"
+                style={{ '--action-color': 'var(--pink)' }}
+                onClick={handleRefund}
+                disabled={isProcessing}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 448 512"
+                  className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:size-6"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 640 640"
-                    className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:size-6"
-                  >
-                    <path d="M176 96C149.5 96 128 117.5 128 144L128 496C128 522.5 149.5 544 176 544L240 544C266.5 544 288 522.5 288 496L288 144C288 117.5 266.5 96 240 96L176 96zM400 96C373.5 96 352 117.5 352 144L352 496C352 522.5 373.5 544 400 544L464 544C490.5 544 512 522.5 512 496L512 144C512 117.5 490.5 96 464 96L400 96z" />
-                  </svg>
-                  {t('manager.pause')}
-                </button>
+                  <path d="M384 32H64C28.654 32 0 60.652 0 96V416C0 451.346 28.654 480 64 480H384C419.346 480 448 451.346 448 416V96C448 60.652 419.346 32 384 32ZM310.764 314.281C305.451 342.701 281.738 361.422 248.045 366.818V384C248.045 397.25 237.295 408 224.045 408S200.045 397.25 200.045 384V365.939C185.955 363.51 171.59 359 158.795 354.734L152.514 352.656C139.92 348.531 133.045 334.969 137.17 322.375S154.92 302.922 167.451 307.031L173.951 309.187C186.076 313.219 199.795 317.781 210.951 319.344C238.826 323.359 261.326 317.359 263.576 305.437C265.389 295.828 261.732 290.766 217.795 279.156L209.201 276.875C184.482 270.156 126.576 254.469 137.201 197.719C142.523 169.283 166.266 150.521 200.045 145.156V128C200.045 114.75 210.795 104 224.045 104S248.045 114.75 248.045 128V146.002C256.998 147.568 266.891 149.984 279.264 153.937C291.889 157.953 298.889 171.469 294.857 184.094C290.857 196.719 277.326 203.75 264.701 199.656C253.139 195.969 244.014 193.672 236.857 192.641C209.295 188.703 186.607 194.625 184.389 206.562C183.045 213.625 181.92 219.734 221.764 230.547L230.045 232.75C264.264 241.781 321.514 256.906 310.764 314.281Z" />
+                </svg>
+                {t('manager.refund')}
+              </button>
+            )}
 
-                {/* Reboot */}
-                <button
-                  className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap"
-                  style={{ '--action-color': 'var(--orange)' }}
-                  onClick={handleReboot}
-                  disabled={isProcessing}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 16 16"
-                    className="mr-1 h-4.5 w-4.5 shrink-0 fill-current sm:mr-2 sm:size-6"
-                  >
-                    <path d="m 8 0 c -0.550781 0 -1 0.449219 -1 1 v 5 c 0 0.550781 0.449219 1 1 1 s 1 -0.449219 1 -1 v -5 c 0 -0.550781 -0.449219 -1 -1 -1 z m -7 1 l 2.050781 2.050781 c -2.117187 2.117188 -2.652343 5.355469 -1.332031 8.039063 c 1.324219 2.683594 4.214844 4.238281 7.179688 3.851562 c 2.96875 -0.386718 5.367187 -2.625 5.960937 -5.554687 c 0.59375 -2.933594 -0.75 -5.929688 -3.335937 -7.433594 c -0.476563 -0.28125 -1.089844 -0.117187 -1.367188 0.359375 s -0.117188 1.089844 0.359375 1.367188 c 1.851563 1.078124 2.808594 3.207031 2.382813 5.3125 c -0.421876 2.101562 -2.128907 3.691406 -4.253907 3.96875 c -2.128906 0.273437 -4.183593 -0.828126 -5.128906 -2.753907 s -0.566406 -4.226562 0.949219 -5.742187 l 1.535156 1.535156 v -4.003906 c 0 -0.519532 -0.449219 -0.996094 -1 -0.996094 z m 0 0" />
-                  </svg>
-                  {t('manager.reboot')}
-                </button>
-
-                {/* Check */}
-                <button
-                  className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium"
-                  style={{ '--action-color': 'var(--green)' }}
-                  onClick={handleCheck}
-                  disabled={isProcessing}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 640 640"
-                    className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:size-6"
-                  >
-                    <path d="M530.8 134.1C545.1 144.5 548.3 164.5 537.9 178.8L281.9 530.8C276.4 538.4 267.9 543.1 258.5 543.9C249.1 544.7 240 541.2 233.4 534.6L105.4 406.6C92.9 394.1 92.9 373.8 105.4 361.3C117.9 348.8 138.2 348.8 150.7 361.3L252.2 462.8L486.2 141.1C496.6 126.8 516.6 123.6 530.9 134z" />
-                  </svg>
-                  {t('check')}
-                </button>
-
-                {/* Renew */}
-                <button
-                  className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap"
-                  style={{ '--action-color': 'var(--purple)' }}
-                  onClick={handleRenew}
-                  disabled={isProcessing}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 640 640"
-                    className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:size-6"
-                  >
-                    <path d="M160 96C124.7 96 96 124.7 96 160L96 480C96 515.3 124.7 544 160 544L480 544C515.3 544 544 515.3 544 480L544 160C544 124.7 515.3 96 480 96L160 96zM296 408L296 344L232 344C218.7 344 208 333.3 208 320C208 306.7 218.7 296 232 296L296 296L296 232C296 218.7 306.7 208 320 208C333.3 208 344 218.7 344 232L344 296L408 296C421.3 296 432 306.7 432 320C432 333.3 421.3 344 408 344L344 344L344 408C344 421.3 333.3 432 320 432C306.7 432 296 421.3 296 408z" />
-                  </svg>
-                  {t('manager.renew')}
-                </button>
-
-                {/* Refund */}
-                {profile?.is_refund && (
-                  <button
-                    className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap"
-                    style={{ '--action-color': 'var(--pink)' }}
-                    onClick={handleRefund}
-                    disabled={isProcessing}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 448 512"
-                      className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:size-6"
-                    >
-                      <path d="M384 32H64C28.654 32 0 60.652 0 96V416C0 451.346 28.654 480 64 480H384C419.346 480 448 451.346 448 416V96C448 60.652 419.346 32 384 32ZM310.764 314.281C305.451 342.701 281.738 361.422 248.045 366.818V384C248.045 397.25 237.295 408 224.045 408S200.045 397.25 200.045 384V365.939C185.955 363.51 171.59 359 158.795 354.734L152.514 352.656C139.92 348.531 133.045 334.969 137.17 322.375S154.92 302.922 167.451 307.031L173.951 309.187C186.076 313.219 199.795 317.781 210.951 319.344C238.826 323.359 261.326 317.359 263.576 305.437C265.389 295.828 261.732 290.766 217.795 279.156L209.201 276.875C184.482 270.156 126.576 254.469 137.201 197.719C142.523 169.283 166.266 150.521 200.045 145.156V128C200.045 114.75 210.795 104 224.045 104S248.045 114.75 248.045 128V146.002C256.998 147.568 266.891 149.984 279.264 153.937C291.889 157.953 298.889 171.469 294.857 184.094C290.857 196.719 277.326 203.75 264.701 199.656C253.139 195.969 244.014 193.672 236.857 192.641C209.295 188.703 186.607 194.625 184.389 206.562C183.045 213.625 181.92 219.734 221.764 230.547L230.045 232.75C264.264 241.781 321.514 256.906 310.764 314.281Z" />
-                    </svg>
-                    {t('manager.refund')}
-                  </button>
-                )}
-
-                {/* Copy IP */}
-                <button
-                  onClick={() => {
-                    const rows = selectedRowsRef.current
-                    if (rows.length === 0) return addToast(t('manager.noRowsSelected'), 'warning')
-                    const text = rows
-                      .map((r) => {
-                        const latestRow = data.find((d) => d.sid === r.sid) || r
-                        return latestRow.ip_port?.split(':')[0]
-                      })
-                      .filter(Boolean)
-                      .join('\n')
-                    safeCopy(text).then(
-                      (ok) =>
-                        ok &&
-                        addToast(
-                          <>
-                            {t('manager.copied')}{' '}
-                            <span className="text-text-toast-success">{rows.length}</span>{' '}
-                            {t('manager.copiedIps')}
-                          </>,
-                          'success'
-                        )
+            {/* Copy IP */}
+            <button
+              onClick={() => {
+                const rows = selectedRowsRef.current
+                if (rows.length === 0) return addToast(t('manager.noRowsSelected'), 'warning')
+                const text = rows
+                  .map((r) => {
+                    const latestRow = data.find((d) => d.sid === r.sid) || r
+                    return latestRow.ip_port?.split(':')[0]
+                  })
+                  .filter(Boolean)
+                  .join('\n')
+                safeCopy(text).then(
+                  (ok) =>
+                    ok &&
+                    addToast(
+                      <>
+                        {t('manager.copied')}{' '}
+                        <span className="text-text-toast-success">{rows.length}</span>{' '}
+                        {t('manager.copiedIps')}
+                      </>,
+                      'success'
                     )
-                  }}
-                  className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap"
-                  style={{ '--action-color': 'var(--green)' }}
+                )
+              }}
+              className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap"
+              style={{ '--action-color': 'var(--green)' }}
+              disabled={isProcessing}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 640 640"
+                className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:size-7"
+              >
+                <path d="M288 64C252.7 64 224 92.7 224 128L224 384C224 419.3 252.7 448 288 448L480 448C515.3 448 544 419.3 544 384L544 183.4C544 166 536.9 149.3 524.3 137.2L466.6 81.8C454.7 70.4 438.8 64 422.3 64L288 64zM160 192C124.7 192 96 220.7 96 256L96 512C96 547.3 124.7 576 160 576L352 576C387.3 576 416 547.3 416 512L416 496L352 496L352 512L160 512L160 256L176 256L176 192L160 192z" />
+              </svg>
+              {t('manager.copyIp')}
+            </button>
+
+            {/* Get Info */}
+            <button
+              id="getInfoBtn"
+              className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap"
+              style={{ '--action-color': 'var(--blue)' }}
+              disabled={isProcessing}
+              onClick={() => {
+                const rows = selectedRowsRef.current
+                if (rows.length === 0) return addToast(t('manager.noRowsSelected'), 'warning')
+                const text = rows
+                  .map((r) => {
+                    const latestRow = data.find((d) => d.sid === r.sid) || r
+                    const [ip, port] = (latestRow.ip_port || '').split(':')
+                    const [username, password] = (latestRow.user_pass || '').split(':')
+                    return [ip, port, username, password].filter(Boolean).join(':')
+                  })
+                  .join('\n')
+                safeCopy(text).then(
+                  (ok) =>
+                    ok &&
+                    addToast(
+                      <>
+                        {t('manager.copied')}{' '}
+                        <span className="text-text-toast-success">{rows.length}</span> Proxy
+                      </>,
+                      'success'
+                    )
+                )
+              }}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 448 512"
+                className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:size-6"
+              >
+                <path d="M384 32H64C28.654 32 0 60.652 0 96V416C0 451.344 28.654 480 64 480H384C419.346 480 448 451.344 448 416V96C448 60.652 419.346 32 384 32ZM224 128C241.674 128 256 142.326 256 160C256 177.672 241.674 192 224 192S192 177.672 192 160C192 142.326 206.326 128 224 128ZM264 384H184C170.75 384 160 373.25 160 360S170.75 336 184 336H200V272H192C178.75 272 168 261.25 168 248S178.75 224 192 224H224C237.25 224 248 234.75 248 248V336H264C277.25 336 288 346.75 288 360S277.25 384 264 384Z" />
+              </svg>
+              {t('manager.getInfo')}
+            </button>
+
+            {/* Change Note */}
+            <div className="flex grow">
+              <input
+                type="text"
+                placeholder={t('manager.enterNote')}
+                value={noteInput}
+                onChange={(e) => {
+                  const val = e.target.value
+                  const now = new Date()
+                  const keywordReplacer = (match) => {
+                    let d = new Date(now)
+                    if (match === '+1W') d.setDate(d.getDate() + 7)
+                    else if (match === '+2W') d.setDate(d.getDate() + 14)
+                    else if (match === '+1M') d.setDate(d.getDate() + 30)
+
+                    const resD = String(d.getDate()).padStart(2, '0')
+                    const resM = String(d.getMonth() + 1).padStart(2, '0')
+                    return `${resD}${resM}`
+                  }
+                  const newVal = val.replace(/\+(1W|2W|1M)/g, keywordReplacer)
+                  setNoteInput(newVal)
+                }}
+                className="rounded-r-none border-r-0 py-1"
+              />
+              <button
+                className="bg-action flex w-full items-center justify-center rounded-lg rounded-l-none px-3 py-2 font-medium"
+                style={{ '--action-color': 'var(--orange)' }}
+                onClick={handleChangeNote}
+                disabled={isProcessing}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 640 640"
+                  className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:size-7"
+                >
+                  <path d="M535.6 85.7C513.7 63.8 478.3 63.8 456.4 85.7L432 110.1L529.9 208L554.3 183.6C576.2 161.7 576.2 126.3 554.3 104.4L535.6 85.7zM236.4 305.7C230.3 311.8 225.6 319.3 222.9 327.6L193.3 416.4C190.4 425 192.7 434.5 199.1 441C205.5 447.5 215 449.7 223.7 446.8L312.5 417.2C320.7 414.5 328.2 409.8 334.4 403.7L496 241.9L398.1 144L236.4 305.7zM160 128C107 128 64 171 64 224L64 480C64 533 107 576 160 576L416 576C469 576 512 533 512 480L512 384C512 366.3 497.7 352 480 352C462.3 352 448 366.3 448 384L448 480C448 497.7 433.7 512 416 512L160 512C142.3 512 128 497.7 128 480L128 224C128 206.3 142.3 192 160 192L256 192C273.7 192 288 177.7 288 160C288 142.3 273.7 128 256 128L160 128z" />
+                </svg>
+                {t('manager.changeNote')}
+              </button>
+            </div>
+
+            {/* Change IP */}
+            <div className="flex grow">
+              <button
+                className="bg-action flex w-full items-center justify-center rounded-l-lg px-3 py-2 font-medium whitespace-nowrap"
+                style={{ '--action-color': 'var(--red)' }}
+                onClick={handleChangeIp}
+                disabled={isProcessing}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 640 640"
+                  className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:size-7"
+                >
+                  <path d="M566.6 214.6L470.6 310.6C461.4 319.8 447.7 322.5 435.7 317.5C423.7 312.5 416 300.9 416 288L416 224L96 224C78.3 224 64 209.7 64 192C64 174.3 78.3 160 96 160L416 160L416 96C416 83.1 423.8 71.4 435.8 66.4C447.8 61.4 461.5 64.2 470.7 73.3L566.7 169.3C579.2 181.8 579.2 202.1 566.7 214.6zM169.3 566.6L73.3 470.6C60.8 458.1 60.8 437.8 73.3 425.3L169.3 329.3C178.5 320.1 192.2 317.4 204.2 322.4C216.2 327.4 224 339.1 224 352L224 416L544 416C561.7 416 576 430.3 576 448C576 465.7 561.7 480 544 480L224 480L224 544C224 556.9 216.2 568.6 204.2 573.6C192.2 578.6 178.5 575.8 169.3 566.7z" />
+                </svg>
+                {t('manager.changeIp')}
+              </button>
+              <DropDown
+                options={['HTTPS', 'SOCKS5']}
+                value={changeIpType}
+                onChange={setChangeIpType}
+                className="rounded-r-lg"
+              />
+            </div>
+
+            {/* Reinstall */}
+            <div className="w-full">
+              <input
+                type="text"
+                placeholder={t('manager.portUserPass')}
+                value={reinstallInput}
+                onChange={(e) => setReinstallInput(e.target.value)}
+                className="rounded-b-none"
+              />
+              <div className="flex">
+                <button
+                  className="bg-action border-border flex flex-1 items-center justify-center rounded-bl-lg border-l-2 px-3 py-2 font-medium"
+                  style={{ '--action-color': 'var(--blue)' }}
+                  onClick={handleReinstall}
                   disabled={isProcessing}
                 >
                   <svg
@@ -1251,150 +1351,16 @@ export default function ProxyManager({ onBuySuccessRef }) {
                     viewBox="0 0 640 640"
                     className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:size-7"
                   >
-                    <path d="M288 64C252.7 64 224 92.7 224 128L224 384C224 419.3 252.7 448 288 448L480 448C515.3 448 544 419.3 544 384L544 183.4C544 166 536.9 149.3 524.3 137.2L466.6 81.8C454.7 70.4 438.8 64 422.3 64L288 64zM160 192C124.7 192 96 220.7 96 256L96 512C96 547.3 124.7 576 160 576L352 576C387.3 576 416 547.3 416 512L416 496L352 496L352 512L160 512L160 256L176 256L176 192L160 192z" />
+                    <path d="M544.1 256L552 256C565.3 256 576 245.3 576 232L576 88C576 78.3 570.2 69.5 561.2 65.8C552.2 62.1 541.9 64.2 535 71L483.3 122.8C439 86.1 382 64 320 64C191 64 84.3 159.4 66.6 283.5C64.1 301 76.2 317.2 93.7 319.7C111.2 322.2 127.4 310 129.9 292.6C143.2 199.5 223.3 128 320 128C364.4 128 405.2 143 437.7 168.3L391 215C384.1 221.9 382.1 232.2 385.8 241.2C389.5 250.2 398.3 256 408 256L544.1 256zM573.5 356.5C576 339 563.8 322.8 546.4 320.3C529 317.8 512.7 330 510.2 347.4C496.9 440.4 416.8 511.9 320.1 511.9C275.7 511.9 234.9 496.9 202.4 471.6L249 425C255.9 418.1 257.9 407.8 254.2 398.8C250.5 389.8 241.7 384 232 384L88 384C74.7 384 64 394.7 64 408L64 552C64 561.7 69.8 570.5 78.8 574.2C87.8 577.9 98.1 575.8 105 569L156.8 517.2C201 553.9 258 576 320 576C449 576 555.7 480.6 573.4 356.5z" />
                   </svg>
-                  {t('manager.copyIp')}
+                  {t('manager.reinstall')}
                 </button>
-
-                {/* Get Info */}
-                <button
-                  id="getInfoBtn"
-                  className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap"
-                  style={{ '--action-color': 'var(--blue)' }}
-                  disabled={isProcessing}
-                  onClick={() => {
-                    const rows = selectedRowsRef.current
-                    if (rows.length === 0) return addToast(t('manager.noRowsSelected'), 'warning')
-                    const text = rows
-                      .map((r) => {
-                        const latestRow = data.find((d) => d.sid === r.sid) || r
-                        const [ip, port] = (latestRow.ip_port || '').split(':')
-                        const [username, password] = (latestRow.user_pass || '').split(':')
-                        return [ip, port, username, password].filter(Boolean).join(':')
-                      })
-                      .join('\n')
-                    safeCopy(text).then(
-                      (ok) =>
-                        ok &&
-                        addToast(
-                          <>
-                            {t('manager.copied')}{' '}
-                            <span className="text-text-toast-success">{rows.length}</span> Proxy
-                          </>,
-                          'success'
-                        )
-                    )
-                  }}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 448 512"
-                    className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:size-6"
-                  >
-                    <path d="M384 32H64C28.654 32 0 60.652 0 96V416C0 451.344 28.654 480 64 480H384C419.346 480 448 451.344 448 416V96C448 60.652 419.346 32 384 32ZM224 128C241.674 128 256 142.326 256 160C256 177.672 241.674 192 224 192S192 177.672 192 160C192 142.326 206.326 128 224 128ZM264 384H184C170.75 384 160 373.25 160 360S170.75 336 184 336H200V272H192C178.75 272 168 261.25 168 248S178.75 224 192 224H224C237.25 224 248 234.75 248 248V336H264C277.25 336 288 346.75 288 360S277.25 384 264 384Z" />
-                  </svg>
-                  {t('manager.getInfo')}
-                </button>
-
-                {/* Change Note */}
-                <div className="flex grow">
-                  <input
-                    type="text"
-                    placeholder={t('manager.enterNote')}
-                    value={noteInput}
-                    onChange={(e) => {
-                      const val = e.target.value
-                      const now = new Date()
-                      const keywordReplacer = (match) => {
-                        let d = new Date(now)
-                        if (match === '+1W') d.setDate(d.getDate() + 7)
-                        else if (match === '+2W') d.setDate(d.getDate() + 14)
-                        else if (match === '+1M') d.setDate(d.getDate() + 30)
-
-                        const resD = String(d.getDate()).padStart(2, '0')
-                        const resM = String(d.getMonth() + 1).padStart(2, '0')
-                        return `${resD}${resM}`
-                      }
-                      const newVal = val.replace(/\+(1W|2W|1M)/g, keywordReplacer)
-                      setNoteInput(newVal)
-                    }}
-                    className="rounded-r-none border-r-0 py-1"
-                  />
-                  <button
-                    className="bg-action flex w-full items-center justify-center rounded-lg rounded-l-none px-3 py-2 font-medium"
-                    style={{ '--action-color': 'var(--orange)' }}
-                    onClick={handleChangeNote}
-                    disabled={isProcessing}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 640 640"
-                      className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:size-7"
-                    >
-                      <path d="M535.6 85.7C513.7 63.8 478.3 63.8 456.4 85.7L432 110.1L529.9 208L554.3 183.6C576.2 161.7 576.2 126.3 554.3 104.4L535.6 85.7zM236.4 305.7C230.3 311.8 225.6 319.3 222.9 327.6L193.3 416.4C190.4 425 192.7 434.5 199.1 441C205.5 447.5 215 449.7 223.7 446.8L312.5 417.2C320.7 414.5 328.2 409.8 334.4 403.7L496 241.9L398.1 144L236.4 305.7zM160 128C107 128 64 171 64 224L64 480C64 533 107 576 160 576L416 576C469 576 512 533 512 480L512 384C512 366.3 497.7 352 480 352C462.3 352 448 366.3 448 384L448 480C448 497.7 433.7 512 416 512L160 512C142.3 512 128 497.7 128 480L128 224C128 206.3 142.3 192 160 192L256 192C273.7 192 288 177.7 288 160C288 142.3 273.7 128 256 128L160 128z" />
-                    </svg>
-                    {t('manager.changeNote')}
-                  </button>
-                </div>
-
-                {/* Change IP */}
-                <div className="flex grow">
-                  <button
-                    className="bg-action flex w-full items-center justify-center rounded-l-lg px-3 py-2 font-medium whitespace-nowrap"
-                    style={{ '--action-color': 'var(--red)' }}
-                    onClick={handleChangeIp}
-                    disabled={isProcessing}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 640 640"
-                      className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:size-7"
-                    >
-                      <path d="M566.6 214.6L470.6 310.6C461.4 319.8 447.7 322.5 435.7 317.5C423.7 312.5 416 300.9 416 288L416 224L96 224C78.3 224 64 209.7 64 192C64 174.3 78.3 160 96 160L416 160L416 96C416 83.1 423.8 71.4 435.8 66.4C447.8 61.4 461.5 64.2 470.7 73.3L566.7 169.3C579.2 181.8 579.2 202.1 566.7 214.6zM169.3 566.6L73.3 470.6C60.8 458.1 60.8 437.8 73.3 425.3L169.3 329.3C178.5 320.1 192.2 317.4 204.2 322.4C216.2 327.4 224 339.1 224 352L224 416L544 416C561.7 416 576 430.3 576 448C576 465.7 561.7 480 544 480L224 480L224 544C224 556.9 216.2 568.6 204.2 573.6C192.2 578.6 178.5 575.8 169.3 566.7z" />
-                    </svg>
-                    {t('manager.changeIp')}
-                  </button>
-                  <DropDown
-                    options={['HTTPS', 'SOCKS5']}
-                    value={changeIpType}
-                    onChange={setChangeIpType}
-                    className="rounded-r-lg"
-                  />
-                </div>
-
-                {/* Reinstall */}
-                <div className="w-full">
-                  <input
-                    type="text"
-                    placeholder={t('manager.portUserPass')}
-                    value={reinstallInput}
-                    onChange={(e) => setReinstallInput(e.target.value)}
-                    className="rounded-b-none"
-                  />
-                  <div className="flex">
-                    <button
-                      className="bg-action border-border flex flex-1 items-center justify-center rounded-bl-lg border-l-2 px-3 py-2 font-medium"
-                      style={{ '--action-color': 'var(--blue)' }}
-                      onClick={handleReinstall}
-                      disabled={isProcessing}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 640 640"
-                        className="mr-1 size-5 shrink-0 fill-current sm:mr-2 sm:size-7"
-                      >
-                        <path d="M544.1 256L552 256C565.3 256 576 245.3 576 232L576 88C576 78.3 570.2 69.5 561.2 65.8C552.2 62.1 541.9 64.2 535 71L483.3 122.8C439 86.1 382 64 320 64C191 64 84.3 159.4 66.6 283.5C64.1 301 76.2 317.2 93.7 319.7C111.2 322.2 127.4 310 129.9 292.6C143.2 199.5 223.3 128 320 128C364.4 128 405.2 143 437.7 168.3L391 215C384.1 221.9 382.1 232.2 385.8 241.2C389.5 250.2 398.3 256 408 256L544.1 256zM573.5 356.5C576 339 563.8 322.8 546.4 320.3C529 317.8 512.7 330 510.2 347.4C496.9 440.4 416.8 511.9 320.1 511.9C275.7 511.9 234.9 496.9 202.4 471.6L249 425C255.9 418.1 257.9 407.8 254.2 398.8C250.5 389.8 241.7 384 232 384L88 384C74.7 384 64 394.7 64 408L64 552C64 561.7 69.8 570.5 78.8 574.2C87.8 577.9 98.1 575.8 105 569L156.8 517.2C201 553.9 258 576 320 576C449 576 555.7 480.6 573.4 356.5z" />
-                      </svg>
-                      {t('manager.reinstall')}
-                    </button>
-                    <DropDown
-                      options={['HTTPS', 'SOCKS5']}
-                      value={reinstallType}
-                      onChange={setReinstallType}
-                      className="border-border rounded-br-lg border-r-2"
-                    />
-                  </div>
-                </div>
+                <DropDown
+                  options={['HTTPS', 'SOCKS5']}
+                  value={reinstallType}
+                  onChange={setReinstallType}
+                  className="border-border rounded-br-lg border-r-2"
+                />
               </div>
             </div>
           </div>
@@ -1422,60 +1388,128 @@ export default function ProxyManager({ onBuySuccessRef }) {
 
       {/* ========== TANSTACK QUERY FILTER TOOLBAR ========== */}
       <div className="mx-auto mt-4 max-w-380 px-4 select-none">
-        <div className="bg-wrapper border-border flex flex-col gap-3 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between">
-          {/* Filters */}
-          <div className="flex flex-wrap items-center gap-3">
-            {/* Status Filter */}
-            <div className="flex items-center gap-1.5 text-xs font-medium sm:text-sm">
-              <span className="text-text-secondary">Status:</span>
-              <select
-                value={byStatus}
-                onChange={(e) => {
-                  setByStatus(e.target.value)
-                  setPage(1)
+        <div className="flex flex-wrap justify-center gap-2">
+          <label
+            className="text-text-muted border-border/70 bg-navbar/80 focus-within:border-primary flex grow items-center gap-2 rounded-xl border-2 px-3 py-2 shadow-sm transition-[border-color,box-shadow,background-color]"
+            aria-label="Search proxy table"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              className="size-5 shrink-0 fill-none stroke-current stroke-2"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M21 21L16.65 16.65M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z"
+              />
+            </svg>
+            <input
+              type="text"
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+              placeholder={t('manager.searchPlaceholder')}
+              className="placeholder:text-text-muted text-baseadsf min-h-0 w-full border-0 bg-transparent p-0 font-medium whitespace-normal shadow-none outline-none focus:border-0 focus:outline-none"
+            />
+          </label>
+
+          <div className="flex gap-2 sm:ml-auto">
+            {/* 3-Stage Time Filter Pills with Dynamic Width Sliding Indicator */}
+            <div
+              className="border-border/70 bg-navbar/70 relative z-0 flex items-center rounded-xl border-2 p-1 text-sm shadow-(--glass-inset-shadow) select-none"
+              aria-label="Time filter"
+            >
+              {/* Dynamic Sliding indicator */}
+              <div
+                className="absolute top-1 bottom-1 -z-1 rounded-lg backdrop-blur-xl backdrop-saturate-150"
+                style={{
+                  background: 'var(--indicator-background)',
+                  boxShadow: 'var(--indicator-box-shadow)',
+                  left: `${indicatorStyle.left}px`,
+                  width: `${indicatorStyle.width}px`,
+                  transition:
+                    'left 0.38s cubic-bezier(.34,1.4,.64,1), width 0.38s cubic-bezier(.34,1.4,.64,1)',
                 }}
-                className="bg-surface border-border text-text-primary rounded-md border px-2.5 py-1"
-              >
-                <option value="">All</option>
-                <option value="running">Running</option>
-                <option value="off">Off</option>
-                <option value="other">Other</option>
-              </select>
+              />
+
+              <div className="flex items-center gap-1">
+                {[
+                  { value: 'all', label: t('manager.all'), color: 'bg-primary' },
+                  { value: 'due', label: t('manager.due'), color: 'bg-yellow' },
+                  { value: 'expired', label: t('manager.expired'), color: 'bg-red' },
+                ].map((option) => (
+                  <button
+                    key={option.value}
+                    ref={(el) => {
+                      timeFilterRefs.current[option.value] = el
+                    }}
+                    type="button"
+                    onClick={() => {
+                      setByTime(option.value)
+                      setPage(1)
+                    }}
+                    className={`flex cursor-pointer items-center justify-center gap-1.5 px-2 py-1.5 font-bold transition-colors duration-300 sm:px-3 ${
+                      byTime === option.value
+                        ? 'text-primary'
+                        : 'text-text-muted hover:text-text-primary'
+                    }`}
+                  >
+                    <span className={`${option.color} size-2 shrink-0 rounded-full`}></span>
+                    <span className="whitespace-nowrap">{option.label}</span>
+                  </button>
+                ))}
+              </div>
             </div>
 
-            {/* Time Filter */}
-            <div className="flex items-center gap-1.5 text-xs font-medium sm:text-sm">
-              <span className="text-text-secondary">Time:</span>
-              <select
-                value={byTime}
-                onChange={(e) => {
-                  setByTime(e.target.value)
-                  setPage(1)
-                }}
-                className="bg-surface border-border text-text-primary rounded-md border px-2.5 py-1"
+            <button
+              type="button"
+              className={`border-border/70 bg-navbar/70 text-text-primary hover:border-primary hover:bg-bg-hover flex min-h-12 items-center justify-center gap-2 rounded-xl border-2 px-4 text-sm font-semibold shadow-sm transition-[background-color,border-color,box-shadow,transform] active:scale-95 ${showFilterToolkit ? 'border-primary bg-bg-selected text-highlight shadow-primary/20 shadow-md' : ''}`}
+              onClick={() => setShowFilterToolkit((prev) => !prev)}
+              aria-expanded={showFilterToolkit}
+              aria-label="Show IP filter"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 640 640"
+                className="size-5 shrink-0 fill-current"
               >
-                <option value="all">All Time</option>
-                <option value="due">Due (3 days to expire)</option>
-                <option value="expired">Expired</option>
-                <option value="using">In Use</option>
-              </select>
-            </div>
+                <path d="M96 128C83.1 128 71.4 135.8 66.4 147.8C61.4 159.8 64.2 173.5 73.4 182.6L256 365.3L256 480C256 488.5 259.4 496.6 265.4 502.6L329.4 566.6C338.6 575.8 352.3 578.5 364.3 573.5C376.3 568.5 384 556.9 384 544L384 365.3L566.6 182.7C575.8 173.5 578.5 159.8 573.5 147.8C568.5 135.8 556.9 128 544 128L96 128z" />
+              </svg>
+              <span className="hidden sm:inline">IPs</span>
+            </button>
+          </div>
+        </div>
 
-            {/* Sort Created */}
-            <div className="flex items-center gap-1.5 text-xs font-medium sm:text-sm">
-              <span className="text-text-secondary">Sort Created:</span>
-              <select
-                value={byCreated}
-                onChange={(e) => {
-                  setByCreated(e.target.value)
-                  setPage(1)
-                }}
-                className="bg-surface border-border text-text-primary rounded-md border px-2.5 py-1"
-              >
-                <option value="">Default</option>
-                <option value="desc">Newest First</option>
-                <option value="asc">Oldest First</option>
-              </select>
+        <div
+          className={`grid transition-[grid-template-rows,opacity,margin] duration-300 ease-in-out ${
+            showFilterToolkit
+              ? 'mt-2 grid-rows-[1fr] opacity-100'
+              : 'pointer-events-none mt-0 grid-rows-[0fr] opacity-0'
+          }`}
+        >
+          <div className="overflow-hidden">
+            <div className="border-border/60 bg-navbar/70 rounded-xl border-2 p-3 shadow-inner">
+              <div className="text-text-muted mb-2 flex items-center justify-between text-xs font-semibold tracking-[0.06em] uppercase">
+                <span>{t('manager.ipFilter')}</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIps('')
+                    setPage(1)
+                  }}
+                  disabled={!ips.trim()}
+                  className="text-highlight enabled:hover:bg-bg-hover enabled:hover:text-primary rounded-md px-2 py-1 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
+                >
+                  {t('delete')}
+                </button>
+              </div>
+              <textarea
+                value={ips}
+                onChange={(e) => setIps(e.target.value)}
+                className="min-h-26 grow whitespace-pre"
+                placeholder="192.168.1.1&#10;10.0.0.1&#10;172.16.0.1"
+              />
             </div>
           </div>
         </div>

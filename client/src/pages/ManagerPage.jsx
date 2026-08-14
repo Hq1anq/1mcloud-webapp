@@ -7,7 +7,7 @@ import { useTranslation } from '../i18n'
 
 export default function ManagerPage() {
   const t = useTranslation()
-  const [activeView, setActiveView] = useState('PROXY')
+  const [activeView, setActiveView] = useState('VPS')
   const [buyProxyDialogOpen, setBuyProxyDialogOpen] = useState(false)
   const [buyVpsDialogOpen, setBuyVpsDialogOpen] = useState(false)
 

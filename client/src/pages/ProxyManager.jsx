@@ -31,7 +31,6 @@ export default function ProxyManager({ onBuySuccessRef }) {
 
   // Controlled input state
   const [ips, setIps] = useState('')
-  const [amount, setAmount] = useState('')
   const [noteInput, setNoteInput] = useState('')
   const [reinstallInput, setReinstallInput] = useState('')
 
@@ -201,7 +200,6 @@ export default function ProxyManager({ onBuySuccessRef }) {
   // handleGetData — thin wrapper around TanStack Query refetch with toast feedback
   const handleGetData = useCallback(async () => {
     setPage(1)
-    if (amount) setPageSize(Number(amount))
     const loadingId = addToast(t('manager.fetchingData'), 'loading')
     try {
       const res = await refetch()
@@ -220,7 +218,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
       removeToast(loadingId)
       addToast(`${t('manager.failedGetData')}: ${err.message}`, 'error')
     }
-  }, [amount, refetch, clearSelection, addToast, removeToast, t])
+  }, [refetch, clearSelection, addToast, removeToast, t])
 
   // Register buy success handler on parent ref
   useEffect(() => {
@@ -1064,40 +1062,6 @@ export default function ProxyManager({ onBuySuccessRef }) {
         <div className="mx-auto max-w-380 px-4">
           {/* ========== FEATURE CONTROLS ========== */}
           <div className="bg-wrapper flex w-full flex-wrap justify-center gap-2 rounded-lg p-4 sm:gap-3">
-            {/* Get Data */}
-            <div className="flex">
-              <input
-                type="number"
-                placeholder={t('manager.enterAmount')}
-                min="1"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="w-24 rounded-r-none border-r-0 py-1"
-              />
-              <button
-                className="bg-action flex flex-1 items-center justify-center rounded-lg rounded-l-none px-3 py-2 font-medium"
-                style={{ '--action-color': 'var(--purple)' }}
-                disabled={isProcessing}
-                onClick={handleGetData}
-              >
-                <svg
-                  aria-hidden="true"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  className="mr-1 size-5 shrink-0 fill-none sm:mr-2 sm:size-7"
-                >
-                  <path
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M12 13V4M7 14H5a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1h-2m-1-5-4 5-4-5m9 8h.01"
-                  />
-                </svg>
-                {t('manager.getData')}
-              </button>
-            </div>
-
             {/* Pause */}
             <button
               className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap"
@@ -1712,10 +1676,28 @@ export default function ProxyManager({ onBuySuccessRef }) {
             id="reloadBtn"
             className="bg-action group rounded-lg p-2"
             style={{ '--action-color': 'var(--orange)' }}
-            onClick={() => {
-              loadFromDb()
-              clearSelection()
-              setRowClassMap({})
+            disabled={isFetching}
+            onClick={async () => {
+              const loadingId = addToast(t('manager.fetchingData'), 'loading')
+              try {
+                const res = await refetch()
+                clearSelection()
+                setRowClassMap({})
+                removeToast(loadingId)
+                const finalResData = res.data?.data || []
+                addToast(
+                  <>
+                    {t('manager.loadedRows')}{' '}
+                    <span className="text-text-toast-success">{finalResData.length}</span>{' '}
+                    {t('manager.rows')}
+                  </>,
+                  'success'
+                )
+              } catch (err) {
+                console.error('[Refresh] Error:', err.message)
+                removeToast(loadingId)
+                addToast(`${t('manager.failedGetData')}: ${err.message}`, 'error')
+              }
             }}
           >
             <svg

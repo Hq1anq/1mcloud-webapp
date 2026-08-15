@@ -77,10 +77,15 @@ const PaginatedTableInternal = forwardRef(function PaginatedTableInternal(
     <BaseTable
       {...props}
       ref={ref}
+      useFilter={false}
       renderBody={({ filteredData, virtuosoContext, fixedHeader }) => {
-        const isServerSide = serverSide || totalCount !== undefined || controlledPageCount !== undefined
-        const totalItemsCount = isServerSide ? (totalCount ?? filteredData.length) : filteredData.length
-        const pageCount = controlledPageCount ?? Math.max(1, Math.ceil(totalItemsCount / activePageSize))
+        const isServerSide =
+          serverSide || totalCount !== undefined || controlledPageCount !== undefined
+        const totalItemsCount = isServerSide
+          ? (totalCount ?? filteredData.length)
+          : filteredData.length
+        const pageCount =
+          controlledPageCount ?? Math.max(1, Math.ceil(totalItemsCount / activePageSize))
         const requestedPage = controlledPage ?? internalPage
         const maxPage = Math.max(pageCount - 1, 0)
         const activePage = Math.min(Math.max(requestedPage, 0), maxPage)
@@ -95,7 +100,8 @@ const PaginatedTableInternal = forwardRef(function PaginatedTableInternal(
             <thead>{fixedHeader()}</thead>
             <tbody>
               {paginatedData.map((row, index) => {
-                const rowIndex = (isServerSide ? activePage * activePageSize : pageStartIndex) + index
+                const rowIndex =
+                  (isServerSide ? activePage * activePageSize : pageStartIndex) + index
 
                 return (
                   <TableRow
@@ -113,9 +119,13 @@ const PaginatedTableInternal = forwardRef(function PaginatedTableInternal(
         )
       }}
       renderFooter={({ filteredData, t }) => {
-        const isServerSide = serverSide || totalCount !== undefined || controlledPageCount !== undefined
-        const totalItemsCount = isServerSide ? (totalCount ?? filteredData.length) : filteredData.length
-        const pageCount = controlledPageCount ?? Math.max(1, Math.ceil(totalItemsCount / activePageSize))
+        const isServerSide =
+          serverSide || totalCount !== undefined || controlledPageCount !== undefined
+        const totalItemsCount = isServerSide
+          ? (totalCount ?? filteredData.length)
+          : filteredData.length
+        const pageCount =
+          controlledPageCount ?? Math.max(1, Math.ceil(totalItemsCount / activePageSize))
         const requestedPage = controlledPage ?? internalPage
         const maxPage = Math.max(pageCount - 1, 0)
         const activePage = Math.min(Math.max(requestedPage, 0), maxPage)

@@ -28,3 +28,31 @@ export const parseProxy = (raw) => {
     password: password || undefined,
   };
 };
+
+/**
+ * Parse a single proxy line formatted as `ip:port:username:password`
+ */
+export function parseProxyLine(line) {
+  if (!line || typeof line !== "string") return null;
+  const trimmed = line.trim();
+  if (!trimmed) return null;
+
+  const parts = trimmed.split(":");
+  if (parts.length < 4) return null;
+
+  const ip = parts[0].trim();
+  const port = parts[1].trim();
+  const username = parts[2].trim();
+  const password = parts.slice(3).join(":").trim();
+
+  if (!ip || !port || !username || !password) return null;
+
+  return {
+    ip,
+    port,
+    ip_port: `${ip}:${port}`,
+    user_pass: `${username}:${password}`,
+    username,
+    password,
+  };
+}

@@ -9,17 +9,30 @@ const HEADERS = {
 
 export async function list(req, res) {
   const url = `${process.env.BASE_URL}/server/list`;
-  const { ips, amount, proxy } = req.query;
+  const {
+    ips,
+    amount,
+    limit,
+    page,
+    by_status,
+    by_time,
+    by_created,
+    proxy,
+    keyword,
+  } = req.query;
 
   const headers = { ...HEADERS, authorization: `Bearer ${req.token}` };
 
+  const pageNum = Number(page) || 1;
+  const limitNum = Number(limit || amount) || 200;
+
   const params = new URLSearchParams({
-    page: 1,
-    limit: amount || 200,
-    by_status: "",
-    by_time: "all",
-    by_created: "",
-    keyword: "",
+    page: String(pageNum),
+    limit: String(limitNum),
+    by_status: by_status || "",
+    by_time: by_time || "all",
+    by_created: by_created || "",
+    keyword: keyword || "",
     ips: ips || "",
   });
 
@@ -64,7 +77,14 @@ export async function list(req, res) {
       is_auto_renew: !!server.is_auto_renew,
     }));
 
-    return res.json({ data });
+    return res.json({
+      data,
+      total_vps: json.total_vps,
+      total_vps_running: json.total_vps_running,
+      total_vps_off: json.total_vps_off,
+      page: pageNum,
+      limit: limitNum,
+    });
   } catch (err) {
     console.error("Error:", err.message);
     return res.status(500).json({ error: "Internal server error" });

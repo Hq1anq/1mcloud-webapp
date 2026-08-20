@@ -79,7 +79,7 @@ const useProxyStore = create((set, get) => ({
   },
 
   // --- Data fetch ---
-  fetchData: async ({ ips = '', amount = '' } = {}) => {
+  fetchData: async ({ ips = '', amount = '', byTime = '', keyword = '' } = {}) => {
     const parsedIps = ips
       .split('\n')
       .map((line) => extractIP(line))
@@ -90,6 +90,8 @@ const useProxyStore = create((set, get) => ({
     if (parsedIps) params.ips = parsedIps
     if (amount) params.amount = +amount
     else params.amount = get().data.filter((row) => row.status !== 'Refunded').length + 20
+    if (byTime && byTime !== 'all') params.by_time = byTime
+    if (keyword && keyword.trim()) params.keyword = keyword.trim()
 
     set({ isLoading: true })
     try {

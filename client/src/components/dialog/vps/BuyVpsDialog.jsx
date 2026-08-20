@@ -800,7 +800,7 @@ export default function BuyVpsDialog({ isOpen, onClose, onSuccess }) {
                 agreeTerms={agreeTerms}
                 setAgreeTerms={setAgreeTerms}
                 actions={
-                  <div className="mt-4 flex flex-col gap-3 text-lg">
+                  <div className="mt-auto flex flex-col gap-3 text-lg">
                     <button
                       onClick={handlePay}
                       disabled={

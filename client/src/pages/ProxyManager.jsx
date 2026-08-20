@@ -1,5 +1,5 @@
 import DropDown from '../components/ui/DropDown'
-import Table from '../components/ui/Table'
+import Table, { TableFilterToolbar } from '../components/ui/Table'
 import ControlButton from '../components/ui/ControlButton'
 import StatusMetricsMeter from '../components/ui/StatusMetricsMeter'
 import ChangeIpDialog from '../components/dialog/proxy/ChangeIpDialog'
@@ -32,6 +32,10 @@ export default function ProxyManager({ onBuySuccessRef }) {
   const [noteInput, setNoteInput] = useState('')
   const [reinstallInput, setReinstallInput] = useState('')
   const [changeIpInput, setChangeIpInput] = useState('')
+
+  // Filter States
+  const [byTime, setByTime] = useState('all')
+  const [keyword, setKeyword] = useState('')
 
   // Data from Zustand store
   const data = useProxyStore((s) => s.data)
@@ -129,7 +133,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
   const handleGetData = useCallback(async () => {
     const loadingId = addToast(t('manager.fetchingData'), 'loading')
     try {
-      const finalResData = await fetchData({ ips, amount })
+      const finalResData = await fetchData({ ips, amount, byTime, keyword })
       clearSelection()
       removeToast(loadingId)
       addToast(
@@ -144,7 +148,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
       removeToast(loadingId)
       addToast(`${t('manager.failedGetData')}: ${err.message}`, 'error')
     }
-  }, [ips, amount, fetchData, clearSelection, addToast, removeToast, t])
+  }, [ips, amount, byTime, keyword, fetchData, clearSelection, addToast, removeToast, t])
 
   // Register buy success handler on parent ref
   useEffect(() => {
@@ -1593,6 +1597,16 @@ export default function ProxyManager({ onBuySuccessRef }) {
         className="mt-4"
       />
 
+      {/* ========== REUSABLE FILTER TOOLBAR ========== */}
+      <TableFilterToolbar
+        keyword={keyword}
+        onKeywordChange={setKeyword}
+        byTime={byTime}
+        onByTimeChange={setByTime}
+        ips={ips}
+        onIpsChange={setIps}
+      />
+
       <Table
         title={t('manager.proxyManager')}
         className="mt-2 px-4 text-xs sm:text-sm"
@@ -1690,8 +1704,8 @@ export default function ProxyManager({ onBuySuccessRef }) {
                   remote_port: row.ip_port.split(':')[1],
                   username: row.user_pass ? row.user_pass.split(':')[0] : '',
                   password: row.user_pass ? row.user_pass.split(':')[1] : '',
-                  type: row.type,
-                  note: row.note,
+                  type: row.type ? row.type.split(' ')[0] : 'HTTPS',
+                  note: row.note || '',
                 },
               })
             }}
@@ -1703,8 +1717,8 @@ export default function ProxyManager({ onBuySuccessRef }) {
                   ip: row.ip_port.split(':')[0],
                   remote_port: row.ip_port.split(':')[1],
                   password: row.user_pass ? row.user_pass.split(':')[1] : '',
-                  type: row.type,
-                  note: row.note,
+                  type: row.type ? row.type.split(' ')[0] : 'HTTPS',
+                  note: row.note || '',
                 },
               })
             }}

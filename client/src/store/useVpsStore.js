@@ -79,7 +79,7 @@ const useVpsStore = create((set, get) => ({
   },
 
   // --- Data fetch (replaces handleGetData's data portion) ---
-  fetchData: async ({ ips = '', amount = '' } = {}) => {
+  fetchData: async ({ ips = '', amount = '', byTime = '', keyword = '' } = {}) => {
     const parsedIps = ips
       .split('\n')
       .map((line) => extractIP(line))
@@ -89,6 +89,8 @@ const useVpsStore = create((set, get) => ({
     const params = { proxy: 'false' }
     if (parsedIps) params.ips = parsedIps
     params.amount = amount ? +amount : 200
+    if (byTime && byTime !== 'all') params.by_time = byTime
+    if (keyword && keyword.trim()) params.keyword = keyword.trim()
 
     set({ isLoading: true })
     try {

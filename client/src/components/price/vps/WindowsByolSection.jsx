@@ -38,16 +38,13 @@ export default function WindowsByolSection({
     return Array.from(groupMap.values()).sort((a, b) => a.license_key.localeCompare(b.license_key))
   }, [userLicenses])
 
-  // 2. Format options for DropDown
+  // 2. Format options for DropDown (convention: value === '' signifies New Key option)
   const dropdownOptions = useMemo(() => {
     const newKeyObj = {
-      id: 'new_key',
-      license_key: '',
-      servers: [],
+      value: '',
       label: newKeyOption,
       subLabel: null,
-      value: newKeyOption,
-      isNewKey: true,
+      servers: [],
     }
 
     if (!groupedLicenses || groupedLicenses.length === 0) return [newKeyObj]
@@ -55,12 +52,10 @@ export default function WindowsByolSection({
     const licenseOpts = groupedLicenses.map((lic) => {
       const hasServers = lic.servers && lic.servers.length > 0
       return {
-        id: lic.license_key,
-        license_key: lic.license_key,
-        servers: lic.servers,
+        value: lic.license_key,
         label: maskProductKey(lic.license_key),
         subLabel: hasServers ? `IP: ${lic.servers.join(', ')}` : unusedLabel,
-        value: lic.license_key,
+        servers: lic.servers,
       }
     })
 
@@ -71,15 +66,10 @@ export default function WindowsByolSection({
   const [customKey, setCustomKey] = useState('')
 
   // 3. Derive active selected option:
-  // Uses user's manual selection if set, otherwise defaults to first option (first license key)
+  // Uses user's manual selection if set, otherwise defaults to first option
   const selectedOption = useMemo(() => {
     if (userSelectedOption) {
-      const match = dropdownOptions.find(
-        (opt) =>
-          opt.id === userSelectedOption.id ||
-          opt.value === userSelectedOption.value ||
-          (opt.license_key && opt.license_key === userSelectedOption.license_key)
-      )
+      const match = dropdownOptions.find((opt) => opt.value === userSelectedOption.value)
       if (match) return match
     }
     return dropdownOptions[0] || null
@@ -90,16 +80,8 @@ export default function WindowsByolSection({
   }
 
   // 4. Derive effective license key & validity
-  const isNewKeySelected =
-    !selectedOption ||
-    selectedOption.isNewKey ||
-    selectedOption.value === newKeyOption ||
-    groupedLicenses.length === 0
-
-  const effectiveLicenseKey = isNewKeySelected
-    ? customKey
-    : selectedOption?.license_key || customKey
-
+  const isNewKeySelected = !selectedOption?.value || groupedLicenses.length === 0
+  const effectiveLicenseKey = isNewKeySelected ? customKey : selectedOption?.value || customKey
   const isValidWindowsKey = isValidLicense(effectiveLicenseKey)
 
   // 5. Notify parent component when key or validity changes
@@ -116,7 +98,7 @@ export default function WindowsByolSection({
   const renderLicenseItem = (option) => {
     if (!option) return null
     if (typeof option === 'string') return option
-    if (option.isNewKey) {
+    if (!option.value) {
       return (
         <div className="flex items-center gap-2 py-0.5">
           <span className="font-mono text-sm font-medium">{option.label}</span>
@@ -172,6 +154,7 @@ export default function WindowsByolSection({
                 value={selectedOption}
                 onChange={handleSelectOption}
                 renderItem={renderLicenseItem}
+                isEqual={(a, b) => a?.value === b?.value}
                 className="bg-wrapper rounded-lg text-xs sm:text-lg"
                 menuClassName="text-xs sm:text-lg"
               />

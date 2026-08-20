@@ -15,8 +15,8 @@
   "type": "module",
   "main": "src/server.js",
   "scripts": {
-    "dev": "node --env-file=.env --watch src/server.js",
-    "start": "node --env-file=.env src/server.js",
+    "dev": "node --env-file=.env --import tsx/esm --watch src/server.js",
+    "start": "node --env-file=.env --import tsx/esm src/server.js",
     "sync-mmdb": "node scripts/syncMmdb.js",
     "sync-prices": "node --env-file=.env scripts/sync-prices.js"
   },
@@ -26,5 +26,10 @@
     "express": "^5.2.1",
     "mssql": "^12.2.0",
     "socks-proxy-agent": "^8.0.5"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.2.0",
+    "tsx": "^4.19.2"
   }
 }

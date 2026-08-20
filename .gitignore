@@ -8,6 +8,9 @@ mockups/
 .agent/
 footer'.jsx
 *.md
+cleanRefundedRows.js
+updateProxyList.js
+proxies.txt
 
 # Node.js
 node_modules/

@@ -1,5 +1,11 @@
 import { getPool } from "../lib/db.js";
 import { getCachedVpsPlans } from "../services/cache.service.js";
+import { resolveUser } from "../services/user.service.ts";
+// import {
+//   encryptDb,
+//   decryptDb,
+//   encryptPayload,
+// } from "../services/encryption.service.ts";
 
 const HEADERS = {
   accept: "application/json, text/plain, */*",
@@ -121,47 +127,6 @@ export async function supportOs(req, res) {
 }
 
 /**
- * Resolve the user_id from the Bearer token.
- */
-async function resolveUser(token) {
-  const url = `${process.env.BASE_URL}/user/profile`;
-  const response = await fetch(url, {
-    method: "GET",
-    headers: { ...HEADERS, authorization: `Bearer ${token}` },
-  });
-
-  if (!response.ok) {
-    const error = new Error(`Failed to fetch profile: ${response.status}`);
-    error.status = response.status;
-    throw error;
-  }
-
-  const profile = await response.json();
-  const phone = profile.phone;
-
-  if (!phone) {
-    const error = new Error("No phone found in profile");
-    error.status = 401;
-    throw error;
-  }
-
-  const pool = await getPool();
-
-  const result = await pool
-    .request()
-    .input("phone", phone)
-    .query(`SELECT user_id FROM Users WHERE phone = @phone`);
-
-  if (!result.recordset || result.recordset.length === 0) {
-    const error = new Error("User not found. Please login again.");
-    error.status = 401;
-    throw error;
-  }
-
-  return result.recordset[0].user_id;
-}
-
-/**
  * GET /api/vps — Load all VPS rows for the authenticated user
  */
 export async function getVpsList(req, res) {
@@ -177,10 +142,17 @@ export async function getVpsList(req, res) {
          FROM Vps WHERE user_id = @userId`,
       );
 
-    const vpsList = result.recordset.map((v) => ({
-      ...v,
-      is_auto_renew: !!v.is_auto_renew,
-    }));
+    const vpsList = result.recordset.map((v) => {
+      // TEMPORARY: Disabled encryption/decryption
+      // const payloadUserPass = decryptDb(v.user_pass) || v.user_pass;
+
+      return {
+        ...v,
+        // user_pass: payloadUserPass,
+        is_auto_renew: !!v.is_auto_renew,
+      };
+    });
+
     return res.json({ success: true, data: vpsList });
   } catch (error) {
     console.error("❌ getVpsList error:", error.message);
@@ -219,6 +191,15 @@ export async function saveVpsList(req, res) {
 
         let query = "";
         chunk.forEach((vps, idx) => {
+          // TEMPORARY: Disabled encryption/decryption
+          // let dbUserPass = null;
+          // if (vps.user_pass) {
+          //   const payloadEnc = vps.user_pass.startsWith("enc:")
+          //     ? vps.user_pass
+          //     : encryptPayload(vps.user_pass);
+          //   dbUserPass = encryptDb(payloadEnc);
+          // }
+
           request.input(`sid_${idx}`, vps.sid);
           request.input(`plan_number_${idx}`, vps.plan_number || null);
           request.input(`ip_port_${idx}`, vps.ip_port || null);

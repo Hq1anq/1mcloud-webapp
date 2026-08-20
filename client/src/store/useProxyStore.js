@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import axiosInstance from '../lib/axios'
 import { extractIP, mergeProxyData } from '../utils/data'
+import { decryptServerRows } from '../utils/crypto'
 import useAuthStore from './useAuthStore'
 
 const useProxyStore = create((set, get) => ({
@@ -35,8 +36,7 @@ const useProxyStore = create((set, get) => ({
     }
   },
 
-  // Load from DB on mount — merge with persisted localStorage data
-  // If DB is empty (first-time user), auto-fetch from /server/list
+  // Load from DB on mount
   loadFromDb: async () => {
     const isAuthenticated = useAuthStore.getState().isAuthenticated
     if (!isAuthenticated) return
@@ -44,7 +44,7 @@ const useProxyStore = create((set, get) => ({
     set({ isLoading: true })
     try {
       const res = await axiosInstance.get('/proxy')
-      const dbData = res.data?.data || []
+      const dbData = await decryptServerRows(res.data?.data || [])
 
       if (dbData.length > 0) {
         set({
@@ -58,7 +58,7 @@ const useProxyStore = create((set, get) => ({
           const listRes = await axiosInstance.get('/server/list', {
             params: { proxy: 'true' },
           })
-          const listData = listRes.data?.data || []
+          const listData = await decryptServerRows(listRes.data?.data || [])
           if (listData.length > 0) {
             set({
               data: listData,
@@ -94,17 +94,10 @@ const useProxyStore = create((set, get) => ({
     set({ isLoading: true })
     try {
       const res = await axiosInstance.get('/server/list', { params })
-      const resData = res.data?.data || []
-
-      // Merge resData into current state locally for rendering and syncing
-      const localMerged = mergeProxyData(get().data, resData)
-      const finalResData = localMerged.filter((row) => resData.some((r) => r.sid === row.sid))
+      const resData = await decryptServerRows(res.data?.data || [])
 
       set((state) => {
-        let mergedData = mergeProxyData(state.data, resData)
-
-        // Trash data cleanup
-        let finalMergedData = mergedData
+        let finalMergedData = resData
         if (!parsedIps && resData.length <= (params.amount || 200)) {
           const trashSids = state.data
             .filter(
@@ -115,29 +108,30 @@ const useProxyStore = create((set, get) => ({
 
           if (trashSids.length > 0) {
             get().deleteFromDb(trashSids)
-            finalMergedData = mergedData.filter((row) => !trashSids.includes(row.sid))
+            finalMergedData = resData.filter((row) => !trashSids.includes(row.sid))
           }
         }
 
         return {
           data: finalMergedData,
-          receivedData: finalResData,
+          receivedData: resData,
           renderingReceived: true,
         }
       })
 
       // Sync updated data to DB in background
-      get().syncToDb(finalResData)
-      return finalResData
+      get().syncToDb(resData)
+      return resData
     } finally {
       set({ isLoading: false })
     }
   },
 
   // --- Buy success handler ---
-  handleBuySuccess: (newData, extraConfig) => {
+  handleBuySuccess: async (newData, extraConfig) => {
     if (Array.isArray(newData) && newData.length > 0) {
-      const enrichedData = newData.map((item) => ({
+      const decryptedNewData = await decryptServerRows(newData)
+      const enrichedData = decryptedNewData.map((item) => ({
         ...item,
         ...extraConfig,
       }))

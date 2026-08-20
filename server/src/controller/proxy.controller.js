@@ -1,57 +1,10 @@
 import { getPool } from "../lib/db.js";
-
-const HEADERS = {
-  accept: "application/json, text/plain, */*",
-  "content-type": "application/json",
-  "user-agent":
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
-};
-
-/**
- * Resolve the user_id from the Bearer token.
- * 1. Calls smartserver.vn /user/profile to get phone
- * 2. Looks up Users table by phone
- * 3. Returns user_id
- */
-async function resolveUser(token) {
-  // Fetch phone from smartserver.vn profile
-  const url = `${process.env.BASE_URL}/user/profile`;
-  const response = await fetch(url, {
-    method: "GET",
-    headers: { ...HEADERS, authorization: `Bearer ${token}` },
-  });
-
-  if (!response.ok) {
-    const error = new Error(`Failed to fetch profile: ${response.status}`);
-    error.status = response.status;
-    throw error;
-  }
-
-  const profile = await response.json();
-  const phone = profile.phone;
-
-  if (!phone) {
-    const error = new Error("No phone found in profile");
-    error.status = 401;
-    throw error;
-  }
-
-  const pool = await getPool();
-
-  // Look up user by phone (user row is created during login)
-  const result = await pool
-    .request()
-    .input("phone", phone)
-    .query(`SELECT user_id FROM Users WHERE phone = @phone`);
-
-  if (!result.recordset || result.recordset.length === 0) {
-    const error = new Error("User not found. Please login again.");
-    error.status = 401;
-    throw error;
-  }
-
-  return result.recordset[0].user_id;
-}
+import { resolveUser } from "../services/user.service.ts";
+// import {
+//   encryptDb,
+//   decryptDb,
+//   encryptPayload,
+// } from "../services/encryption.service.ts";
 
 /**
  * GET /api/proxy — Load all proxy rows for the authenticated user
@@ -69,10 +22,17 @@ export async function getProxies(req, res) {
          FROM Proxy WHERE user_id = @userId`,
       );
 
-    const proxies = result.recordset.map((p) => ({
-      ...p,
-      is_auto_renew: !!p.is_auto_renew,
-    }));
+    const proxies = result.recordset.map((p) => {
+      // TEMPORARY: Disabled encryption/decryption
+      // const payloadUserPass = decryptDb(p.user_pass) || p.user_pass;
+
+      return {
+        ...p,
+        // user_pass: payloadUserPass,
+        is_auto_renew: !!p.is_auto_renew,
+      };
+    });
+
     return res.json({ success: true, data: proxies });
   } catch (error) {
     console.error("❌ getProxies error:", error.message);
@@ -112,6 +72,15 @@ export async function saveProxies(req, res) {
 
         let query = "";
         chunk.forEach((proxy, idx) => {
+          // TEMPORARY: Disabled encryption/decryption
+          // let dbUserPass = null;
+          // if (proxy.user_pass) {
+          //   const payloadEnc = proxy.user_pass.startsWith("enc:")
+          //     ? proxy.user_pass
+          //     : encryptPayload(proxy.user_pass);
+          //   dbUserPass = encryptDb(payloadEnc);
+          // }
+
           request.input(`sid_${idx}`, proxy.sid);
           request.input(`ip_port_${idx}`, proxy.ip_port || null);
           request.input(`user_pass_${idx}`, proxy.user_pass || null);

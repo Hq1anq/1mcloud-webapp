@@ -569,7 +569,7 @@ export default function VpsManager({ onBuySuccessRef }) {
             <div className="flex flex-col gap-4 sm:flex-row">
               {/* IPs Input */}
               <div className="relative flex flex-col sm:w-3/5">
-                <div className="mb-2 flex items-center justify-between">
+                <div className="mb-2 flex items-center justify-between gap-0.5">
                   <label className="text-text-primary flex items-center font-medium">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"

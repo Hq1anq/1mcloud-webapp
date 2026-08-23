@@ -1,4 +1,4 @@
-import Table from '../components/ui/Table'
+import { PaginatedTable, TableFilterToolbar } from '../components/ui/Table'
 import ControlButton from '../components/ui/ControlButton'
 import UpgradePlanDialog from '../components/dialog/vps/UpgradePlanDialog'
 import ReinstallDialog from '../components/dialog/vps/ReinstallDialog'
@@ -13,6 +13,9 @@ import { useTranslation } from '../i18n'
 import useAuthStore from '../store/useAuthStore'
 import useVpsStore from '../store/useVpsStore'
 import useManagerActions from '../hooks/useManagerActions'
+import { useVpsListQuery } from '../hooks/useVpsQuery'
+import { extractIP } from '../utils/data'
+import useDebounce from '../hooks/useDebounce'
 import getOS from '../data/osMap'
 
 const OPERATOR_CONFIG = {
@@ -27,7 +30,6 @@ export default function VpsManager({ onBuySuccessRef }) {
 
   // Controlled input state (ephemeral form state stays local)
   const [ips, setIps] = useState('')
-  const [amount, setAmount] = useState('')
   const [noteInput, setNoteInput] = useState('')
   const [upgradeDialogState, setUpgradeDialogState] = useState({ isOpen: false, sid: null })
   const [reinstallState, setReinstallState] = useState({
@@ -39,17 +41,70 @@ export default function VpsManager({ onBuySuccessRef }) {
     data: { sid: '', ip: '', remote_port: '', password: '', os: '', note: '' },
   })
 
+  // TanStack Query Pagination & Filter States
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(20)
+  const [byTime, setByTime] = useState('all')
+  const [keyword, setKeyword] = useState('')
+
+  // Debounced input states (400ms delay to prevent per-keystroke API calls)
+  const debouncedKeyword = useDebounce(keyword, 400)
+  const debouncedIps = useDebounce(ips, 400)
+
+  // Reset page to 1 whenever debounced keyword or IPs filter changes
+  useEffect(() => {
+    setPage(1)
+  }, [debouncedKeyword, debouncedIps])
+
+  const parsedIps = useMemo(() => {
+    if (!debouncedIps.trim()) return ''
+    return debouncedIps
+      .split('\n')
+      .map((line) => extractIP(line))
+      .filter(Boolean)
+      .join(',')
+  }, [debouncedIps])
+
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+
+  const {
+    data: queryResponse,
+    isLoading: isQueryLoading,
+    isFetching,
+    refetch,
+  } = useVpsListQuery(
+    {
+      page,
+      limit: Number(pageSize) || 200,
+      by_status: '',
+      by_time: byTime,
+      by_created: '',
+      ips: parsedIps,
+      keyword: debouncedKeyword,
+      proxy: false,
+    },
+    isAuthenticated
+  )
+
   // Data from Zustand store
   const data = useVpsStore((s) => s.data)
   const receivedData = useVpsStore((s) => s.receivedData)
   const renderingReceived = useVpsStore((s) => s.renderingReceived)
   const setRenderingReceived = useVpsStore((s) => s.setRenderingReceived)
-  const isLoading = useVpsStore((s) => s.isLoading)
   const updateRowBySid = useVpsStore((s) => s.updateRowBySid)
-  const loadFromDb = useVpsStore((s) => s.loadFromDb)
-  const fetchData = useVpsStore((s) => s.fetchData)
   const handleBuySuccessStore = useVpsStore((s) => s.handleBuySuccess)
   const rawSyncToDb = useVpsStore((s) => s.syncToDb)
+
+  useEffect(() => {
+    if (queryResponse?.data) {
+      useVpsStore.setState({
+        data: queryResponse.data,
+        receivedData: queryResponse.data,
+        renderingReceived: true,
+        isLoading: isQueryLoading,
+      })
+    }
+  }, [queryResponse, isQueryLoading])
 
   const syncToDb = useCallback(
     async (rows, attempt = 1) => {
@@ -103,8 +158,6 @@ export default function VpsManager({ onBuySuccessRef }) {
     processSequential,
   } = useManagerActions({ updateRowBySid, syncToDb })
 
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
-
   const profile = useMemo(() => {
     try {
       const cached = localStorage.getItem('account-profile')
@@ -114,18 +167,15 @@ export default function VpsManager({ onBuySuccessRef }) {
     }
   }, [])
 
-  // Load from DB on mount
-  useEffect(() => {
-    if (isAuthenticated) loadFromDb()
-  }, [isAuthenticated, loadFromDb])
-
-  // handleGetData — thin wrapper around store.fetchData with toast feedback
+  // handleGetData — thin wrapper around TanStack Query refetch with toast feedback
   const handleGetData = useCallback(async () => {
+    setPage(1)
     const loadingId = addToast(t('manager.fetchingData'), 'loading')
     try {
-      const finalResData = await fetchData({ ips, amount })
+      const res = await refetch()
       clearSelection()
       removeToast(loadingId)
+      const finalResData = res.data?.data || []
       addToast(
         <>
           {t('manager.loadedRows')}{' '}
@@ -138,7 +188,7 @@ export default function VpsManager({ onBuySuccessRef }) {
       removeToast(loadingId)
       addToast(`${t('manager.failedGetData')}: ${err.message}`, 'error')
     }
-  }, [ips, amount, fetchData, clearSelection, addToast, removeToast, t])
+  }, [refetch, clearSelection, addToast, removeToast, t])
 
   // Register buy success handler on parent ref
   useEffect(() => {
@@ -567,103 +617,8 @@ export default function VpsManager({ onBuySuccessRef }) {
           {/* ========== FEATURE CONTROLS ========== */}
           <div className="bg-wrapper rounded-lg p-4">
             <div className="flex flex-col gap-4 sm:flex-row">
-              {/* IPs Input */}
-              <div className="relative flex flex-col sm:w-3/5">
-                <div className="mb-2 flex items-center justify-between">
-                  <label className="text-text-primary flex items-center font-medium">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      className="mr-2 size-6 shrink-0 fill-current sm:size-7"
-                    >
-                      <path d="M5 5a2 2 0 0 0-2 2v3a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V7a2 2 0 0 0-2-2H5Zm9 2a1 1 0 1 0 0 2h.01a1 1 0 1 0 0-2H14Zm3 0a1 1 0 1 0 0 2h.01a1 1 0 1 0 0-2H17ZM3 17v-3a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Zm11-2a1 1 0 1 0 0 2h.01a1 1 0 1 0 0-2H14Zm3 0a1 1 0 1 0 0 2h.01a1 1 0 1 0 0-2H17Z" />
-                    </svg>
-                    <label className="flex flex-wrap">
-                      <span className="whitespace-pre">{t('manager.enterIps')} </span>
-                      <span>{t('manager.onePerLine')}</span>
-                    </label>
-                  </label>
-                  <button
-                    onClick={async () => {
-                      if (!ips.trim()) {
-                        try {
-                          const text = await navigator.clipboard.readText()
-                          setIps(text)
-                        } catch (err) {
-                          console.error('Failed to read clipboard contents: ', err)
-                        }
-                      } else setIps('')
-                    }}
-                    className="bg-action static right-0 flex items-center justify-center rounded-lg px-3 py-1 text-sm font-medium md:absolute lg:static"
-                    style={{ '--action-color': !ips.trim() ? 'var(--blue)' : 'var(--red)' }}
-                  >
-                    {!ips.trim() ? (
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 32 32"
-                        className="mr-1 size-5 shrink-0 fill-current"
-                      >
-                        <g>
-                          <path d="m26 8v19a3.009 3.009 0 0 1 -3 3h-14a3.009 3.009 0 0 1 -3-3v-19a3.009 3.009 0 0 1 3-3v2a3.009 3.009 0 0 0 3 3h8a3.009 3.009 0 0 0 3-3v-2a3.009 3.009 0 0 1 3 3z" />
-                          <path d="m12 8a1 1 0 0 1 -1-1v-2a1 1 0 0 1 1-1h1.125l.29-.5a2.959 2.959 0 0 1 2.185-1.459 1.9 1.9 0 0 1 .384-.041 2.139 2.139 0 0 1 .418.037 2.963 2.963 0 0 1 2.184 1.463l.289.5h1.125a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1z" />
-                        </g>
-                      </svg>
-                    ) : (
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 640 640"
-                        className="mr-1 size-5 shrink-0 fill-current"
-                      >
-                        <path d="M232.7 69.9L224 96L128 96C110.3 96 96 110.3 96 128C96 145.7 110.3 160 128 160L512 160C529.7 160 544 145.7 544 128C544 110.3 529.7 96 512 96L416 96L407.3 69.9C402.9 56.8 390.7 48 376.9 48L263.1 48C249.3 48 237.1 56.8 232.7 69.9zM512 208L128 208L149.1 531.1C150.7 556.4 171.7 576 197 576L443 576C468.3 576 489.3 556.4 490.9 531.1L512 208z" />
-                      </svg>
-                    )}
-                    {!ips.trim() ? t('paste') : t('delete')}
-                  </button>
-                </div>
-                <textarea
-                  className="min-h-13 grow whitespace-pre"
-                  placeholder="192.168.1.1&#10;10.0.0.1"
-                  value={ips}
-                  onChange={(e) => setIps(e.target.value)}
-                />
-              </div>
-
               {/* Action Buttons */}
               <div className="flex w-full flex-wrap justify-center gap-2 sm:gap-3">
-                {/* Get Data */}
-                <div className="flex">
-                  <input
-                    type="number"
-                    placeholder={t('manager.enterAmount')}
-                    min="1"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    className="w-24 rounded-r-none border-r-0 py-1"
-                  />
-                  <button
-                    className="bg-action flex flex-1 items-center justify-center rounded-lg rounded-l-none px-3 py-2 font-medium"
-                    style={{ '--action-color': 'var(--purple)' }}
-                    disabled={isProcessing}
-                    onClick={handleGetData}
-                  >
-                    <svg
-                      aria-hidden="true"
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      className="mr-1 size-5 shrink-0 fill-none sm:mr-2 sm:size-7"
-                    >
-                      <path
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M12 13V4M7 14H5a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1h-2m-1-5-4 5-4-5m9 8h.01"
-                      />
-                    </svg>
-                    {t('manager.getData')}
-                  </button>
-                </div>
-
                 {/* Pause */}
                 <button
                   className="bg-action flex grow items-center justify-center rounded-lg px-3 py-2 font-medium whitespace-nowrap"
@@ -857,16 +812,49 @@ export default function VpsManager({ onBuySuccessRef }) {
       </div>
 
       <StatusMetricsMeter
-        total={data.filter((row) => row.status !== 'Refunded').length}
-        running={data.filter((row) => row.status === 'Running').length}
-        off={data.filter((row) => row.status === 'Off').length}
+        total={
+          queryResponse?.total_vps !== undefined
+            ? queryResponse.total_vps
+            : data.filter((row) => row.status !== 'Refunded').length
+        }
+        running={
+          queryResponse?.total_vps_running !== undefined
+            ? queryResponse.total_vps_running
+            : data.filter((row) => row.status === 'Running').length
+        }
+        off={
+          queryResponse?.total_vps_off !== undefined
+            ? queryResponse.total_vps_off
+            : data.filter((row) => row.status === 'Off').length
+        }
         className="mt-4"
       />
 
-      <Table
+      <TableFilterToolbar
+        keyword={keyword}
+        onKeywordChange={setKeyword}
+        byTime={byTime}
+        onByTimeChange={setByTime}
+        ips={ips}
+        onIpsChange={setIps}
+        onResetPage={() => setPage(1)}
+      />
+
+      <PaginatedTable
         title={t('vpsManager.title')}
         className="mt-2 px-4 text-xs sm:text-sm"
         data={data}
+        pagination={true}
+        serverSide={true}
+        page={page - 1}
+        pageSize={pageSize}
+        totalCount={queryResponse?.total_vps ?? data.length}
+        pageSizeOptions={[10, 20, 50, 100, 200]}
+        onPageChange={(zeroBasedPage) => setPage(zeroBasedPage + 1)}
+        onPageSizeChange={(newPageSize) => {
+          setPageSize(newPageSize)
+          setPage(1)
+        }}
         receivedData={receivedData}
         renderingReceived={renderingReceived}
         setRenderingReceived={setRenderingReceived}
@@ -900,7 +888,7 @@ export default function VpsManager({ onBuySuccessRef }) {
             throw err // Re-throw for PopConfirmToggle rollback
           }
         }}
-        isLoading={isLoading}
+        isLoading={isFetching}
         useFilter={true}
         headers={[
           'control',
@@ -994,12 +982,30 @@ export default function VpsManager({ onBuySuccessRef }) {
         extraBtn={
           <button
             id="reloadBtn"
-            className="group bg-action rounded-lg p-2"
+            className="bg-action group rounded-lg p-2"
             style={{ '--action-color': 'var(--orange)' }}
-            onClick={() => {
-              loadFromDb()
-              clearSelection()
-              setRowClassMap({})
+            disabled={isFetching}
+            onClick={async () => {
+              const loadingId = addToast(t('manager.fetchingData'), 'loading')
+              try {
+                const res = await refetch()
+                clearSelection()
+                setRowClassMap({})
+                removeToast(loadingId)
+                const finalResData = res.data?.data || []
+                addToast(
+                  <>
+                    {t('manager.loadedRows')}{' '}
+                    <span className="text-text-toast-success">{finalResData.length}</span>{' '}
+                    {t('manager.rows')}
+                  </>,
+                  'success'
+                )
+              } catch (err) {
+                console.error('[Refresh] Error:', err.message)
+                removeToast(loadingId)
+                addToast(`${t('manager.failedGetData')}: ${err.message}`, 'error')
+              }
             }}
           >
             <svg

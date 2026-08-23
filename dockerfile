@@ -34,4 +34,4 @@ ENV PORT=3002
 
 EXPOSE 3002
 
-CMD ["node", "src/server.js"]
+CMD ["node", "--import", "tsx/esm", "src/server.js"]

@@ -1,4 +1,8 @@
 import { getCachedProxyPrice } from "../services/cache.service.js";
+import { getPool } from "../lib/db.js";
+import { resolveUser } from "../services/user.service.ts";
+import { mergeProxyData, mergeVpsData } from "../services/merge.service.ts";
+// import { encryptPayload } from "../services/encryption.service.ts";
 
 const HEADERS = {
   accept: "application/json, text/plain, */*",
@@ -77,8 +81,33 @@ export async function list(req, res) {
       is_auto_renew: !!server.is_auto_renew,
     }));
 
+    let dbRows = [];
+    try {
+      const userId = await resolveUser(req.token);
+      const pool = await getPool();
+      if (isProxy) {
+        const dbResult = await pool
+          .request()
+          .input("userId", userId)
+          .query(`SELECT sid, user_pass FROM Proxy WHERE user_id = @userId`);
+        dbRows = dbResult.recordset || [];
+      } else {
+        const dbResult = await pool
+          .request()
+          .input("userId", userId)
+          .query(`SELECT sid, user_pass, he_dieu_hanh FROM Vps WHERE user_id = @userId`);
+        dbRows = dbResult.recordset || [];
+      }
+    } catch (dbErr) {
+      console.error("[Manager Controller] DB lookup skipped/error:", dbErr.message);
+    }
+
+    const mergedData = isProxy
+      ? mergeProxyData(data, dbRows)
+      : mergeVpsData(data, dbRows);
+
     return res.json({
-      data,
+      data: mergedData,
       total_vps: json.total_vps,
       total_vps_running: json.total_vps_running,
       total_vps_off: json.total_vps_off,
@@ -209,20 +238,25 @@ export async function create(req, res) {
       return `${day}-${month}-${year}`;
     };
 
-    const tableData = servers.map((server) => ({
-      sid: server.id,
-      ip_port: `${server.ip}:${server.remote_port}`,
-      ...(is_proxy && { country: nation }),
-      ...(is_proxy && { type: serverType }),
-      created: formatDate(today),
-      expired: formatDate(expiredDate),
-      ip_changed: 0,
-      status: "Running",
-      note: note,
-      is_auto_renew: auto_renew,
-      ...(is_proxy && { user_pass: `${server.username}:${server.password}` }),
-      ...(!is_proxy && { user_pass: `${server.username}/${server.password}` }),
-    }));
+    const tableData = servers.map((server) => {
+      const rawUserPass = is_proxy
+        ? `${server.username}:${server.password}`
+        : `${server.username}/${server.password}`;
+      return {
+        sid: server.id,
+        ip_port: `${server.ip}:${server.remote_port}`,
+        ...(is_proxy && { country: nation }),
+        ...(is_proxy && { type: serverType }),
+        created: formatDate(today),
+        expired: formatDate(expiredDate),
+        ip_changed: 0,
+        status: "Running",
+        note: note,
+        is_auto_renew: auto_renew,
+        // TEMPORARY: Disabled encryption/decryption
+        user_pass: rawUserPass,
+      };
+    });
 
     return res.json({
       success: true,

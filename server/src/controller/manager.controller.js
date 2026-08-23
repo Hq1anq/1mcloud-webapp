@@ -2,6 +2,7 @@ import { getCachedProxyPrice } from "../services/cache.service.js";
 import { getPool } from "../lib/db.js";
 import { resolveUser } from "../services/user.service.ts";
 import { mergeProxyData, mergeVpsData } from "../services/merge.service.ts";
+import { filterByKeyword } from "../lib/utils.js";
 // import { encryptPayload } from "../services/encryption.service.ts";
 
 const HEADERS = {
@@ -25,28 +26,95 @@ export async function list(req, res) {
     keyword,
   } = req.query;
 
-  const headers = { ...HEADERS, authorization: `Bearer ${req.token}` };
-
   const pageNum = Number(page) || 1;
   const limitNum = Number(limit || amount) || 200;
-
-  const params = new URLSearchParams({
-    page: String(pageNum),
-    limit: String(limitNum),
-    by_status: by_status || "",
-    by_time: by_time || "all",
-    by_created: by_created || "",
-    keyword: keyword || "",
-    ips: ips || "",
-  });
-
   const isProxy = proxy === "true";
-
-  if (isProxy) {
-    params.set("proxy", "true");
-  }
+  const hasKeyword =
+    keyword && typeof keyword === "string" && keyword.trim() !== "";
 
   try {
+    // ── BRANCH 2: SEARCHING (Database-only search across all user records) ──
+    if (hasKeyword) {
+      const userId = await resolveUser(req.token);
+      const pool = await getPool();
+      let dbRows = [];
+
+      if (isProxy) {
+        const dbResult = await pool
+          .request()
+          .input("userId", userId)
+          .query(
+            `SELECT sid, ip_port, user_pass, country, type, created, expired, status, note, is_auto_renew FROM Proxy WHERE user_id = @userId`,
+          );
+        dbRows = dbResult.recordset || [];
+      } else {
+        const dbResult = await pool
+          .request()
+          .input("userId", userId)
+          .query(
+            `SELECT sid, plan_number, ip_port, user_pass, country, he_dieu_hanh, price_vnd, created, expired, status, note, is_auto_renew FROM Vps WHERE user_id = @userId`,
+          );
+        dbRows = dbResult.recordset || [];
+      }
+
+      // 1. Get data2 from database (all data formatted)
+      const data2 = dbRows.map((item) => ({
+        ...item,
+        ...(!isProxy && { type: item.he_dieu_hanh }),
+        is_auto_renew: !!item.is_auto_renew,
+      }));
+
+      // 2. Filter in data2 using keyword value -> data3
+      const data3 = filterByKeyword(data2, keyword, [
+        "note",
+        "ip_port",
+        "plan_number",
+        "country",
+        "type",
+        "he_dieu_hanh",
+      ]);
+
+      // 3. Sort by sid descending
+      data3.sort((a, b) => b.sid - a.sid);
+
+      const totalCount = data3.length;
+      const totalRunning = data3.filter(
+        (item) => item.status && item.status.toLowerCase() === "running",
+      ).length;
+      const totalOff = data3.filter(
+        (item) => item.status && item.status.toLowerCase() === "off",
+      ).length;
+
+      // 4. Paginate data3 using pageNum & limitNum
+      const startIndex = (pageNum - 1) * limitNum;
+      const paginatedData = data3.slice(startIndex, startIndex + limitNum);
+
+      return res.json({
+        data: paginatedData,
+        total_vps: totalCount,
+        total_vps_running: totalRunning,
+        total_vps_off: totalOff,
+        page: pageNum,
+        limit: limitNum,
+      });
+    }
+
+    // ── BRANCH 1: NO SEARCHING (Current flow: fetch serverA + merge DB user_pass) ──
+    const headers = { ...HEADERS, authorization: `Bearer ${req.token}` };
+    const params = new URLSearchParams({
+      page: String(pageNum),
+      limit: String(limitNum),
+      by_status: by_status || "",
+      by_time: by_time || "all",
+      by_created: by_created || "",
+      keyword: "",
+      ips: ips || "",
+    });
+
+    if (isProxy) {
+      params.set("proxy", "true");
+    }
+
     const response = await fetch(`${url}?${params.toString()}`, {
       method: "GET",
       headers: headers,
@@ -95,11 +163,16 @@ export async function list(req, res) {
         const dbResult = await pool
           .request()
           .input("userId", userId)
-          .query(`SELECT sid, user_pass, he_dieu_hanh FROM Vps WHERE user_id = @userId`);
+          .query(
+            `SELECT sid, user_pass, he_dieu_hanh FROM Vps WHERE user_id = @userId`,
+          );
         dbRows = dbResult.recordset || [];
       }
     } catch (dbErr) {
-      console.error("[Manager Controller] DB lookup skipped/error:", dbErr.message);
+      console.error(
+        "[Manager Controller] DB lookup skipped/error:",
+        dbErr.message,
+      );
     }
 
     const mergedData = isProxy

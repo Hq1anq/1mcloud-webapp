@@ -29,6 +29,10 @@ const PaginatedTable = forwardRef(function PaginatedTable(
     return validOptions.length ? validOptions : PAGE_SIZE_OPTIONS
   }, [pageSizeOptions])
 
+  const minPageSize = useMemo(() => {
+    return Math.min(...normalizedPageSizeOptions)
+  }, [normalizedPageSizeOptions])
+
   const activePageSize = normalizedPageSizeOptions.includes(controlledPageSize)
     ? controlledPageSize
     : normalizedPageSizeOptions.includes(internalPageSize)
@@ -45,6 +49,7 @@ const PaginatedTable = forwardRef(function PaginatedTable(
       controlledPageCount={controlledPageCount}
       serverSide={serverSide}
       normalizedPageSizeOptions={normalizedPageSizeOptions}
+      minPageSize={minPageSize}
       activePageSize={activePageSize}
       internalPage={internalPage}
       setInternalPage={setInternalPage}
@@ -63,6 +68,7 @@ const PaginatedTableInternal = forwardRef(function PaginatedTableInternal(
     controlledPageCount,
     serverSide,
     normalizedPageSizeOptions,
+    minPageSize,
     activePageSize,
     internalPage,
     setInternalPage,
@@ -124,6 +130,12 @@ const PaginatedTableInternal = forwardRef(function PaginatedTableInternal(
         const totalItemsCount = isServerSide
           ? (totalCount ?? filteredData.length)
           : filteredData.length
+
+        // Only show pagination control section when data items exceed the minimum page size
+        if (totalItemsCount <= minPageSize) {
+          return null
+        }
+
         const pageCount =
           controlledPageCount ?? Math.max(1, Math.ceil(totalItemsCount / activePageSize))
         const requestedPage = controlledPage ?? internalPage

@@ -29,35 +29,30 @@ export const parseProxy = (raw) => {
   };
 };
 
-export const normalizeText = (str) => {
-  if (str == null) return "";
-  return String(str)
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/đ/g, "d")
-    .replace(/Đ/g, "D")
-    .toLowerCase();
-};
+/**
+ * Parse a single proxy line formatted as `ip:port:username:password`
+ */
+export function parseProxyLine(line) {
+  if (!line || typeof line !== "string") return null;
+  const trimmed = line.trim();
+  if (!trimmed) return null;
 
-export const matchText = (val, keyword) => {
-  if (val == null || !keyword) return false;
-  const kw = String(keyword).trim().toLowerCase();
-  if (!kw) return false;
+  const parts = trimmed.split(":");
+  if (parts.length < 4) return null;
 
-  const strVal = String(val).toLowerCase();
-  if (strVal.includes(kw)) return true;
+  const ip = parts[0].trim();
+  const port = parts[1].trim();
+  const username = parts[2].trim();
+  const password = parts.slice(3).join(":").trim();
 
-  const normalizedVal = normalizeText(strVal);
-  const normalizedKw = normalizeText(kw);
-  return normalizedVal.includes(normalizedKw);
-};
+  if (!ip || !port || !username || !password) return null;
 
-export const filterByKeyword = (data, keyword, targetFields = []) => {
-  if (!Array.isArray(data) || !keyword || typeof keyword !== "string" || keyword.trim() === "") {
-    return data;
-  }
-
-  return data.filter((item) =>
-    targetFields.some((field) => matchText(item[field], keyword))
-  );
-};
+  return {
+    ip,
+    port,
+    ip_port: `${ip}:${port}`,
+    user_pass: `${username}:${password}`,
+    username,
+    password,
+  };
+}

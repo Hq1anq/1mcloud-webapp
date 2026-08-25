@@ -111,7 +111,7 @@ export default function Navbar() {
 
   return (
     <nav
-      className={`bg-navbar border-b-card-border z-50 flex items-center gap-1 border-b-2 px-3 py-1 shadow-md select-none md:px-5 md:py-3 ${isAuthenticated ? 'flex-row flex-wrap md:flex-nowrap' : 'flex-col md:flex-row'}`}
+      className={`bg-navbar border-b-card-border z-50 flex items-center gap-1 border-b-2 px-3 py-1 shadow-md select-none md:px-5 md:py-3 ${isAuthenticated ? 'flex-row flex-wrap' : 'flex-col md:flex-row'}`}
     >
       {isAuthenticated ? (
         <>

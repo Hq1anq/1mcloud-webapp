@@ -22,6 +22,8 @@ import VpsPrice from './pages/VpsPrice.jsx'
 import BuyVpsPage from './pages/BuyVpsPage.jsx'
 import ProxyPrice from './pages/ProxyPrice.jsx'
 import BuyProxyPage from './pages/BuyProxyPage.jsx'
+import TermsOfService from './pages/TermsOfService.jsx'
+import PrivacyPolicy from './pages/PrivacyPolicy.jsx'
 import { AppProvider } from './context/AppProvider'
 
 function App() {
@@ -154,6 +156,9 @@ function App() {
                 path="/signup"
                 element={isAuthenticated ? <Navigate to="/" replace /> : <SignupPage />}
               />
+
+              <Route path="/terms" element={<TermsOfService />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
             </Routes>
             <Footer />
           </div>

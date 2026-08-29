@@ -48,11 +48,15 @@ export default function Footer() {
             <Link to="/#hero" className="social-link cursor-pointer">
               {t('footer.aboutUs')}
             </Link>
-            <a href="/contact" className="social-link cursor-pointer">
+            <Link to="/contact" className="social-link cursor-pointer">
               {t('footer.contact')}
-            </a>
-            <a className="social-link cursor-pointer">{t('footer.terms')}</a>
-            <a className="social-link cursor-pointer">{t('footer.privacy')}</a>
+            </Link>
+            <Link to="/terms" className="social-link cursor-pointer">
+              {t('footer.terms')}
+            </Link>
+            <Link to="/privacy" className="social-link cursor-pointer">
+              {t('footer.privacy')}
+            </Link>
           </div>
         </div>
       </div>

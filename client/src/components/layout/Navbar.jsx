@@ -161,7 +161,7 @@ export default function Navbar() {
               <Link
                 to="https://1mcloud.vn/"
                 target="_blank"
-                className="w-28 rounded-lg bg-blue-600 px-4 py-2 text-center font-medium text-white shadow-sm hover:bg-blue-700"
+                className="w-28 rounded-lg bg-blue-600 px-4 py-2 text-center font-medium whitespace-nowrap text-white shadow-sm hover:bg-blue-700"
               >
                 {t('menu.login')}
               </Link>
@@ -184,7 +184,7 @@ export default function Navbar() {
             <Link
               to="https://1mcloud.vn/"
               target="_blank"
-              className="w-32 rounded-lg bg-blue-600 px-4 py-2 text-center font-medium text-white shadow-sm hover:bg-blue-700"
+              className="w-32 rounded-lg bg-blue-600 px-4 py-2 text-center font-medium whitespace-nowrap text-white shadow-sm hover:bg-blue-700"
             >
               {t('menu.login')}
             </Link>

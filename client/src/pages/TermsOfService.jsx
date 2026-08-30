@@ -342,7 +342,7 @@ export default function TermsOfService() {
   return (
     <div className="w-full">
       {/* Hero Banner Section */}
-      <section className="border-card-border relative overflow-hidden border-b bg-[linear-gradient(to_bottom,var(--home-hero-gradient-from),var(--home-hero-gradient-to))] px-4 sm:px-6 md:py-16">
+      <section className="border-card-border relative overflow-hidden border-b bg-[linear-gradient(to_bottom,var(--home-hero-gradient-from),var(--home-hero-gradient-to))] px-4 py-12 sm:px-6 md:py-16">
         <div className="home-grid-bg absolute inset-0 opacity-20" />
 
         <div className="relative mx-auto flex max-w-380 flex-col items-center justify-between gap-8 lg:flex-row lg:items-end">
@@ -549,7 +549,7 @@ export default function TermsOfService() {
         </div>
       </div>
       {/* Mobile Floating Action Button (FAB) for Table of Contents */}
-      <div className="fixed bottom-4 left-4 z-40 lg:hidden">
+      <div className="fixed right-4 bottom-4 z-40 lg:hidden">
         <button
           type="button"
           onClick={() => setIsMobileTocOpen(true)}

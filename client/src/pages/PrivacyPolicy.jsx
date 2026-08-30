@@ -560,7 +560,7 @@ export default function PrivacyPolicy() {
       </div>
 
       {/* Mobile Floating Action Button (FAB) for Table of Contents */}
-      <div className="fixed bottom-4 left-4 z-40 lg:hidden">
+      <div className="fixed right-4 bottom-4 z-40 lg:hidden">
         <button
           type="button"
           onClick={() => setIsMobileTocOpen(true)}

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { vpsNations, vpsSpecialOptions, getDefaultPlans } from '../data/vpsNations.jsx'
 import { ServerIcon, HubIcon } from '../assets/icons'
 import axiosInstance from '../lib/axios.js'
@@ -9,12 +9,24 @@ import { useTranslation } from '../i18n'
 export default function VpsPrice() {
   const t = useTranslation()
   const navigate = useNavigate()
-  const [selectedNation, setSelectedNation] = useState('VN')
-  const [plans, setPlans] = useState(() => getDefaultPlans('VN'))
+  const [searchParams, setSearchParams] = useSearchParams()
+  const initialType = searchParams.get('plan') || 'VN'
+  const [selectedNation, setSelectedNation] = useState(initialType)
+  const [plans, setPlans] = useState(() => getDefaultPlans(initialType))
+
+  // Sync state if URL query param changes (e.g. clicking Footer link while already on /price/vps)
+  useEffect(() => {
+    const typeFromUrl = searchParams.get('plan')
+    if (typeFromUrl && typeFromUrl !== selectedNation) {
+      setSelectedNation(typeFromUrl)
+      setPlans(getDefaultPlans(typeFromUrl))
+    }
+  }, [searchParams])
 
   const handleSelectNation = (nationSymbol) => {
     setSelectedNation(nationSymbol)
     setPlans(getDefaultPlans(nationSymbol))
+    setSearchParams({ type: nationSymbol }, { replace: true })
   }
 
   // Fetch plans dynamically from API when selectedNation changes

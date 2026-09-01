@@ -176,9 +176,7 @@ const BaseTable = forwardRef(function BaseTable(
       }
 
       const finalSelectedRows = filteredData.filter(
-        (r, i) =>
-          newSelected.has(getRowKey(r, i)) &&
-          r?.status?.toLowerCase() !== 'refunded'
+        (r, i) => newSelected.has(getRowKey(r, i)) && r?.status?.toLowerCase() !== 'refunded'
       )
 
       onSelectionChange?.(finalSelectedRows, newSelected)
@@ -210,9 +208,7 @@ const BaseTable = forwardRef(function BaseTable(
       }
 
       const finalSelectedRows = filteredData.filter(
-        (r, i) =>
-          newSelected.has(getRowKey(r, i)) &&
-          r?.status?.toLowerCase() !== 'refunded'
+        (r, i) => newSelected.has(getRowKey(r, i)) && r?.status?.toLowerCase() !== 'refunded'
       )
 
       onSelectionChange?.(finalSelectedRows, newSelected)
@@ -406,7 +402,7 @@ const BaseTable = forwardRef(function BaseTable(
         {!isLoading && !isError && filteredData.length === 0 && emptyMessage}
       </div>
 
-      {!isLoading && renderFooter?.({ filteredData, t })}
+      {renderFooter?.({ filteredData, t })}
     </div>
   )
 })

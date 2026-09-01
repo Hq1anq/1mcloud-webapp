@@ -22,8 +22,8 @@ import VpsPrice from './pages/VpsPrice.jsx'
 import BuyVpsPage from './pages/BuyVpsPage.jsx'
 import ProxyPrice from './pages/ProxyPrice.jsx'
 import BuyProxyPage from './pages/BuyProxyPage.jsx'
-import TermsOfService from './pages/TermsOfService.jsx'
-import PrivacyPolicy from './pages/PrivacyPolicy.jsx'
+import TermsOfService from './pages/TermsOfService'
+import PrivacyPolicy from './pages/PrivacyPolicy'
 import { AppProvider } from './context/AppProvider'
 
 function App() {

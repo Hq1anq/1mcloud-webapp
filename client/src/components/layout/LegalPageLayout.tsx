@@ -78,26 +78,40 @@ export default function LegalPageLayout({ data, activeRoute, noticeIcon }: Legal
       <div className="mx-auto max-w-380 px-4 pt-8 sm:px-6 md:pt-12">
         {/* Quick Subnav Switcher */}
         <div className="mb-4 flex flex-wrap items-center justify-between gap-4 md:mb-8">
-          <div className="bg-surface border-card-border inline-flex rounded-xl border p-1 shadow-sm">
+          <div className="bg-surface border-card-border relative inline-flex rounded-xl border p-1 shadow-sm">
             <Link
               to="/terms"
-              className={`rounded-lg px-4 py-2 text-xs font-bold tracking-wide transition-all sm:text-sm ${
+              className={`relative rounded-lg px-4 py-2 text-xs font-bold tracking-wide transition-colors sm:text-sm ${
                 activeRoute === 'terms'
-                  ? 'bg-blue text-text-secondary'
-                  : 'text-text-muted hover:text-text-primary font-medium'
+                  ? 'text-text-secondary'
+                  : 'text-text-muted hover:text-text-primary'
               }`}
             >
-              {data.nav.terms}
+              {activeRoute === 'terms' && (
+                <M.span
+                  layoutId="legal-subnav-indicator"
+                  className="bg-blue absolute inset-0 rounded-lg shadow-sm"
+                  transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                />
+              )}
+              <span className="relative z-10">{data.nav.terms}</span>
             </Link>
             <Link
               to="/privacy"
-              className={`rounded-lg px-4 py-2 text-xs font-bold tracking-wide transition-all sm:text-sm ${
+              className={`relative rounded-lg px-4 py-2 text-xs font-bold tracking-wide transition-colors sm:text-sm ${
                 activeRoute === 'privacy'
-                  ? 'bg-blue text-text-secondary'
-                  : 'text-text-muted hover:text-text-primary font-medium'
+                  ? 'text-text-secondary'
+                  : 'text-text-muted hover:text-text-primary'
               }`}
             >
-              {data.nav.privacy}
+              {activeRoute === 'privacy' && (
+                <M.span
+                  layoutId="legal-subnav-indicator"
+                  className="bg-blue absolute inset-0 rounded-lg shadow-sm"
+                  transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                />
+              )}
+              <span className="relative z-10">{data.nav.privacy}</span>
             </Link>
           </div>
         </div>

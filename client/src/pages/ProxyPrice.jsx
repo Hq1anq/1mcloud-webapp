@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { animate } from 'motion/react'
 import { proxyNations } from '../data/proxyNations.jsx'
 import axiosInstance from '../lib/axios.js'
 import ProxyCard from '../components/price/ProxyCard.jsx'
@@ -17,7 +18,55 @@ const buildInitialPrices = () => {
 export default function ProxyPrice() {
   const t = useTranslation()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const [prices, setPrices] = useState(buildInitialPrices)
+
+  // Strictly use 'nation' query parameter
+  const nationParam = searchParams.get('nation')
+  const [highlightedNation, setHighlightedNation] = useState(nationParam)
+
+  // Sync if nation param changes (e.g. clicking footer link while already on /price/proxy)
+  useEffect(() => {
+    if (nationParam) {
+      setHighlightedNation(nationParam)
+    }
+  }, [nationParam])
+
+  // 5-second timer to automatically dismiss the highlight effect
+  useEffect(() => {
+    if (!highlightedNation) return
+
+    // Scroll smoothly into view using Motion animate()
+    const timerScroll = setTimeout(() => {
+      const cardElement = document.getElementById(`proxy-card-${highlightedNation}`)
+      const container = document.getElementById('main-scroll-container')
+      if (cardElement && container) {
+        const targetTop = Math.max(
+          0,
+          cardElement.getBoundingClientRect().top -
+            container.getBoundingClientRect().top +
+            container.scrollTop -
+            24
+        )
+        animate(container.scrollTop, targetTop, {
+          duration: 0.75,
+          ease: [0.16, 1, 0.3, 1],
+          onUpdate: (latest) => {
+            container.scrollTop = latest
+          },
+        })
+      }
+    }, 120)
+
+    const timerDismiss = setTimeout(() => {
+      setHighlightedNation(null)
+    }, 5000)
+
+    return () => {
+      clearTimeout(timerScroll)
+      clearTimeout(timerDismiss)
+    }
+  }, [highlightedNation])
 
   // Batch fetch – one parallel POST per nation on mount
   useEffect(() => {
@@ -124,6 +173,7 @@ export default function ProxyPrice() {
                   loading={loading}
                   error={error}
                   animDelay={idx * 45}
+                  isHighlighted={nation.symbol === highlightedNation}
                   onBuy={() =>
                     navigate(`/price/proxy/buy?nation=${nation.symbol}`, {
                       state: {

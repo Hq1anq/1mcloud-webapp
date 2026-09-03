@@ -161,6 +161,7 @@ export const flagsIcons = {
       strokeWidth="1.5"
       strokeLinecap="round"
       strokeLinejoin="round"
+      className="size-full"
     >
       <rect x="4" y="4" width="16" height="16" rx="2" />
       <rect x="9" y="9" width="6" height="6" rx="1" />
@@ -177,6 +178,7 @@ export const flagsIcons = {
       strokeWidth="1.5"
       strokeLinecap="round"
       strokeLinejoin="round"
+      className="size-full"
     >
       <path d="M12 16V8m0 0-3 3m3-3 3 3" />
       <path d="M20 16.7A4.5 4.5 0 0 0 17.5 8h-1.13A7 7 0 1 0 4 14.5" />

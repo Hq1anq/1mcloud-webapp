@@ -598,4 +598,44 @@
   .animate-vps-float-in {
     animation: vps-float-in 0.45s ease-out both;
   }
+
+  /* 5-second glowing highlight overlay for targeted proxy card */
+  @keyframes proxy-glow-pulse {
+    0% {
+      opacity: 0;
+      border: 2px solid var(--highlight-text);
+      box-shadow:
+        0 0 0 1px var(--highlight-text),
+        0 0 35px 2px color-mix(in srgb, var(--highlight-text) 55%, transparent),
+        inset 0 0 20px -2px color-mix(in srgb, var(--highlight-text) 20%, transparent);
+    }
+    15% {
+      opacity: 1;
+      border: 2px solid var(--highlight-text);
+      box-shadow:
+        0 0 0 2px var(--highlight-text),
+        0 0 45px 6px color-mix(in srgb, var(--highlight-text) 65%, transparent),
+        inset 0 0 24px -2px color-mix(in srgb, var(--highlight-text) 25%, transparent);
+    }
+    75% {
+      opacity: 1;
+      border: 2px solid var(--highlight-text);
+      box-shadow:
+        0 0 0 2px var(--highlight-text),
+        0 0 30px 2px color-mix(in srgb, var(--highlight-text) 45%, transparent),
+        inset 0 0 16px -2px color-mix(in srgb, var(--highlight-text) 15%, transparent);
+    }
+    100% {
+      opacity: 0;
+      border: 2px solid transparent;
+      box-shadow:
+        0 0 0 0 transparent,
+        0 0 0 0 transparent,
+        inset 0 0 0 0 transparent;
+    }
+  }
+
+  .proxy-highlight-glow {
+    animation: proxy-glow-pulse 5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
 }

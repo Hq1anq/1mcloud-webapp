@@ -36,7 +36,7 @@ export default function Footer() {
             <Link to="/price/vps?plan=gpu" className="social-link cursor-pointer">
               VPS GPU
             </Link>
-            <Link to="/price/proxy" className="social-link cursor-pointer">
+            <Link to="/price/proxy?nation=VNR" className="social-link cursor-pointer">
               {t('footer.residentialProxy')}
             </Link>
             <Link to="/price/proxy" className="social-link cursor-pointer">

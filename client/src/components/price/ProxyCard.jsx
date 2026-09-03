@@ -1,3 +1,4 @@
+import { motion as M, AnimatePresence } from 'motion/react'
 import CardBody from './CardBody.jsx'
 import { useTranslation } from '../../i18n'
 import {
@@ -20,7 +21,15 @@ import {
  *   animDelay – number  (ms, for stagger animation)
  *   onBuy     – optional callback
  */
-export default function ProxyCard({ nation, price, loading, error, animDelay, onBuy }) {
+export default function ProxyCard({
+  nation,
+  price,
+  loading,
+  error,
+  animDelay,
+  onBuy,
+  isHighlighted = false,
+}) {
   const t = useTranslation()
 
   const primaryItems = [
@@ -47,11 +56,43 @@ export default function ProxyCard({ nation, price, loading, error, animDelay, on
 
   return (
     <div
-      className="vps-plan-card animate-vps-float-in border-border bg-surface flex flex-col overflow-hidden rounded-2xl border shadow-sm"
+      id={`proxy-card-${nation.symbol}`}
+      className="vps-plan-card animate-vps-float-in border-border bg-surface relative flex flex-col overflow-hidden rounded-2xl border shadow-sm"
       style={{ animationDelay: `${animDelay}ms` }}
     >
+      {/* 5-second glowing outline overlay that naturally fades away */}
+      {isHighlighted && (
+        <div
+          aria-hidden="true"
+          className="proxy-highlight-glow pointer-events-none absolute inset-0 z-30 rounded-2xl"
+        />
+      )}
+
       {/* ── Card Header ── */}
-      <div className="bg-navbar border-border border-b p-6">
+      <div className="bg-navbar border-border relative border-b p-6">
+        {/* Highlighted Banner Badge (Overlay pinned to top - zero layout shift) */}
+        <AnimatePresence initial={false}>
+          {isHighlighted && (
+            <M.div
+              initial={{ y: -24, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{
+                y: -16,
+                opacity: 0,
+                transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] },
+              }}
+              transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+              className="bg-primary/25 text-highlight border-primary/50 shadow-primary/20 pointer-events-none absolute inset-x-0 top-0 z-20 flex items-center justify-center gap-2 border-b px-4 py-1 text-[11px] font-bold tracking-wider uppercase shadow-xs backdrop-blur-xs"
+            >
+              <span className="relative flex size-2">
+                <span className="bg-primary absolute inline-flex h-full w-full animate-ping rounded-full opacity-75" />
+                <span className="bg-primary relative inline-flex size-2 rounded-full" />
+              </span>
+              <span>{t('footer.residentialProxy')}</span>
+            </M.div>
+          )}
+        </AnimatePresence>
+
         {/* Nation row */}
         <div className="mb-4 flex items-start justify-between">
           <div className="flex items-center gap-3">

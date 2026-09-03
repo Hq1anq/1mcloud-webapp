@@ -111,7 +111,7 @@ export default function Navbar() {
 
   return (
     <nav
-      className={`bg-navbar border-b-card-border z-50 flex items-center gap-1 border-b-2 px-3 py-1 shadow-md select-none md:px-5 md:py-3 ${isAuthenticated ? 'flex-row flex-wrap md:flex-nowrap' : 'flex-col md:flex-row'}`}
+      className={`bg-navbar border-b-card-border z-50 flex items-center gap-1 border-b-2 px-3 py-1 shadow-md select-none md:px-5 md:py-3 ${isAuthenticated ? 'flex-row flex-wrap' : 'flex-col md:flex-row'}`}
     >
       {isAuthenticated ? (
         <>
@@ -160,7 +160,7 @@ export default function Navbar() {
             <div className="flex items-center gap-3 md:hidden">
               <Link
                 to="/login"
-                className="bg-blue rounded-lg px-4 py-2 font-medium text-white shadow-sm"
+                className="w-28 rounded-lg bg-blue-600 px-4 py-2 text-center font-medium whitespace-nowrap text-white shadow-sm hover:bg-blue-700"
               >
                 {t('menu.login')}
               </Link>
@@ -182,7 +182,7 @@ export default function Navbar() {
             <ThemeToggle />
             <Link
               to="/login"
-              className="rounded-lg bg-blue-600 px-4 py-2 font-medium text-white shadow-sm hover:bg-blue-700"
+              className="w-32 rounded-lg bg-blue-600 px-4 py-2 text-center font-medium whitespace-nowrap text-white shadow-sm hover:bg-blue-700"
             >
               {t('menu.login')}
             </Link>

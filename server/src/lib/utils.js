@@ -29,6 +29,44 @@ export const parseProxy = (raw) => {
   };
 };
 
+export const normalizeText = (str) => {
+  if (str == null) return "";
+  return String(str)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "D")
+    .toLowerCase();
+};
+
+export const matchText = (val, keyword) => {
+  if (val == null || !keyword) return false;
+  const kw = String(keyword).trim().toLowerCase();
+  if (!kw) return false;
+
+  const strVal = String(val).toLowerCase();
+  if (strVal.includes(kw)) return true;
+
+  const normalizedVal = normalizeText(strVal);
+  const normalizedKw = normalizeText(kw);
+  return normalizedVal.includes(normalizedKw);
+};
+
+export const filterByKeyword = (data, keyword, targetFields = []) => {
+  if (
+    !Array.isArray(data) ||
+    !keyword ||
+    typeof keyword !== "string" ||
+    keyword.trim() === ""
+  ) {
+    return data;
+  }
+
+  return data.filter((item) =>
+    targetFields.some((field) => matchText(item[field], keyword)),
+  );
+};
+
 /**
  * Parse a single proxy line formatted as `ip:port:username:password`
  */

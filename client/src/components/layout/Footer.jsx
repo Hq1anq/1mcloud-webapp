@@ -30,16 +30,16 @@ export default function Footer() {
         <div className="m-auto flex flex-wrap gap-20">
           <div className="flex flex-col gap-4">
             <h4 className="text-text-primary font-bold">{t('footer.services')}</h4>
-            <Link to="/#vps" className="social-link cursor-pointer">
+            <Link to="/price/vps" className="social-link cursor-pointer">
               VPS
             </Link>
-            <Link to="/#vps" className="social-link cursor-pointer">
+            <Link to="/price/vps?plan=gpu" className="social-link cursor-pointer">
               VPS GPU
             </Link>
-            <Link to="/#proxy" className="social-link cursor-pointer">
+            <Link to="/price/proxy" className="social-link cursor-pointer">
               {t('footer.residentialProxy')}
             </Link>
-            <Link to="/#proxy" className="social-link cursor-pointer">
+            <Link to="/price/proxy" className="social-link cursor-pointer">
               Proxy Datacenter
             </Link>
           </div>
@@ -48,11 +48,15 @@ export default function Footer() {
             <Link to="/#hero" className="social-link cursor-pointer">
               {t('footer.aboutUs')}
             </Link>
-            <a href="/contact" className="social-link cursor-pointer">
+            <Link to="/contact" className="social-link cursor-pointer">
               {t('footer.contact')}
-            </a>
-            <a className="social-link cursor-pointer">{t('footer.terms')}</a>
-            <a className="social-link cursor-pointer">{t('footer.privacy')}</a>
+            </Link>
+            <Link to="/terms" className="social-link cursor-pointer">
+              {t('footer.terms')}
+            </Link>
+            <Link to="/privacy" className="social-link cursor-pointer">
+              {t('footer.privacy')}
+            </Link>
           </div>
         </div>
       </div>

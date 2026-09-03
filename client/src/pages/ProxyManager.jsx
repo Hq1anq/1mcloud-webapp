@@ -1052,7 +1052,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
           <div className="bg-wrapper rounded-lg p-4">
             <div className="flex flex-col gap-4 sm:flex-row">
               {/* IPs Input */}
-              <div className="relative flex flex-col sm:w-3/5">
+              <div className="flex flex-col sm:w-3/5">
                 <div className="mb-2 flex items-center justify-between">
                   <label className="text-text-primary flex items-center font-medium">
                     <svg
@@ -1064,10 +1064,47 @@ export default function ProxyManager({ onBuySuccessRef }) {
                     </svg>
                     <label className="flex flex-wrap">
                       <span className="whitespace-pre">{t('manager.enterIps')} </span>
-                      <span>{t('manager.onePerLine')}</span>
                     </label>
                   </label>
                   <div className="flex flex-wrap justify-end gap-2">
+                    <button
+                      onClick={() => {
+                        const listIp = ips
+                          .split('\n')
+                          .map((ip) => ip.trim())
+                          .filter((ip) => ip.length > 0)
+                        const numIp = listIp.length
+                        const textToCopy = listIp.join('\n')
+                        safeCopy(textToCopy).then(
+                          (ok) =>
+                            ok &&
+                            addToast(
+                              <>
+                                {t('manager.copied')}{' '}
+                                <span className="text-text-toast-success">{numIp}</span> Proxy
+                              </>,
+                              'success'
+                            )
+                        )
+                      }}
+                      id="textCopyBtn"
+                      className="text-text-muted hover:text-text-primary inline-flex cursor-pointer items-center justify-center rounded-lg"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        className="size-7 fill-none"
+                      >
+                        <path
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          className="stroke-current"
+                          d="M9 8v3a1 1 0 0 1-1 1H5m11 4h2a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1h-7a1 1 0 0 0-1 1v1m4 3v10a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-7.13a1 1 0 0 1 .24-.65L7.7 8.35A1 1 0 0 1 8.46 8H13a1 1 0 0 1 1 1Z"
+                        />
+                      </svg>
+                      {t('dialog.copy')}
+                    </button>
                     <button
                       onClick={async () => {
                         if (!ips.trim()) {
@@ -1079,7 +1116,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
                           }
                         } else setIps('')
                       }}
-                      className="bg-action static right-0 flex items-center justify-center rounded-lg px-3 py-1 text-sm font-medium md:absolute lg:static"
+                      className="bg-action flex items-center justify-center rounded-lg px-3 py-1 text-sm font-medium"
                       style={{ '--action-color': !ips.trim() ? 'var(--blue)' : 'var(--red)' }}
                     >
                       {!ips.trim() ? (
@@ -1134,7 +1171,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
 
                         setIps(allLines.map((line) => line.ip).join('\n'))
                       }}
-                      className="bg-action static right-0 flex items-center justify-center rounded-lg px-3 py-1 text-sm font-medium md:absolute lg:static"
+                      className="bg-action flex items-center justify-center rounded-lg px-3 py-1 text-sm font-medium"
                       style={{ '--action-color': 'var(--pink)' }}
                     >
                       <svg
@@ -1148,44 +1185,6 @@ export default function ProxyManager({ onBuySuccessRef }) {
                     </button>
                   </div>
                 </div>
-                <button
-                  onClick={() => {
-                    const listIp = ips
-                      .split('\n')
-                      .map((ip) => ip.trim())
-                      .filter((ip) => ip.length > 0)
-                    const numIp = listIp.length
-                    const textToCopy = listIp.join('\n')
-                    safeCopy(textToCopy).then(
-                      (ok) =>
-                        ok &&
-                        addToast(
-                          <>
-                            {t('manager.copied')}{' '}
-                            <span className="text-text-toast-success">{numIp}</span> Proxy
-                          </>,
-                          'success'
-                        )
-                    )
-                  }}
-                  id="textCopyBtn"
-                  className="text-text-muted hover:text-text-primary absolute right-2 bottom-2 inline-flex cursor-pointer items-center justify-center rounded-lg"
-                >
-                  <svg
-                    aria-hidden="true"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    className="size-7 fill-none"
-                  >
-                    <path
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      className="stroke-current"
-                      d="M9 8v3a1 1 0 0 1-1 1H5m11 4h2a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1h-7a1 1 0 0 0-1 1v1m4 3v10a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-7.13a1 1 0 0 1 .24-.65L7.7 8.35A1 1 0 0 1 8.46 8H13a1 1 0 0 1 1 1Z"
-                    />
-                  </svg>
-                  {t('dialog.copy')}
-                </button>
                 <textarea
                   className="min-h-24 grow whitespace-pre"
                   placeholder="192.168.1.1&#10;10.0.0.1&#10;172.16.0.1"

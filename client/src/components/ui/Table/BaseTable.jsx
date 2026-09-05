@@ -30,6 +30,7 @@ const BaseTable = forwardRef(function BaseTable(
     // Selection
     selectedIds = new Set(),
     onSelectionChange,
+    getRowKey: propsGetRowKey,
 
     // Render slots
     renderBody,
@@ -130,36 +131,57 @@ const BaseTable = forwardRef(function BaseTable(
     })
   }, [data, receivedData, renderingReceived, filters, useFilter, filterVersion])
 
+  const getRowKey = useCallback(
+    (row, index) => {
+      if (propsGetRowKey) return propsGetRowKey(row, index)
+      return row?.sid ?? index
+    },
+    [propsGetRowKey]
+  )
+
   // ── Selection handlers ─────────────────────────────────────────────────
   const handleSelectRow = useCallback(
-    (index, shiftKey) => {
+    (index, shiftKey, clickedRow) => {
       if (!selectable) return
 
+      const row = clickedRow || filteredData[index]
+      if (!row || row?.status?.toLowerCase() === 'refunded') return
+
+      const key = getRowKey(row, index)
       const newSelected = new Set(selectedIds)
 
       if (shiftKey && lastSelectedIndex !== null && index !== undefined) {
         const start = Math.min(lastSelectedIndex, index)
         const end = Math.max(lastSelectedIndex, index)
         for (let i = start; i <= end; i++) {
-          if (filteredData[i]?.status?.toLowerCase() === 'refunded') continue
-          if (lastSelectionAction === 'add') newSelected.add(i)
-          else newSelected.delete(i)
+          const r = filteredData[i]
+          if (!r || r?.status?.toLowerCase() === 'refunded') continue
+          const k = getRowKey(r, i)
+          if (lastSelectionAction === 'add') {
+            newSelected.add(k)
+          } else {
+            newSelected.delete(k)
+          }
         }
       } else {
-        if (newSelected.has(index)) {
-          newSelected.delete(index)
+        const isCurrentlySelected = newSelected.has(key)
+        if (isCurrentlySelected) {
+          newSelected.delete(key)
           setLastSelectionAction('delete')
         } else {
-          newSelected.add(index)
+          newSelected.add(key)
           setLastSelectionAction('add')
         }
         setLastSelectedIndex(index)
       }
 
-      const selectedRows = filteredData
-        .map((row, idx) => ({ ...row, _index: idx }))
-        .filter((_, idx) => newSelected.has(idx))
-      onSelectionChange?.(selectedRows, newSelected)
+      const finalSelectedRows = filteredData.filter(
+        (r, i) =>
+          newSelected.has(getRowKey(r, i)) &&
+          r?.status?.toLowerCase() !== 'refunded'
+      )
+
+      onSelectionChange?.(finalSelectedRows, newSelected)
     },
     [
       selectable,
@@ -167,6 +189,7 @@ const BaseTable = forwardRef(function BaseTable(
       lastSelectedIndex,
       lastSelectionAction,
       filteredData,
+      getRowKey,
       onSelectionChange,
     ]
   )
@@ -174,22 +197,27 @@ const BaseTable = forwardRef(function BaseTable(
   const handleSelectAll = useCallback(
     (e) => {
       if (!selectable) return
-      let newSelected
+      const newSelected = new Set(selectedIds)
+
       if (e.target.checked) {
-        newSelected = new Set(
-          filteredData
-            .map((row, index) => (row?.status?.toLowerCase() === 'refunded' ? -1 : index))
-            .filter((index) => index !== -1)
-        )
+        for (let i = 0; i < filteredData.length; i++) {
+          const row = filteredData[i]
+          if (row?.status?.toLowerCase() === 'refunded') continue
+          newSelected.add(getRowKey(row, i))
+        }
       } else {
-        newSelected = new Set()
+        newSelected.clear()
       }
-      const selectedRows = filteredData
-        .map((row, idx) => ({ ...row, _index: idx }))
-        .filter((_, idx) => newSelected.has(idx))
-      onSelectionChange?.(selectedRows, newSelected)
+
+      const finalSelectedRows = filteredData.filter(
+        (r, i) =>
+          newSelected.has(getRowKey(r, i)) &&
+          r?.status?.toLowerCase() !== 'refunded'
+      )
+
+      onSelectionChange?.(finalSelectedRows, newSelected)
     },
-    [selectable, filteredData, onSelectionChange]
+    [selectable, selectedIds, filteredData, getRowKey, onSelectionChange]
   )
 
   // ── Filter handlers ────────────────────────────────────────────────────
@@ -256,6 +284,7 @@ const BaseTable = forwardRef(function BaseTable(
       headers,
       rowClassMap,
       handleSelectRow,
+      getRowKey,
       showCountryCode,
       onAutoRenewToggle,
       controlButton,
@@ -267,6 +296,7 @@ const BaseTable = forwardRef(function BaseTable(
       headers,
       rowClassMap,
       handleSelectRow,
+      getRowKey,
       showCountryCode,
       onAutoRenewToggle,
       controlButton,
@@ -285,6 +315,7 @@ const BaseTable = forwardRef(function BaseTable(
         selectable={selectable}
         selectedIds={selectedIds}
         filteredData={filteredData}
+        getRowKey={getRowKey}
         filters={filters}
         filterInputs={filterInputs}
         showCountryCode={showCountryCode}
@@ -304,6 +335,7 @@ const BaseTable = forwardRef(function BaseTable(
       selectable,
       selectedIds,
       filteredData,
+      getRowKey,
       filters,
       filterInputs,
       showCountryCode,

@@ -1,4 +1,4 @@
-import { PaginatedTable, TableFilterToolbar } from '../components/ui/Table'
+import { PaginatedTable, TableFilterToolbar, useTableSelection } from '../components/ui/Table'
 import ControlButton from '../components/ui/ControlButton'
 import UpgradePlanDialog from '../components/dialog/vps/UpgradePlanDialog'
 import ReinstallDialog from '../components/dialog/vps/ReinstallDialog'
@@ -12,8 +12,9 @@ import { useConfirm } from '../context/ConfirmContext'
 import { useTranslation } from '../i18n'
 import useAuthStore from '../store/useAuthStore'
 import useVpsStore from '../store/useVpsStore'
+import { useQueryClient } from '@tanstack/react-query'
 import useManagerActions from '../hooks/useManagerActions'
-import { useVpsListQuery } from '../hooks/useVpsQuery'
+import { useVpsListQuery, VPS_QUERY_KEY } from '../hooks/useVpsQuery'
 import { extractIP } from '../utils/data'
 import useDebounce from '../hooks/useDebounce'
 import getOS from '../data/osMap'
@@ -51,10 +52,12 @@ export default function VpsManager({ onBuySuccessRef }) {
   const debouncedKeyword = useDebounce(keyword, 400)
   const debouncedIps = useDebounce(ips, 400)
 
-  // Reset page to 1 whenever debounced keyword or IPs filter changes
-  useEffect(() => {
+  // Reset page to 1 whenever debounced keyword or IPs filter changes without cascading effect renders
+  const [prevSearch, setPrevSearch] = useState({ keyword: debouncedKeyword, ips: debouncedIps })
+  if (prevSearch.keyword !== debouncedKeyword || prevSearch.ips !== debouncedIps) {
+    setPrevSearch({ keyword: debouncedKeyword, ips: debouncedIps })
     setPage(1)
-  }, [debouncedKeyword, debouncedIps])
+  }
 
   const parsedIps = useMemo(() => {
     if (!debouncedIps.trim()) return ''
@@ -87,13 +90,34 @@ export default function VpsManager({ onBuySuccessRef }) {
   )
 
   // Data from Zustand store
+  const queryClient = useQueryClient()
   const data = useVpsStore((s) => s.data)
   const receivedData = useVpsStore((s) => s.receivedData)
   const renderingReceived = useVpsStore((s) => s.renderingReceived)
   const setRenderingReceived = useVpsStore((s) => s.setRenderingReceived)
-  const updateRowBySid = useVpsStore((s) => s.updateRowBySid)
+  const rawUpdateRowBySid = useVpsStore((s) => s.updateRowBySid)
   const handleBuySuccessStore = useVpsStore((s) => s.handleBuySuccess)
   const rawSyncToDb = useVpsStore((s) => s.syncToDb)
+
+  const updateRowBySid = useCallback(
+    (sid, updater) => {
+      rawUpdateRowBySid(sid, updater)
+
+      queryClient.setQueriesData({ queryKey: [VPS_QUERY_KEY] }, (old) => {
+        if (!old?.data) return old
+        let hasMatch = false
+        const nextData = old.data.map((r) => {
+          if (r.sid === sid) {
+            hasMatch = true
+            return { ...r, ...updater(r) }
+          }
+          return r
+        })
+        return hasMatch ? { ...old, data: nextData } : old
+      })
+    },
+    [rawUpdateRowBySid, queryClient]
+  )
 
   useEffect(() => {
     if (queryResponse?.data) {
@@ -142,21 +166,25 @@ export default function VpsManager({ onBuySuccessRef }) {
     [rawSyncToDb, addToast, removeToast, t]
   )
 
-  // Shared selection & processing logic
+  // Table selection logic handled cleanly by table selection hook
   const {
     selectedIds,
-    selectedRowsRef,
+    selectedRows,
+    clearSelection,
+    deselectRows,
+    onSelectionChange,
+  } = useTableSelection({ data })
+
+  // Action runner for batch, single, and sequential operations
+  const {
     isProcessing,
     rowClassMap,
     setRowClassMap,
     setIsProcessing,
-    clearSelection,
-    deselectRows,
-    onSelectionChange,
     handleBatchAction,
     handleSingleAction,
     processSequential,
-  } = useManagerActions({ updateRowBySid, syncToDb })
+  } = useManagerActions({ updateRowBySid, syncToDb, onDeselect: deselectRows })
 
   const profile = useMemo(() => {
     try {
@@ -221,7 +249,7 @@ export default function VpsManager({ onBuySuccessRef }) {
 
   // --- Handlers ---
   const handleCopyIp = useCallback(() => {
-    const rows = [...selectedRowsRef.current]
+    const rows = selectedRows
     if (rows.length === 0) {
       addToast(t('manager.noRowsSelected'), 'warning')
       return
@@ -246,26 +274,36 @@ export default function VpsManager({ onBuySuccessRef }) {
         )
       }
     })
-  }, [data, selectedRowsRef, addToast, safeCopy, t])
+  }, [data, selectedRows, addToast, safeCopy, t])
 
   const handleReboot = useCallback(
     () =>
-      handleBatchAction('/server/reboot', t('manager.reboot').toUpperCase(), () => ({
-        status: 'Running',
-      })),
-    [handleBatchAction, t]
+      handleBatchAction(
+        selectedRows,
+        '/server/reboot',
+        t('manager.reboot').toUpperCase(),
+        () => ({
+          status: 'Running',
+        })
+      ),
+    [handleBatchAction, selectedRows, t]
   )
 
   const handlePause = useCallback(
     () =>
-      handleBatchAction('/server/pause', t('manager.pause').toUpperCase(), () => ({
-        status: 'Paused',
-      })),
-    [handleBatchAction, t]
+      handleBatchAction(
+        selectedRows,
+        '/server/pause',
+        t('manager.pause').toUpperCase(),
+        () => ({
+          status: 'Paused',
+        })
+      ),
+    [handleBatchAction, selectedRows, t]
   )
 
   const handleResetPassword = useCallback(async () => {
-    const rows = [...selectedRowsRef.current]
+    const rows = selectedRows
     const confirmed = await confirmAction({
       title: t('confirm'),
       infoText: (
@@ -281,6 +319,7 @@ export default function VpsManager({ onBuySuccessRef }) {
 
     if (!confirmed) return
     handleBatchAction(
+      rows,
       '/server/reset-password',
       t('vpsManager.resetPassword').toUpperCase(),
       (row) => {
@@ -289,10 +328,10 @@ export default function VpsManager({ onBuySuccessRef }) {
         return { user_pass: newUserPass }
       }
     )
-  }, [handleBatchAction, t, confirmAction, selectedRowsRef])
+  }, [handleBatchAction, t, confirmAction, selectedRows])
 
   const handleAutoFix = useCallback(async () => {
-    const rows = [...selectedRowsRef.current]
+    const rows = selectedRows
     const confirmed = await confirmAction({
       title: `${t('confirm')} ${t('vpsManager.autoFix')}`,
       isProxy: false,
@@ -301,12 +340,12 @@ export default function VpsManager({ onBuySuccessRef }) {
     })
 
     if (!confirmed) return
-    handleBatchAction('/server/auto-fix', t('vpsManager.autoFix').toUpperCase())
-  }, [handleBatchAction, t, confirmAction, selectedRowsRef])
+    handleBatchAction(rows, '/server/auto-fix', t('vpsManager.autoFix').toUpperCase())
+  }, [handleBatchAction, t, confirmAction, selectedRows])
 
   // --- Change Note handler ---
   const handleChangeNote = useCallback(async () => {
-    const rows = [...selectedRowsRef.current]
+    const rows = selectedRows
     const updatedRowsToSync = []
 
     await processSequential(
@@ -325,11 +364,11 @@ export default function VpsManager({ onBuySuccessRef }) {
       t('manager.changeNote').toUpperCase()
     )
     if (updatedRowsToSync.length > 0) syncToDb(updatedRowsToSync)
-  }, [selectedRowsRef, noteInput, processSequential, updateRowBySid, t, syncToDb])
+  }, [selectedRows, noteInput, processSequential, updateRowBySid, t, syncToDb])
 
   // --- Renew handler ---
   const handleRenew = useCallback(async () => {
-    const rows = [...selectedRowsRef.current]
+    const rows = selectedRows
     if (rows.length === 0) {
       addToast(t('manager.noRowsSelected'), 'warning')
       return
@@ -461,7 +500,7 @@ export default function VpsManager({ onBuySuccessRef }) {
       removeToast(toastId)
     }
   }, [
-    selectedRowsRef,
+    selectedRows,
     confirmAction,
     addToast,
     removeToast,
@@ -474,7 +513,7 @@ export default function VpsManager({ onBuySuccessRef }) {
   ])
 
   const handleRefund = useCallback(async () => {
-    const rows = [...selectedRowsRef.current]
+    const rows = selectedRows
     if (rows.length === 0) {
       addToast(t('manager.noRowsSelected'), 'warning')
       return
@@ -597,7 +636,7 @@ export default function VpsManager({ onBuySuccessRef }) {
       removeToast(toastId)
     }
   }, [
-    selectedRowsRef,
+    selectedRows,
     confirmAction,
     addToast,
     removeToast,
@@ -712,7 +751,7 @@ export default function VpsManager({ onBuySuccessRef }) {
                   style={{ '--action-color': 'var(--blue)' }}
                   disabled={isProcessing}
                   onClick={() => {
-                    const rows = selectedRowsRef.current
+                    const rows = selectedRows
                     if (rows.length === 0) return addToast(t('manager.noRowsSelected'), 'warning')
                     const text = rows
                       .map((r) => {
@@ -850,10 +889,14 @@ export default function VpsManager({ onBuySuccessRef }) {
         pageSize={pageSize}
         totalCount={queryResponse?.total_vps ?? data.length}
         pageSizeOptions={[10, 20, 50, 100, 200]}
-        onPageChange={(zeroBasedPage) => setPage(zeroBasedPage + 1)}
+        onPageChange={(zeroBasedPage) => {
+          setPage(zeroBasedPage + 1)
+          clearSelection()
+        }}
         onPageSizeChange={(newPageSize) => {
           setPageSize(newPageSize)
           setPage(1)
+          clearSelection()
         }}
         receivedData={receivedData}
         renderingReceived={renderingReceived}
@@ -979,6 +1022,7 @@ export default function VpsManager({ onBuySuccessRef }) {
         operatorConfig={OPERATOR_CONFIG}
         rowClassMap={rowClassMap}
         selectedIds={selectedIds}
+        selectedRows={selectedRows}
         extraBtn={
           <button
             id="reloadBtn"

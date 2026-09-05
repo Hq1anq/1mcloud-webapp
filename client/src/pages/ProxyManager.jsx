@@ -1,19 +1,20 @@
 import DropDown from '../components/ui/DropDown'
-import { PaginatedTable, TableFilterToolbar } from '../components/ui/Table'
+import { PaginatedTable, TableFilterToolbar, useTableSelection } from '../components/ui/Table'
 import ControlButton from '../components/ui/ControlButton'
 import StatusMetricsMeter from '../components/ui/StatusMetricsMeter'
 import ChangeIpDialog from '../components/dialog/proxy/ChangeIpDialog'
 import ReinstallDialog from '../components/dialog/proxy/ReinstallDialog'
 import axiosInstance from '../lib/axios'
-import { useState, useEffect, useCallback, useMemo, useRef, useLayoutEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useToast } from '../context/ToastContext'
 import { useSafeCopy } from '../context/SafeCopyContext'
 import { useConfirm } from '../context/ConfirmContext'
 import { useTranslation } from '../i18n'
 import useAuthStore from '../store/useAuthStore'
 import useProxyStore from '../store/useProxyStore'
+import { useQueryClient } from '@tanstack/react-query'
 import useManagerActions from '../hooks/useManagerActions'
-import { useProxyListQuery } from '../hooks/useProxyQuery'
+import { useProxyListQuery, PROXY_QUERY_KEY } from '../hooks/useProxyQuery'
 import { extractIP } from '../utils/data'
 import useDebounce from '../hooks/useDebounce'
 
@@ -39,39 +40,17 @@ export default function ProxyManager({ onBuySuccessRef }) {
   const [pageSize, setPageSize] = useState(20)
   const [byTime, setByTime] = useState('all')
   const [keyword, setKeyword] = useState('')
-  const [showFilterToolkit, setShowFilterToolkit] = useState(false)
-
-  // Dynamic sliding indicator style & refs for variable-width time filter buttons
-  const [indicatorStyle, setIndicatorStyle] = useState({ left: 4, width: 0 })
-  const timeFilterRefs = useRef({})
-
-  const updateTimeFilterIndicator = useCallback(() => {
-    const activeEl = timeFilterRefs.current[byTime]
-    if (activeEl) {
-      setIndicatorStyle({
-        left: activeEl.offsetLeft,
-        width: activeEl.offsetWidth,
-      })
-    }
-  }, [byTime])
-
-  useLayoutEffect(() => {
-    updateTimeFilterIndicator()
-  }, [updateTimeFilterIndicator])
-
-  useEffect(() => {
-    window.addEventListener('resize', updateTimeFilterIndicator)
-    return () => window.removeEventListener('resize', updateTimeFilterIndicator)
-  }, [updateTimeFilterIndicator])
 
   // Debounced input states (400ms delay to prevent per-keystroke API calls)
   const debouncedKeyword = useDebounce(keyword, 400)
   const debouncedIps = useDebounce(ips, 400)
 
-  // Reset page to 1 whenever debounced keyword or IPs filter changes
-  useEffect(() => {
+  // Reset page to 1 whenever debounced keyword or IPs filter changes without cascading effect renders
+  const [prevSearch, setPrevSearch] = useState({ keyword: debouncedKeyword, ips: debouncedIps })
+  if (prevSearch.keyword !== debouncedKeyword || prevSearch.ips !== debouncedIps) {
+    setPrevSearch({ keyword: debouncedKeyword, ips: debouncedIps })
     setPage(1)
-  }, [debouncedKeyword, debouncedIps])
+  }
 
   const parsedIps = useMemo(() => {
     if (!debouncedIps.trim()) return ''
@@ -104,12 +83,33 @@ export default function ProxyManager({ onBuySuccessRef }) {
   )
 
   // Data from Zustand store
+  const queryClient = useQueryClient()
   const data = useProxyStore((s) => s.data)
   const receivedData = useProxyStore((s) => s.receivedData)
   const renderingReceived = useProxyStore((s) => s.renderingReceived)
   const setRenderingReceived = useProxyStore((s) => s.setRenderingReceived)
-  const updateRowBySid = useProxyStore((s) => s.updateRowBySid)
+  const rawUpdateRowBySid = useProxyStore((s) => s.updateRowBySid)
   const rawSyncToDb = useProxyStore((s) => s.syncToDb)
+
+  const updateRowBySid = useCallback(
+    (sid, updater) => {
+      rawUpdateRowBySid(sid, updater)
+
+      queryClient.setQueriesData({ queryKey: [PROXY_QUERY_KEY] }, (old) => {
+        if (!old?.data) return old
+        let hasMatch = false
+        const nextData = old.data.map((r) => {
+          if (r.sid === sid) {
+            hasMatch = true
+            return { ...r, ...updater(r) }
+          }
+          return r
+        })
+        return hasMatch ? { ...old, data: nextData } : old
+      })
+    },
+    [rawUpdateRowBySid, queryClient]
+  )
 
   useEffect(() => {
     if (queryResponse?.data) {
@@ -157,7 +157,6 @@ export default function ProxyManager({ onBuySuccessRef }) {
     },
     [rawSyncToDb, addToast, removeToast, t]
   )
-  const loadFromDb = useProxyStore((s) => s.loadFromDb)
   const handleBuySuccessStore = useProxyStore((s) => s.handleBuySuccess)
 
   const [changeIpState, setChangeIpState] = useState({
@@ -170,23 +169,25 @@ export default function ProxyManager({ onBuySuccessRef }) {
     data: { sid: '', ip: '', remote_port: '', username: '', password: '', type: '', note: '' },
   })
 
-  // Shared selection & processing logic
+  // Table selection logic handled cleanly by table selection hook
   const {
     selectedIds,
-    selectedRowsRef,
+    selectedRows,
+    clearSelection,
+    deselectRows,
+    onSelectionChange,
+  } = useTableSelection({ data })
+
+  // Action runner for batch, single, and sequential operations
+  const {
     isProcessing,
     rowClassMap,
     setRowClassMap,
     setIsProcessing,
-    setSelectedIds,
-    setSelectedRows,
-    clearSelection,
-    deselectRows,
-    onSelectionChange,
     handleBatchAction,
     handleSingleAction,
     processSequential,
-  } = useManagerActions({ updateRowBySid, syncToDb })
+  } = useManagerActions({ updateRowBySid, syncToDb, onDeselect: deselectRows })
 
   const profile = useMemo(() => {
     try {
@@ -251,7 +252,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
 
   // --- Change IP handler ---
   const handleChangeIp = useCallback(async () => {
-    const rows = [...selectedRowsRef.current]
+    const rows = selectedRows
     if (rows.length === 0) {
       addToast(t('manager.noRowsSelected'), 'warning')
       return
@@ -324,7 +325,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
       )
     }
   }, [
-    selectedRowsRef,
+    selectedRows,
     changeIpType,
     confirmAction,
     safeCopy,
@@ -337,7 +338,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
 
   // --- Reinstall handler ---
   const handleReinstall = useCallback(async () => {
-    const rows = [...selectedRowsRef.current]
+    const rows = selectedRows
     if (rows.length === 0) {
       addToast(t('manager.noRowsSelected'), 'warning')
       return
@@ -485,7 +486,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
       )
     }
   }, [
-    selectedRowsRef,
+    selectedRows,
     reinstallType,
     reinstallInput,
     confirmAction,
@@ -499,7 +500,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
 
   // --- Change Note handler ---
   const handleChangeNote = useCallback(async () => {
-    const rows = [...selectedRowsRef.current]
+    const rows = selectedRows
     const updatedRows = []
 
     let isReplaceMode = false
@@ -601,26 +602,26 @@ export default function ProxyManager({ onBuySuccessRef }) {
     if (updatedRows.length > 0) {
       syncToDb(updatedRows)
     }
-  }, [selectedRowsRef, noteInput, processSequential, updateRowBySid, t, syncToDb])
+  }, [selectedRows, noteInput, processSequential, updateRowBySid, t, syncToDb])
 
   const handlePause = useCallback(
     () =>
-      handleBatchAction('/server/pause', t('manager.pause').toUpperCase(), () => ({
+      handleBatchAction(selectedRows, '/server/pause', t('manager.pause').toUpperCase(), () => ({
         status: 'Paused',
       })),
-    [handleBatchAction, t]
+    [handleBatchAction, selectedRows, t]
   )
 
   const handleReboot = useCallback(
     () =>
-      handleBatchAction('/server/reboot', t('manager.reboot').toUpperCase(), () => ({
+      handleBatchAction(selectedRows, '/server/reboot', t('manager.reboot').toUpperCase(), () => ({
         status: 'Running',
       })),
-    [handleBatchAction, t]
+    [handleBatchAction, selectedRows, t]
   )
 
   const handleCheck = useCallback(async () => {
-    const rows = [...selectedRowsRef.current]
+    const rows = selectedRows
     if (rows.length === 0) {
       addToast(t('manager.noRowsSelected'), 'warning')
       return
@@ -681,20 +682,15 @@ export default function ProxyManager({ onBuySuccessRef }) {
                   )
                 })
 
-                if (matchedRow) {
-                  const newStatus = result.status === 'Active' ? 'Running' : 'Off'
-                  updateRowBySid(matchedRow.sid, () => ({ status: newStatus }))
-                  updatedRows.push({ ...matchedRow, status: newStatus })
-                  classUpdates[matchedRow.sid] = 'bg-success-cell'
+                  if (matchedRow) {
+                    const newStatus = result.status === 'Active' ? 'Running' : 'Off'
+                    updateRowBySid(matchedRow.sid, () => ({ status: newStatus }))
+                    updatedRows.push({ ...matchedRow, status: newStatus })
+                    classUpdates[matchedRow.sid] = 'bg-success-cell'
 
-                  // Uncheck the row
-                  setSelectedIds((prev) => {
-                    const newSet = new Set(prev)
-                    newSet.delete(matchedRow._index)
-                    return newSet
-                  })
-                  setSelectedRows((prev) => prev.filter((r) => r._index !== matchedRow._index))
-                }
+                    // Uncheck the row cleanly
+                    deselectRows([matchedRow])
+                  }
 
                 if (result.status === 'Active') activeCount++
                 else inactiveCount++
@@ -759,7 +755,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
       removeToast(loadingId)
     }
   }, [
-    selectedRowsRef,
+    selectedRows,
     data,
     t,
     addToast,
@@ -767,14 +763,13 @@ export default function ProxyManager({ onBuySuccessRef }) {
     removeToast,
     updateRowBySid,
     setRowClassMap,
-    setSelectedIds,
-    setSelectedRows,
+    deselectRows,
     syncToDb,
     setIsProcessing,
   ])
 
   const handleRenew = useCallback(async () => {
-    const rows = [...selectedRowsRef.current]
+    const rows = selectedRows
     if (rows.length === 0) {
       addToast(t('manager.noRowsSelected'), 'warning')
       return
@@ -907,7 +902,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
       removeToast(toastId)
     }
   }, [
-    selectedRowsRef,
+    selectedRows,
     confirmAction,
     addToast,
     removeToast,
@@ -920,7 +915,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
   ])
 
   const handleRefund = useCallback(async () => {
-    const rows = [...selectedRowsRef.current]
+    const rows = selectedRows
     if (rows.length === 0) {
       addToast(t('manager.noRowsSelected'), 'warning')
       return
@@ -1043,7 +1038,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
       removeToast(toastId)
     }
   }, [
-    selectedRowsRef,
+    selectedRows,
     confirmAction,
     addToast,
     removeToast,
@@ -1152,7 +1147,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
             {/* Copy IP */}
             <button
               onClick={() => {
-                const rows = selectedRowsRef.current
+                const rows = selectedRows
                 if (rows.length === 0) return addToast(t('manager.noRowsSelected'), 'warning')
                 const text = rows
                   .map((r) => {
@@ -1195,7 +1190,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
               style={{ '--action-color': 'var(--blue)' }}
               disabled={isProcessing}
               onClick={() => {
-                const rows = selectedRowsRef.current
+                const rows = selectedRows
                 if (rows.length === 0) return addToast(t('manager.noRowsSelected'), 'warning')
                 const text = rows
                   .map((r) => {
@@ -1371,10 +1366,14 @@ export default function ProxyManager({ onBuySuccessRef }) {
         pageSize={pageSize}
         totalCount={queryResponse?.total_vps ?? data.length}
         pageSizeOptions={[10, 20, 50, 100, 200]}
-        onPageChange={(zeroBasedPage) => setPage(zeroBasedPage + 1)}
+        onPageChange={(zeroBasedPage) => {
+          setPage(zeroBasedPage + 1)
+          clearSelection()
+        }}
         onPageSizeChange={(newPageSize) => {
           setPageSize(newPageSize)
           setPage(1)
+          clearSelection()
         }}
         receivedData={receivedData}
         renderingReceived={renderingReceived}
@@ -1515,9 +1514,8 @@ export default function ProxyManager({ onBuySuccessRef }) {
                         [row.sid]: 'bg-success-cell',
                       })
 
-                      // Uncheck the row
-                      setSelectedIds(new Set())
-                      setSelectedRows([])
+                      // Uncheck the checked row
+                      deselectRows([row])
                     },
                   }
                 )
@@ -1553,6 +1551,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
         operatorConfig={OPERATOR_CONFIG}
         rowClassMap={rowClassMap}
         selectedIds={selectedIds}
+        selectedRows={selectedRows}
         extraBtn={
           <button
             id="reloadBtn"

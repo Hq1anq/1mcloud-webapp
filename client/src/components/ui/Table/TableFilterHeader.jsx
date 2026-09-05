@@ -10,6 +10,7 @@ export default function TableFilterHeader({
   selectable,
   selectedIds,
   filteredData,
+  getRowKey,
   filters,
   filterInputs,
   showCountryCode,
@@ -20,9 +21,14 @@ export default function TableFilterHeader({
   onSelectAll,
   t,
 }) {
-  const selectableCount = filteredData.reduce((count, row) => {
-    return row?.status?.toLowerCase() === 'refunded' ? count : count + 1
-  }, 0)
+  const selectableRows = filteredData.filter((row) => row?.status?.toLowerCase() !== 'refunded')
+  const pageSelectedCount = selectableRows.filter((row, i) => {
+    const key = getRowKey(row, i)
+    return Boolean(selectedIds?.has(key))
+  }).length
+
+  const isAllSelected = selectableRows.length > 0 && pageSelectedCount === selectableRows.length
+  const isIndeterminate = pageSelectedCount > 0 && pageSelectedCount < selectableRows.length
 
   return (
     <tr className="bg-thead border-wrapper border-t-4 border-b-2">
@@ -30,8 +36,8 @@ export default function TableFilterHeader({
       {selectable && (
         <th data-capture-ignore className="px-2 sm:px-4">
           <Checkbox
-            checked={selectedIds.size === selectableCount && selectableCount > 0}
-            indeterminate={selectedIds.size > 0 && selectedIds.size < selectableCount}
+            checked={isAllSelected}
+            indeterminate={isIndeterminate}
             onChange={onSelectAll}
           />
         </th>

@@ -2,6 +2,11 @@ import { getPool } from "../lib/db.js";
 import { getCachedVpsPlans } from "../services/cache.service.js";
 import { resolveUser } from "../services/user.service.ts";
 import { encrypt, decrypt } from "../services/crypto.service.ts";
+import {
+  encryptPayload,
+  decryptPayload,
+  isPayloadEncrypted,
+} from "../services/payloadCrypto.service.ts";
 
 const HEADERS = {
   accept: "application/json, text/plain, */*",
@@ -139,9 +144,10 @@ export async function getVpsList(req, res) {
       );
 
     const vpsList = result.recordset.map((v) => {
+      const plainPass = v.user_pass ? decrypt(v.user_pass) : null;
       return {
         ...v,
-        user_pass: v.user_pass ? decrypt(v.user_pass) : null,
+        user_pass: plainPass ? encryptPayload(plainPass) : null,
         is_auto_renew: !!v.is_auto_renew,
       };
     });
@@ -184,10 +190,16 @@ export async function saveVpsList(req, res) {
 
         let query = "";
         chunk.forEach((vps, idx) => {
+          let plainPass = vps.user_pass;
+          if (plainPass && isPayloadEncrypted(plainPass)) {
+            plainPass = decryptPayload(plainPass);
+          }
+          const dbPass = plainPass ? encrypt(plainPass) : null;
+
           request.input(`sid_${idx}`, vps.sid);
           request.input(`plan_number_${idx}`, vps.plan_number || null);
           request.input(`ip_port_${idx}`, vps.ip_port || null);
-          request.input(`user_pass_${idx}`, vps.user_pass ? encrypt(vps.user_pass) : null);
+          request.input(`user_pass_${idx}`, dbPass);
           request.input(`country_${idx}`, vps.country || null);
           request.input(`he_dieu_hanh_${idx}`, vps.he_dieu_hanh || null);
           request.input(`price_vnd_${idx}`, vps.price_vnd || null);

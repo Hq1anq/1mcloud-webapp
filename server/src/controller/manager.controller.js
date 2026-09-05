@@ -4,6 +4,7 @@ import { resolveUser } from "../services/user.service.ts";
 import { mergeProxyData, mergeVpsData } from "../services/merge.service.ts";
 import { filterByKeyword } from "../lib/utils.js";
 import { decrypt } from "../services/crypto.service.ts";
+import { encryptPayload } from "../services/payloadCrypto.service.ts";
 
 const HEADERS = {
   accept: "application/json, text/plain, */*",
@@ -90,8 +91,13 @@ export async function list(req, res) {
       const startIndex = (pageNum - 1) * limitNum;
       const paginatedData = data3.slice(startIndex, startIndex + limitNum);
 
+      const payloadData = paginatedData.map((item) => ({
+        ...item,
+        user_pass: item.user_pass ? encryptPayload(item.user_pass) : null,
+      }));
+
       return res.json({
-        data: paginatedData,
+        data: payloadData,
         total_vps: totalCount,
         total_vps_running: totalRunning,
         total_vps_off: totalOff,
@@ -186,8 +192,13 @@ export async function list(req, res) {
       ? mergeProxyData(data, dbRows)
       : mergeVpsData(data, dbRows);
 
+    const payloadData = mergedData.map((row) => ({
+      ...row,
+      user_pass: row.user_pass ? encryptPayload(row.user_pass) : null,
+    }));
+
     return res.json({
-      data: mergedData,
+      data: payloadData,
       total_vps: json.total_vps,
       total_vps_running: json.total_vps_running,
       total_vps_off: json.total_vps_off,
@@ -333,7 +344,7 @@ export async function create(req, res) {
         status: "Running",
         note: note,
         is_auto_renew: auto_renew,
-        user_pass: rawUserPass,
+        user_pass: rawUserPass ? encryptPayload(rawUserPass) : null,
       };
     });
 

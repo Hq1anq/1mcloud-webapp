@@ -4,11 +4,13 @@ import { useSafeCopy } from '../context/SafeCopyContext'
 import useCapture from '../hooks/useCapture'
 import axiosInstance from '../lib/axios'
 import { useState, useCallback, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useToast } from '../context/ToastContext'
 import { parseProxy } from '../utils/data'
 import { useTranslation } from '../i18n'
 
 export default function ProxyChecker() {
+  const navigate = useNavigate()
   const tableRef = useRef(null)
   const [proxyType, setProxyType] = useState('AUTO')
   const [proxyInput, setProxyInput] = useState('')
@@ -392,25 +394,55 @@ export default function ProxyChecker() {
             </svg>
           </button>
         }
-        emptyMessage={
+        emtyState={
           !isChecking && (
-            <div id="emptyState" className="py-12 text-center">
-              <svg
-                id="proxy-icon"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 32 32"
-                className="fill-text-muted mx-auto size-12 shrink-0 md:h-16 md:w-16"
+            <div
+              id="emptyState"
+              className="mx-auto flex max-w-2xl flex-col items-center gap-6 px-4 py-10 select-none"
+            >
+              <div className="border-primary/25 bg-primary/10 text-primary mx-auto flex size-24 items-center justify-center rounded-2xl border shadow-inner">
+                <svg
+                  className="size-12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  <path d="m9 12 2 2 4-4" />
+                </svg>
+              </div>
+              <div className="space-y-1 text-center">
+                <h3 className="font-headline text-text-primary text-xl font-bold">
+                  {t('checker.emptyTitle')}
+                </h3>
+                <p className="text-text-muted text-sm">
+                  {t('checker.emptyDescPrefix')}{' '}
+                  <span className="text-primary font-medium">{t('check')}</span>
+                  {t('checker.emptyDescSuffix')}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => navigate('/price/proxy')}
+                className="bg-primary hover:bg-primary/90 inline-flex cursor-pointer items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:scale-[1.02] active:scale-[0.98]"
               >
-                <path d="M28.3,24.2V16c0-0.5-0.4-0.8-0.8-0.8h-4.4c-0.3,0-0.5-0.2-0.5-0.5v-3c0-0.3,0.2-0.5,0.5-0.5h4.1 c0.5,0,0.8-0.4,0.8-0.8V2c0-0.5-0.4-0.8-0.8-0.8H4.8C4.4,1.2,4,1.6,4,2v8.3c0,0.5,0.4,0.8,0.8,0.8h4.1c0.3,0,0.5,0.2,0.5,0.5v3 c0,0.3-0.2,0.5-0.5,0.5H4.5c-0.5,0-0.8,0.4-0.8,0.8v8.2c0,0.3-0.2,0.5-0.5,0.5H0.8c-0.5,0-0.8,0.4-0.8,0.8v4.3 c0,0.5,0.4,0.8,0.8,0.8h7.3c0.5,0,0.8-0.4,0.8-0.8v-4.3c0-0.5-0.4-0.8-0.8-0.8H5.8c-0.3,0-0.5-0.2-0.5-0.5v-6.9 c0-0.3,0.2-0.5,0.5-0.5h4.4c0.5,0,0.8-0.4,0.8-0.8v-4.3c0-0.3,0.2-0.5,0.5-0.5h3.1c0.3,0,0.5,0.2,0.5,0.5v12.2 c0,0.5-0.4,0.8-0.8,0.8h-2c-0.5,0-0.8,0.4-0.8,0.8v4.3c0,0.5,0.4,0.8,0.8,0.8h7.3c0.5,0,0.8-0.4,0.8-0.8v-4.3 c0-0.5-0.4-0.8-0.8-0.8h-2c-0.5,0-0.8-0.4-0.8-0.8V11.7c0-0.3,0.2-0.5,0.5-0.5h3.1c0.3,0,0.5,0.2,0.5,0.5V16c0,0.5,0.4,0.8,0.8,0.8 h4.4c0.3,0,0.5,0.2,0.5,0.5v6.9c0,0.3-0.2,0.5-0.5,0.5h-2.4c-0.5,0-0.8,0.4-0.8,0.8v4.3c0,0.5,0.4,0.8,0.8,0.8h7.3 c0.5,0,0.8-0.4,0.8-0.8v-4.3c0-0.5-0.4-0.8-0.8-0.8h-2.4C28.5,24.7,28.3,24.5,28.3,24.2z M7.4,26.8v1.8c0,0.3-0.2,0.5-0.5,0.5H2.1 c-0.3,0-0.5-0.2-0.5-0.5v-1.8c0-0.3,0.2-0.5,0.5-0.5h4.8C7.2,26.3,7.4,26.6,7.4,26.8z M18.9,26.8v1.8c0,0.3-0.2,0.5-0.5,0.5h-4.8 c-0.3,0-0.5-0.2-0.5-0.5v-1.8c0-0.3,0.2-0.5,0.5-0.5h4.8C18.7,26.3,18.9,26.6,18.9,26.8z M5.6,9.1V3.3c0-0.3,0.2-0.5,0.5-0.5h19.8 c0.3,0,0.5,0.2,0.5,0.5v5.8c0,0.3-0.2,0.5-0.5,0.5H6.1C5.8,9.6,5.6,9.4,5.6,9.1z M29.9,29.1h-4.8c-0.3,0-0.5-0.2-0.5-0.5v-1.8 c0-0.3,0.2-0.5,0.5-0.5h4.8c0.3,0,0.5,0.2,0.5,0.5v1.8C30.4,28.9,30.2,29.1,29.9,29.1z" />
-                <path d="M15.1,6.2c0,0.4-0.4,0.8-0.8,0.8H7.9C7.5,7,7.1,6.6,7.1,6.2s0.4-0.8,0.8-0.8h6.4C14.7,5.4,15.1,5.8,15.1,6.2z" />
-                <circle cx="17.7" cy="6.2" r="0.8" />
-                <path d="M24.9,6.2c0,0.4-0.4,0.8-0.8,0.8s-0.8-0.4-0.8-0.8s0.4-0.8,0.8-0.8S24.9,5.8,24.9,6.2z" />
-                <path d="M21.7,6.2c0,0.4-0.4,0.8-0.8,0.8s-0.8-0.4-0.8-0.8s0.4-0.8,0.8-0.8S21.7,5.8,21.7,6.2z" />
-              </svg>
-              <p className="text-text-muted text-base select-none md:text-xl">
-                {t('checker.noProxyToCheck')} <br />
-                {t('checker.enterAndClick')} <span className="text-highlight">{t('check')}</span>
-              </p>
+                <svg
+                  className="size-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                {t('manager.buyProxy')}
+              </button>
             </div>
           )
         }

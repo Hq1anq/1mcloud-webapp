@@ -219,8 +219,15 @@ const vi = {
   'checker.copiedIp': 'IP',
   'checker.noProxyToCheck': 'Chưa có proxy để kiểm tra',
   'checker.enterAndClick': 'Nhập proxy và nhấn',
+  'checker.emptyTitle': 'Chưa có kết quả kiểm tra proxy',
+  'checker.emptyDescPrefix': 'Dán danh sách proxy vào ô phía trên và nhấn',
+  'checker.emptyDescSuffix': ', hoặc mua thêm proxy tốc độ cao.',
 
   // Proxy Manager
+  'manager.noProxiesFound': 'Chưa có proxy nào đang hoạt động',
+  'manager.noVpsFound': 'Chưa có máy chủ VPS nào',
+  'manager.buyProxy': 'Mua Proxy',
+  'manager.buyVps': 'Mua VPS',
   'manager.enterIps': 'Nhập IP',
   'manager.onePerLine': '(mỗi dòng một IP)',
   'manager.enterAmount': 'Số lượng',
@@ -473,6 +480,9 @@ const vi = {
   'vpsPrice.title': 'Bảng Giá VPS',
   'vpsPrice.subtitle':
     'Khởi tạo máy chủ tức thì với CPU Intel Xeon ổn định, vRAM GPU Đồ họa, Dung lượng PTU Storage lớn và Băng thông không giới hạn.',
+  'vpsPrice.pillDDoS': 'Bảo vệ Anti-DDoS Doanh Nghiệp',
+  'vpsPrice.pillStorage': 'Ổ cứng NVMe Tốc Độ Cao',
+  'vpsPrice.pillBandwidth': 'Băng thông 1 Gbps Không Giới Hạn',
   'vpsPrice.categoriesTitle': 'Danh Mục & Quốc gia',
   'vpsPrice.categoriesSummary': 'Quốc Gia + 2 Dòng Chuyên Dụng',
   'vpsPrice.locations': 'Quốc Gia',
@@ -488,6 +498,9 @@ const vi = {
   'proxyPrice.title': 'Bảng Giá Proxy',
   'proxyPrice.subtitle':
     'Proxy IPv4 riêng tư, hỗ trợ HTTP & SOCKS5, không giới hạn thiết bị & băng thông, tốc độ Ethernet 1 Gbps. Chọn vị trí quốc gia phù hợp.',
+  'proxyPrice.pillDedicatedIp': 'IPv4 Riêng Biệt (Dedicated)',
+  'proxyPrice.pillProtocols': 'Giao thức HTTP & SOCKS5',
+  'proxyPrice.pillUnlimited': 'Không Giới Hạn Băng Thông & Thiết Bị',
   'proxyPrice.sectionTitle': 'Danh Sách Proxy',
   'proxyPrice.countriesUnit': 'quốc gia',
   'proxyPrice.durationUnit': '1 tháng / IP',

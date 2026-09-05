@@ -66,20 +66,104 @@ export default function VpsPrice() {
 
   return (
     <main className="bg-body text-text-primary min-h-screen">
-      {/* Hero Banner */}
-      <section className="bg-surface relative overflow-hidden p-6 md:p-8">
-        <div className="bg-primary/10 pointer-events-none absolute -right-10 -bottom-10 size-60 rounded-full blur-3xl" />
-        <div className="relative z-10 max-w-2xl">
-          <span className="bg-primary/10 text-primary border-primary/20 mb-3 inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold">
-            <span className="bg-primary h-2 w-2 animate-pulse rounded-full" />
-            {t('vpsPrice.bannerBadge')}
-          </span>
-          <h1 className="font-headline text-text-primary mb-2 text-2xl font-bold md:text-3xl">
-            {t('vpsPrice.title')}
-          </h1>
-          <p className="text-text-muted text-sm leading-relaxed md:text-base">
-            {t('vpsPrice.subtitle')}
-          </p>
+      {/* Hero Banner (Aurora Glow & Radar Rings) */}
+      <section className="bg-linear-to-b from-surface via-surface to-body border-border/40 relative overflow-hidden border-b px-6 py-10 md:px-8 md:py-12">
+        {/* Aurora glow layers */}
+        <div className="pointer-events-none absolute -top-24 right-10 h-64 w-80 rounded-full bg-linear-to-tr from-primary/25 via-purple-500/20 to-sky-400/25 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-10 right-60 size-48 rounded-full bg-cyan-400/15 blur-2xl" />
+
+        {/* Concentric radar rings anchored on the right */}
+        <div className="relative z-10 mx-auto max-w-380">
+          <div className="border-primary/15 pointer-events-none absolute -right-10 top-1/2 -translate-y-1/2 size-64 rounded-full border" />
+          <div className="border-primary/10 pointer-events-none absolute -right-20 top-1/2 -translate-y-1/2 size-84 rounded-full border" />
+          <div className="border-primary/5 pointer-events-none absolute -right-32 top-1/2 -translate-y-1/2 size-108 rounded-full border" />
+
+          <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
+            <div>
+              <div className="mb-3">
+                <span className="bg-linear-to-r from-primary/20 to-purple-500/20 text-primary border-primary/30 inline-flex items-center gap-2 rounded-full border px-3.5 py-1 text-xs font-bold tracking-wide">
+                  <span className="relative flex size-2">
+                    <span className="bg-primary absolute inline-flex h-full w-full animate-ping rounded-full opacity-75" />
+                    <span className="bg-primary relative inline-flex size-2 rounded-full" />
+                  </span>
+                  {t('vpsPrice.bannerBadge')}
+                </span>
+              </div>
+
+              <h1 className="font-headline text-text-primary text-2xl font-bold tracking-tight md:text-3xl lg:text-4xl">
+                {t('vpsPrice.title')}
+              </h1>
+              <p className="text-text-muted mt-2 max-w-2xl text-sm leading-relaxed md:text-base">
+                {t('vpsPrice.subtitle')}
+              </p>
+
+              {/* Feature pills row */}
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <span className="bg-body/60 border-border/60 text-text-secondary inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium">
+                  <svg
+                    className="size-3.5 text-primary shrink-0"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  </svg>
+                  {t('vpsPrice.pillDDoS')}
+                </span>
+                <span className="bg-body/60 border-border/60 text-text-secondary inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium">
+                  <svg
+                    className="size-3.5 text-primary shrink-0"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <ellipse cx="12" cy="5" rx="9" ry="3" />
+                    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+                    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+                  </svg>
+                  {t('vpsPrice.pillStorage')}
+                </span>
+                <span className="bg-body/60 border-border/60 text-text-secondary inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-medium">
+                  <svg
+                    className="size-3.5 text-primary shrink-0"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                  </svg>
+                  {t('vpsPrice.pillBandwidth')}
+                </span>
+              </div>
+            </div>
+
+            {/* Glowing Server Icon Badge */}
+            <div className="hidden md:flex relative size-24 items-center justify-center rounded-2xl border border-primary/30 bg-primary/10 shadow-[0_0_35px_rgba(74,163,255,0.25)] backdrop-blur-md">
+              <ServerIcon className="text-primary size-12" />
+              <span className="bg-primary absolute -top-1.5 -right-1.5 flex size-4 items-center justify-center rounded-full text-white shadow-xs">
+                <svg
+                  className="size-2.5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              </span>
+            </div>
+          </div>
         </div>
       </section>
       <div className="mx-auto max-w-380 px-4 py-8 sm:px-6 md:py-12 lg:px-8">

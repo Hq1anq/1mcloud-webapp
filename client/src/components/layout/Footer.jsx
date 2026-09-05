@@ -8,7 +8,7 @@ export default function Footer() {
     <div className="text-text-muted border-border mt-16 w-full border-t px-4 pt-12">
       <div className="mx-auto flex max-w-380 flex-wrap gap-10">
         <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-2">
             <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" className="size-12">
               <path
                 fill="var(--logo-ring)"
@@ -24,7 +24,7 @@ export default function Footer() {
               />
             </svg>
             <h1 className="text-3xl font-bold">1MCLOUD</h1>
-          </div>
+          </Link>
           <div className="max-w-lg">{t('footer.desc')}</div>
         </div>
         <div className="m-auto flex flex-wrap gap-20">

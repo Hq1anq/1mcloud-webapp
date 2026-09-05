@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { animate } from 'motion/react'
 import { proxyNations } from '../data/proxyNations.jsx'
+import { EarthIcon } from '../assets/icons'
 import axiosInstance from '../lib/axios.js'
 import ProxyCard from '../components/price/ProxyCard.jsx'
 import { useTranslation } from '../i18n'
@@ -113,20 +114,105 @@ export default function ProxyPrice() {
 
   return (
     <main className="bg-body text-text-primary min-h-screen">
-      {/* Hero Banner */}
-      <section className="bg-surface relative overflow-hidden p-6 md:p-8">
-        <div className="bg-primary/10 pointer-events-none absolute -right-10 -bottom-10 size-60 rounded-full blur-3xl" />
-        <div className="relative z-10 max-w-3xl">
-          <span className="bg-primary/10 text-primary border-primary/20 mb-3 inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold">
-            <span className="bg-primary h-2 w-2 animate-pulse rounded-full" />
-            {t('proxyPrice.bannerBadge')}
-          </span>
-          <h1 className="font-headline text-text-primary mb-2 text-2xl font-bold md:text-3xl">
-            {t('proxyPrice.title')}
-          </h1>
-          <p className="text-text-muted text-sm leading-relaxed md:text-base">
-            {t('proxyPrice.subtitle')}
-          </p>
+      {/* Hero Banner (Aurora Glow & Radar Rings) */}
+      <section className="from-surface via-surface to-body border-border/40 relative overflow-hidden border-b bg-linear-to-b px-6 py-10 md:px-8 md:py-12">
+        {/* Aurora glow layers */}
+        <div className="from-primary/25 pointer-events-none absolute -top-24 right-10 h-64 w-80 rounded-full bg-linear-to-tr via-purple-500/20 to-sky-400/25 blur-3xl" />
+        <div className="pointer-events-none absolute right-60 -bottom-10 size-48 rounded-full bg-cyan-400/15 blur-2xl" />
+
+        {/* Concentric radar rings anchored on the right */}
+        <div className="relative z-10 mx-auto max-w-380">
+          <div className="border-primary/15 pointer-events-none absolute top-1/2 -right-10 size-64 -translate-y-1/2 rounded-full border" />
+          <div className="border-primary/10 pointer-events-none absolute top-1/2 -right-20 size-84 -translate-y-1/2 rounded-full border" />
+          <div className="border-primary/5 pointer-events-none absolute top-1/2 -right-32 size-108 -translate-y-1/2 rounded-full border" />
+
+          <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
+            <div>
+              <div className="mb-3">
+                <span className="from-primary/20 text-primary border-primary/30 inline-flex items-center gap-2 rounded-full border bg-linear-to-r to-purple-500/20 px-3.5 py-1 text-xs font-bold tracking-wide">
+                  <span className="relative flex size-2">
+                    <span className="bg-primary absolute inline-flex h-full w-full animate-ping rounded-full opacity-75" />
+                    <span className="bg-primary relative inline-flex size-2 rounded-full" />
+                  </span>
+                  {t('proxyPrice.bannerBadge')}
+                </span>
+              </div>
+
+              <h1 className="font-headline text-text-primary text-2xl font-bold tracking-tight md:text-3xl lg:text-4xl">
+                {t('proxyPrice.title')}
+              </h1>
+              <p className="text-text-muted mt-2 max-w-2xl text-sm leading-relaxed md:text-base">
+                {t('proxyPrice.subtitle')}
+              </p>
+
+              {/* Feature pills row */}
+              <div className="text-text-primary mt-4 flex flex-wrap items-center gap-2 text-xs font-medium">
+                <span className="bg-body/60 border-border/60 inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5">
+                  <svg
+                    className="text-primary size-3.5 shrink-0"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  </svg>
+                  {t('proxyPrice.pillDedicatedIp')}
+                </span>
+                <span className="bg-body/60 border-border/60 inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5">
+                  <svg
+                    className="text-primary size-3.5 shrink-0"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <rect x="2" y="2" width="20" height="8" rx="2" ry="2" />
+                    <rect x="2" y="14" width="20" height="8" rx="2" ry="2" />
+                    <line x1="6" y1="6" x2="6.01" y2="6" />
+                    <line x1="6" y1="18" x2="6.01" y2="18" />
+                  </svg>
+                  {t('proxyPrice.pillProtocols')}
+                </span>
+                <span className="bg-body/60 border-border/60 inline-flex items-center gap-1.5 rounded-lg border px-3 py-1.5">
+                  <svg
+                    className="text-primary size-3.5 shrink-0"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                  </svg>
+                  {t('proxyPrice.pillUnlimited')}
+                </span>
+              </div>
+            </div>
+
+            {/* Glowing Globe Icon Badge */}
+            <div className="border-primary/30 bg-primary/10 relative hidden size-24 items-center justify-center rounded-2xl border shadow-[0_0_35px_rgba(74,163,255,0.25)] backdrop-blur-md md:flex">
+              <EarthIcon className="text-primary size-12" />
+              <span className="bg-primary absolute -top-1.5 -right-1.5 flex size-4 items-center justify-center rounded-full text-white shadow-xs">
+                <svg
+                  className="size-2.5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              </span>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -177,7 +263,11 @@ export default function ProxyPrice() {
                   onBuy={() =>
                     navigate(`/price/proxy/buy?nation=${nation.symbol}`, {
                       state: {
-                        nation: { symbol: nation.symbol, name: nation.name, shortName: nation.shortName },
+                        nation: {
+                          symbol: nation.symbol,
+                          name: nation.name,
+                          shortName: nation.shortName,
+                        },
                         price,
                       },
                     })

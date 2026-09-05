@@ -6,6 +6,7 @@ import ChangeIpDialog from '../components/dialog/proxy/ChangeIpDialog'
 import ReinstallDialog from '../components/dialog/proxy/ReinstallDialog'
 import axiosInstance from '../lib/axios'
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useToast } from '../context/ToastContext'
 import { useSafeCopy } from '../context/SafeCopyContext'
 import { useConfirm } from '../context/ConfirmContext'
@@ -19,6 +20,7 @@ const OPERATOR_CONFIG = {
 }
 
 export default function ProxyManager({ onBuySuccessRef }) {
+  const navigate = useNavigate()
   const [reinstallType, setReinstallType] = useState('HTTPS')
   const [changeIpType, setChangeIpType] = useState('HTTPS')
   const { addToast, removeToast, updateToast } = useToast()
@@ -96,13 +98,8 @@ export default function ProxyManager({ onBuySuccessRef }) {
   })
 
   // Table selection logic handled cleanly by table selection hook
-  const {
-    selectedIds,
-    selectedRows,
-    clearSelection,
-    deselectRows,
-    onSelectionChange,
-  } = useTableSelection({ data })
+  const { selectedIds, selectedRows, clearSelection, deselectRows, onSelectionChange } =
+    useTableSelection({ data })
 
   // Action runner for batch, single, and sequential operations
   const {
@@ -671,15 +668,15 @@ export default function ProxyManager({ onBuySuccessRef }) {
                   )
                 })
 
-                  if (matchedRow) {
-                    const newStatus = result.status === 'Active' ? 'Running' : 'Off'
-                    updateRowBySid(matchedRow.sid, () => ({ status: newStatus }))
-                    updatedRows.push({ ...matchedRow, status: newStatus })
-                    classUpdates[matchedRow.sid] = 'bg-success-cell'
+                if (matchedRow) {
+                  const newStatus = result.status === 'Active' ? 'Running' : 'Off'
+                  updateRowBySid(matchedRow.sid, () => ({ status: newStatus }))
+                  updatedRows.push({ ...matchedRow, status: newStatus })
+                  classUpdates[matchedRow.sid] = 'bg-success-cell'
 
-                    // Uncheck the row cleanly
-                    deselectRows([matchedRow])
-                  }
+                  // Uncheck the row cleanly
+                  deselectRows([matchedRow])
+                }
 
                 if (result.status === 'Active') activeCount++
                 else inactiveCount++
@@ -1804,21 +1801,48 @@ export default function ProxyManager({ onBuySuccessRef }) {
             </svg>
           </button>
         }
-        emptyMessage={
-          <div id="emptyState" className="py-12 text-center">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              className="fill-text-muted mx-auto size-12 shrink-0 sm:size-16"
+        emtyState={
+          <div
+            id="emptyState"
+            className="mx-auto flex max-w-2xl flex-col items-center gap-8 px-4 py-10 select-none"
+          >
+            <div className="border-primary/25 bg-primary/10 text-primary mx-auto flex size-24 items-center justify-center rounded-2xl border shadow-inner">
+              <svg
+                className="size-12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="2" y1="12" x2="22" y2="12" />
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+              </svg>
+            </div>
+            <h3 className="font-headline text-text-primary text-xl font-bold">
+              {t('manager.noProxiesFound')}
+            </h3>
+            <button
+              type="button"
+              onClick={() => navigate('/price/proxy')}
+              className="bg-primary hover:bg-primary/90 inline-flex cursor-pointer items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:scale-[1.02] active:scale-[0.98]"
             >
-              <path d="M5 5a2 2 0 0 0-2 2v3a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V7a2 2 0 0 0-2-2H5Zm9 2a1 1 0 1 0 0 2h.01a1 1 0 1 0 0-2H14Zm3 0a1 1 0 1 0 0 2h.01a1 1 0 1 0 0-2H17ZM3 17v-3a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Zm11-2a1 1 0 1 0 0 2h.01a1 1 0 1 0 0-2H14Zm3 0a1 1 0 1 0 0 2h.01a1 1 0 1 0 0-2H17Z" />
-            </svg>
-            <p className="text-text-muted text-base select-none sm:text-xl">
-              {t('manager.noDataAvailable')} <br />
-              {t('manager.clickGetData')}{' '}
-              <span className="text-highlight">{t('manager.getData')}</span>{' '}
-              {t('manager.toLoadInfo')}
-            </p>
+              <svg
+                className="size-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              {t('manager.buyProxy')}
+            </button>
           </div>
         }
         onSelectionChange={onSelectionChange}

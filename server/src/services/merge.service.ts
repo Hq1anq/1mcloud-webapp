@@ -1,5 +1,3 @@
-// import { decryptDb, encryptPayload } from "./encryption.service.js";
-
 export interface ServerRow {
   sid: number;
   ip_port?: string;
@@ -29,28 +27,23 @@ export interface DbRecord {
  */
 export function mergeProxyData(
   remoteServers: ServerRow[],
-  dbProxies: DbRecord[]
+  dbProxies: DbRecord[],
 ): ServerRow[] {
-  const dbMap = new Map<number, DbRecord>(dbProxies.map((row) => [row.sid, row]));
+  const dbMap = new Map<number, DbRecord>(
+    dbProxies.map((row) => [row.sid, row]),
+  );
 
   return remoteServers.map((server) => {
     const dbRow = dbMap.get(server.sid);
     let userPass: string | undefined = undefined;
 
     if (dbRow && dbRow.user_pass) {
-      // TEMPORARY: Disabled encryption/decryption
-      // userPass = decryptDb(dbRow.user_pass) || dbRow.user_pass;
       userPass = dbRow.user_pass;
     }
 
     if (userPass === undefined && server.user_pass !== undefined) {
       userPass = server.user_pass;
     }
-
-    // TEMPORARY: Disabled encryption/decryption
-    // if (userPass && !userPass.startsWith("enc:")) {
-    //   userPass = encryptPayload(userPass) || userPass;
-    // }
 
     return {
       ...server,
@@ -65,17 +58,17 @@ export function mergeProxyData(
  */
 export function mergeVpsData(
   remoteServers: ServerRow[],
-  dbVpsList: DbRecord[]
+  dbVpsList: DbRecord[],
 ): ServerRow[] {
-  const dbMap = new Map<number, DbRecord>(dbVpsList.map((row) => [row.sid, row]));
+  const dbMap = new Map<number, DbRecord>(
+    dbVpsList.map((row) => [row.sid, row]),
+  );
 
   return remoteServers.map((server) => {
     const dbRow = dbMap.get(server.sid);
     let userPass: string | undefined = undefined;
 
     if (dbRow && dbRow.user_pass) {
-      // TEMPORARY: Disabled encryption/decryption
-      // userPass = decryptDb(dbRow.user_pass) || dbRow.user_pass;
       userPass = dbRow.user_pass;
     }
 
@@ -85,22 +78,21 @@ export function mergeVpsData(
 
     // Default OS user if userPass is empty or missing '/'
     if (!userPass || !userPass.includes("/")) {
-      const os = (server.he_dieu_hanh || dbRow?.he_dieu_hanh || "").toLowerCase();
+      const os = (
+        server.he_dieu_hanh ||
+        dbRow?.he_dieu_hanh ||
+        ""
+      ).toLowerCase();
       const defaultUser = os.includes("ubuntu")
         ? "root"
         : os.includes("win")
-        ? "Administrator"
-        : "";
+          ? "Administrator"
+          : "";
 
       if (defaultUser) {
         userPass = `${defaultUser}/`;
       }
     }
-
-    // TEMPORARY: Disabled encryption/decryption
-    // if (userPass && !userPass.startsWith("enc:")) {
-    //   userPass = encryptPayload(userPass) || userPass;
-    // }
 
     return {
       ...server,

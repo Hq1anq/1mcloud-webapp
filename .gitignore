@@ -10,6 +10,7 @@ footer'.jsx
 *.md
 cleanRefundedRows.js
 updateProxyList.js
+test.*
 proxies.txt
 
 # Node.js

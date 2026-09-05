@@ -1,4 +1,4 @@
-import { forwardRef, useState, useMemo } from 'react'
+import { forwardRef, useState, useMemo, useRef, useEffect } from 'react'
 import BaseTable from './BaseTable'
 import TablePagination, { PAGE_SIZE_OPTIONS } from './TablePagination'
 import { TableRow, itemContent } from './TableVirtuosoRow.jsx'
@@ -79,6 +79,17 @@ const PaginatedTableInternal = forwardRef(function PaginatedTableInternal(
   },
   ref
 ) {
+  const onSelectionChange = props.onSelectionChange
+
+  // Reset selection whenever controlled page changes
+  const lastControlledPageRef = useRef(controlledPage)
+  useEffect(() => {
+    if (lastControlledPageRef.current !== controlledPage) {
+      lastControlledPageRef.current = controlledPage
+      onSelectionChange?.([], new Set())
+    }
+  }, [controlledPage, onSelectionChange])
+
   return (
     <BaseTable
       {...props}
@@ -106,17 +117,20 @@ const PaginatedTableInternal = forwardRef(function PaginatedTableInternal(
             <thead>{fixedHeader()}</thead>
             <tbody>
               {paginatedData.map((row, index) => {
-                const rowIndex =
-                  (isServerSide ? activePage * activePageSize : pageStartIndex) + index
+                const localIndex = isServerSide ? index : pageStartIndex + index
+                const globalKey =
+                  row.sid !== undefined
+                    ? row.sid
+                    : (isServerSide ? activePage * activePageSize : pageStartIndex) + index
 
                 return (
                   <TableRow
-                    key={row.sid !== undefined ? row.sid : rowIndex}
+                    key={globalKey}
                     context={virtuosoContext}
                     item={row}
-                    data-index={rowIndex}
+                    data-index={localIndex}
                   >
-                    {itemContent(rowIndex, row, virtuosoContext)}
+                    {itemContent(localIndex, row, virtuosoContext)}
                   </TableRow>
                 )
               })}
@@ -145,6 +159,7 @@ const PaginatedTableInternal = forwardRef(function PaginatedTableInternal(
         const setPage = (nextPage) => {
           const boundedPage = Math.min(Math.max(nextPage, 0), Math.max(pageCount - 1, 0))
           if (controlledPage === undefined) setInternalPage(boundedPage)
+          onSelectionChange?.([], new Set())
           onPageChange?.(boundedPage)
         }
 
@@ -155,6 +170,7 @@ const PaginatedTableInternal = forwardRef(function PaginatedTableInternal(
 
           if (controlledPageSize === undefined) setInternalPageSize(boundedPageSize)
           if (controlledPage === undefined) setInternalPage(0)
+          onSelectionChange?.([], new Set())
           onPageSizeChange?.(boundedPageSize)
           onPageChange?.(0)
         }

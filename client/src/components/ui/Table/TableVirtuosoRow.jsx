@@ -5,11 +5,12 @@ import RenewToggle from '../RenewToggle.jsx'
 import { getStatusClasses, getExpiryStyle, handleCopy } from '../../../utils/ui'
 
 export const TableRow = ({ context, ...props }) => {
-  const { selectable, selectedIds, handleSelectRow, rowClassMap } = context
+  const { selectable, selectedIds, handleSelectRow, getRowKey, rowClassMap } = context
   const index = props['data-index']
   const row = props.item
 
-  const isSelected = selectable && selectedIds.has(index)
+  const key = getRowKey(row, index)
+  const isSelected = Boolean(selectable && selectedIds?.has(key))
   const overrideClass = row && rowClassMap?.[row.sid]
   const isRefunded = row?.status === 'Refunded'
 
@@ -26,7 +27,7 @@ export const TableRow = ({ context, ...props }) => {
         if (isRefunded || !selectable) return
         if (e.target.closest('input') || e.target.closest('button') || e.target.closest('label'))
           return
-        handleSelectRow(index, e.shiftKey)
+        handleSelectRow(index, e.shiftKey, row)
         if (props.onClick) props.onClick(e)
       }}
     />
@@ -46,13 +47,15 @@ export const itemContent = (index, row, context) => {
     selectable,
     selectedIds,
     handleSelectRow,
+    getRowKey,
     headers,
     showCountryCode,
     onAutoRenewToggle,
     controlButton,
   } = context
 
-  const isSelected = selectable && selectedIds?.has(index)
+  const key = getRowKey(row, index)
+  const isSelected = Boolean(selectable && selectedIds?.has(key))
   const isRefunded = row?.status === 'Refunded'
 
   return (
@@ -61,7 +64,7 @@ export const itemContent = (index, row, context) => {
         <td data-capture-ignore className="border-border border-b p-2 text-center sm:px-4">
           <Checkbox
             checked={isSelected}
-            onChange={(e) => handleSelectRow(index, e.shiftKey)}
+            onChange={(e) => handleSelectRow(index, e.shiftKey, row)}
             disabled={isRefunded}
           />
         </td>

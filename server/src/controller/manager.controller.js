@@ -3,7 +3,7 @@ import { getPool } from "../lib/db.js";
 import { resolveUser } from "../services/user.service.ts";
 import { mergeProxyData, mergeVpsData } from "../services/merge.service.ts";
 import { filterByKeyword } from "../lib/utils.js";
-// import { encryptPayload } from "../services/encryption.service.ts";
+import { decrypt } from "../services/crypto.service.ts";
 
 const HEADERS = {
   accept: "application/json, text/plain, */*",
@@ -60,6 +60,7 @@ export async function list(req, res) {
       // 1. Get data2 from database (all data formatted)
       const data2 = dbRows.map((item) => ({
         ...item,
+        user_pass: item.user_pass ? decrypt(item.user_pass) : null,
         ...(!isProxy && { type: item.he_dieu_hanh }),
         is_auto_renew: !!item.is_auto_renew,
       }));
@@ -158,7 +159,10 @@ export async function list(req, res) {
           .request()
           .input("userId", userId)
           .query(`SELECT sid, user_pass FROM Proxy WHERE user_id = @userId`);
-        dbRows = dbResult.recordset || [];
+        dbRows = (dbResult.recordset || []).map((row) => ({
+          ...row,
+          user_pass: row.user_pass ? decrypt(row.user_pass) : null,
+        }));
       } else {
         const dbResult = await pool
           .request()
@@ -166,7 +170,10 @@ export async function list(req, res) {
           .query(
             `SELECT sid, user_pass, he_dieu_hanh FROM Vps WHERE user_id = @userId`,
           );
-        dbRows = dbResult.recordset || [];
+        dbRows = (dbResult.recordset || []).map((row) => ({
+          ...row,
+          user_pass: row.user_pass ? decrypt(row.user_pass) : null,
+        }));
       }
     } catch (dbErr) {
       console.error(
@@ -326,7 +333,6 @@ export async function create(req, res) {
         status: "Running",
         note: note,
         is_auto_renew: auto_renew,
-        // TEMPORARY: Disabled encryption/decryption
         user_pass: rawUserPass,
       };
     });

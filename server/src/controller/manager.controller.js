@@ -2,7 +2,7 @@ import { getCachedProxyPrice } from "../services/cache.service.js";
 import { getPool } from "../lib/db.js";
 import { resolveUser } from "../services/user.service.ts";
 import { mergeProxyData, mergeVpsData } from "../services/merge.service.ts";
-import { filterByKeyword } from "../lib/utils.js";
+import { applyRecordFilters } from "../utils/filter.ts";
 import { decrypt } from "../services/crypto.service.ts";
 import { encryptPayload } from "../services/payloadCrypto.service.ts";
 
@@ -66,18 +66,14 @@ export async function list(req, res) {
         is_auto_renew: !!item.is_auto_renew,
       }));
 
-      // 2. Filter in data2 using keyword value -> data3
-      const data3 = filterByKeyword(data2, keyword, [
-        "note",
-        "ip_port",
-        "plan_number",
-        "country",
-        "type",
-        "he_dieu_hanh",
-      ]);
-
-      // 3. Sort by sid descending
-      data3.sort((a, b) => b.sid - a.sid);
+      // 2. Filter data2 by by_status, by_time, by_created, ips, keyword, excluding refunded -> data3
+      const data3 = applyRecordFilters(data2, {
+        by_status,
+        by_time,
+        by_created,
+        ips,
+        keyword,
+      });
 
       const totalCount = data3.length;
       const totalRunning = data3.filter(
@@ -87,7 +83,7 @@ export async function list(req, res) {
         (item) => item.status && item.status.toLowerCase() === "off",
       ).length;
 
-      // 4. Paginate data3 using pageNum & limitNum
+      // 3. Paginate data3 using pageNum & limitNum
       const startIndex = (pageNum - 1) * limitNum;
       const paginatedData = data3.slice(startIndex, startIndex + limitNum);
 

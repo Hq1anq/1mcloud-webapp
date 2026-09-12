@@ -1,9 +1,14 @@
 import DropDown from '../components/ui/DropDown'
-import { StandardTable } from '../components/ui/Table'
+import {
+  StandardTable,
+  createTextColumn,
+  createCountryColumn,
+  createStatusColumn,
+} from '../components/ui/Table'
 import { useSafeCopy } from '../context/SafeCopyContext'
 import useCapture from '../hooks/useCapture'
 import axiosInstance from '../lib/axios'
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useToast } from '../context/ToastContext'
 import { parseProxy } from '../utils/data'
@@ -160,6 +165,19 @@ export default function ProxyChecker() {
         )
     )
   }, [selectedRows, safeCopy, addToast, t])
+
+  const checkerColumns = useMemo(
+    () => [
+      createTextColumn({ key: 'ip', align: 'left', filterable: false }),
+      createTextColumn({ key: 'port', align: 'center', filterable: false }),
+      createTextColumn({ key: 'username', align: 'center', filterable: false }),
+      createTextColumn({ key: 'password', align: 'center', filterable: false }),
+      createTextColumn({ key: 'type', align: 'center', filterable: false }),
+      createCountryColumn(),
+      createStatusColumn(),
+    ],
+    []
+  )
 
   return (
     <div>
@@ -375,7 +393,8 @@ export default function ProxyChecker() {
         tableTitle={t('checker.proxyStatus')}
         useFilter={false}
         className="mt-4 px-4 text-base sm:text-lg"
-        headers={['ip', 'port', 'username', 'password', 'type', 'country', 'status']}
+        columns={checkerColumns}
+        isRowSelectable={() => true}
         selectedIds={selectedIds}
         ref={tableRef}
         extraBtn={

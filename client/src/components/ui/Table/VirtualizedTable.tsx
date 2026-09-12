@@ -2,14 +2,9 @@ import React, { forwardRef } from 'react'
 import { TableVirtuoso } from 'react-virtuoso'
 import BaseTable from './BaseTable'
 import { VIRTUOSO_COMPONENTS, itemContent } from './TableVirtuosoRow'
-import type { TableRowContext } from './types'
+import type { BaseTableProps, TableRowContext } from '../../../types/table'
 
-export interface VirtualizedTableProps extends Record<string, any> {
-  data?: any[]
-  headers?: string[]
-  tableTitle?: string
-  selectable?: boolean
-}
+export interface VirtualizedTableProps extends BaseTableProps {}
 
 const VirtualizedTable = forwardRef<HTMLDivElement, VirtualizedTableProps>(
   function VirtualizedTable(props, ref) {

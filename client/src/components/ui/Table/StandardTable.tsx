@@ -1,14 +1,9 @@
 import React, { forwardRef } from 'react'
 import BaseTable from './BaseTable'
 import TableRow from './TableRow'
-import type { TableRowContext } from './types'
+import type { BaseTableProps, TableRowContext } from '../../../types/table'
 
-export interface StandardTableProps extends Record<string, any> {
-  data?: any[]
-  headers?: string[]
-  tableTitle?: string
-  selectable?: boolean
-}
+export interface StandardTableProps extends BaseTableProps {}
 
 const StandardTable = forwardRef<HTMLDivElement, StandardTableProps>(
   function StandardTable(props, ref) {

@@ -1,4 +1,13 @@
-import { PaginatedTable, TableFilterToolbar, useTableSelection } from '../components/ui/Table'
+import {
+  PaginatedTable,
+  TableFilterToolbar,
+  useTableSelection,
+  createCountryColumn,
+  createStatusColumn,
+  createRenewToggleColumn,
+  createControlColumn,
+  createTextColumn,
+} from '../components/ui/Table'
 import ControlButton from '../components/ui/ControlButton'
 import UpgradePlanDialog from '../components/dialog/vps/UpgradePlanDialog'
 import ReinstallDialog from '../components/dialog/vps/ReinstallDialog'
@@ -626,6 +635,135 @@ export default function VpsManager({ onBuySuccessRef }) {
     syncToDb,
   ])
 
+  const vpsColumns = useMemo(
+    () => [
+      createControlColumn((row) => (
+        <ControlButton
+          onUpgrade={
+            row.country === 'GPU'
+              ? undefined
+              : () => {
+                setUpgradeDialogState({ isOpen: true, sid: row.sid })
+              }
+          }
+          onPause={() =>
+            handleSingleAction(
+              row,
+              '/server/pause',
+              { sids: row.sid.toString() },
+              t('manager.pause').toUpperCase(),
+              () => ({
+                status: 'Paused',
+              })
+            )
+          }
+          onReboot={() =>
+            handleSingleAction(
+              row,
+              '/server/reboot',
+              { sids: row.sid.toString() },
+              t('manager.reboot').toUpperCase(),
+              () => ({
+                status: 'Running',
+              })
+            )
+          }
+          onRefund={
+            profile?.is_refund
+              ? () =>
+                handleSingleAction(
+                  row,
+                  '/server/refund',
+                  { sid: row.sid.toString() },
+                  t('manager.refund').toUpperCase(),
+                  () => ({
+                    status: 'Refunded',
+                  })
+                )
+              : undefined
+          }
+          onReinstall={() => {
+            setReinstallState({
+              isOpen: true,
+              data: {
+                sid: row.sid,
+                ip: row.ip_port.split(':')[0],
+                remote_port: row.ip_port.split(':')[1],
+                password: row.user_pass ? row.user_pass.split('/')[1] : '',
+                os: row.he_dieu_hanh,
+                note: row.note,
+              },
+            })
+          }}
+          onChangeIp={() => {
+            setChangeIpState({
+              isOpen: true,
+              data: {
+                sid: row.sid,
+                ip: row.ip_port.split(':')[0],
+                remote_port: row.ip_port.split(':')[1],
+                password: row.user_pass ? row.user_pass.split('/')[1] : '',
+                os: row.he_dieu_hanh,
+                note: row.note,
+              },
+            })
+          }}
+        />
+      )),
+      createTextColumn({ key: 'plan_number', align: 'center' }),
+      createTextColumn({ key: 'ip_port', align: 'left' }),
+      createCountryColumn(),
+      createTextColumn({ key: 'he_dieu_hanh', align: 'center' }),
+      createTextColumn({ key: 'price_vnd', align: 'center' }),
+      createTextColumn({ key: 'created', align: 'center' }),
+      createTextColumn({ key: 'expired', align: 'center' }),
+      createStatusColumn(),
+      createTextColumn({ key: 'note', align: 'left' }),
+      createRenewToggleColumn(async (sid, newState) => {
+        // Optimistic Update
+        updateRowBySid(sid, () => ({ is_auto_renew: newState }))
+
+        try {
+          const res = await axiosInstance.post('/server/auto-renew', {
+            sid: sid.toString(),
+          })
+          if (res.data?.success) {
+            const finalState = res.data.changes.is_on
+            // Refine state if the server result differs
+            updateRowBySid(sid, () => ({ is_auto_renew: finalState }))
+
+            const row = data.find((r) => r.sid === sid)
+            if (row) {
+              syncToDb([{ ...row, is_auto_renew: finalState }])
+            }
+
+            addToast(t('dialog.success'), 'success')
+          } else {
+            throw new Error('API reported failure')
+          }
+        } catch (err) {
+          console.error('[AutoRenew] Error:', err.message)
+          addToast(t('dialog.failed'), 'error')
+          // Rollback parent state
+          updateRowBySid(sid, () => ({ is_auto_renew: !newState }))
+          throw err // Re-throw for PopConfirmToggle rollback
+        }
+      }),
+    ],
+    [
+      setUpgradeDialogState,
+      handleSingleAction,
+      t,
+      profile?.is_refund,
+      setReinstallState,
+      setChangeIpState,
+      updateRowBySid,
+      data,
+      syncToDb,
+      addToast,
+    ]
+  )
+
   return (
     <>
       {/* ========== TOP CONTROLS ========== */}
@@ -876,124 +1014,10 @@ export default function VpsManager({ onBuySuccessRef }) {
           setPage(1)
           clearSelection()
         }}
-        onAutoRenewToggle={async (sid, newState) => {
-          // Optimistic Update
-          updateRowBySid(sid, () => ({ is_auto_renew: newState }))
-
-          try {
-            const res = await axiosInstance.post('/server/auto-renew', {
-              sid: sid.toString(),
-            })
-            if (res.data?.success) {
-              const finalState = res.data.changes.is_on
-              // Refine state if the server result differs
-              updateRowBySid(sid, () => ({ is_auto_renew: finalState }))
-
-              const row = data.find((r) => r.sid === sid)
-              if (row) {
-                syncToDb([{ ...row, is_auto_renew: finalState }])
-              }
-
-              addToast(t('dialog.success'), 'success')
-            } else {
-              throw new Error('API reported failure')
-            }
-          } catch (err) {
-            console.error('[AutoRenew] Error:', err.message)
-            addToast(t('dialog.failed'), 'error')
-            // Rollback parent state
-            updateRowBySid(sid, () => ({ is_auto_renew: !newState }))
-            throw err // Re-throw for PopConfirmToggle rollback
-          }
-        }}
+        columns={vpsColumns}
+        isRowSelectable={(row) => row?.status !== 'Refunded'}
         isLoading={isFetching}
-        useFilter={false}
-        headers={[
-          'control',
-          'plan_number',
-          'ip_port',
-          'country',
-          'he_dieu_hanh',
-          'price_vnd',
-          'created',
-          'expired',
-          'status',
-          'note',
-          'is_auto_renew',
-        ]}
-        controlButton={(row) => (
-          <ControlButton
-            onUpgrade={
-              row.country === 'GPU'
-                ? undefined
-                : () => {
-                    setUpgradeDialogState({ isOpen: true, sid: row.sid })
-                  }
-            }
-            onPause={() =>
-              handleSingleAction(
-                row,
-                '/server/pause',
-                { sids: row.sid.toString() },
-                t('manager.pause').toUpperCase(),
-                () => ({
-                  status: 'Paused',
-                })
-              )
-            }
-            onReboot={() =>
-              handleSingleAction(
-                row,
-                '/server/reboot',
-                { sids: row.sid.toString() },
-                t('manager.reboot').toUpperCase(),
-                () => ({
-                  status: 'Running',
-                })
-              )
-            }
-            onRefund={
-              profile?.is_refund
-                ? () =>
-                    handleSingleAction(
-                      row,
-                      '/server/refund',
-                      { sid: row.sid.toString() },
-                      t('manager.refund').toUpperCase(),
-                      () => ({
-                        status: 'Refunded',
-                      })
-                    )
-                : undefined
-            }
-            onReinstall={() => {
-              setReinstallState({
-                isOpen: true,
-                data: {
-                  sid: row.sid,
-                  ip: row.ip_port.split(':')[0],
-                  remote_port: row.ip_port.split(':')[1],
-                  password: row.user_pass ? row.user_pass.split('/')[1] : '',
-                  os: row.he_dieu_hanh,
-                  note: row.note,
-                },
-              })
-            }}
-            onChangeIp={() => {
-              setChangeIpState({
-                isOpen: true,
-                data: {
-                  sid: row.sid,
-                  ip: row.ip_port.split(':')[0],
-                  remote_port: row.ip_port.split(':')[1],
-                  password: row.user_pass ? row.user_pass.split('/')[1] : '',
-                  os: row.he_dieu_hanh,
-                  note: row.note,
-                },
-              })
-            }}
-          />
-        )}
+        useFilter={true}
         rowClassMap={rowClassMap}
         selectedIds={selectedIds}
         selectedRows={selectedRows}

@@ -1,15 +1,21 @@
 import type React from 'react'
 
+export interface ColumnDef<T = Record<string, any>> {
+  key: string
+  align: 'left' | 'center' | 'right'
+  filterable: boolean
+  renderCell: (row: T, index: number) => React.ReactNode
+  renderHeader: () => React.ReactNode
+}
+
 export interface TableRowContext<T = Record<string, any>> {
   selectable: boolean
   selectedIds: Set<string | number>
-  headers: string[]
+  columns: ColumnDef<T>[]
+  isRowSelectable: (row: T) => boolean
   rowClassMap?: Record<string | number, string>
   handleSelectRow: (index: number, shiftKey: boolean, row: T) => void
   getRowKey: (row: T, index: number) => string | number
-  showCountryCode: boolean
-  onAutoRenewToggle?: (sid: number | string, newState: boolean) => void
-  controlButton?: (row: T) => React.ReactNode
   t: (key: string) => string
 }
 
@@ -54,13 +60,12 @@ export interface BaseTableProps<
   T = Record<string, any>,
 > extends React.HTMLAttributes<HTMLDivElement> {
   data?: T[]
+  columns: ColumnDef<T>[]
+  isRowSelectable: (row: T) => boolean
   isLoading?: boolean
   selectable?: boolean
   useFilter?: boolean
   tableTitle?: string
-  headers?: string[]
-  controlButton?: (row: T) => React.ReactNode
-  onAutoRenewToggle?: (sid: number | string, newState: boolean) => void
   selectedIds?: Set<number | string>
   onSelectionChange?: (rows: T[], ids: Set<number | string>) => void
   getRowKey?: (row: T, index?: number) => number | string

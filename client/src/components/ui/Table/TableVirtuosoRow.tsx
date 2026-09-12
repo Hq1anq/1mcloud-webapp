@@ -1,7 +1,7 @@
 import React from 'react'
 import TableCells from './TableCells'
 import { getTableRowState } from './TableRow'
-import type { VirtuosoTableRowProps, TableRowContext } from './types'
+import type { VirtuosoTableRowProps, TableRowContext } from '../../../types/table'
 
 export const VirtuosoTableRow = <T extends Record<string, any>>({
   context,

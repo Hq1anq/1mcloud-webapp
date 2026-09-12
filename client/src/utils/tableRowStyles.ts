@@ -1,5 +1,5 @@
 import type React from 'react'
-import { parseDDMMYYYY } from '../../../utils/data'
+import { parseDDMMYYYY } from './data'
 
 export interface ResolveRowBaseColorOptions {
   isRefunded: boolean

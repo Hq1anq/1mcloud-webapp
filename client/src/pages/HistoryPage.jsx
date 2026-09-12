@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import Table from '../components/ui/Table'
+import Table, {
+  createTransTypeColumn,
+  createAmountColumn,
+  createTextColumn,
+} from '../components/ui/Table'
 import HistoryMetricsCards from '../components/ui/HistoryMetricsCards'
 import axiosInstance from '../lib/axios'
 import { useTranslation } from '../i18n'
@@ -110,19 +114,30 @@ export default function HistoryPage() {
     [changeIpRows]
   )
 
-  const transactionHeaders = [
-    'trans_type',
-    'amount',
-    'update_balance',
-    'ip',
-    'created',
-    'description',
-  ]
+  const transactionColumns = useMemo(
+    () => [
+      createTransTypeColumn(),
+      createAmountColumn(),
+      createTextColumn({ key: 'update_balance', align: 'left' }),
+      createTextColumn({ key: 'ip', align: 'left' }),
+      createTextColumn({ key: 'created', header: t('table.date'), align: 'center' }),
+      createTextColumn({ key: 'description', align: 'left' }),
+    ],
+    [t]
+  )
 
-  const changeIpHeaders = ['server_name', 'old_ip', 'new_ip', 'created']
+  const changeIpColumns = useMemo(
+    () => [
+      createTextColumn({ key: 'server_name', align: 'center' }),
+      createTextColumn({ key: 'old_ip', align: 'left' }),
+      createTextColumn({ key: 'new_ip', align: 'left' }),
+      createTextColumn({ key: 'created', header: t('table.date'), align: 'center' }),
+    ],
+    [t]
+  )
 
   const currentData = activeTab === 'transaction' ? transactionData : changeIpData
-  const currentHeaders = activeTab === 'transaction' ? transactionHeaders : changeIpHeaders
+  const currentColumns = activeTab === 'transaction' ? transactionColumns : changeIpColumns
   const isLoading = activeTab === 'transaction' ? transactionLoading : changeIpLoading
   const error = activeTab === 'transaction' ? transactionError : changeIpError
 
@@ -171,10 +186,11 @@ export default function HistoryPage() {
         tableTitle="History"
         className="mt-4 px-4 text-base sm:text-lg"
         data={currentData}
-        headers={currentHeaders}
+        columns={currentColumns}
+        selectable={false}
+        isRowSelectable={() => false}
         isLoading={isLoading}
         useFilter={true}
-        selectable={false}
         isError={!!error}
         extraBtn={
           <button

@@ -5,11 +5,17 @@ import PaginatedTable, { type PaginatedTableProps } from './PaginatedTable'
 import StandardTable, { type StandardTableProps } from './StandardTable'
 import TableRow from './TableRow'
 import TableCells from './TableCells'
-import TableFilterToolbar from './TableFilterToolbar'
-import useTableSelection from './useTableSelection'
+import TableFilterToolbar from '../TableFilterToolbar'
+import useTableSelection from '../../../hooks/useTableSelection'
+import TableFilterHeader from './TableFilterHeader'
 import { VIRTUOSO_COMPONENTS, itemContent, VirtuosoTableRow } from './TableVirtuosoRow'
+import useTableFilter, { type UseTableFilterOptions, type UseTableFilterReturn } from '../../../hooks/useTableFilter'
+import TableContext, { TableProvider, useTableContext, type TableContextValue } from './TableContext'
 
-export * from './types'
+import useTablePagination, { type UseTablePaginationOptions, type UseTablePaginationReturn } from '../../../hooks/useTablePagination'
+
+export * from '../../../types/table'
+export * from '../../../utils/tableColumn'
 export {
   VirtualizedTable,
   PaginatedTable,
@@ -20,7 +26,20 @@ export {
   VIRTUOSO_COMPONENTS,
   itemContent,
   TableFilterToolbar,
+  TableFilterHeader,
   useTableSelection,
+  useTableFilter,
+  useTablePagination,
+  TableContext,
+  TableProvider,
+  useTableContext,
+}
+export type {
+  UseTableFilterOptions,
+  UseTableFilterReturn,
+  UseTablePaginationOptions,
+  UseTablePaginationReturn,
+  TableContextValue,
 }
 
 export interface TableProps

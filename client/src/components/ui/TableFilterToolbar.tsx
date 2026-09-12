@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useLayoutEffect, useRef } from 'react'
-import { useTranslation } from '../../../i18n'
+import { useTranslation } from '../../i18n'
 
 export interface TimeOption {
   value: string

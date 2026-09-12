@@ -1,7 +1,7 @@
 import React from 'react'
-import { resolveRowBaseColor, buildTableRowStyle } from './tableRowStyles'
+import { resolveRowBaseColor, buildTableRowStyle } from '../../../utils/tableRowStyles'
 import TableCells from './TableCells'
-import type { TableRowProps, TableRowContext } from './types'
+import type { TableRowProps, TableRowContext } from '../../../types/table'
 
 export interface TableRowStateOptions<T> {
   row: T
@@ -16,11 +16,12 @@ export function getTableRowState<T extends Record<string, any>>({
   context,
   onClick,
 }: TableRowStateOptions<T>) {
-  const { selectable, selectedIds, handleSelectRow, getRowKey, rowClassMap } = context
+  const { selectable, selectedIds, handleSelectRow, getRowKey, rowClassMap, isRowSelectable } = context
 
   const key = getRowKey(row, index)
   const isSelected = Boolean(selectable && selectedIds.has(key))
   const overrideClass = row && rowClassMap ? rowClassMap[row.sid] : undefined
+  const isSelectable = isRowSelectable(row)
   const isRefunded = row?.status === 'Refunded'
 
   // Resolve base background color systematically (Refunded -> Override -> Expiry -> Surface)
@@ -40,7 +41,7 @@ export function getTableRowState<T extends Record<string, any>>({
   const rowClassName = `table-row-system ${customOverrideClass}`.trim()
 
   const handleClick = (e: React.MouseEvent<HTMLTableRowElement>) => {
-    if (isRefunded || !selectable) return
+    if (!isSelectable || !selectable) return
     const target = e.target as HTMLElement | null
     if (target?.closest('input') || target?.closest('button') || target?.closest('label')) return
 

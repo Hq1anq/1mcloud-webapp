@@ -1,5 +1,14 @@
 import DropDown from '../components/ui/DropDown'
-import { VirtualizedTable, TableFilterToolbar, useTableSelection } from '../components/ui/Table'
+import {
+  VirtualizedTable,
+  TableFilterToolbar,
+  useTableSelection,
+  createCountryColumn,
+  createStatusColumn,
+  createRenewToggleColumn,
+  createControlColumn,
+  createTextColumn,
+} from '../components/ui/Table'
 import ControlButton from '../components/ui/ControlButton'
 import StatusMetricsMeter from '../components/ui/StatusMetricsMeter'
 import ChangeIpDialog from '../components/dialog/proxy/ChangeIpDialog'
@@ -1183,6 +1192,194 @@ export default function ProxyManager({ onBuySuccessRef }) {
     handleBatchAction(rows, '/server/auto-fix', t('autoFix').toUpperCase())
   }, [handleBatchAction, t, confirmAction, selectedRows])
 
+  const proxyColumns = useMemo(
+    () => [
+      createControlColumn((row) => (
+        <ControlButton
+          onPause={() =>
+            handleSingleAction(
+              row,
+              '/server/pause',
+              { sids: row.sid.toString() },
+              t('manager.pause').toUpperCase(),
+              () => ({
+                status: 'Paused',
+              })
+            )
+          }
+          onReboot={() =>
+            handleSingleAction(
+              row,
+              '/server/reboot',
+              { sids: row.sid.toString() },
+              t('manager.reboot').toUpperCase(),
+              () => ({
+                status: 'Running',
+              })
+            )
+          }
+          onReset={() => handleReset([row], true)}
+          onRefund={
+            profile?.is_refund
+              ? () =>
+                  handleSingleAction(
+                    row,
+                    '/server/refund',
+                    { sid: row.sid.toString() },
+                    t('manager.refund').toUpperCase(),
+                    () => ({
+                      status: 'Refunded',
+                    })
+                  )
+              : undefined
+          }
+          onReinstall={() => {
+            setReinstallState({
+              isOpen: true,
+              data: {
+                sid: row.sid,
+                ip: row.ip_port.split(':')[0],
+                remote_port: row.ip_port.split(':')[1],
+                username: row.user_pass ? row.user_pass.split(':')[0] : '',
+                password: row.user_pass ? row.user_pass.split(':')[1] : '',
+                type: row.type ? row.type.split(' ')[0] : 'HTTPS',
+                note: row.note || '',
+              },
+            })
+          }}
+          onChangeIp={() => {
+            setChangeIpState({
+              isOpen: true,
+              data: {
+                sid: row.sid,
+                ip: row.ip_port.split(':')[0],
+                remote_port: row.ip_port.split(':')[1],
+                password: row.user_pass ? row.user_pass.split(':')[1] : '',
+                type: row.type ? row.type.split(' ')[0] : 'HTTPS',
+                note: row.note || '',
+              },
+            })
+          }}
+          onCheck={async () => {
+            const latestRow = data.find((d) => d.sid === row.sid) || row
+            const [ip, port] = (latestRow.ip_port || '').split(':')
+            const [username, password] = (latestRow.user_pass || '').split(':')
+            const proxies = [`${ip}:${port}:${username}:${password}`]
+            setIsProcessing(true)
+            setRowClassMap({})
+            const loadingId = addToast(t('checking'), 'loading')
+            let newStatus
+
+            try {
+              await axiosInstance.post(
+                '/check',
+                { type: 'auto', proxies },
+                {
+                  timeout: 0,
+                  responseType: 'text',
+                  onDownloadProgress: (e) => {
+                    const text = e.event.target.responseText
+                    const jsonStr = text.slice(6)
+                    const result = JSON.parse(jsonStr)
+
+                    newStatus = result.status === 'Active' ? 'Running' : 'Off'
+                    updateRowBySid(row.sid, () => ({ status: newStatus }))
+                    setRowClassMap({
+                      [row.sid]: 'bg-success-cell',
+                    })
+
+                    // Uncheck the checked row
+                    deselectRows([row])
+                  },
+                }
+              )
+
+              syncToDb([{ ...latestRow, status: newStatus }])
+
+              if (newStatus === 'Running')
+                addToast(
+                  <>
+                    {t('checker.checkCompleted')} <br />
+                    <span className="text-text-toast-success">Proxy {t('checker.active')}</span>
+                  </>,
+                  'success'
+                )
+              else
+                addToast(
+                  <>
+                    {t('checker.checkCompleted')} <br />
+                    <span className="text-text-toast-success">
+                      Proxy {t('checker.inactive')}
+                    </span>
+                  </>,
+                  'success'
+                )
+            } catch (err) {
+              console.error('Proxy check failed:', err)
+              addToast(t('checker.checkFailed'), 'error')
+            } finally {
+              setIsProcessing(false)
+              removeToast(loadingId)
+            }
+          }}
+        />
+      )),
+      createTextColumn({ key: 'ip_port', align: 'left' }),
+      createCountryColumn(),
+      createTextColumn({ key: 'type', align: 'center' }),
+      createTextColumn({ key: 'created', align: 'center' }),
+      createTextColumn({ key: 'expired', align: 'center' }),
+      createStatusColumn(),
+      createTextColumn({ key: 'note', align: 'left' }),
+      createRenewToggleColumn(async (sid, newState) => {
+        // Optimistic Update
+        updateRowBySid(sid, () => ({ is_auto_renew: newState }))
+
+        try {
+          const res = await axiosInstance.post('/server/auto-renew', {
+            sid: sid.toString(),
+          })
+          if (res.data?.success) {
+            const finalState = res.data.changes.is_on
+            // Refine state if the server result differs
+            updateRowBySid(sid, () => ({ is_auto_renew: finalState }))
+
+            const row = data.find((r) => r.sid === sid)
+            if (row) {
+              syncToDb([{ ...row, is_auto_renew: finalState }])
+            }
+
+            addToast(t('dialog.success'), 'success')
+          } else {
+            throw new Error('API reported failure')
+          }
+        } catch (err) {
+          console.error('[AutoRenew] Error:', err.message)
+          addToast(t('dialog.failed'), 'error')
+          // Rollback parent state
+          updateRowBySid(sid, () => ({ is_auto_renew: !newState }))
+          throw err // Re-throw for PopConfirmToggle rollback
+        }
+      }),
+    ],
+    [
+      handleSingleAction,
+      t,
+      handleReset,
+      profile?.is_refund,
+      setReinstallState,
+      setChangeIpState,
+      data,
+      setIsProcessing,
+      setRowClassMap,
+      addToast,
+      removeToast,
+      updateRowBySid,
+      deselectRows,
+      syncToDb,
+    ]
+  )
+
   return (
     <>
       {/* ========== TOP CONTROLS ========== */}
@@ -1800,179 +1997,10 @@ export default function ProxyManager({ onBuySuccessRef }) {
           tableTitle={t('manager.proxyManager')}
           className="mt-2 px-4 text-xs sm:text-sm"
           data={filteredData}
-          onAutoRenewToggle={async (sid, newState) => {
-            // Optimistic Update
-            updateRowBySid(sid, () => ({ is_auto_renew: newState }))
-
-            try {
-              const res = await axiosInstance.post('/server/auto-renew', {
-                sid: sid.toString(),
-              })
-              if (res.data?.success) {
-                const finalState = res.data.changes.is_on
-                // Refine state if the server result differs
-                updateRowBySid(sid, () => ({ is_auto_renew: finalState }))
-
-                const row = data.find((r) => r.sid === sid)
-                if (row) {
-                  syncToDb([{ ...row, is_auto_renew: finalState }])
-                }
-
-                addToast(t('dialog.success'), 'success')
-              } else {
-                throw new Error('API reported failure')
-              }
-            } catch (err) {
-              console.error('[AutoRenew] Error:', err.message)
-              addToast(t('dialog.failed'), 'error')
-              // Rollback parent state
-              updateRowBySid(sid, () => ({ is_auto_renew: !newState }))
-              throw err // Re-throw for PopConfirmToggle rollback
-            }
-          }}
+          columns={proxyColumns}
+          isRowSelectable={(row) => row?.status !== 'Refunded'}
           isLoading={isLoading}
           useFilter={true}
-          headers={[
-            'control',
-            'ip_port',
-            'country',
-            'type',
-            'created',
-            'expired',
-            'status',
-            'note',
-            'is_auto_renew',
-          ]}
-          controlButton={(row) => (
-            <ControlButton
-              onPause={() =>
-                handleSingleAction(
-                  row,
-                  '/server/pause',
-                  { sids: row.sid.toString() },
-                  t('manager.pause').toUpperCase(),
-                  () => ({
-                    status: 'Paused',
-                  })
-                )
-              }
-              onReboot={() =>
-                handleSingleAction(
-                  row,
-                  '/server/reboot',
-                  { sids: row.sid.toString() },
-                  t('manager.reboot').toUpperCase(),
-                  () => ({
-                    status: 'Running',
-                  })
-                )
-              }
-              onReset={() => handleReset([row], true)}
-              onRefund={
-                profile?.is_refund
-                  ? () =>
-                      handleSingleAction(
-                        row,
-                        '/server/refund',
-                        { sid: row.sid.toString() },
-                        t('manager.refund').toUpperCase(),
-                        () => ({
-                          status: 'Refunded',
-                        })
-                      )
-                  : undefined
-              }
-              onReinstall={() => {
-                setReinstallState({
-                  isOpen: true,
-                  data: {
-                    sid: row.sid,
-                    ip: row.ip_port.split(':')[0],
-                    remote_port: row.ip_port.split(':')[1],
-                    username: row.user_pass ? row.user_pass.split(':')[0] : '',
-                    password: row.user_pass ? row.user_pass.split(':')[1] : '',
-                    type: row.type ? row.type.split(' ')[0] : 'HTTPS',
-                    note: row.note || '',
-                  },
-                })
-              }}
-              onChangeIp={() => {
-                setChangeIpState({
-                  isOpen: true,
-                  data: {
-                    sid: row.sid,
-                    ip: row.ip_port.split(':')[0],
-                    remote_port: row.ip_port.split(':')[1],
-                    password: row.user_pass ? row.user_pass.split(':')[1] : '',
-                    type: row.type ? row.type.split(' ')[0] : 'HTTPS',
-                    note: row.note || '',
-                  },
-                })
-              }}
-              onCheck={async () => {
-                const latestRow = data.find((d) => d.sid === row.sid) || row
-                const [ip, port] = (latestRow.ip_port || '').split(':')
-                const [username, password] = (latestRow.user_pass || '').split(':')
-                const proxies = [`${ip}:${port}:${username}:${password}`]
-                setIsProcessing(true)
-                setRowClassMap({})
-                const loadingId = addToast(t('checking'), 'loading')
-                let newStatus
-
-                try {
-                  await axiosInstance.post(
-                    '/check',
-                    { type: 'auto', proxies },
-                    {
-                      timeout: 0,
-                      responseType: 'text',
-                      onDownloadProgress: (e) => {
-                        const text = e.event.target.responseText
-                        const jsonStr = text.slice(6)
-                        const result = JSON.parse(jsonStr)
-
-                        newStatus = result.status === 'Active' ? 'Running' : 'Off'
-                        updateRowBySid(row.sid, () => ({ status: newStatus }))
-                        setRowClassMap({
-                          [row.sid]: 'bg-success-cell',
-                        })
-
-                        // Uncheck the checked row
-                        deselectRows([row])
-                      },
-                    }
-                  )
-
-                  syncToDb([{ ...latestRow, status: newStatus }])
-
-                  if (newStatus === 'Running')
-                    addToast(
-                      <>
-                        {t('checker.checkCompleted')} <br />
-                        <span className="text-text-toast-success">Proxy {t('checker.active')}</span>
-                      </>,
-                      'success'
-                    )
-                  else
-                    addToast(
-                      <>
-                        {t('checker.checkCompleted')} <br />
-                        <span className="text-text-toast-success">
-                          Proxy {t('checker.inactive')}
-                        </span>
-                      </>,
-                      'success'
-                    )
-                } catch (err) {
-                  console.error('Proxy check failed:', err)
-                  addToast(t('checker.checkFailed'), 'error')
-                } finally {
-                  setIsProcessing(false)
-                  removeToast(loadingId)
-                }
-              }}
-            />
-          )}
           rowClassMap={rowClassMap}
           selectedIds={selectedIds}
           selectedRows={selectedRows}

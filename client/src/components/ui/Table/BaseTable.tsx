@@ -45,6 +45,11 @@ const BaseTable = forwardRef<HTMLDivElement, BaseTableProps>(function BaseTable(
     showDetailToggle = false,
     isDetailView = false,
     onToggleDetailView,
+
+    // Server-side & controlled sort
+    serverSide = false,
+    sortConfig: controlledSortConfig,
+    onSortChange,
   },
   tableRef
 ) {
@@ -90,13 +95,22 @@ const BaseTable = forwardRef<HTMLDivElement, BaseTableProps>(function BaseTable(
     handleFilterInputChange,
     applyFilter,
     handleFilterKeyDown,
+    sortConfig,
+    handleToggleSort,
   } = useTableFilter({
     data,
     columns,
     useFilter,
     getRowKey,
     onFilterApplied,
+    serverSide,
+    controlledSortConfig,
+    onSortChange,
   })
+
+  useEffect(() => {
+    setLastSelectedIndex(null)
+  }, [sortConfig])
 
   // ── Selection calculations ────────────────────────────────────────────
   const selectableRows = useMemo(
@@ -231,6 +245,8 @@ const BaseTable = forwardRef<HTMLDivElement, BaseTableProps>(function BaseTable(
       onFilterInputChange: handleFilterInputChange,
       onFilterKeyDown: handleFilterKeyDown,
       onFilterApply: applyFilter,
+      sortConfig,
+      onToggleSort: handleToggleSort,
       selectedIds,
       isAllSelected,
       isIndeterminate,
@@ -254,6 +270,8 @@ const BaseTable = forwardRef<HTMLDivElement, BaseTableProps>(function BaseTable(
       handleFilterInputChange,
       handleFilterKeyDown,
       applyFilter,
+      sortConfig,
+      handleToggleSort,
       selectedIds,
       isAllSelected,
       isIndeterminate,

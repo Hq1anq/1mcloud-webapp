@@ -51,15 +51,15 @@ export function CountryHeader(): React.ReactElement {
   )
 }
 
-export function CountryCell({ country }: { country?: string }): React.ReactElement {
+export function CountryCell({ country }: { country: string }): React.ReactElement {
   const { showCountryCode } = useTableContext()
-  if (!showCountryCode && country) {
+  if (!showCountryCode) {
     const flag = getNationFlag(country)
     if (flag) {
       return <div className="mx-auto grid size-10 place-items-center">{flag}</div>
     }
   }
-  return <span>{country || ''}</span>
+  return <span>{country}</span>
 }
 
 export function createCountryColumn<T extends Record<string, any>>(): ColumnDef<T> {
@@ -202,7 +202,7 @@ export function createIpChangedColumn<T extends Record<string, any>>(): ColumnDe
   }
 }
 
-export function getActionTextColor(action?: string): string {
+export function getActionTextColor(action: ProductAction): string {
   switch (action) {
     case ProductAction.CREATE:
       return 'text-emerald-400'
@@ -223,10 +223,8 @@ export function getActionTextColor(action?: string): string {
   }
 }
 
-export function formatActionTime(isoOrDateStr?: string): string {
-  if (!isoOrDateStr) return ''
-  const d = new Date(isoOrDateStr)
-  if (isNaN(d.getTime())) return isoOrDateStr
+export function formatActionTime(isoStr: string): string {
+  const d = new Date(isoStr)
   const day = String(d.getDate()).padStart(2, '0')
   const month = String(d.getMonth() + 1).padStart(2, '0')
   const hours = String(d.getHours()).padStart(2, '0')
@@ -240,6 +238,14 @@ export function createDetailColumn<T extends Record<string, any>>(): ColumnDef<T
     key: 'detail',
     align: 'center',
     filterable: true,
+    sortable: true,
+    sortComparator: (a: T, b: T, direction: 'asc' | 'desc') => {
+      const diff = new Date(a.last_action_time).getTime() - new Date(b.last_action_time).getTime()
+      if (diff === 0) {
+        return b.sid - a.sid
+      }
+      return direction === 'asc' ? diff : -diff
+    },
     getValue: (row) => `${row.last_action} ${formatActionTime(row.last_action_time)}`,
     renderHeader: () => <DefaultHeader headerKey="detail" />,
     renderCell: (row) => (

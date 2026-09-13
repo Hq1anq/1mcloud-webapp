@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback, useRef } from 'react'
 import { formatInputDate } from '../utils/data'
-import { applyFilters } from '../utils/tableFilter'
-import type { ColumnDef } from '../types/table'
+import { applyFilters, applySort } from '../utils/tableFilter'
+import type { ColumnDef, TableSortConfig } from '../types/table'
 
 export interface UseTableFilterOptions<T> {
   data: T[]
@@ -9,6 +9,9 @@ export interface UseTableFilterOptions<T> {
   useFilter: boolean
   getRowKey: (row: T, index: number) => string | number
   onFilterApplied?: () => void
+  serverSide?: boolean
+  controlledSortConfig?: TableSortConfig
+  onSortChange?: (sortConfig: TableSortConfig) => void
 }
 
 export interface UseTableFilterReturn<T> {
@@ -19,6 +22,8 @@ export interface UseTableFilterReturn<T> {
   applyFilter: (header: string, value: string) => void
   handleFilterKeyDown: (e: React.KeyboardEvent<HTMLInputElement>, header: string) => void
   resetFilters: () => void
+  sortConfig: TableSortConfig
+  handleToggleSort: (columnKey: string) => void
 }
 
 const DEFAULT_DATA: any[] = []
@@ -29,10 +34,19 @@ export default function useTableFilter<T extends Record<string, any>>({
   useFilter,
   getRowKey,
   onFilterApplied,
+  serverSide = false,
+  controlledSortConfig,
+  onSortChange,
 }: UseTableFilterOptions<T>): UseTableFilterReturn<T> {
   const [filters, setFilters] = useState<Record<string, string>>({})
   const [filterInputs, setFilterInputs] = useState<Record<string, string>>({})
   const [filterVersion, setFilterVersion] = useState(0)
+  const [internalSortConfig, setInternalSortConfig] = useState<TableSortConfig>({
+    columnKey: '',
+    direction: 'none',
+  })
+
+  const activeSortConfig = controlledSortConfig ?? internalSortConfig
 
   const isFilterActiveRef = useRef<boolean>(false)
   const filteredResultRef = useRef<T[] | null>(null)
@@ -77,6 +91,34 @@ export default function useTableFilter<T extends Record<string, any>>({
     [applyFilter, filterInputs, filters]
   )
 
+  const handleToggleSort = useCallback(
+    (columnKey: string) => {
+      const isSameColumn = activeSortConfig.columnKey === columnKey
+      let nextDirection: 'none' | 'asc' | 'desc' = 'asc'
+
+      if (isSameColumn) {
+        if (activeSortConfig.direction === 'none') {
+          nextDirection = 'asc'
+        } else if (activeSortConfig.direction === 'asc') {
+          nextDirection = 'desc'
+        } else {
+          nextDirection = 'none'
+        }
+      }
+
+      const nextSort: TableSortConfig = {
+        columnKey: nextDirection === 'none' ? '' : columnKey,
+        direction: nextDirection,
+      }
+
+      if (controlledSortConfig === undefined) {
+        setInternalSortConfig(nextSort)
+      }
+      onSortChange?.(nextSort)
+    },
+    [activeSortConfig, controlledSortConfig, onSortChange]
+  )
+
   const resetFilters = useCallback(() => {
     setFilters({})
     setFilterInputs({})
@@ -91,10 +133,8 @@ export default function useTableFilter<T extends Record<string, any>>({
     let resultData = data || DEFAULT_DATA
 
     if (!useFilter) {
-      return [...resultData].sort((a, b) => {
-        if (a.sid !== undefined && b.sid !== undefined) return b.sid - a.sid
-        return 0
-      })
+      if (serverSide) return [...resultData]
+      return applySort(resultData, activeSortConfig, columns)
     }
 
     const prevData = lastDataRef.current
@@ -160,11 +200,12 @@ export default function useTableFilter<T extends Record<string, any>>({
       resultData = resultData.filter((row: T) => row?.status?.toLowerCase() !== 'refunded')
     }
 
-    return [...resultData].sort((a, b) => {
-      if (a.sid !== undefined && b.sid !== undefined) return b.sid - a.sid
-      return 0
-    })
-  }, [data, columns, filters, useFilter, filterVersion, getRowKey])
+    if (serverSide) {
+      return [...resultData]
+    }
+
+    return applySort(resultData, activeSortConfig, columns)
+  }, [data, columns, filters, useFilter, filterVersion, activeSortConfig, serverSide, getRowKey])
 
   return {
     filters,
@@ -174,5 +215,7 @@ export default function useTableFilter<T extends Record<string, any>>({
     applyFilter,
     handleFilterKeyDown,
     resetFilters,
+    sortConfig: activeSortConfig,
+    handleToggleSort,
   }
 }

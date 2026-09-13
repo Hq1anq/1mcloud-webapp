@@ -51,6 +51,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
   const [pageSize, setPageSize] = useState(20)
   const [byTime, setByTime] = useState('all')
   const [keyword, setKeyword] = useState('')
+  const [sortConfig, setSortConfig] = useState({ columnKey: '', direction: 'none' })
 
   // Debounced input states (400ms delay to prevent per-keystroke API calls)
   const debouncedKeyword = useDebounce(keyword, 400)
@@ -86,6 +87,10 @@ export default function ProxyManager({ onBuySuccessRef }) {
       by_status: '',
       by_time: byTime,
       by_created: '',
+      by_detail:
+        sortConfig.columnKey === 'detail' && sortConfig.direction !== 'none'
+          ? sortConfig.direction
+          : '',
       ips: parsedIps,
       keyword: debouncedKeyword,
       proxy: true,
@@ -178,6 +183,15 @@ export default function ProxyManager({ onBuySuccessRef }) {
   // Table selection logic handled cleanly by table selection hook
   const { selectedIds, selectedRows, clearSelection, deselectRows, onSelectionChange } =
     useTableSelection({ data })
+
+  const handleSortChange = useCallback(
+    (newSort) => {
+      setSortConfig(newSort)
+      setPage(1)
+      clearSelection()
+    },
+    [clearSelection]
+  )
 
   // Action runner for batch, single, and sequential operations
   const {
@@ -1624,6 +1638,8 @@ export default function ProxyManager({ onBuySuccessRef }) {
         columns={visibleColumns}
         pagination={true}
         serverSide={true}
+        sortConfig={sortConfig}
+        onSortChange={handleSortChange}
         page={page - 1}
         pageSize={pageSize}
         totalCount={queryResponse?.total_vps ?? data.length}

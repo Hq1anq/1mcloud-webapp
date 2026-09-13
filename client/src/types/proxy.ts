@@ -22,6 +22,7 @@ export interface ProxyItem {
 export type ProxyStatusFilter = 'running' | 'off' | 'other' | ''
 export type ProxyTimeFilter = 'all' | 'due' | 'expired' | 'using'
 export type ProxyCreatedOrder = 'desc' | 'asc' | ''
+export type ProxyDetailOrder = 'desc' | 'asc' | ''
 
 export interface FetchProxyListParams {
   page?: number
@@ -29,6 +30,7 @@ export interface FetchProxyListParams {
   by_status?: ProxyStatusFilter
   by_time?: ProxyTimeFilter
   by_created?: ProxyCreatedOrder
+  by_detail?: ProxyDetailOrder
   ips?: string
   keyword?: string
   proxy?: boolean | string

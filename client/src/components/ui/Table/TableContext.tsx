@@ -1,5 +1,5 @@
 import React, { createContext, useContext } from 'react'
-import type { ColumnDef } from '../../../types/table'
+import type { ColumnDef, TableSortConfig } from '../../../types/table'
 
 export interface TableContextValue<T = Record<string, any>> {
   // Config & Metadata
@@ -21,6 +21,10 @@ export interface TableContextValue<T = Record<string, any>> {
   onFilterInputChange: (header: string, value: string) => void
   onFilterKeyDown: (e: React.KeyboardEvent<HTMLInputElement>, header: string) => void
   onFilterApply: (header: string, value: string) => void
+
+  // Sort state & actions
+  sortConfig: TableSortConfig
+  onToggleSort: (columnKey: string) => void
 
   // Selection state & actions
   selectedIds: Set<string | number>

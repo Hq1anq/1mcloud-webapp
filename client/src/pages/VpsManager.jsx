@@ -112,9 +112,18 @@ export default function VpsManager({ onBuySuccessRef }) {
   const handleBuySuccessStore = useVpsStore((s) => s.handleBuySuccess)
   const rawSyncToDb = useVpsStore((s) => s.syncToDb)
 
+  const [tempData, setTempData] = useState(null)
+  const displayData = useMemo(() => {
+    if (tempData) return tempData
+    return data
+  }, [tempData, data])
+
   const updateRowBySid = useCallback(
     (sid, updater) => {
       rawUpdateRowBySid(sid, updater)
+      setTempData((prev) =>
+        prev ? prev.map((r) => (r.sid === sid ? { ...r, ...updater(r) } : r)) : null
+      )
 
       queryClient.setQueriesData({ queryKey: [VPS_QUERY_KEY] }, (old) => {
         if (!old?.data) return old
@@ -179,7 +188,7 @@ export default function VpsManager({ onBuySuccessRef }) {
 
   // Table selection logic handled cleanly by table selection hook
   const { selectedIds, selectedRows, clearSelection, deselectRows, onSelectionChange } =
-    useTableSelection({ data })
+    useTableSelection({ data: displayData })
 
   const handleSortChange = useCallback(
     (newSort) => {
@@ -213,6 +222,7 @@ export default function VpsManager({ onBuySuccessRef }) {
 
   // handleGetData — thin wrapper around TanStack Query refetch with toast feedback
   const handleGetData = useCallback(async () => {
+    if (tempData) setTempData(null)
     setPage(1)
     const loadingId = addToast(t('manager.fetchingData'), 'loading')
     try {
@@ -232,14 +242,15 @@ export default function VpsManager({ onBuySuccessRef }) {
       removeToast(loadingId)
       addToast(`${t('manager.failedGetData')}: ${err.message}`, 'error')
     }
-  }, [refetch, clearSelection, addToast, removeToast, t])
+  }, [tempData, setTempData, refetch, clearSelection, addToast, removeToast, t])
 
   // Register buy success handler on parent ref
   useEffect(() => {
     if (onBuySuccessRef) {
-      onBuySuccessRef.current = (newData, extraConfig) => {
-        const enriched = handleBuySuccessStore(newData, extraConfig)
+      onBuySuccessRef.current = async (newData, extraConfig) => {
+        const enriched = await handleBuySuccessStore(newData, extraConfig)
         if (enriched) {
+          setTempData(enriched)
           clearSelection()
           const vps = newData.map((item) => `${item.ip_port}/${item.user_pass}`).join('\n')
           safeCopy(vps).then(
@@ -261,7 +272,7 @@ export default function VpsManager({ onBuySuccessRef }) {
     return () => {
       if (onBuySuccessRef) onBuySuccessRef.current = null
     }
-  }, [onBuySuccessRef, handleBuySuccessStore, clearSelection, safeCopy, addToast, t, handleGetData])
+  }, [onBuySuccessRef, handleBuySuccessStore, setTempData, clearSelection, safeCopy, addToast, t, handleGetData])
 
   // --- Handlers ---
   const handleCopyIp = useCallback(() => {
@@ -273,7 +284,7 @@ export default function VpsManager({ onBuySuccessRef }) {
 
     const ipsToCopy = rows
       .map((r) => {
-        const latestRow = data.find((d) => d.sid === r.sid) || r
+        const latestRow = displayData.find((d) => d.sid === r.sid) || r
         return latestRow.ip_port?.split(':')[0]
       })
       .filter(Boolean)
@@ -290,7 +301,7 @@ export default function VpsManager({ onBuySuccessRef }) {
         )
       }
     })
-  }, [data, selectedRows, addToast, safeCopy, t])
+  }, [displayData, selectedRows, addToast, safeCopy, t])
 
   const handleReboot = useCallback(
     () =>
@@ -797,7 +808,6 @@ export default function VpsManager({ onBuySuccessRef }) {
       setReinstallState,
       setChangeIpState,
       updateRowBySid,
-      data,
       syncToDb,
       addToast,
     ]
@@ -928,7 +938,7 @@ export default function VpsManager({ onBuySuccessRef }) {
                     if (rows.length === 0) return addToast(t('manager.noRowsSelected'), 'warning')
                     const text = rows
                       .map((r) => {
-                        const latestRow = data.find((d) => d.sid === r.sid) || r
+                        const latestRow = displayData.find((d) => d.sid === r.sid) || r
                         const [username, password] = (latestRow.user_pass || '').split('/')
                         return [latestRow.ip_port, username, password].join('/')
                       })
@@ -1025,57 +1035,74 @@ export default function VpsManager({ onBuySuccessRef }) {
 
       <StatusMetricsMeter
         total={
-          queryResponse?.total_vps !== undefined
-            ? queryResponse.total_vps
-            : data.filter((row) => row.status !== 'Refunded').length
+          tempData
+            ? tempData.filter((row) => row.status !== 'Refunded').length
+            : queryResponse?.total_vps !== undefined
+              ? queryResponse.total_vps
+              : data.filter((row) => row.status !== 'Refunded').length
         }
         running={
-          queryResponse?.total_vps_running !== undefined
-            ? queryResponse.total_vps_running
-            : data.filter((row) => row.status === 'Running').length
+          tempData
+            ? tempData.filter((row) => row.status === 'Running').length
+            : queryResponse?.total_vps_running !== undefined
+              ? queryResponse.total_vps_running
+              : data.filter((row) => row.status === 'Running').length
         }
         off={
-          queryResponse?.total_vps_off !== undefined
-            ? queryResponse.total_vps_off
-            : data.filter((row) => row.status === 'Off').length
+          tempData
+            ? tempData.filter((row) => row.status === 'Off').length
+            : queryResponse?.total_vps_off !== undefined
+              ? queryResponse.total_vps_off
+              : data.filter((row) => row.status === 'Off').length
         }
         className="mt-4"
       />
 
       <TableFilterToolbar
         keyword={keyword}
-        onKeywordChange={setKeyword}
+        onKeywordChange={(val) => {
+          if (tempData) setTempData(null)
+          setKeyword(val)
+        }}
         byTime={byTime}
-        onByTimeChange={setByTime}
+        onByTimeChange={(val) => {
+          if (tempData) setTempData(null)
+          setByTime(val)
+        }}
         ips={ips}
-        onIpsChange={setIps}
+        onIpsChange={(val) => {
+          if (tempData) setTempData(null)
+          setIps(val)
+        }}
         onResetPage={() => setPage(1)}
       />
 
       <PaginatedTable
         tableTitle={t('vpsManager.title')}
         className="mt-2 px-4 text-xs sm:text-sm"
-        data={data}
-        pagination={true}
-        serverSide={true}
+        data={displayData}
+        pagination={!tempData}
+        serverSide={!tempData}
         sortConfig={sortConfig}
         onSortChange={handleSortChange}
-        page={page - 1}
+        page={tempData ? 0 : page - 1}
         pageSize={pageSize}
-        totalCount={queryResponse?.total_vps ?? data.length}
+        totalCount={tempData ? undefined : (queryResponse?.total_vps ?? data.length)}
         pageSizeOptions={[10, 20, 50, 100, 200]}
         onPageChange={(zeroBasedPage) => {
-          setPage(zeroBasedPage + 1)
-          clearSelection()
+          if (!tempData) {
+            setPage(zeroBasedPage + 1)
+            clearSelection()
+          }
         }}
         onPageSizeChange={(newPageSize) => {
           setPageSize(newPageSize)
-          setPage(1)
+          if (!tempData) setPage(1)
           clearSelection()
         }}
         columns={visibleColumns}
         isRowSelectable={(row) => row?.status !== 'Refunded'}
-        isLoading={isFetching}
+        isLoading={tempData ? false : isFetching}
         useFilter={true}
         showDetailToggle={isDetailEnabled}
         isDetailView={isDetailView}
@@ -1090,6 +1117,7 @@ export default function VpsManager({ onBuySuccessRef }) {
             style={{ '--action-color': 'var(--orange)' }}
             disabled={isFetching}
             onClick={async () => {
+              if (tempData) setTempData(null)
               const loadingId = addToast(t('manager.fetchingData'), 'loading')
               try {
                 const res = await refetch()
@@ -1202,7 +1230,7 @@ export default function VpsManager({ onBuySuccessRef }) {
               const changes = { plan_number, price_vnd, status: 'Running' }
               updateRowBySid(upgradeDialogState.sid, () => changes)
               setRowClassMap({ [upgradeDialogState.sid]: 'bg-success-cell' })
-              const row = data.find((r) => r.sid === upgradeDialogState.sid)
+              const row = displayData.find((r) => r.sid === upgradeDialogState.sid)
               if (row) syncToDb([{ ...row, ...changes }])
             } else {
               handleGetData()
@@ -1235,7 +1263,7 @@ export default function VpsManager({ onBuySuccessRef }) {
           }
           updateRowBySid(reinstallState.data.sid, () => changes)
           setRowClassMap({ [reinstallState.data.sid]: 'bg-success-cell' })
-          const row = data.find((r) => r.sid === reinstallState.data.sid)
+          const row = displayData.find((r) => r.sid === reinstallState.data.sid)
           syncToDb([{ ...row, ...changes }])
           safeCopy(
             `${responseData.ip}:${responseData.port}/${responseData.username}/${responseData.password}`
@@ -1264,7 +1292,7 @@ export default function VpsManager({ onBuySuccessRef }) {
           }
           updateRowBySid(changeIpState.data.sid, () => changes)
           setRowClassMap({ [changeIpState.data.sid]: 'bg-success-cell' })
-          const row = data.find((r) => r.sid === changeIpState.data.sid)
+          const row = displayData.find((r) => r.sid === changeIpState.data.sid)
           syncToDb([{ ...row, ...changes }])
           safeCopy(
             `${responseData.ip}:${responseData.port}/${responseData.username}/${responseData.password}`

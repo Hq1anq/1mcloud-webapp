@@ -103,6 +103,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
   const data = useProxyStore((s) => s.data)
   const rawUpdateRowBySid = useProxyStore((s) => s.updateRowBySid)
   const rawSyncToDb = useProxyStore((s) => s.syncToDb)
+  const [tempData, setTempData] = useState(null)
 
   const updateRowBySid = useCallback(
     (sid, updater) => {
@@ -123,6 +124,12 @@ export default function ProxyManager({ onBuySuccessRef }) {
     },
     [rawUpdateRowBySid, queryClient]
   )
+
+  // In-memory pure frontend filtering across allData or temporarily fetched rows (using filterIps from TableFilterToolbar)
+  const filteredData = useMemo(() => {
+    if (tempData) return tempData
+    return data
+  }, [data, tempData])
 
   useEffect(() => {
     if (queryResponse?.data) {
@@ -182,7 +189,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
 
   // Table selection logic handled cleanly by table selection hook
   const { selectedIds, selectedRows, clearSelection, deselectRows, onSelectionChange } =
-    useTableSelection({ data })
+    useTableSelection({ data: filteredData })
 
   const handleSortChange = useCallback(
     (newSort) => {
@@ -240,9 +247,10 @@ export default function ProxyManager({ onBuySuccessRef }) {
   // Register buy success handler on parent ref
   useEffect(() => {
     if (onBuySuccessRef) {
-      onBuySuccessRef.current = (newData, extraConfig) => {
-        const enriched = handleBuySuccessStore(newData, extraConfig)
+      onBuySuccessRef.current = async (newData, extraConfig) => {
+        const enriched = await handleBuySuccessStore(newData, extraConfig)
         if (enriched) {
+          setTempData(enriched)
           clearSelection()
           const proxies = newData.map((item) => `${item.ip_port}:${item.user_pass}`).join('\n')
           safeCopy(proxies).then(
@@ -264,7 +272,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
     return () => {
       if (onBuySuccessRef) onBuySuccessRef.current = null
     }
-  }, [onBuySuccessRef, handleBuySuccessStore, clearSelection, safeCopy, addToast, t, handleGetData])
+  }, [onBuySuccessRef, handleBuySuccessStore, setTempData, clearSelection, safeCopy, addToast, t, handleGetData])
 
   // --- Change IP handler ---
   const handleChangeIp = useCallback(async () => {
@@ -1603,18 +1611,18 @@ export default function ProxyManager({ onBuySuccessRef }) {
 
       <StatusMetricsMeter
         total={
-          queryResponse?.total_vps !== undefined
-            ? queryResponse.total_vps
+          tempData
+            ? tempData.filter((row) => row.status !== 'Refunded').length
             : data.filter((row) => row.status !== 'Refunded').length
         }
         running={
-          queryResponse?.total_vps_running !== undefined
-            ? queryResponse.total_vps_running
+          tempData
+            ? tempData.filter((row) => row.status === 'Running').length
             : data.filter((row) => row.status === 'Running').length
         }
         off={
-          queryResponse?.total_vps_off !== undefined
-            ? queryResponse.total_vps_off
+          tempData
+            ? tempData.filter((row) => row.status === 'Off').length
             : data.filter((row) => row.status === 'Off').length
         }
         className="mt-4"
@@ -1623,18 +1631,27 @@ export default function ProxyManager({ onBuySuccessRef }) {
       {/* ========== REUSABLE FILTER TOOLBAR ========== */}
       <TableFilterToolbar
         keyword={keyword}
-        onKeywordChange={setKeyword}
+        onKeywordChange={(val) => {
+          if (tempData) setTempData(null)
+          setKeyword(val)
+        }}
         byTime={byTime}
-        onByTimeChange={setByTime}
+        onByTimeChange={(val) => {
+          if (tempData) setTempData(null)
+          setByTime(val)
+        }}
         ips={ips}
-        onIpsChange={setIps}
+        onIpsChange={(val) => {
+          if (tempData) setTempData(null)
+          setIps(val)
+        }}
         onResetPage={() => setPage(1)}
       />
 
       <PaginatedTable
         tableTitle={t('manager.proxyManager')}
         className="mt-2 px-4 text-xs sm:text-sm"
-        data={data}
+        data={filteredData}
         columns={visibleColumns}
         pagination={true}
         serverSide={true}

@@ -21,6 +21,12 @@ export enum CreatedOrder {
   Default = "",
 }
 
+export enum DetailOrder {
+  Desc = "desc",
+  Asc = "asc",
+  Default = "",
+}
+
 export interface FilterableItem {
   sid: number;
   ip_port: string;
@@ -43,6 +49,7 @@ export interface RecordFilterOptions {
   by_status?: StatusFilter;
   by_time?: TimeFilter;
   by_created?: CreatedOrder;
+  by_detail?: DetailOrder;
   ips?: string;
   keyword?: string;
 }
@@ -82,6 +89,7 @@ export function applyRecordFilters(
     by_status = StatusFilter.All,
     by_time = TimeFilter.All,
     by_created = CreatedOrder.Default,
+    by_detail = DetailOrder.Default,
     ips = "",
     keyword = "",
   }: RecordFilterOptions,
@@ -177,9 +185,25 @@ export function applyRecordFilters(
     ]);
   }
 
-  // 6. Sort by created date using CreatedOrder enum
+  // 6. Sort by detail (last_action_time) or created date
+  const detailOrder = by_detail.trim().toLowerCase();
   const createdOrder = by_created.trim().toLowerCase();
-  if (createdOrder === CreatedOrder.Asc) {
+
+  if (detailOrder === DetailOrder.Asc) {
+    records.sort((a, b) => {
+      const diff =
+        new Date(a.last_action_time).getTime() -
+        new Date(b.last_action_time).getTime();
+      return diff === 0 ? b.sid - a.sid : diff;
+    });
+  } else if (detailOrder === DetailOrder.Desc) {
+    records.sort((a, b) => {
+      const diff =
+        new Date(a.last_action_time).getTime() -
+        new Date(b.last_action_time).getTime();
+      return diff === 0 ? b.sid - a.sid : -diff;
+    });
+  } else if (createdOrder === CreatedOrder.Asc) {
     records.sort((a, b) => {
       const dateA = parseDateDDMMYYYY(a.created);
       const dateB = parseDateDDMMYYYY(b.created);
@@ -196,7 +220,7 @@ export function applyRecordFilters(
       return timeB - timeA;
     });
   } else {
-    records.sort((a, b) => (b.sid || 0) - (a.sid || 0));
+    records.sort((a, b) => b.sid - a.sid);
   }
 
   return records;

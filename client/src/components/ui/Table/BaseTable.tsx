@@ -91,6 +91,7 @@ const BaseTable = forwardRef<HTMLDivElement, BaseTableProps>(function BaseTable(
     handleFilterKeyDown,
   } = useTableFilter({
     data,
+    columns,
     useFilter,
     getRowKey,
     onFilterApplied,

@@ -4,6 +4,7 @@ export interface ColumnDef<T = Record<string, any>> {
   key: string
   align: 'left' | 'center' | 'right'
   filterable: boolean
+  getValue?: (row: T) => unknown
   renderCell: (row: T, index: number) => React.ReactNode
   renderHeader: () => React.ReactNode
 }

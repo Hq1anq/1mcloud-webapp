@@ -37,7 +37,7 @@ export default function TableCells<T extends Record<string, any>>({
       )}
 
       {columns.map((col) => {
-        const cellValue = col.key === 'auth' ? row.user_pass || '-' : row[col.key]
+        const value = col.getValue ? col.getValue(row) : row[col.key]
         const alignClass =
           col.align === 'left' ? 'text-left' : col.align === 'right' ? 'text-right' : 'text-center'
 
@@ -46,7 +46,7 @@ export default function TableCells<T extends Record<string, any>>({
             key={col.key}
             className={`border-border border-b px-2 py-2 whitespace-nowrap sm:px-4 ${alignClass}`}
             onClick={(e) => {
-              if (e.detail === 3) handleCopy(e, cellValue)
+              if (e.detail === 3 && value != null) handleCopy(e, String(value))
             }}
             title="Triple click to copy"
           >

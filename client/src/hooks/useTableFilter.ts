@@ -1,9 +1,11 @@
 import { useState, useMemo, useCallback, useRef } from 'react'
 import { formatInputDate } from '../utils/data'
 import { applyFilters } from '../utils/tableFilter'
+import type { ColumnDef } from '../types/table'
 
 export interface UseTableFilterOptions<T> {
   data: T[]
+  columns: ColumnDef<T>[]
   useFilter: boolean
   getRowKey: (row: T, index: number) => string | number
   onFilterApplied?: () => void
@@ -23,6 +25,7 @@ const DEFAULT_DATA: any[] = []
 
 export default function useTableFilter<T extends Record<string, any>>({
   data,
+  columns,
   useFilter,
   getRowKey,
   onFilterApplied,
@@ -36,6 +39,7 @@ export default function useTableFilter<T extends Record<string, any>>({
   const matchedKeysRef = useRef<(string | number)[] | null>(null)
   const lastFilterVersionRef = useRef<number>(0)
   const lastDataRef = useRef<T[] | undefined>(data)
+  const lastColumnsRef = useRef<ColumnDef<T>[]>(columns)
 
   const handleFilterInputChange = useCallback((header: string, value: string) => {
     setFilterInputs((prev) => ({ ...prev, [header]: value }))
@@ -95,20 +99,26 @@ export default function useTableFilter<T extends Record<string, any>>({
 
     const prevData = lastDataRef.current
     const dataChanged = data !== prevData
+    const prevColumns = lastColumnsRef.current
+    const columnsChanged = columns !== prevColumns
 
-    if (filterVersion !== lastFilterVersionRef.current) {
+    if (filterVersion !== lastFilterVersionRef.current || columnsChanged) {
       lastFilterVersionRef.current = filterVersion
       lastDataRef.current = data
+      lastColumnsRef.current = columns
 
       const isIpPortFilterActive = Boolean(filters['ip_port']?.trim())
       const isStatusFilterActive = Boolean(filters['status']?.trim())
       const shouldHideRefunded = !isIpPortFilterActive && !isStatusFilterActive
 
-      const hasActiveHeaderFilter = Object.values(filters).some((v) => Boolean(v?.trim()))
+      const columnMap = new Map(columns.map((c) => [c.key, c]))
+      const hasActiveHeaderFilter = Object.entries(filters).some(
+        ([key, v]) => Boolean(v?.trim()) && columnMap.has(key)
+      )
       isFilterActiveRef.current = hasActiveHeaderFilter
 
       if (hasActiveHeaderFilter) {
-        let result = applyFilters(data || DEFAULT_DATA, filters)
+        let result = applyFilters(data || DEFAULT_DATA, filters, columns)
         if (shouldHideRefunded) {
           result = result.filter((row: T) => row?.status?.toLowerCase() !== 'refunded')
         }
@@ -154,7 +164,7 @@ export default function useTableFilter<T extends Record<string, any>>({
       if (a.sid !== undefined && b.sid !== undefined) return b.sid - a.sid
       return 0
     })
-  }, [data, filters, useFilter, filterVersion, getRowKey])
+  }, [data, columns, filters, useFilter, filterVersion, getRowKey])
 
   return {
     filters,

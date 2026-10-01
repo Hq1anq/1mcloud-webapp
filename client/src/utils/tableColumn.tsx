@@ -181,6 +181,7 @@ export function createAuthColumn<T extends Record<string, any>>(): ColumnDef<T> 
     key: 'auth',
     align: 'left',
     filterable: true,
+    getValue: (row) => row.user_pass,
     renderHeader: () => <DefaultHeader headerKey="auth" />,
     renderCell: (row) => (
       <span className="font-mono text-xs select-all sm:text-sm">

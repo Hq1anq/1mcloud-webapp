@@ -1,3 +1,4 @@
+import type { ColumnDef } from '../types/table'
 import { getFlagIcon } from '../data/flags.jsx'
 
 // Nation flag helper
@@ -16,22 +17,30 @@ export function matchesFilter(cellValue: unknown, filterValue: string): boolean 
 
 /**
  * Filters `data` against `filters` map (Record<string, string>).
- * Evaluates keyword containment for each active filter.
+ * Evaluates keyword containment for each active filter across visible columns.
+ * Uses `col.getValue` if defined on the column definition.
  */
 export function applyFilters<T extends Record<string, any>>(
   data: T[],
-  filters: Record<string, string>
+  filters: Record<string, string>,
+  columns: ColumnDef<T>[]
 ): T[] {
   if (!data || data.length === 0) return data
 
+  const columnMap = new Map(columns.map((c) => [c.key, c]))
+
   const activeFilters = Object.entries(filters)
     .map(([key, val]) => [key, (val ?? '').trim()] as const)
-    .filter(([, val]) => val.length > 0)
+    .filter(([key, val]) => val.length > 0 && columnMap.has(key))
 
   if (activeFilters.length === 0) return data
 
   return data.filter((row) =>
-    activeFilters.every(([key, filterVal]) => matchesFilter(row[key], filterVal))
+    activeFilters.every(([key, filterVal]) => {
+      const col = columnMap.get(key)
+      const cellValue = col?.getValue ? col.getValue(row) : row[key]
+      return matchesFilter(cellValue, filterVal)
+    })
   )
 }
 

@@ -173,6 +173,10 @@ const vi = {
 
   'table.ip': 'IP',
   'table.port': 'Port',
+  'table.auth': 'Tài khoản',
+  'table.ip_changed': 'Đổi IP',
+  'table.showDetail': 'Xem chi tiết',
+  'table.hideDetail': 'Ẩn chi tiết',
   'table.username': 'Tên đăng nhập',
   'table.password': 'Mật khẩu',
 

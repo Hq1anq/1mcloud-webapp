@@ -37,7 +37,7 @@ export default function TableCells<T extends Record<string, any>>({
       )}
 
       {columns.map((col) => {
-        const cellValue = row[col.key]
+        const cellValue = col.key === 'auth' ? row.user_pass || '-' : row[col.key]
         const alignClass =
           col.align === 'left' ? 'text-left' : col.align === 'right' ? 'text-right' : 'text-center'
 

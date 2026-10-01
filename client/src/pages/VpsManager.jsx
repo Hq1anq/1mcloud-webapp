@@ -7,6 +7,7 @@ import {
   createRenewToggleColumn,
   createControlColumn,
   createTextColumn,
+  createAuthColumn,
 } from '../components/ui/Table'
 import ControlButton from '../components/ui/ControlButton'
 import UpgradePlanDialog from '../components/dialog/vps/UpgradePlanDialog'
@@ -28,6 +29,7 @@ import { useVpsListQuery, VPS_QUERY_KEY } from '../hooks/useVpsQuery'
 import { extractIP } from '../utils/data'
 import useDebounce from '../hooks/useDebounce'
 import getOS from '../data/osMap'
+import { useTableDetailView } from '../hooks/useTableDetailView'
 
 export default function VpsManager({ onBuySuccessRef }) {
   const navigate = useNavigate()
@@ -191,6 +193,7 @@ export default function VpsManager({ onBuySuccessRef }) {
       return {}
     }
   }, [])
+
 
   // handleGetData — thin wrapper around TanStack Query refetch with toast feedback
   const handleGetData = useCallback(async () => {
@@ -764,6 +767,19 @@ export default function VpsManager({ onBuySuccessRef }) {
     ]
   )
 
+  const detailColumns = useMemo(() => [createAuthColumn()], [])
+
+  const {
+    isDetailEnabled,
+    isDetailView,
+    toggleDetailView,
+    columns: visibleColumns,
+  } = useTableDetailView({
+    baseColumns: vpsColumns,
+    detailColumns,
+    insertAfterKey: 'ip_port',
+  })
+
   return (
     <>
       {/* ========== TOP CONTROLS ========== */}
@@ -1014,10 +1030,13 @@ export default function VpsManager({ onBuySuccessRef }) {
           setPage(1)
           clearSelection()
         }}
-        columns={vpsColumns}
+        columns={visibleColumns}
         isRowSelectable={(row) => row?.status !== 'Refunded'}
         isLoading={isFetching}
         useFilter={true}
+        showDetailToggle={isDetailEnabled}
+        isDetailView={isDetailView}
+        onToggleDetailView={toggleDetailView}
         rowClassMap={rowClassMap}
         selectedIds={selectedIds}
         selectedRows={selectedRows}

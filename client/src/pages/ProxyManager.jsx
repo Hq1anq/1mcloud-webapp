@@ -8,6 +8,7 @@ import {
   createRenewToggleColumn,
   createControlColumn,
   createTextColumn,
+  createAuthColumn,
 } from '../components/ui/Table'
 import ControlButton from '../components/ui/ControlButton'
 import StatusMetricsMeter from '../components/ui/StatusMetricsMeter'
@@ -27,6 +28,7 @@ import useManagerActions from '../hooks/useManagerActions'
 import { useProxyListQuery, PROXY_QUERY_KEY } from '../hooks/useProxyQuery'
 import { extractIP } from '../utils/data'
 import useDebounce from '../hooks/useDebounce'
+import { useTableDetailView } from '../hooks/useTableDetailView'
 
 export default function ProxyManager({ onBuySuccessRef }) {
   const navigate = useNavigate()
@@ -194,6 +196,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
       return {}
     }
   }, [])
+
 
   // handleGetData — thin wrapper around TanStack Query refetch with toast feedback
   const handleGetData = useCallback(async () => {
@@ -1246,6 +1249,19 @@ export default function ProxyManager({ onBuySuccessRef }) {
     ]
   )
 
+  const detailColumns = useMemo(() => [createAuthColumn()], [])
+
+  const {
+    isDetailEnabled,
+    isDetailView,
+    toggleDetailView,
+    columns: visibleColumns,
+  } = useTableDetailView({
+    baseColumns: proxyColumns,
+    detailColumns,
+    insertAfterKey: 'ip_port',
+  })
+
   return (
     <>
       {/* ========== TOP CONTROLS ========== */}
@@ -1573,7 +1589,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
         tableTitle={t('manager.proxyManager')}
         className="mt-2 px-4 text-xs sm:text-sm"
         data={data}
-        columns={proxyColumns}
+        columns={visibleColumns}
         pagination={true}
         serverSide={true}
         page={page - 1}
@@ -1589,49 +1605,11 @@ export default function ProxyManager({ onBuySuccessRef }) {
           setPage(1)
           clearSelection()
         }}
-        onAutoRenewToggle={async (sid, newState) => {
-          // Optimistic Update
-          updateRowBySid(sid, () => ({ is_auto_renew: newState }))
-
-          try {
-            const res = await axiosInstance.post('/server/auto-renew', {
-              sid: sid.toString(),
-            })
-            if (res.data?.success) {
-              const finalState = res.data.changes.is_on
-              // Refine state if the server result differs
-              updateRowBySid(sid, () => ({ is_auto_renew: finalState }))
-
-              const row = data.find((r) => r.sid === sid)
-              if (row) {
-                syncToDb([{ ...row, is_auto_renew: finalState }])
-              }
-
-              addToast(t('dialog.success'), 'success')
-            } else {
-              throw new Error('API reported failure')
-            }
-          } catch (err) {
-            console.error('[AutoRenew] Error:', err.message)
-            addToast(t('dialog.failed'), 'error')
-            // Rollback parent state
-            updateRowBySid(sid, () => ({ is_auto_renew: !newState }))
-            throw err // Re-throw for PopConfirmToggle rollback
-          }
-        }}
         isLoading={isFetching}
         useFilter={false}
-        headers={[
-          'control',
-          'ip_port',
-          'country',
-          'type',
-          'created',
-          'expired',
-          'status',
-          'note',
-          'is_auto_renew',
-        ]}
+        showDetailToggle={isDetailEnabled}
+        isDetailView={isDetailView}
+        onToggleDetailView={toggleDetailView}
         rowClassMap={rowClassMap}
         selectedIds={selectedIds}
         isRowSelectable={(row) => row?.status !== 'Refunded'}

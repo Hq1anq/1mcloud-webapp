@@ -173,6 +173,10 @@ const en = {
 
   'table.ip': 'IP',
   'table.port': 'Port',
+  'table.auth': 'Auth',
+  'table.ip_changed': 'IP Changed',
+  'table.showDetail': 'Show Details',
+  'table.hideDetail': 'Hide Details',
   'table.username': 'Username',
   'table.password': 'Password',
 

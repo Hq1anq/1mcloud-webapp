@@ -175,3 +175,28 @@ export function createTextColumn<T extends Record<string, any>>({
     renderHeader,
   }
 }
+
+export function createAuthColumn<T extends Record<string, any>>(): ColumnDef<T> {
+  return {
+    key: 'auth',
+    align: 'left',
+    filterable: true,
+    renderHeader: () => <DefaultHeader headerKey="auth" />,
+    renderCell: (row) => (
+      <span className="font-mono text-xs select-all sm:text-sm">
+        {row.user_pass || '-'}
+      </span>
+    ),
+  }
+}
+
+export function createIpChangedColumn<T extends Record<string, any>>(): ColumnDef<T> {
+  return {
+    key: 'ip_changed',
+    align: 'center',
+    filterable: true,
+    renderHeader: () => <DefaultHeader headerKey="ip_changed" />,
+    renderCell: (row) => <span>{row.ip_changed ?? 0}</span>,
+  }
+}
+

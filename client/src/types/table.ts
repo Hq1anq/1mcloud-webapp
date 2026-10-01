@@ -77,4 +77,7 @@ export interface BaseTableProps<
   errorMessage?: React.ReactNode
   className?: string
   rowClassMap?: Record<number | string, string>
+  showDetailToggle?: boolean
+  isDetailView?: boolean
+  onToggleDetailView?: () => void
 }

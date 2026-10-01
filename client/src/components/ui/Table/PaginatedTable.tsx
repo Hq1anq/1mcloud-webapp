@@ -7,7 +7,7 @@ import type { BaseTableProps } from '../../../types/table'
 
 export interface PaginatedTableProps
   extends BaseTableProps,
-    Omit<UseTablePaginationOptions, 'onSelectionReset'> {}
+  Omit<UseTablePaginationOptions, 'onSelectionReset'> { }
 
 const PaginatedTable = forwardRef<HTMLDivElement, PaginatedTableProps>(function PaginatedTable(
   {

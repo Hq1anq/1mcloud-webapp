@@ -8,6 +8,7 @@ import {
   createRenewToggleColumn,
   createControlColumn,
   createTextColumn,
+  createAuthColumn,
 } from '../components/ui/Table'
 import ControlButton from '../components/ui/ControlButton'
 import StatusMetricsMeter from '../components/ui/StatusMetricsMeter'
@@ -24,6 +25,7 @@ import useAuthStore from '../store/useAuthStore'
 import useProxyStore from '../store/useProxyStore'
 import useManagerActions from '../hooks/useManagerActions'
 import { filterProxyData } from '../utils/data'
+import { useTableDetailView } from '../hooks/useTableDetailView'
 
 export default function ProxyManager({ onBuySuccessRef }) {
   const navigate = useNavigate()
@@ -1222,15 +1224,15 @@ export default function ProxyManager({ onBuySuccessRef }) {
           onRefund={
             profile?.is_refund
               ? () =>
-                  handleSingleAction(
-                    row,
-                    '/server/refund',
-                    { sid: row.sid.toString() },
-                    t('manager.refund').toUpperCase(),
-                    () => ({
-                      status: 'Refunded',
-                    })
-                  )
+                handleSingleAction(
+                  row,
+                  '/server/refund',
+                  { sid: row.sid.toString() },
+                  t('manager.refund').toUpperCase(),
+                  () => ({
+                    status: 'Refunded',
+                  })
+                )
               : undefined
           }
           onReinstall={() => {
@@ -1380,6 +1382,19 @@ export default function ProxyManager({ onBuySuccessRef }) {
     ]
   )
 
+  const detailColumns = useMemo(() => [createAuthColumn()], [])
+
+  const {
+    isDetailEnabled,
+    isDetailView,
+    toggleDetailView,
+    columns: visibleColumns,
+  } = useTableDetailView({
+    baseColumns: proxyColumns,
+    detailColumns,
+    insertAfterKey: 'ip_port',
+  })
+
   return (
     <>
       {/* ========== TOP CONTROLS ========== */}
@@ -1503,7 +1518,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
 
                         for (let i = allLines.length - 1; i > 0; i--) {
                           const j = Math.floor(Math.random() * (i + 1))
-                          ;[allLines[i], allLines[j]] = [allLines[j], allLines[i]]
+                            ;[allLines[i], allLines[j]] = [allLines[j], allLines[i]]
                         }
 
                         setIps(allLines.map((line) => line.ip).join('\n'))
@@ -1997,10 +2012,13 @@ export default function ProxyManager({ onBuySuccessRef }) {
           tableTitle={t('manager.proxyManager')}
           className="mt-2 px-4 text-xs sm:text-sm"
           data={filteredData}
-          columns={proxyColumns}
+          columns={visibleColumns}
           isRowSelectable={(row) => row?.status !== 'Refunded'}
           isLoading={isLoading}
           useFilter={true}
+          showDetailToggle={isDetailEnabled}
+          isDetailView={isDetailView}
+          onToggleDetailView={toggleDetailView}
           rowClassMap={rowClassMap}
           selectedIds={selectedIds}
           selectedRows={selectedRows}

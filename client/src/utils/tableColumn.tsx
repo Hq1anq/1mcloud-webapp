@@ -1,6 +1,6 @@
 import React from 'react'
 import { getNationFlag } from './tableFilter.js'
-import RenewToggle from '../components/ui/RenewToggle.jsx'
+import RenewToggle from '../components/ui/RenewToggle'
 import { getStatusClasses } from './ui.js'
 import { useTableContext } from '../components/ui/Table/TableContext.js'
 import type { ColumnDef } from '../types/table.js'

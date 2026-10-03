@@ -21,7 +21,7 @@ export interface UseTableFilterReturn<T> {
   resetFilters: () => void
 }
 
-const DEFAULT_DATA: any[] = []
+const DEFAULT_DATA: never[] = []
 
 export default function useTableFilter<T extends Record<string, any>>({
   data,
@@ -39,7 +39,6 @@ export default function useTableFilter<T extends Record<string, any>>({
   const matchedKeysRef = useRef<(string | number)[] | null>(null)
   const lastFilterVersionRef = useRef<number>(0)
   const lastDataRef = useRef<T[] | undefined>(data)
-  const lastColumnsRef = useRef<ColumnDef<T>[]>(columns)
 
   const handleFilterInputChange = useCallback((header: string, value: string) => {
     setFilterInputs((prev) => ({ ...prev, [header]: value }))
@@ -99,13 +98,10 @@ export default function useTableFilter<T extends Record<string, any>>({
 
     const prevData = lastDataRef.current
     const dataChanged = data !== prevData
-    const prevColumns = lastColumnsRef.current
-    const columnsChanged = columns !== prevColumns
 
-    if (filterVersion !== lastFilterVersionRef.current || columnsChanged) {
+    if (filterVersion !== lastFilterVersionRef.current) {
       lastFilterVersionRef.current = filterVersion
       lastDataRef.current = data
-      lastColumnsRef.current = columns
 
       const isIpPortFilterActive = Boolean(filters['ip_port']?.trim())
       const isStatusFilterActive = Boolean(filters['status']?.trim())

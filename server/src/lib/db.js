@@ -51,6 +51,8 @@ export async function initDatabase() {
         created NVARCHAR(20),
         expired NVARCHAR(20),
         status NVARCHAR(50),
+        last_action NVARCHAR(50) NOT NULL DEFAULT 'CREATE',
+        last_action_time DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
         note NVARCHAR(500),
         CONSTRAINT FK_Proxy_Users FOREIGN KEY (user_id) REFERENCES Users(user_id),
         CONSTRAINT UQ_Proxy_user_sid UNIQUE (user_id, sid)
@@ -75,6 +77,8 @@ export async function initDatabase() {
         created NVARCHAR(20),
         expired NVARCHAR(20),
         status NVARCHAR(50),
+        last_action NVARCHAR(50) NOT NULL DEFAULT 'CREATE',
+        last_action_time DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
         note NVARCHAR(500),
         CONSTRAINT FK_Vps_Users FOREIGN KEY (user_id) REFERENCES Users(user_id),
         CONSTRAINT UQ_Vps_user_sid UNIQUE (user_id, sid)
@@ -117,6 +121,40 @@ export async function initDatabase() {
       ALTER TABLE Users ADD last_proxy_synced_at DATETIME2 NULL;
     END;
   `);
+
+  // Auto-migration: Proxy last_action and last_action_time
+  const proxyHasLastAction = await pool.request().query(`
+    SELECT 1 FROM sys.columns 
+    WHERE object_id = OBJECT_ID('Proxy') AND name = 'last_action'
+  `);
+  if (proxyHasLastAction.recordset.length === 0) {
+    await pool.request().query(`
+      ALTER TABLE Proxy ADD 
+        last_action NVARCHAR(50) NOT NULL CONSTRAINT DF_Proxy_last_action DEFAULT 'CREATE',
+        last_action_time DATETIME2 NOT NULL CONSTRAINT DF_Proxy_last_action_time DEFAULT GETUTCDATE();
+    `);
+    await pool.request().query(`
+      UPDATE Proxy
+      SET last_action_time = DATEADD(HOUR, -7, CONVERT(DATETIME2, SUBSTRING(created, 7, 4) + '-' + SUBSTRING(created, 4, 2) + '-' + SUBSTRING(created, 1, 2) + ' 06:00:00'));
+    `);
+  }
+
+  // Auto-migration: Vps last_action and last_action_time
+  const vpsHasLastAction = await pool.request().query(`
+    SELECT 1 FROM sys.columns 
+    WHERE object_id = OBJECT_ID('Vps') AND name = 'last_action'
+  `);
+  if (vpsHasLastAction.recordset.length === 0) {
+    await pool.request().query(`
+      ALTER TABLE Vps ADD 
+        last_action NVARCHAR(50) NOT NULL CONSTRAINT DF_Vps_last_action DEFAULT 'CREATE',
+        last_action_time DATETIME2 NOT NULL CONSTRAINT DF_Vps_last_action_time DEFAULT GETUTCDATE();
+    `);
+    await pool.request().query(`
+      UPDATE Vps
+      SET last_action_time = DATEADD(HOUR, -7, CONVERT(DATETIME2, SUBSTRING(created, 7, 4) + '-' + SUBSTRING(created, 4, 2) + '-' + SUBSTRING(created, 1, 2) + ' 06:00:00'));
+    `);
+  }
 
   console.log("✅ Database tables initialized");
 }

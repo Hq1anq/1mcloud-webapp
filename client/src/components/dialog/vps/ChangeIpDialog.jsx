@@ -113,6 +113,7 @@ export default function ChangeIpDialog({ isOpen, onClose, currentData, onSuccess
     const loadingToast = addToast(t('manager.changeIp') + '...', 'loading')
     const payload = {
       ...form,
+      sid: currentData.sid,
       ip: currentData.ip, // Use the prop ip
       install_chrome: form.install_chrome,
       install_firefox: form.install_firefox,

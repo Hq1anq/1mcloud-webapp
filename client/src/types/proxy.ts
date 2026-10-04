@@ -1,3 +1,5 @@
+import { ProductAction } from './action'
+
 export interface ProxyItem {
   sid: number
   ip_port: string
@@ -7,6 +9,8 @@ export interface ProxyItem {
   expired: string
   ip_changed?: number
   status: string
+  last_action: ProductAction
+  last_action_time: string
   note: string
   is_auto_renew: boolean
   plan_number?: string

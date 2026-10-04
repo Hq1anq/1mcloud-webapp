@@ -1,4 +1,5 @@
 import { normalizeText, parseDateDDMMYYYY } from "./formatter.ts";
+import { ProductAction } from "../types/action.types.ts";
 
 export enum StatusFilter {
   Running = "running",
@@ -34,6 +35,8 @@ export interface FilterableItem {
   status: string;
   note: string;
   is_auto_renew?: boolean;
+  last_action: ProductAction;
+  last_action_time: string;
 }
 
 export interface RecordFilterOptions {

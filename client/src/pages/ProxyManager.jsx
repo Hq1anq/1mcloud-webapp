@@ -9,6 +9,7 @@ import {
   createControlColumn,
   createTextColumn,
   createAuthColumn,
+  createDetailColumn,
 } from '../components/ui/Table'
 import ControlButton from '../components/ui/ControlButton'
 import StatusMetricsMeter from '../components/ui/StatusMetricsMeter'
@@ -29,6 +30,7 @@ import { useProxyListQuery, PROXY_QUERY_KEY } from '../hooks/useProxyQuery'
 import { extractIP } from '../utils/data'
 import useDebounce from '../hooks/useDebounce'
 import { useTableDetailView } from '../hooks/useTableDetailView'
+import { ProductAction } from '../types/action'
 
 export default function ProxyManager({ onBuySuccessRef }) {
   const navigate = useNavigate()
@@ -281,6 +283,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
       async (row) => {
         const ip = row.ip_port?.split(':')[0]
         const res = await axiosInstance.post('/server/change-ip', {
+          sid: row.sid,
           ip,
           type,
           random_remote_port: 'on',
@@ -295,6 +298,8 @@ export default function ProxyManager({ onBuySuccessRef }) {
             user_pass: `${info.username}:${info.password}`,
             type: changeIpType + ' Proxy',
             status: 'Running',
+            last_action: ProductAction.CHANGE_IP,
+            last_action_time: new Date().toISOString(),
           }
           updateRowBySid(row.sid, () => updates)
           updatedRows.push({ ...row, ...updates })
@@ -456,6 +461,8 @@ export default function ProxyManager({ onBuySuccessRef }) {
             user_pass: `${info.username}:${info.password}`,
             type: reinstallType + ' Proxy',
             status: 'Running',
+            last_action: ProductAction.REINSTALL,
+            last_action_time: new Date().toISOString(),
           }
           updateRowBySid(row.sid, () => updates)
           updatedRows.push({ ...row, ...updates })
@@ -606,17 +613,31 @@ export default function ProxyManager({ onBuySuccessRef }) {
 
   const handlePause = useCallback(
     () =>
-      handleBatchAction(selectedRows, '/server/pause', t('manager.pause').toUpperCase(), () => ({
-        status: 'Paused',
-      })),
+      handleBatchAction(selectedRows, {
+        endpoint: '/server/pause',
+        actionName: t('manager.pause').toUpperCase(),
+        extraData: { isProxy: true },
+        statusUpdater: () => ({
+          status: 'Paused',
+          last_action: ProductAction.PAUSE,
+          last_action_time: new Date().toISOString(),
+        }),
+      }),
     [handleBatchAction, selectedRows, t]
   )
 
   const handleReboot = useCallback(
     () =>
-      handleBatchAction(selectedRows, '/server/reboot', t('manager.reboot').toUpperCase(), () => ({
-        status: 'Running',
-      })),
+      handleBatchAction(selectedRows, {
+        endpoint: '/server/reboot',
+        actionName: t('manager.reboot').toUpperCase(),
+        extraData: { isProxy: true },
+        statusUpdater: () => ({
+          status: 'Running',
+          last_action: ProductAction.REBOOT,
+          last_action_time: new Date().toISOString(),
+        }),
+      }),
     [handleBatchAction, selectedRows, t]
   )
 
@@ -824,7 +845,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
     const toastId = addToast(t('manager.renewing'), 'loading')
 
     try {
-      const res = await axiosInstance.post('/server/renew', { sids: sids, month: 1 })
+      const res = await axiosInstance.post('/server/renew', { sids: sids, month: 1, isProxy: true })
 
       const resSuccess = res.data?.result?.success || {}
       let successCount = 0
@@ -839,6 +860,8 @@ export default function ProxyManager({ onBuySuccessRef }) {
           const updates = {
             status: 'Running',
             expired: newExpiredDay,
+            last_action: ProductAction.RENEW,
+            last_action_time: new Date().toISOString(),
           }
           updateRowBySid(row.sid, () => updates)
           updatedRows.push({ ...row, ...updates })
@@ -962,7 +985,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
     const toastId = addToast(t('manager.refunding'), 'loading')
 
     try {
-      const res = await axiosInstance.post('/server/refund', { sid: sids })
+      const res = await axiosInstance.post('/server/refund', { sid: sids, isProxy: true })
 
       const resSuccess = res.data?.result?.success || {}
       let successCount = 0
@@ -975,6 +998,8 @@ export default function ProxyManager({ onBuySuccessRef }) {
         if (resSuccess[cleanIp]) {
           const updates = {
             status: 'Refunded',
+            last_action: ProductAction.REFUND,
+            last_action_time: new Date().toISOString(),
           }
           updateRowBySid(row.sid, () => updates)
           updatedRows.push({ ...row, ...updates })
@@ -1071,10 +1096,12 @@ export default function ProxyManager({ onBuySuccessRef }) {
             handleSingleAction(
               row,
               '/server/pause',
-              { sids: row.sid.toString() },
+              { sids: row.sid.toString(), isProxy: true },
               t('manager.pause').toUpperCase(),
               () => ({
                 status: 'Paused',
+                last_action: ProductAction.PAUSE,
+                last_action_time: new Date().toISOString(),
               })
             )
           }
@@ -1082,10 +1109,12 @@ export default function ProxyManager({ onBuySuccessRef }) {
             handleSingleAction(
               row,
               '/server/reboot',
-              { sids: row.sid.toString() },
+              { sids: row.sid.toString(), isProxy: true },
               t('manager.reboot').toUpperCase(),
               () => ({
                 status: 'Running',
+                last_action: ProductAction.REBOOT,
+                last_action_time: new Date().toISOString(),
               })
             )
           }
@@ -1095,10 +1124,12 @@ export default function ProxyManager({ onBuySuccessRef }) {
                 handleSingleAction(
                   row,
                   '/server/refund',
-                  { sid: row.sid.toString() },
+                  { sid: row.sid.toString(), isProxy: true },
                   t('manager.refund').toUpperCase(),
                   () => ({
                     status: 'Refunded',
+                    last_action: ProductAction.REFUND,
+                    last_action_time: new Date().toISOString(),
                   })
                 )
               : undefined
@@ -1249,7 +1280,13 @@ export default function ProxyManager({ onBuySuccessRef }) {
     ]
   )
 
-  const detailColumns = useMemo(() => [createAuthColumn()], [])
+  const detailPlacements = useMemo(
+    () => [
+      { insertAfterKey: 'ip_port', columns: [createAuthColumn()] },
+      { insertAfterKey: 'note', columns: [createDetailColumn()] },
+    ],
+    []
+  )
 
   const {
     isDetailEnabled,
@@ -1258,8 +1295,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
     columns: visibleColumns,
   } = useTableDetailView({
     baseColumns: proxyColumns,
-    detailColumns,
-    insertAfterKey: 'ip_port',
+    detailPlacements,
   })
 
   return (
@@ -1723,6 +1759,8 @@ export default function ProxyManager({ onBuySuccessRef }) {
             user_pass: `${responseData.username}:${responseData.password}`,
             type: responseData.type,
             status: 'Running',
+            last_action: ProductAction.REINSTALL,
+            last_action_time: new Date().toISOString(),
           }
           updateRowBySid(reinstallState.data.sid, () => changes)
           setRowClassMap({ [reinstallState.data.sid]: 'bg-success-cell' })
@@ -1750,6 +1788,8 @@ export default function ProxyManager({ onBuySuccessRef }) {
             user_pass: `${responseData.username}:${responseData.password}`,
             type: responseData.type,
             status: 'Running',
+            last_action: ProductAction.CHANGE_IP,
+            last_action_time: new Date().toISOString(),
           }
           updateRowBySid(changeIpState.data.sid, () => changes)
           setRowClassMap({ [changeIpState.data.sid]: 'bg-success-cell' })

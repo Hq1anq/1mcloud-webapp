@@ -2,10 +2,14 @@ import { useState, useMemo, useCallback } from 'react'
 import { canAccessDetailView } from '../config/features'
 import type { ColumnDef } from '../types/table'
 
+export interface DetailPlacement<T extends Record<string, any> = Record<string, any>> {
+  insertAfterKey: string
+  columns: ColumnDef<T>[]
+}
+
 export interface UseTableDetailViewOptions<T extends Record<string, any> = Record<string, any>> {
   baseColumns: ColumnDef<T>[]
-  detailColumns: ColumnDef<T>[]
-  insertAfterKey: string
+  detailPlacements: DetailPlacement<T>[]
 }
 
 export interface UseTableDetailViewReturn<T extends Record<string, any> = Record<string, any>> {
@@ -17,8 +21,7 @@ export interface UseTableDetailViewReturn<T extends Record<string, any> = Record
 
 export function useTableDetailView<T extends Record<string, any> = Record<string, any>>({
   baseColumns,
-  detailColumns,
-  insertAfterKey,
+  detailPlacements,
 }: UseTableDetailViewOptions<T>): UseTableDetailViewReturn<T> {
   const isDetailEnabled = useMemo(() => canAccessDetailView(), [])
   const [isDetailView, setIsDetailView] = useState<boolean>(false)
@@ -33,17 +36,23 @@ export function useTableDetailView<T extends Record<string, any> = Record<string
       return baseColumns
     }
 
-    const insertIndex = baseColumns.findIndex((col) => col.key === insertAfterKey)
-    if (insertIndex === -1) {
-      return [...baseColumns, ...detailColumns]
+    let currentColumns = [...baseColumns]
+
+    for (const placement of detailPlacements) {
+      const insertIndex = currentColumns.findIndex((col) => col.key === placement.insertAfterKey)
+      if (insertIndex === -1) {
+        currentColumns = [...currentColumns, ...placement.columns]
+      } else {
+        currentColumns = [
+          ...currentColumns.slice(0, insertIndex + 1),
+          ...placement.columns,
+          ...currentColumns.slice(insertIndex + 1),
+        ]
+      }
     }
 
-    return [
-      ...baseColumns.slice(0, insertIndex + 1),
-      ...detailColumns,
-      ...baseColumns.slice(insertIndex + 1),
-    ]
-  }, [baseColumns, detailColumns, insertAfterKey, isDetailEnabled, isDetailView])
+    return currentColumns
+  }, [baseColumns, detailPlacements, isDetailEnabled, isDetailView])
 
   return {
     isDetailEnabled,
@@ -52,4 +61,3 @@ export function useTableDetailView<T extends Record<string, any> = Record<string
     columns,
   }
 }
-

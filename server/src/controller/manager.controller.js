@@ -6,6 +6,7 @@ import { applyRecordFilters } from "../utils/filter.ts";
 import { decrypt } from "../services/crypto.service.ts";
 import { encryptPayload } from "../services/payloadCrypto.service.ts";
 import { triggerAutoSyncIfNeeded } from "../services/sync.service.ts";
+import { ProductAction } from "../types/action.types.ts";
 
 const HEADERS = {
   accept: "application/json, text/plain, */*",
@@ -13,6 +14,29 @@ const HEADERS = {
   "user-agent":
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",
 };
+
+async function updateProductAction(userId, sidList, action, isProxy) {
+  try {
+    const pool = await getPool();
+    const sids = (Array.isArray(sidList) ? sidList : String(sidList).split(","))
+      .map((s) => Number(s.trim()))
+      .filter((n) => !isNaN(n));
+    if (sids.length === 0) return;
+
+    const sidParams = sids.map((_, i) => `@sid_${i}`).join(",");
+    const table = isProxy ? "Proxy" : "Vps";
+
+    const request = pool.request().input("userId", userId).input("action", action);
+    sids.forEach((sid, i) => request.input(`sid_${i}`, sid));
+    await request.query(`
+      UPDATE ${table}
+      SET last_action = @action, last_action_time = GETUTCDATE()
+      WHERE user_id = @userId AND sid IN (${sidParams})
+    `);
+  } catch (err) {
+    console.error("[Manager Controller] updateProductAction error:", err.message);
+  }
+}
 
 export async function list(req, res) {
   const url = `${process.env.BASE_URL}/server/list`;
@@ -57,7 +81,7 @@ export async function list(req, res) {
           .request()
           .input("userId", userId)
           .query(
-            `SELECT sid, ip_port, user_pass, country, type, created, expired, status, note, is_auto_renew FROM Proxy WHERE user_id = @userId`,
+            `SELECT sid, ip_port, user_pass, country, type, created, expired, status, last_action, last_action_time, note, is_auto_renew FROM Proxy WHERE user_id = @userId`,
           );
         dbRows = dbResult.recordset || [];
       } else {
@@ -65,7 +89,7 @@ export async function list(req, res) {
           .request()
           .input("userId", userId)
           .query(
-            `SELECT sid, plan_number, ip_port, user_pass, country, he_dieu_hanh, price_vnd, created, expired, status, note, is_auto_renew FROM Vps WHERE user_id = @userId`,
+            `SELECT sid, plan_number, ip_port, user_pass, country, he_dieu_hanh, price_vnd, created, expired, status, last_action, last_action_time, note, is_auto_renew FROM Vps WHERE user_id = @userId`,
           );
         dbRows = dbResult.recordset || [];
       }
@@ -172,7 +196,7 @@ export async function list(req, res) {
         const dbResult = await pool
           .request()
           .input("userId", userId)
-          .query(`SELECT sid, user_pass FROM Proxy WHERE user_id = @userId`);
+          .query(`SELECT sid, user_pass, last_action, last_action_time FROM Proxy WHERE user_id = @userId`);
         dbRows = (dbResult.recordset || []).map((row) => ({
           ...row,
           user_pass: row.user_pass ? decrypt(row.user_pass) : null,
@@ -182,7 +206,7 @@ export async function list(req, res) {
           .request()
           .input("userId", userId)
           .query(
-            `SELECT sid, user_pass, he_dieu_hanh FROM Vps WHERE user_id = @userId`,
+            `SELECT sid, user_pass, he_dieu_hanh, last_action, last_action_time FROM Vps WHERE user_id = @userId`,
           );
         dbRows = (dbResult.recordset || []).map((row) => ({
           ...row,
@@ -337,6 +361,7 @@ export async function create(req, res) {
       return `${day}-${month}-${year}`;
     };
 
+    const nowIso = new Date().toISOString();
     const tableData = servers.map((server) => {
       const rawUserPass = is_proxy
         ? `${server.username}:${server.password}`
@@ -350,6 +375,8 @@ export async function create(req, res) {
         expired: formatDate(expiredDate),
         ip_changed: 0,
         status: "Running",
+        last_action: ProductAction.CREATE,
+        last_action_time: nowIso,
         note: note,
         is_auto_renew: auto_renew,
         user_pass: rawUserPass ? encryptPayload(rawUserPass) : null,
@@ -424,6 +451,7 @@ export async function calculate(req, res) {
 export async function changeIp(req, res) {
   const url = `${process.env.BASE_URL}/server/change-ip`;
   const {
+    sid,
     ip,
     type,
     random_remote_port,
@@ -491,6 +519,13 @@ export async function changeIp(req, res) {
     }
 
     const rawData = await response.json();
+    try {
+      const userId = await resolveUser(req.token);
+      await updateProductAction(userId, [sid], ProductAction.CHANGE_IP, isProxy);
+    } catch (e) {
+      console.error("[Manager Controller] changeIp action update error:", e.message);
+    }
+
     return res.json({
       success: true,
       info: {
@@ -570,6 +605,13 @@ export async function reinstall(req, res) {
     }
 
     const rawData = await response.json();
+    try {
+      const userId = await resolveUser(req.token);
+      await updateProductAction(userId, [sid], ProductAction.REINSTALL, isProxy);
+    } catch (e) {
+      console.error("[Manager Controller] reinstall action update error:", e.message);
+    }
+
     return res.json({
       success: true,
       info: {
@@ -590,7 +632,7 @@ export async function reinstall(req, res) {
 }
 
 export async function pause(req, res) {
-  const { sids } = req.body;
+  const { sids, isProxy } = req.body;
   const url = `${process.env.BASE_URL}/server/pause`;
   const headers = { ...HEADERS, authorization: `Bearer ${req.token}` };
 
@@ -611,6 +653,13 @@ export async function pause(req, res) {
     }
 
     const data = await response.json();
+    try {
+      const userId = await resolveUser(req.token);
+      await updateProductAction(userId, sids, ProductAction.PAUSE, Boolean(isProxy));
+    } catch (e) {
+      console.error("[Manager Controller] pause action update error:", e.message);
+    }
+
     res.json({ success: true, result: data.result });
   } catch (error) {
     console.error(`Failed to PAUSE for sid: ${sids}`, error.message);
@@ -621,7 +670,7 @@ export async function pause(req, res) {
 }
 
 export async function reboot(req, res) {
-  const { sids } = req.body;
+  const { sids, isProxy } = req.body;
   const url = `${process.env.BASE_URL}/server/reboot`;
   const headers = { ...HEADERS, authorization: `Bearer ${req.token}` };
 
@@ -642,6 +691,13 @@ export async function reboot(req, res) {
     }
 
     const data = await response.json();
+    try {
+      const userId = await resolveUser(req.token);
+      await updateProductAction(userId, sids, ProductAction.REBOOT, Boolean(isProxy));
+    } catch (e) {
+      console.error("[Manager Controller] reboot action update error:", e.message);
+    }
+
     res.json({ success: true, result: data.result });
   } catch (error) {
     console.error(`Failed to REBOOT for sid: ${sids}`, error.message);
@@ -652,7 +708,7 @@ export async function reboot(req, res) {
 }
 
 export async function renew(req, res) {
-  const { sids, month = 1 } = req.body;
+  const { sids, month = 1, isProxy } = req.body;
   const url = `${process.env.BASE_URL}/server/renew`;
   const headers = { ...HEADERS, authorization: `Bearer ${req.token}` };
 
@@ -673,6 +729,13 @@ export async function renew(req, res) {
     }
 
     const data = await response.json();
+    try {
+      const userId = await resolveUser(req.token);
+      await updateProductAction(userId, sids, ProductAction.RENEW, Boolean(isProxy));
+    } catch (e) {
+      console.error("[Manager Controller] renew action update error:", e.message);
+    }
+
     res.json({ success: true, result: data.result });
   } catch (error) {
     console.error(`Failed to RENEW for sid: ${sids}`, error.message);
@@ -717,7 +780,7 @@ export async function renewCalculate(req, res) {
 }
 
 export async function refund(req, res) {
-  const { sid } = req.body;
+  const { sid, isProxy } = req.body;
   const url = `${process.env.BASE_URL}/server/refund`;
   const headers = { ...HEADERS, authorization: `Bearer ${req.token}` };
 
@@ -738,6 +801,13 @@ export async function refund(req, res) {
     }
 
     const data = await response.json();
+    try {
+      const userId = await resolveUser(req.token);
+      await updateProductAction(userId, [sid], ProductAction.REFUND, Boolean(isProxy));
+    } catch (e) {
+      console.error("[Manager Controller] refund action update error:", e.message);
+    }
+
     res.json({ success: true, result: data.result });
   } catch (error) {
     console.error(`Failed to REFUND for sids: ${sid}`, error.message);

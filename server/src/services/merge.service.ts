@@ -1,3 +1,5 @@
+import { ProductAction } from "../types/action.types.ts";
+
 export interface ServerRow {
   sid: number;
   ip_port?: string;
@@ -12,6 +14,8 @@ export interface ServerRow {
   plan_number?: string;
   he_dieu_hanh?: string;
   price_vnd?: string;
+  last_action: ProductAction;
+  last_action_time: string;
   [key: string]: any;
 }
 
@@ -19,6 +23,8 @@ export interface DbRecord {
   sid: number;
   user_pass?: string;
   he_dieu_hanh?: string;
+  last_action: ProductAction;
+  last_action_time: Date;
   [key: string]: any;
 }
 
@@ -39,15 +45,18 @@ export function mergeProxyData(
 
     if (dbRow && dbRow.user_pass) {
       userPass = dbRow.user_pass;
-    }
-
-    if (userPass === undefined && server.user_pass !== undefined) {
+    } else if (server.user_pass !== undefined) {
       userPass = server.user_pass;
     }
+
+    const lastAction = dbRow ? dbRow.last_action : ProductAction.CREATE;
+    const lastActionTime = (dbRow ? dbRow.last_action_time : new Date()).toISOString();
 
     return {
       ...server,
       ...(userPass !== undefined && { user_pass: userPass }),
+      last_action: lastAction,
+      last_action_time: lastActionTime,
     };
   });
 }
@@ -70,9 +79,7 @@ export function mergeVpsData(
 
     if (dbRow && dbRow.user_pass) {
       userPass = dbRow.user_pass;
-    }
-
-    if (userPass === undefined && server.user_pass !== undefined) {
+    } else if (server.user_pass !== undefined) {
       userPass = server.user_pass;
     }
 
@@ -94,9 +101,14 @@ export function mergeVpsData(
       }
     }
 
+    const lastAction = dbRow ? dbRow.last_action : ProductAction.CREATE;
+    const lastActionTime = (dbRow ? dbRow.last_action_time : new Date()).toISOString();
+
     return {
       ...server,
       ...(userPass !== undefined && { user_pass: userPass }),
+      last_action: lastAction,
+      last_action_time: lastActionTime,
     };
   });
 }

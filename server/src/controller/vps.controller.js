@@ -140,7 +140,7 @@ export async function getVpsList(req, res) {
       .request()
       .input("userId", userId)
       .query(
-        `SELECT sid, plan_number, ip_port, user_pass, country, he_dieu_hanh, price_vnd, created, expired, status, note, is_auto_renew
+        `SELECT sid, plan_number, ip_port, user_pass, country, he_dieu_hanh, price_vnd, created, expired, status, last_action, last_action_time, note, is_auto_renew
          FROM Vps WHERE user_id = @userId`,
       );
 
@@ -164,7 +164,7 @@ export async function getVpsList(req, res) {
 
 /**
  * POST /api/vps — Save/upsert VPS rows for the authenticated user
- * Body: { vpsList: [{ sid, plan_number, ip_port, user_pass, country, he_dieu_hanh, price_vnd, created, expired, status, note, is_auto_renew }] }
+ * Body: { vpsList: [{ sid, plan_number, ip_port, user_pass, country, he_dieu_hanh, price_vnd, created, expired, status, last_action, last_action_time, note, is_auto_renew }] }
  */
 export async function saveVpsList(req, res) {
   try {
@@ -207,6 +207,8 @@ export async function saveVpsList(req, res) {
           request.input(`created_${idx}`, vps.created || null);
           request.input(`expired_${idx}`, vps.expired || null);
           request.input(`status_${idx}`, vps.status || null);
+          request.input(`last_action_${idx}`, vps.last_action);
+          request.input(`last_action_time_${idx}`, new Date(vps.last_action_time));
           request.input(`note_${idx}`, vps.note || null);
           request.input(`is_auto_renew_${idx}`, vps.is_auto_renew || false);
 
@@ -225,11 +227,13 @@ export async function saveVpsList(req, res) {
                 created = COALESCE(@created_${idx}, target.created),
                 expired = COALESCE(@expired_${idx}, target.expired),
                 status = COALESCE(@status_${idx}, target.status),
+                last_action = @last_action_${idx},
+                last_action_time = @last_action_time_${idx},
                 note = COALESCE(@note_${idx}, target.note),
                 is_auto_renew = COALESCE(@is_auto_renew_${idx}, target.is_auto_renew)
             WHEN NOT MATCHED THEN
-              INSERT (user_id, sid, plan_number, ip_port, user_pass, country, he_dieu_hanh, price_vnd, created, expired, status, note, is_auto_renew)
-              VALUES (@userId, @sid_${idx}, @plan_number_${idx}, @ip_port_${idx}, @user_pass_${idx}, @country_${idx}, @he_dieu_hanh_${idx}, @price_vnd_${idx}, @created_${idx}, @expired_${idx}, @status_${idx}, @note_${idx}, @is_auto_renew_${idx});
+              INSERT (user_id, sid, plan_number, ip_port, user_pass, country, he_dieu_hanh, price_vnd, created, expired, status, last_action, last_action_time, note, is_auto_renew)
+              VALUES (@userId, @sid_${idx}, @plan_number_${idx}, @ip_port_${idx}, @user_pass_${idx}, @country_${idx}, @he_dieu_hanh_${idx}, @price_vnd_${idx}, @created_${idx}, @expired_${idx}, @status_${idx}, @last_action_${idx}, @last_action_time_${idx}, @note_${idx}, @is_auto_renew_${idx});
           `;
         });
         await request.query(query);

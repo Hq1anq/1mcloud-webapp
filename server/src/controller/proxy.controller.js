@@ -20,7 +20,7 @@ export async function getProxies(req, res) {
       .request()
       .input("userId", userId)
       .query(
-        `SELECT sid, ip_port, user_pass, country, type, created, expired, status, note, is_auto_renew
+        `SELECT sid, ip_port, user_pass, country, type, created, expired, status, last_action, last_action_time, note, is_auto_renew
          FROM Proxy WHERE user_id = @userId`,
       );
 
@@ -44,7 +44,7 @@ export async function getProxies(req, res) {
 
 /**
  * POST /api/proxy — Save/upsert proxy rows for the authenticated user
- * Body: { proxies: [{ sid, ip_port, user_pass, country, type, created, expired, status, note }] }
+ * Body: { proxies: [{ sid, ip_port, user_pass, country, type, created, expired, status, last_action, last_action_time, note }] }
  */
 export async function saveProxies(req, res) {
   try {
@@ -86,6 +86,8 @@ export async function saveProxies(req, res) {
           request.input(`created_${idx}`, proxy.created || null);
           request.input(`expired_${idx}`, proxy.expired || null);
           request.input(`status_${idx}`, proxy.status || null);
+          request.input(`last_action_${idx}`, proxy.last_action);
+          request.input(`last_action_time_${idx}`, new Date(proxy.last_action_time));
           request.input(`note_${idx}`, proxy.note || null);
           request.input(`is_auto_renew_${idx}`, proxy.is_auto_renew || false);
 
@@ -102,11 +104,13 @@ export async function saveProxies(req, res) {
                 created = COALESCE(@created_${idx}, target.created),
                 expired = COALESCE(@expired_${idx}, target.expired),
                 status = COALESCE(@status_${idx}, target.status),
+                last_action = @last_action_${idx},
+                last_action_time = @last_action_time_${idx},
                 note = COALESCE(@note_${idx}, target.note),
                 is_auto_renew = COALESCE(@is_auto_renew_${idx}, target.is_auto_renew)
             WHEN NOT MATCHED THEN
-              INSERT (user_id, sid, ip_port, user_pass, country, type, created, expired, status, note, is_auto_renew)
-              VALUES (@userId, @sid_${idx}, @ip_port_${idx}, @user_pass_${idx}, @country_${idx}, @type_${idx}, @created_${idx}, @expired_${idx}, @status_${idx}, @note_${idx}, @is_auto_renew_${idx});
+              INSERT (user_id, sid, ip_port, user_pass, country, type, created, expired, status, last_action, last_action_time, note, is_auto_renew)
+              VALUES (@userId, @sid_${idx}, @ip_port_${idx}, @user_pass_${idx}, @country_${idx}, @type_${idx}, @created_${idx}, @expired_${idx}, @status_${idx}, @last_action_${idx}, @last_action_time_${idx}, @note_${idx}, @is_auto_renew_${idx});
           `;
         });
         await request.query(query);

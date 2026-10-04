@@ -179,8 +179,8 @@ export async function syncUserData({
                   note = COALESCE(@note_${idx}, target.note),
                   is_auto_renew = COALESCE(@is_auto_renew_${idx}, target.is_auto_renew)
               WHEN NOT MATCHED THEN
-                INSERT (user_id, sid, ip_port, user_pass, country, type, created, expired, status, note, is_auto_renew)
-                VALUES (@userId, @sid_${idx}, @ip_port_${idx}, NULL, @country_${idx}, @type_${idx}, @created_${idx}, @expired_${idx}, @status_${idx}, @note_${idx}, @is_auto_renew_${idx});
+                INSERT (user_id, sid, ip_port, user_pass, country, type, created, expired, status, last_action, last_action_time, note, is_auto_renew)
+                VALUES (@userId, @sid_${idx}, @ip_port_${idx}, NULL, @country_${idx}, @type_${idx}, @created_${idx}, @expired_${idx}, @status_${idx}, 'CREATE', DATEADD(HOUR, -7, CONVERT(DATETIME2, SUBSTRING(@created_${idx}, 7, 4) + '-' + SUBSTRING(@created_${idx}, 4, 2) + '-' + SUBSTRING(@created_${idx}, 1, 2) + ' 06:00:00')), @note_${idx}, @is_auto_renew_${idx});
             `;
           } else {
             request.input(`plan_number_${idx}`, item.plan_number);
@@ -204,8 +204,8 @@ export async function syncUserData({
                   note = COALESCE(@note_${idx}, target.note),
                   is_auto_renew = COALESCE(@is_auto_renew_${idx}, target.is_auto_renew)
               WHEN NOT MATCHED THEN
-                INSERT (user_id, sid, plan_number, ip_port, user_pass, country, he_dieu_hanh, price_vnd, created, expired, status, note, is_auto_renew)
-                VALUES (@userId, @sid_${idx}, @plan_number_${idx}, @ip_port_${idx}, NULL, @country_${idx}, @he_dieu_hanh_${idx}, @price_vnd_${idx}, @created_${idx}, @expired_${idx}, @status_${idx}, @note_${idx}, @is_auto_renew_${idx});
+                INSERT (user_id, sid, plan_number, ip_port, user_pass, country, he_dieu_hanh, price_vnd, created, expired, status, last_action, last_action_time, note, is_auto_renew)
+                VALUES (@userId, @sid_${idx}, @plan_number_${idx}, @ip_port_${idx}, NULL, @country_${idx}, @he_dieu_hanh_${idx}, @price_vnd_${idx}, @created_${idx}, @expired_${idx}, @status_${idx}, 'CREATE', DATEADD(HOUR, -7, CONVERT(DATETIME2, SUBSTRING(@created_${idx}, 7, 4) + '-' + SUBSTRING(@created_${idx}, 4, 2) + '-' + SUBSTRING(@created_${idx}, 1, 2) + ' 06:00:00')), @note_${idx}, @is_auto_renew_${idx});
             `;
           }
         });

@@ -4,6 +4,7 @@ import RenewToggle from '../components/ui/RenewToggle.jsx'
 import { getStatusClasses } from './ui.js'
 import { useTableContext } from '../components/ui/Table/TableContext.js'
 import type { ColumnDef } from '../types/table.js'
+import { ProductAction } from '../types/action.js'
 
 export function DefaultHeader({
   headerKey,
@@ -200,4 +201,58 @@ export function createIpChangedColumn<T extends Record<string, any>>(): ColumnDe
     renderCell: (row) => <span>{row.ip_changed ?? 0}</span>,
   }
 }
+
+export function getActionTextColor(action?: string): string {
+  switch (action) {
+    case ProductAction.CREATE:
+      return 'text-emerald-400'
+    case ProductAction.REINSTALL:
+      return 'text-sky-400'
+    case ProductAction.CHANGE_IP:
+      return 'text-purple-400'
+    case ProductAction.REBOOT:
+      return 'text-amber-400'
+    case ProductAction.PAUSE:
+      return 'text-red-400'
+    case ProductAction.RENEW:
+      return 'text-teal-400'
+    case ProductAction.REFUND:
+      return 'text-slate-400'
+    default:
+      return 'text-text-primary'
+  }
+}
+
+export function formatActionTime(isoOrDateStr?: string): string {
+  if (!isoOrDateStr) return ''
+  const d = new Date(isoOrDateStr)
+  if (isNaN(d.getTime())) return isoOrDateStr
+  const day = String(d.getDate()).padStart(2, '0')
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const hours = String(d.getHours()).padStart(2, '0')
+  const minutes = String(d.getMinutes()).padStart(2, '0')
+  const seconds = String(d.getSeconds()).padStart(2, '0')
+  return `${day}-${month} ${hours}:${minutes}:${seconds}`
+}
+
+export function createDetailColumn<T extends Record<string, any>>(): ColumnDef<T> {
+  return {
+    key: 'detail',
+    align: 'center',
+    filterable: true,
+    getValue: (row) => `${row.last_action} ${formatActionTime(row.last_action_time)}`,
+    renderHeader: () => <DefaultHeader headerKey="detail" />,
+    renderCell: (row) => (
+      <div className="flex items-center justify-center gap-2 whitespace-nowrap">
+        <span className={`font-semibold tracking-wide ${getActionTextColor(row.last_action)}`}>
+          {row.last_action}
+        </span>
+        <span className="font-mono text-xs sm:text-sm">
+          {formatActionTime(row.last_action_time)}
+        </span>
+      </div>
+    ),
+  }
+}
+
 

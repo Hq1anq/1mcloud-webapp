@@ -105,9 +105,18 @@ export default function VpsManager({ onBuySuccessRef }) {
   const handleBuySuccessStore = useVpsStore((s) => s.handleBuySuccess)
   const rawSyncToDb = useVpsStore((s) => s.syncToDb)
 
+  const [tempData, setTempData] = useState(null)
+  const displayData = useMemo(() => {
+    if (tempData) return tempData
+    return data
+  }, [tempData, data])
+
   const updateRowBySid = useCallback(
     (sid, updater) => {
       rawUpdateRowBySid(sid, updater)
+      setTempData((prev) =>
+        prev ? prev.map((r) => (r.sid === sid ? { ...r, ...updater(r) } : r)) : null
+      )
 
       queryClient.setQueriesData({ queryKey: [VPS_QUERY_KEY] }, (old) => {
         if (!old?.data) return old
@@ -172,7 +181,7 @@ export default function VpsManager({ onBuySuccessRef }) {
 
   // Table selection logic handled cleanly by table selection hook
   const { selectedIds, selectedRows, clearSelection, deselectRows, onSelectionChange } =
-    useTableSelection({ data })
+    useTableSelection({ data: displayData })
 
   // Action runner for batch, single, and sequential operations
   const {
@@ -197,6 +206,7 @@ export default function VpsManager({ onBuySuccessRef }) {
 
   // handleGetData — thin wrapper around TanStack Query refetch with toast feedback
   const handleGetData = useCallback(async () => {
+    if (tempData) setTempData(null)
     setPage(1)
     const loadingId = addToast(t('manager.fetchingData'), 'loading')
     try {
@@ -216,14 +226,15 @@ export default function VpsManager({ onBuySuccessRef }) {
       removeToast(loadingId)
       addToast(`${t('manager.failedGetData')}: ${err.message}`, 'error')
     }
-  }, [refetch, clearSelection, addToast, removeToast, t])
+  }, [tempData, setTempData, refetch, clearSelection, addToast, removeToast, t])
 
   // Register buy success handler on parent ref
   useEffect(() => {
     if (onBuySuccessRef) {
-      onBuySuccessRef.current = (newData, extraConfig) => {
-        const enriched = handleBuySuccessStore(newData, extraConfig)
+      onBuySuccessRef.current = async (newData, extraConfig) => {
+        const enriched = await handleBuySuccessStore(newData, extraConfig)
         if (enriched) {
+          setTempData(enriched)
           clearSelection()
           const vps = newData.map((item) => `${item.ip_port}/${item.user_pass}`).join('\n')
           safeCopy(vps).then(
@@ -245,7 +256,7 @@ export default function VpsManager({ onBuySuccessRef }) {
     return () => {
       if (onBuySuccessRef) onBuySuccessRef.current = null
     }
-  }, [onBuySuccessRef, handleBuySuccessStore, clearSelection, safeCopy, addToast, t, handleGetData])
+  }, [onBuySuccessRef, handleBuySuccessStore, setTempData, clearSelection, safeCopy, addToast, t, handleGetData])
 
   // --- Handlers ---
   const handleCopyIp = useCallback(() => {
@@ -257,7 +268,7 @@ export default function VpsManager({ onBuySuccessRef }) {
 
     const ipsToCopy = rows
       .map((r) => {
-        const latestRow = data.find((d) => d.sid === r.sid) || r
+        const latestRow = displayData.find((d) => d.sid === r.sid) || r
         return latestRow.ip_port?.split(':')[0]
       })
       .filter(Boolean)
@@ -274,7 +285,7 @@ export default function VpsManager({ onBuySuccessRef }) {
         )
       }
     })
-  }, [data, selectedRows, addToast, safeCopy, t])
+  }, [displayData, selectedRows, addToast, safeCopy, t])
 
   const handleReboot = useCallback(
     () =>
@@ -735,7 +746,7 @@ export default function VpsManager({ onBuySuccessRef }) {
             // Refine state if the server result differs
             updateRowBySid(sid, () => ({ is_auto_renew: finalState }))
 
-            const row = data.find((r) => r.sid === sid)
+            const row = displayData.find((r) => r.sid === sid)
             if (row) {
               syncToDb([{ ...row, is_auto_renew: finalState }])
             }
@@ -761,7 +772,7 @@ export default function VpsManager({ onBuySuccessRef }) {
       setReinstallState,
       setChangeIpState,
       updateRowBySid,
-      data,
+      displayData,
       syncToDb,
       addToast,
     ]
@@ -887,7 +898,7 @@ export default function VpsManager({ onBuySuccessRef }) {
                     if (rows.length === 0) return addToast(t('manager.noRowsSelected'), 'warning')
                     const text = rows
                       .map((r) => {
-                        const latestRow = data.find((d) => d.sid === r.sid) || r
+                        const latestRow = displayData.find((d) => d.sid === r.sid) || r
                         const [username, password] = (latestRow.user_pass || '').split('/')
                         return [latestRow.ip_port, username, password].join('/')
                       })
@@ -984,147 +995,173 @@ export default function VpsManager({ onBuySuccessRef }) {
 
       <StatusMetricsMeter
         total={
-          queryResponse?.total_vps !== undefined
-            ? queryResponse.total_vps
-            : data.filter((row) => row.status !== 'Refunded').length
+          tempData
+            ? tempData.filter((row) => row.status !== 'Refunded').length
+            : queryResponse?.total_vps !== undefined
+              ? queryResponse.total_vps
+              : data.filter((row) => row.status !== 'Refunded').length
         }
         running={
-          queryResponse?.total_vps_running !== undefined
-            ? queryResponse.total_vps_running
-            : data.filter((row) => row.status === 'Running').length
+          tempData
+            ? tempData.filter((row) => row.status === 'Running').length
+            : queryResponse?.total_vps_running !== undefined
+              ? queryResponse.total_vps_running
+              : data.filter((row) => row.status === 'Running').length
         }
         off={
-          queryResponse?.total_vps_off !== undefined
-            ? queryResponse.total_vps_off
-            : data.filter((row) => row.status === 'Off').length
+          tempData
+            ? tempData.filter((row) => row.status === 'Off').length
+            : queryResponse?.total_vps_off !== undefined
+              ? queryResponse.total_vps_off
+              : data.filter((row) => row.status === 'Off').length
         }
         className="mt-4"
       />
 
       <TableFilterToolbar
         keyword={keyword}
-        onKeywordChange={setKeyword}
+        onKeywordChange={(val) => {
+          if (tempData) setTempData(null)
+          setKeyword(val)
+        }}
         byTime={byTime}
-        onByTimeChange={setByTime}
+        onByTimeChange={(val) => {
+          if (tempData) setTempData(null)
+          setByTime(val)
+        }}
         ips={ips}
-        onIpsChange={setIps}
+        onIpsChange={(val) => {
+          if (tempData) setTempData(null)
+          setIps(val)
+        }}
         onResetPage={() => setPage(1)}
       />
 
-      <PaginatedTable
-        tableTitle={t('vpsManager.title')}
-        className="mt-2 px-4 text-xs sm:text-sm"
-        data={data}
-        pagination={true}
-        serverSide={true}
-        page={page - 1}
-        pageSize={pageSize}
-        totalCount={queryResponse?.total_vps ?? data.length}
-        pageSizeOptions={[10, 20, 50, 100, 200]}
-        onPageChange={(zeroBasedPage) => {
-          setPage(zeroBasedPage + 1)
-          clearSelection()
+      <div
+        onKeyDownCapture={(e) => {
+          if (tempData && e.key === 'Enter') {
+            setTempData(null)
+          }
         }}
-        onPageSizeChange={(newPageSize) => {
-          setPageSize(newPageSize)
-          setPage(1)
-          clearSelection()
-        }}
-        columns={visibleColumns}
-        isRowSelectable={(row) => row?.status !== 'Refunded'}
-        isLoading={isFetching}
-        useFilter={true}
-        showDetailToggle={isDetailEnabled}
-        isDetailView={isDetailView}
-        onToggleDetailView={toggleDetailView}
-        rowClassMap={rowClassMap}
-        selectedIds={selectedIds}
-        selectedRows={selectedRows}
-        extraBtn={
-          <button
-            id="reloadBtn"
-            className="bg-action group rounded-lg p-2"
-            style={{ '--action-color': 'var(--orange)' }}
-            disabled={isFetching}
-            onClick={async () => {
-              const loadingId = addToast(t('manager.fetchingData'), 'loading')
-              try {
-                const res = await refetch()
-                clearSelection()
-                setRowClassMap({})
-                removeToast(loadingId)
-                const finalResData = res.data?.data || []
-                addToast(
-                  <>
-                    {t('manager.loadedRows')}{' '}
-                    <span className="text-text-toast-success">{finalResData.length}</span>{' '}
-                    {t('manager.rows')}
-                  </>,
-                  'success'
-                )
-              } catch (err) {
-                console.error('[Refresh] Error:', err.message)
-                removeToast(loadingId)
-                addToast(`${t('manager.failedGetData')}: ${err.message}`, 'error')
-              }
-            }}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 640 640"
-              className="fill-text-secondary size-5 shrink-0 transition-transform group-hover:rotate-30 sm:size-7"
-            >
-              <path d="M544.1 256L552 256C565.3 256 576 245.3 576 232L576 88C576 78.3 570.2 69.5 561.2 65.8C552.2 62.1 541.9 64.2 535 71L483.3 122.8C439 86.1 382 64 320 64C191 64 84.3 159.4 66.6 283.5C64.1 301 76.2 317.2 93.7 319.7C111.2 322.2 127.4 310 129.9 292.6C143.2 199.5 223.3 128 320 128C364.4 128 405.2 143 437.7 168.3L391 215C384.1 221.9 382.1 232.2 385.8 241.2C389.5 250.2 398.3 256 408 256L544.1 256zM573.5 356.5C576 339 563.8 322.8 546.4 320.3C529 317.8 512.7 330 510.2 347.4C496.9 440.4 416.8 511.9 320.1 511.9C275.7 511.9 234.9 496.9 202.4 471.6L249 425C255.9 418.1 257.9 407.8 254.2 398.8C250.5 389.8 241.7 384 232 384L88 384C74.7 384 64 394.7 64 408L64 552C64 561.7 69.8 570.5 78.8 574.2C87.8 577.9 98.1 575.8 105 569L156.8 517.2C201 553.9 258 576 320 576C449 576 555.7 480.6 573.4 356.5z" />
-            </svg>
-          </button>
-        }
-        emptyState={
-          <div
-            id="emptyState"
-            className="mx-auto flex max-w-2xl flex-col items-center gap-8 px-4 py-10 select-none"
-          >
-            <div className="border-primary/25 bg-primary/10 text-primary flex size-24 items-center justify-center rounded-2xl border shadow-inner">
-              <svg
-                className="size-12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <rect x="2" y="2" width="20" height="8" rx="2" ry="2" />
-                <rect x="2" y="14" width="20" height="8" rx="2" ry="2" />
-                <line x1="6" y1="6" x2="6.01" y2="6" />
-                <line x1="6" y1="18" x2="6.01" y2="18" />
-              </svg>
-            </div>
-            <h3 className="font-headline text-text-primary text-xl font-bold">
-              {t('manager.noVpsFound')}
-            </h3>
+      >
+        <PaginatedTable
+          tableTitle={t('vpsManager.title')}
+          className="mt-2 px-4 text-xs sm:text-sm"
+          data={displayData}
+          pagination={!tempData}
+          serverSide={!tempData}
+          page={tempData ? 0 : page - 1}
+          pageSize={pageSize}
+          totalCount={tempData ? undefined : (queryResponse?.total_vps ?? data.length)}
+          pageSizeOptions={[10, 20, 50, 100, 200]}
+          onPageChange={(zeroBasedPage) => {
+            if (!tempData) {
+              setPage(zeroBasedPage + 1)
+              clearSelection()
+            }
+          }}
+          onPageSizeChange={(newPageSize) => {
+            setPageSize(newPageSize)
+            if (!tempData) setPage(1)
+            clearSelection()
+          }}
+          columns={visibleColumns}
+          isRowSelectable={(row) => row?.status !== 'Refunded'}
+          isLoading={tempData ? false : isFetching}
+          useFilter={true}
+          showDetailToggle={isDetailEnabled}
+          isDetailView={isDetailView}
+          onToggleDetailView={toggleDetailView}
+          rowClassMap={rowClassMap}
+          selectedIds={selectedIds}
+          selectedRows={selectedRows}
+          extraBtn={
             <button
-              type="button"
-              onClick={() => navigate('/price/vps')}
-              className="bg-primary hover:bg-primary/90 inline-flex cursor-pointer items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:scale-[1.02] active:scale-[0.98]"
+              id="reloadBtn"
+              className="bg-action group rounded-lg p-2"
+              style={{ '--action-color': 'var(--orange)' }}
+              disabled={isFetching}
+              onClick={async () => {
+                if (tempData) setTempData(null)
+                const loadingId = addToast(t('manager.fetchingData'), 'loading')
+                try {
+                  const res = await refetch()
+                  clearSelection()
+                  setRowClassMap({})
+                  removeToast(loadingId)
+                  const finalResData = res.data?.data || []
+                  addToast(
+                    <>
+                      {t('manager.loadedRows')}{' '}
+                      <span className="text-text-toast-success">{finalResData.length}</span>{' '}
+                      {t('manager.rows')}
+                    </>,
+                    'success'
+                  )
+                } catch (err) {
+                  console.error('[Refresh] Error:', err.message)
+                  removeToast(loadingId)
+                  addToast(`${t('manager.failedGetData')}: ${err.message}`, 'error')
+                }
+              }}
             >
               <svg
-                className="size-4"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 640 640"
+                className="fill-text-secondary size-5 shrink-0 transition-transform group-hover:rotate-30 sm:size-7"
               >
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
+                <path d="M544.1 256L552 256C565.3 256 576 245.3 576 232L576 88C576 78.3 570.2 69.5 561.2 65.8C552.2 62.1 541.9 64.2 535 71L483.3 122.8C439 86.1 382 64 320 64C191 64 84.3 159.4 66.6 283.5C64.1 301 76.2 317.2 93.7 319.7C111.2 322.2 127.4 310 129.9 292.6C143.2 199.5 223.3 128 320 128C364.4 128 405.2 143 437.7 168.3L391 215C384.1 221.9 382.1 232.2 385.8 241.2C389.5 250.2 398.3 256 408 256L544.1 256zM573.5 356.5C576 339 563.8 322.8 546.4 320.3C529 317.8 512.7 330 510.2 347.4C496.9 440.4 416.8 511.9 320.1 511.9C275.7 511.9 234.9 496.9 202.4 471.6L249 425C255.9 418.1 257.9 407.8 254.2 398.8C250.5 389.8 241.7 384 232 384L88 384C74.7 384 64 394.7 64 408L64 552C64 561.7 69.8 570.5 78.8 574.2C87.8 577.9 98.1 575.8 105 569L156.8 517.2C201 553.9 258 576 320 576C449 576 555.7 480.6 573.4 356.5z" />
               </svg>
-              {t('manager.buyVps')}
             </button>
-          </div>
-        }
-        onSelectionChange={onSelectionChange}
-      />
+          }
+          emptyState={
+            <div
+              id="emptyState"
+              className="mx-auto flex max-w-2xl flex-col items-center gap-8 px-4 py-10 select-none"
+            >
+              <div className="border-primary/25 bg-primary/10 text-primary flex size-24 items-center justify-center rounded-2xl border shadow-inner">
+                <svg
+                  className="size-12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="2" y="2" width="20" height="8" rx="2" ry="2" />
+                  <rect x="2" y="14" width="20" height="8" rx="2" ry="2" />
+                  <line x1="6" y1="6" x2="6.01" y2="6" />
+                  <line x1="6" y1="18" x2="6.01" y2="18" />
+                </svg>
+              </div>
+              <h3 className="font-headline text-text-primary text-xl font-bold">
+                {t('manager.noVpsFound')}
+              </h3>
+              <button
+                type="button"
+                onClick={() => navigate('/price/vps')}
+                className="bg-primary hover:bg-primary/90 inline-flex cursor-pointer items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <svg
+                  className="size-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                {t('manager.buyVps')}
+              </button>
+            </div>
+          }
+          onSelectionChange={onSelectionChange}
+        />
+      </div>
 
       <UpgradePlanDialog
         key={`upgrade-${upgradeDialogState?.sid}-${upgradeDialogState?.isOpen}`}
@@ -1159,7 +1196,7 @@ export default function VpsManager({ onBuySuccessRef }) {
               const changes = { plan_number, price_vnd, status: 'Running' }
               updateRowBySid(upgradeDialogState.sid, () => changes)
               setRowClassMap({ [upgradeDialogState.sid]: 'bg-success-cell' })
-              const row = data.find((r) => r.sid === upgradeDialogState.sid)
+              const row = displayData.find((r) => r.sid === upgradeDialogState.sid)
               if (row) syncToDb([{ ...row, ...changes }])
             } else {
               handleGetData()
@@ -1190,7 +1227,7 @@ export default function VpsManager({ onBuySuccessRef }) {
           }
           updateRowBySid(reinstallState.data.sid, () => changes)
           setRowClassMap({ [reinstallState.data.sid]: 'bg-success-cell' })
-          const row = data.find((r) => r.sid === reinstallState.data.sid)
+          const row = displayData.find((r) => r.sid === reinstallState.data.sid)
           syncToDb([{ ...row, ...changes }])
           safeCopy(
             `${responseData.ip}:${responseData.port}/${responseData.username}/${responseData.password}`
@@ -1217,7 +1254,7 @@ export default function VpsManager({ onBuySuccessRef }) {
           }
           updateRowBySid(changeIpState.data.sid, () => changes)
           setRowClassMap({ [changeIpState.data.sid]: 'bg-success-cell' })
-          const row = data.find((r) => r.sid === changeIpState.data.sid)
+          const row = displayData.find((r) => r.sid === changeIpState.data.sid)
           syncToDb([{ ...row, ...changes }])
           safeCopy(
             `${responseData.ip}:${responseData.port}/${responseData.username}/${responseData.password}`

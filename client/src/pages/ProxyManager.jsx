@@ -210,9 +210,10 @@ export default function ProxyManager({ onBuySuccessRef }) {
   // Register buy success handler on parent ref
   useEffect(() => {
     if (onBuySuccessRef) {
-      onBuySuccessRef.current = (newData, extraConfig) => {
-        const enriched = handleBuySuccessStore(newData, extraConfig)
+      onBuySuccessRef.current = async (newData, extraConfig) => {
+        const enriched = await handleBuySuccessStore(newData, extraConfig)
         if (enriched) {
+          setTempData(enriched)
           clearSelection()
           const proxies = newData.map((item) => `${item.ip_port}:${item.user_pass}`).join('\n')
           safeCopy(proxies).then(
@@ -237,6 +238,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
   }, [
     onBuySuccessRef,
     handleBuySuccessStore,
+    setTempData,
     clearSelection,
     safeCopy,
     addToast,
@@ -1982,18 +1984,36 @@ export default function ProxyManager({ onBuySuccessRef }) {
       </div>
 
       <StatusMetricsMeter
-        total={data.filter((row) => row.status !== 'Refunded').length}
-        running={data.filter((row) => row.status === 'Running').length}
-        off={data.filter((row) => row.status === 'Off').length}
+        total={
+          tempData
+            ? tempData.filter((row) => row.status !== 'Refunded').length
+            : data.filter((row) => row.status !== 'Refunded').length
+        }
+        running={
+          tempData
+            ? tempData.filter((row) => row.status === 'Running').length
+            : data.filter((row) => row.status === 'Running').length
+        }
+        off={
+          tempData
+            ? tempData.filter((row) => row.status === 'Off').length
+            : data.filter((row) => row.status === 'Off').length
+        }
         className="mt-4"
       />
 
       {/* ========== REUSABLE FILTER TOOLBAR ========== */}
       <TableFilterToolbar
         keyword={keyword}
-        onKeywordChange={setKeyword}
+        onKeywordChange={(val) => {
+          if (tempData) setTempData(null)
+          setKeyword(val)
+        }}
         byTime={byTime}
-        onByTimeChange={setByTime}
+        onByTimeChange={(val) => {
+          if (tempData) setTempData(null)
+          setByTime(val)
+        }}
         ips={filterIps}
         onIpsChange={(val) => {
           if (tempData) setTempData(null)

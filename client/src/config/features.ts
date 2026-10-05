@@ -1,6 +1,6 @@
 export const FEATURE_FLAGS = {
   // Flag to toggle super-user detail view across management tables
-  SUPER_USER_DETAIL_VIEW: false,
+  SUPER_USER_DETAIL_VIEW: true,
 } as const
 
 export function canAccessDetailView(): boolean {

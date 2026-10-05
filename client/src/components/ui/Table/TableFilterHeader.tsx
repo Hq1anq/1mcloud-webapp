@@ -85,6 +85,7 @@ export default function TableFilterHeader(): React.ReactElement {
                 <div className="relative">
                   <input
                     type="text"
+                    enterKeyHint="search"
                     placeholder={t('filter')}
                     className={`filter-input bg-dropdown mt-1 w-full px-2 py-1 ${textAlignClass}`}
                     value={inputValue}

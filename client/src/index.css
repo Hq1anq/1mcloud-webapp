@@ -76,21 +76,27 @@
     from {
       transform: scale(1, 1);
     }
+
     30% {
       transform: scale(1.25, 0.75);
     }
+
     40% {
       transform: scale(0.75, 1.25);
     }
+
     50% {
       transform: scale(1.15, 0.85);
     }
+
     65% {
       transform: scale(0.95, 1.05);
     }
+
     75% {
       transform: scale(1.05, 0.95);
     }
+
     to {
       transform: scale(1, 1);
     }
@@ -141,11 +147,9 @@
   --bg-selected: white;
 
   /* Table Row Dynamic Color System */
-  --table-row-bg-expired: color-mix(
-    in srgb,
-    color-mix(in srgb, var(--purple) 70%, var(--red) 30%) 20%,
-    var(--bg-surface)
-  );
+  --table-row-bg-expired: color-mix(in srgb,
+      color-mix(in srgb, var(--purple) 70%, var(--red) 30%) 20%,
+      var(--bg-surface));
   --table-row-bg-expiring-1: color-mix(in srgb, var(--red) 30%, var(--bg-surface));
   --table-row-bg-expiring-2: color-mix(in srgb, var(--red) 20%, var(--bg-surface));
   --table-row-bg-expiring-3: color-mix(in srgb, var(--red) 10%, var(--bg-surface));
@@ -237,11 +241,9 @@
   --bg-selected: color-mix(in srgb, var(--bg-thead), var(--border) 20%);
 
   /* Table Row Dynamic Color System */
-  --table-row-bg-expired: color-mix(
-    in srgb,
-    color-mix(in srgb, var(--purple) 70%, var(--red) 30%) 28%,
-    var(--bg-surface)
-  );
+  --table-row-bg-expired: color-mix(in srgb,
+      color-mix(in srgb, var(--purple) 70%, var(--red) 30%) 28%,
+      var(--bg-surface));
   --table-row-bg-expiring-1: color-mix(in srgb, var(--red) 36%, var(--bg-surface));
   --table-row-bg-expiring-2: color-mix(in srgb, var(--red) 24%, var(--bg-surface));
   --table-row-bg-expiring-3: color-mix(in srgb, var(--red) 12%, var(--bg-surface));
@@ -291,11 +293,9 @@
   --btn-mix: 70%;
 
   --glass-inset-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.5), inset 0 1px 2px rgba(0, 0, 0, 0.3);
-  --indicator-background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--color-primary) 30%, rgba(255, 255, 255, 0.08)) 0%,
-    color-mix(in srgb, var(--color-primary) 10%, rgba(255, 255, 255, 0.01)) 100%
-  );
+  --indicator-background: linear-gradient(135deg,
+      color-mix(in srgb, var(--color-primary) 30%, rgba(255, 255, 255, 0.08)) 0%,
+      color-mix(in srgb, var(--color-primary) 10%, rgba(255, 255, 255, 0.01)) 100%);
   --indicator-box-shadow:
     inset 0 1px 1px rgba(255, 255, 255, 0.15),
     inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 20%, transparent),
@@ -388,11 +388,9 @@
 /* Toast Animations */
 @layer utilities {
   .bg-action {
-    background-color: color-mix(
-      in srgb,
-      var(--action-color) var(--btn-mix, 100%),
-      var(--bg-surface)
-    );
+    background-color: color-mix(in srgb,
+        var(--action-color) var(--btn-mix, 100%),
+        var(--bg-surface));
   }
 
   .btn-primary {
@@ -466,6 +464,7 @@
   .elastic-out {
     transition-timing-function: cubic-bezier(0.5, 2, 0.5, 0.8);
   }
+
   .pop-spring {
     transition-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.25);
   }
@@ -502,6 +501,7 @@
     overflow: hidden;
     background-color: var(--text-muted);
   }
+
   .shimmer-bg::after {
     content: '';
     position: absolute;
@@ -510,15 +510,14 @@
     bottom: 0;
     left: 0;
     transform: translateX(-100%);
-    background-image: linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0) 0,
-      rgba(255, 255, 255, 0.05) 20%,
-      rgba(255, 255, 255, 0.1) 60%,
-      rgba(255, 255, 255, 0)
-    );
+    background-image: linear-gradient(90deg,
+        rgba(255, 255, 255, 0) 0,
+        rgba(255, 255, 255, 0.05) 20%,
+        rgba(255, 255, 255, 0.1) 60%,
+        rgba(255, 255, 255, 0));
     animation: shimmer 1.5s infinite;
   }
+
   @keyframes shimmer {
     100% {
       transform: translateX(100%);
@@ -527,16 +526,20 @@
 
   /* Capture thumbnail bounce */
   @keyframes capture-bounce {
+
     0%,
     100% {
       transform: translateY(0);
     }
+
     25% {
       transform: translateY(-6px);
     }
+
     50% {
       transform: translateY(0);
     }
+
     75% {
       transform: translateY(-3px);
     }
@@ -544,11 +547,15 @@
 
   /* Hide scrollbar utility */
   .no-scrollbar {
-    -ms-overflow-style: none; /* IE and Edge */
-    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
   }
+
   .no-scrollbar::-webkit-scrollbar {
-    display: none; /* Chrome, Safari and Opera */
+    display: none;
+    /* Chrome, Safari and Opera */
   }
 
   /* FAB pulse glow animation */
@@ -558,17 +565,20 @@
         0 0 0 0 rgba(19, 127, 236, 0.7),
         0 0 20px rgba(19, 127, 236, 0.4);
     }
+
     70% {
       box-shadow:
         0 0 0 14px rgba(19, 127, 236, 0),
         0 0 20px rgba(19, 127, 236, 0.4);
     }
+
     100% {
       box-shadow:
         0 0 0 0 rgba(19, 127, 236, 0),
         0 0 20px rgba(19, 127, 236, 0.4);
     }
   }
+
   .animate-pulse-glow {
     animation: pulse-glow 2s ease-out infinite;
   }
@@ -623,6 +633,7 @@
       opacity: 0;
       translate: 0 34px;
     }
+
     to {
       opacity: 1;
       translate: 0 0;
@@ -643,6 +654,7 @@
         0 0 35px 2px color-mix(in srgb, var(--highlight-text) 55%, transparent),
         inset 0 0 20px -2px color-mix(in srgb, var(--highlight-text) 20%, transparent);
     }
+
     15% {
       opacity: 1;
       border: 2px solid var(--highlight-text);
@@ -651,6 +663,7 @@
         0 0 45px 6px color-mix(in srgb, var(--highlight-text) 65%, transparent),
         inset 0 0 24px -2px color-mix(in srgb, var(--highlight-text) 25%, transparent);
     }
+
     75% {
       opacity: 1;
       border: 2px solid var(--highlight-text);
@@ -659,6 +672,7 @@
         0 0 30px 2px color-mix(in srgb, var(--highlight-text) 45%, transparent),
         inset 0 0 16px -2px color-mix(in srgb, var(--highlight-text) 15%, transparent);
     }
+
     100% {
       opacity: 0;
       border: 2px solid transparent;
@@ -685,7 +699,7 @@
       opacity 0.18s ease;
   }
 
-  .table-row-system > td {
+  .table-row-system>td {
     transition:
       border-color 0.18s ease,
       box-shadow 0.18s ease;
@@ -693,15 +707,13 @@
 
   /* Selected state: mixes base background with selected tint */
   .table-row-system[data-selected='true'] {
-    --row-current: color-mix(
-      in srgb,
-      var(--row-base) calc(100% - var(--table-row-selected-intensity)),
-      var(--table-row-selected-tint)
-    );
+    --row-current: color-mix(in srgb,
+        var(--row-base) calc(100% - var(--table-row-selected-intensity)),
+        var(--table-row-selected-tint));
   }
 
   /* Selected state: persistent left accent bar */
-  .table-row-system[data-selected='true'] > td:first-child {
+  .table-row-system[data-selected='true']>td:first-child {
     box-shadow: inset 3px 0 0 0 var(--primary);
   }
 
@@ -711,11 +723,11 @@
     text-shadow: var(--table-row-hover-text-shadow);
   }
 
-  .table-row-system:not([data-refunded='true']):hover > td {
+  .table-row-system:not([data-refunded='true']):hover>td {
     border-bottom-color: var(--table-row-hover-border);
   }
 
-  .table-row-system:not([data-refunded='true']):hover > td:first-child {
+  .table-row-system:not([data-refunded='true']):hover>td:first-child {
     box-shadow: inset 3px 0 0 0 var(--table-row-hover-text);
   }
 

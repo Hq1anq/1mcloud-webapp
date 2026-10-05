@@ -768,13 +768,9 @@ export default function VpsManager({ onBuySuccessRef }) {
             sid: sid.toString(),
           })
           if (res.data?.success) {
-            const finalState = res.data.changes.is_on
-            // Refine state if the server result differs
-            updateRowBySid(sid, () => ({ is_auto_renew: finalState }))
-
-            const row = displayData.find((r) => r.sid === sid)
+            const row = useVpsStore.getState().data.find((r) => r.sid === sid)
             if (row) {
-              syncToDb([{ ...row, is_auto_renew: finalState }])
+              syncToDb([{ ...row, is_auto_renew: newState }])
             }
 
             addToast(t('dialog.success'), 'success')

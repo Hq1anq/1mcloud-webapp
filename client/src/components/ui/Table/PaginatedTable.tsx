@@ -45,6 +45,7 @@ const PaginatedTable = forwardRef<HTMLDivElement, PaginatedTableProps>(function 
   return (
     <BaseTable
       {...props}
+      serverSide={serverSide}
       ref={ref}
       renderBody={({ filteredData, context, virtuosoContext, fixedHeader }) => {
         if (filteredData.length === 0) return null

@@ -22,6 +22,7 @@ export interface VpsItem {
 export type VpsStatusFilter = 'running' | 'off' | 'other' | ''
 export type VpsTimeFilter = 'all' | 'due' | 'expired' | 'using'
 export type VpsCreatedOrder = 'desc' | 'asc' | ''
+export type VpsDetailOrder = 'desc' | 'asc' | ''
 
 export interface FetchVpsListParams {
   page?: number
@@ -29,6 +30,7 @@ export interface FetchVpsListParams {
   by_status?: VpsStatusFilter
   by_time?: VpsTimeFilter
   by_created?: VpsCreatedOrder
+  by_detail?: VpsDetailOrder
   ips?: string
   keyword?: string
   proxy?: boolean | string

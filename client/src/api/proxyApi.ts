@@ -12,6 +12,7 @@ export async function fetchProxyList(
       by_status: params.by_status ?? '',
       by_time: params.by_time ?? 'all',
       by_created: params.by_created ?? '',
+      by_detail: params.by_detail ?? '',
       ips: params.ips ?? '',
       keyword: params.keyword ?? '',
     },

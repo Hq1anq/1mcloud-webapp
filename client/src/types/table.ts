@@ -1,9 +1,18 @@
 import type React from 'react'
 
+export type SortDirection = 'none' | 'asc' | 'desc'
+
+export interface TableSortConfig {
+  columnKey: string
+  direction: SortDirection
+}
+
 export interface ColumnDef<T = Record<string, any>> {
   key: string
   align: 'left' | 'center' | 'right'
   filterable: boolean
+  sortable?: boolean
+  sortComparator?: (a: T, b: T, direction: 'asc' | 'desc') => number
   getValue?: (row: T) => unknown
   renderCell: (row: T, index: number) => React.ReactNode
   renderHeader: () => React.ReactNode
@@ -81,4 +90,7 @@ export interface BaseTableProps<
   showDetailToggle?: boolean
   isDetailView?: boolean
   onToggleDetailView?: () => void
+  serverSide?: boolean
+  sortConfig?: TableSortConfig
+  onSortChange?: (sortConfig: TableSortConfig) => void
 }

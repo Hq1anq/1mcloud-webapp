@@ -1,4 +1,4 @@
-import type { ColumnDef } from '../types/table'
+import type { ColumnDef, TableSortConfig } from '../types/table'
 import { getFlagIcon } from '../data/flags.jsx'
 
 // Nation flag helper
@@ -42,6 +42,43 @@ export function applyFilters<T extends Record<string, any>>(
       return matchesFilter(cellValue, filterVal)
     })
   )
+}
+
+/**
+ * Applies sorting to data based on sortConfig and column definitions.
+ * Returns default order (sid desc) when direction is 'none' or column is not sortable.
+ */
+export function applySort<T extends Record<string, any>>(
+  data: T[],
+  sortConfig: TableSortConfig,
+  columns: ColumnDef<T>[]
+): T[] {
+  if (!data || data.length === 0) return data
+
+  if (sortConfig.direction === 'none' || !sortConfig.columnKey) {
+    return [...data].sort((a, b) => b.sid - a.sid)
+  }
+
+  const column = columns.find((c) => c.key === sortConfig.columnKey)
+  if (!column || !column.sortable) {
+    return [...data].sort((a, b) => b.sid - a.sid)
+  }
+
+  const direction = sortConfig.direction
+
+  if (column.sortComparator) {
+    return [...data].sort((a, b) => column.sortComparator!(a, b, direction))
+  }
+
+  return [...data].sort((a, b) => {
+    const valA = column.getValue ? column.getValue(a) : a[column.key]
+    const valB = column.getValue ? column.getValue(b) : b[column.key]
+    if (valA === valB) {
+      return b.sid - a.sid
+    }
+    const cmp = valA > valB ? 1 : -1
+    return direction === 'asc' ? cmp : -cmp
+  })
 }
 
 /**

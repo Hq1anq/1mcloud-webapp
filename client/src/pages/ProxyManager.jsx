@@ -48,12 +48,14 @@ export default function ProxyManager({ onBuySuccessRef }) {
   // Filter States
   const [byTime, setByTime] = useState('all')
   const [keyword, setKeyword] = useState('')
+  const [sortConfig, setSortConfig] = useState({ columnKey: '', direction: 'none' })
 
   // Data from Zustand store
   const data = useProxyStore((s) => s.data)
   const isLoading = useProxyStore((s) => s.isLoading)
   const rawUpdateRowBySid = useProxyStore((s) => s.updateRowBySid)
   const rawSyncToDb = useProxyStore((s) => s.syncToDb)
+  const [tempData, setTempData] = useState(null)
 
   const syncToDb = useCallback(
     async (rows, attempt = 1) => {
@@ -96,7 +98,6 @@ export default function ProxyManager({ onBuySuccessRef }) {
   const handleBuySuccessStore = useProxyStore((s) => s.handleBuySuccess)
   const [isSyncing, setIsSyncing] = useState(false)
   const [isFetchingIps, setIsFetchingIps] = useState(false)
-  const [tempData, setTempData] = useState(null)
 
   // Keep both local tempData (if viewing temporary results) and store data updated
   const updateRowBySid = useCallback(
@@ -128,6 +129,14 @@ export default function ProxyManager({ onBuySuccessRef }) {
   // Table selection logic handled cleanly by table selection hook
   const { selectedIds, selectedRows, clearSelection, deselectRows, onSelectionChange } =
     useTableSelection({ data: filteredData })
+
+  const handleSortChange = useCallback(
+    (newSort) => {
+      setSortConfig(newSort)
+      clearSelection()
+    },
+    [clearSelection]
+  )
 
   // Action runner for batch, single, and sequential operations
   const {
@@ -2058,12 +2067,15 @@ export default function ProxyManager({ onBuySuccessRef }) {
           if (tempData && e.key === 'Enter') {
             setTempData(null)
           }
-        }}
-      >
+        }}>
+
         <VirtualizedTable
           tableTitle={t('manager.proxyManager')}
           className="mt-2 px-4 text-xs sm:text-sm"
           data={filteredData}
+          serverSide={false}
+          sortConfig={sortConfig}
+          onSortChange={handleSortChange}
           columns={visibleColumns}
           isRowSelectable={(row) => row?.status !== 'Refunded'}
           isLoading={isLoading}

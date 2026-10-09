@@ -635,6 +635,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
     const patternMap = {
       '->*+1w ': 'đã gia hạn tuần',
       '->*+2w ': 'đã gia hạn 2 tuần',
+      '->*+3w ': 'đã gia hạn 3 tuần',
       '->*+1m ': 'đã gia hạn 1 tháng',
     }
     const suffix = patternMap[noteInput]
@@ -665,7 +666,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
           let extractedDDMMText = ''
           let firstMatch = ''
 
-          const needsDateParsing = evaluatedFrom === '' || /\+(1w|2w|1m)/.test(noteInput)
+          const needsDateParsing = evaluatedFrom === '' || /\+(1w|2w|3w|1m)/.test(noteInput)
 
           if (needsDateParsing) {
             const dateMatch = oldNote.match(/^\**(\d{2})(\d{2})/)
@@ -696,16 +697,17 @@ export default function ProxyManager({ onBuySuccessRef }) {
             else evaluatedFrom = `${firstMatch} ` // không gia hạn (đổi khách) -> xoá *
           }
 
-          if (/\+(1[wW]|2[wW]|1[mM])/.test(noteInput)) {
+          if (/\+(1[wW]|2[wW]|3[wW]|1[mM])/.test(noteInput)) {
             const keywordReplacer = (match) => {
               let d =
-                match === '+1W' || match === '+2W' || match === '+1M'
+                match === '+1W' || match === '+2W' || match === '+3W' || match === '+1M'
                   ? new Date(now)
                   : new Date(calculatedBaseDate)
 
               const m = match.toLowerCase()
               if (m === '+1w') d.setDate(d.getDate() + 7)
               else if (m === '+2w') d.setDate(d.getDate() + 14)
+              else if (m === '+3w') d.setDate(d.getDate() + 21)
               else if (m === '+1m') d.setDate(d.getDate() + 30)
 
               const resD = String(d.getDate()).padStart(2, '0')
@@ -713,7 +715,7 @@ export default function ProxyManager({ onBuySuccessRef }) {
               return `${resD}${resM}`
             }
 
-            const kwRegex = /\+(1[wW]|2[wW]|1[mM])/g
+            const kwRegex = /\+(1[wW]|2[wW]|3[wW]|1[mM])/g
             evaluatedFrom = evaluatedFrom.replace(kwRegex, keywordReplacer)
             evaluatedTo = evaluatedTo.replace(kwRegex, keywordReplacer)
           }

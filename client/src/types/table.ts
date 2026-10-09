@@ -93,4 +93,5 @@ export interface BaseTableProps<
   serverSide?: boolean
   sortConfig?: TableSortConfig
   onSortChange?: (sortConfig: TableSortConfig) => void
+  showFloatingStatus?: boolean
 }

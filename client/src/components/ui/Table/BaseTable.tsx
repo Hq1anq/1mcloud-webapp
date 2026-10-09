@@ -6,6 +6,7 @@ import useTableFilter from '../../../hooks/useTableFilter'
 import { TableProvider, type TableContextValue } from './TableContext'
 import type { BaseTableProps, TableRowContext } from '../../../types/table'
 import ToggleButton from '../ToggleButton'
+import TableFloatingStatus from './TableFloatingStatus'
 
 const DEFAULT_DATA: any[] = []
 
@@ -50,6 +51,9 @@ const BaseTable = forwardRef<HTMLDivElement, BaseTableProps>(function BaseTable(
     serverSide = false,
     sortConfig: controlledSortConfig,
     onSortChange,
+
+    // Floating selection / stats pill
+    showFloatingStatus = true,
   },
   tableRef
 ) {
@@ -204,6 +208,12 @@ const BaseTable = forwardRef<HTMLDivElement, BaseTableProps>(function BaseTable(
     [selectable, isRowSelectable, selectedIds, filteredData, getRowKey, onSelectionChange]
   )
 
+  const handleClearSelection = useCallback(() => {
+    if (!selectable) return
+    onSelectionChange?.([], new Set())
+    setLastSelectedIndex(null)
+  }, [selectable, onSelectionChange])
+
   // ── Virtuoso / TableRow context ─────────────────────────────────────
   const virtuosoContext = useMemo<TableRowContext>(
     () => ({
@@ -314,36 +324,20 @@ const BaseTable = forwardRef<HTMLDivElement, BaseTableProps>(function BaseTable(
               <span>{tableTitle}</span>
             </h2>
 
-            <div className="flex items-center gap-3 sm:gap-5">
-              <div className="flex flex-col gap-1 sm:flex-row sm:gap-5">
-                {selectable && (
-                  <span className="text-right whitespace-nowrap">
-                    {t('table.selected')}:{' '}
-                    <span className="text-highlight font-semibold">{selectedIds.size}</span>{' '}
-                    {t('table.rows')}
-                  </span>
-                )}
-                <span className="text-right whitespace-nowrap">
-                  {t('table.total')}:{' '}
-                  <span className="text-highlight font-semibold">{filteredData.length}</span>{' '}
-                  {t('table.rows')}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                {showDetailToggle && (
-                  <ToggleButton
-                    id="detailToggleBtn"
-                    data-capture-ignore
-                    isOn={isDetailView}
-                    onClick={onToggleDetailView}
-                    variant="switch"
-                    label={t('table.detail')}
-                    title={isDetailView ? t('table.hideDetail') : t('table.showDetail')}
-                    size="md"
-                  />
-                )}
-                {extraBtn && <span data-capture-ignore>{extraBtn}</span>}
-              </div>
+            <div className="flex items-center gap-2">
+              {showDetailToggle && (
+                <ToggleButton
+                  id="detailToggleBtn"
+                  data-capture-ignore
+                  isOn={isDetailView}
+                  onClick={onToggleDetailView}
+                  variant="switch"
+                  label={t('table.detail')}
+                  title={isDetailView ? t('table.hideDetail') : t('table.showDetail')}
+                  size="md"
+                />
+              )}
+              {extraBtn && <span data-capture-ignore>{extraBtn}</span>}
             </div>
           </div>
 
@@ -368,6 +362,15 @@ const BaseTable = forwardRef<HTMLDivElement, BaseTableProps>(function BaseTable(
         </div>
 
         {renderFooter?.({ filteredData, t })}
+
+        {showFloatingStatus && !isLoading && filteredData.length > 0 && (
+          <TableFloatingStatus
+            selectable={selectable}
+            selectedCount={selectedIds.size}
+            totalCount={filteredData.length}
+            onClearSelection={handleClearSelection}
+          />
+        )}
       </div>
     </TableProvider>
   )

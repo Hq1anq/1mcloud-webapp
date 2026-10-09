@@ -13,6 +13,7 @@ import useTableFilter, { type UseTableFilterOptions, type UseTableFilterReturn }
 import TableContext, { TableProvider, useTableContext, type TableContextValue } from './TableContext'
 
 import useTablePagination, { type UseTablePaginationOptions, type UseTablePaginationReturn } from '../../../hooks/useTablePagination'
+import TableFloatingStatus, { type TableFloatingStatusProps } from './TableFloatingStatus'
 
 export * from '../../../types/table'
 export * from '../../../utils/tableColumn'
@@ -33,6 +34,7 @@ export {
   TableContext,
   TableProvider,
   useTableContext,
+  TableFloatingStatus,
 }
 export type {
   UseTableFilterOptions,
@@ -40,6 +42,7 @@ export type {
   UseTablePaginationOptions,
   UseTablePaginationReturn,
   TableContextValue,
+  TableFloatingStatusProps,
 }
 
 export interface TableProps

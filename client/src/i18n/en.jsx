@@ -172,6 +172,7 @@ const en = {
   'table.selected': 'Selected',
   'table.total': 'Total',
   'table.rows': 'rows',
+  'table.clearSelection': 'Clear selection',
   'table.firstPage': 'First page',
   'table.previousPage': 'Previous page',
   'table.nextPage': 'Next page',

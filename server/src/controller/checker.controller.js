@@ -10,7 +10,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 //  GeoIP singleton (stored in src/data/)
 const MMDB_PATH = path.join(__dirname, "../data/GeoLite2-Country.mmdb");
 
-const CHECK_URL = "http://httpbin.org/ip";
+const CHECK_URL = "http://cloudflare.com/cdn-cgi/trace";
 const TIMEOUT = 5000;
 
 let readerPromise = null;
@@ -66,12 +66,13 @@ function checkHttp(proxy) {
       let data = "";
       res.on("data", (chunk) => (data += chunk));
       res.on("end", () => {
-        if (res.statusCode >= 200 && res.statusCode < 400) {
+        if (res.statusCode >= 200 && res.statusCode < 400 && data.trim().length > 0) {
           resolve("Active");
         } else {
           reject(new Error(`HTTP ${res.statusCode}`));
         }
       });
+      res.on("error", reject);
     });
 
     req.on("timeout", () => {
@@ -87,7 +88,7 @@ function checkHttp(proxy) {
 function checkSocks5(proxy) {
   return new Promise((resolve, reject) => {
     const socksUrl = proxy.username
-      ? `socks5://${proxy.username}:${proxy.password}@${proxy.ip}:${proxy.port}`
+      ? `socks5://${encodeURIComponent(proxy.username)}:${encodeURIComponent(proxy.password || '')}@${proxy.ip}:${proxy.port}`
       : `socks5://${proxy.ip}:${proxy.port}`;
 
     const agent = new SocksProxyAgent(socksUrl, { timeout: TIMEOUT });
@@ -96,19 +97,28 @@ function checkSocks5(proxy) {
       let data = "";
       res.on("data", (chunk) => (data += chunk));
       res.on("end", () => {
-        if (res.statusCode >= 200 && res.statusCode < 400) {
+        agent.destroy();
+        if (res.statusCode >= 200 && res.statusCode < 400 && data.trim().length > 0) {
           resolve("Active");
         } else {
           reject(new Error(`SOCKS5 ${res.statusCode}`));
         }
       });
+      res.on("error", (err) => {
+        agent.destroy();
+        reject(err);
+      });
     });
 
     req.on("timeout", () => {
       req.destroy();
+      agent.destroy();
       reject(new Error("Timeout"));
     });
-    req.on("error", reject);
+    req.on("error", (err) => {
+      agent.destroy();
+      reject(err);
+    });
   });
 }
 
@@ -183,7 +193,8 @@ async function checkOne(proxy, raw, proxyType) {
 // Concurrency limiter
 const MAX_CONCURRENT = 100;
 
-function limitConcurrency(tasks, limit) {
+function limitConcurrency(tasks, limit, isCancelled = () => false) {
+  if (tasks.length === 0) return Promise.resolve([]);
   const results = [];
   let i = 0;
 
@@ -191,7 +202,13 @@ function limitConcurrency(tasks, limit) {
     let active = 0;
 
     function next() {
+      if (isCancelled()) {
+        return resolve(results);
+      }
       while (active < limit && i < tasks.length) {
+        if (isCancelled()) {
+          return resolve(results);
+        }
         const idx = i++;
         active++;
         tasks[idx]().then(
@@ -239,6 +256,13 @@ export async function checkProxies(req, res) {
 
   const proxyType = type.toLowerCase();
 
+  let isAborted = false;
+  res.on("close", () => {
+    if (!res.writableEnded) {
+      isAborted = true;
+    }
+  });
+
   // Set up SSE headers
   res.writeHead(200, {
     "Content-Type": "text/event-stream",
@@ -252,10 +276,14 @@ export async function checkProxies(req, res) {
     ({ raw, proxy }) =>
       () =>
         checkOne(proxy, raw, proxyType).then((result) => {
-          res.write(`data: ${JSON.stringify(result)}\n\n`);
+          if (!isAborted && !res.writableEnded) {
+            res.write(`data: ${JSON.stringify(result)}\n\n`);
+          }
         }),
   );
 
-  await limitConcurrency(tasks, MAX_CONCURRENT);
-  res.end();
+  await limitConcurrency(tasks, MAX_CONCURRENT, () => isAborted);
+  if (!res.writableEnded) {
+    res.end();
+  }
 }

@@ -1,5 +1,14 @@
 import { ProductAction } from './action'
 
+export type ProxyType = 'HTTPS Proxy' | 'SOCKS5 Proxy'
+
+export const PROXY_TYPE_MAP = {
+  HTTP: 'HTTPS Proxy',
+  SOCKS5: 'SOCKS5 Proxy',
+} as const
+
+export type CheckProtocolType = keyof typeof PROXY_TYPE_MAP
+
 export interface ProxyItem {
   sid: number
   ip_port: string

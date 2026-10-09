@@ -26,6 +26,7 @@ import useAuthStore from '../store/useAuthStore'
 import useProxyStore from '../store/useProxyStore'
 import useManagerActions from '../hooks/useManagerActions'
 import { filterProxyData } from '../utils/data'
+import { PROXY_TYPE_MAP } from '../types/proxy'
 import { useTableDetailView } from '../hooks/useTableDetailView'
 import { ProductAction } from '../types/action'
 
@@ -794,9 +795,9 @@ export default function ProxyManager({ onBuySuccessRef }) {
 
     const proxies = rows.map((r) => {
       const latestRow = data.find((d) => d.sid === r.sid) || r
-      const [ip, port] = (latestRow.ip_port || '').split(':')
-      const [username, password] = (latestRow.user_pass || '').split(':')
-      return [ip, port, username, password].filter(Boolean).join(':')
+      return latestRow.user_pass
+        ? `${latestRow.ip_port}:${latestRow.user_pass}`
+        : latestRow.ip_port
     })
 
     setIsProcessing(true)
@@ -838,19 +839,22 @@ export default function ProxyManager({ onBuySuccessRef }) {
               try {
                 const result = JSON.parse(jsonStr)
 
-                // Find matching row by IP
-                const matchedRow = rows.find((r) => {
-                  const latestRow = data.find((d) => d.sid === r.sid) || r
-                  return (
-                    latestRow.ip_port?.startsWith(result.ip + ':') ||
-                    latestRow.ip_port === result.ip
-                  )
-                })
+                // Find matching row by exact ip:port
+                const targetIpPort = result.port ? `${result.ip}:${result.port}` : result.ip
+                const matchedRow = rows.find((r) => r.ip_port === targetIpPort)
 
                 if (matchedRow) {
                   const newStatus = result.status === 'Active' ? 'Running' : 'Off'
-                  updateRowBySid(matchedRow.sid, () => ({ status: newStatus }))
-                  updatedRows.push({ ...matchedRow, status: newStatus })
+                  const newType =
+                    result.status === 'Active' ? PROXY_TYPE_MAP[result.type] : matchedRow.type
+
+                  const updates = {
+                    status: newStatus,
+                    type: newType,
+                  }
+
+                  updateRowBySid(matchedRow.sid, () => updates)
+                  updatedRows.push({ ...matchedRow, ...updates })
                   classUpdates[matchedRow.sid] = 'bg-success-cell'
 
                   // Uncheck the row cleanly
@@ -1308,13 +1312,15 @@ export default function ProxyManager({ onBuySuccessRef }) {
           }}
           onCheck={async () => {
             const latestRow = data.find((d) => d.sid === row.sid) || row
-            const [ip, port] = (latestRow.ip_port || '').split(':')
-            const [username, password] = (latestRow.user_pass || '').split(':')
-            const proxies = [`${ip}:${port}:${username}:${password}`]
+            const proxyStr = latestRow.user_pass
+              ? `${latestRow.ip_port}:${latestRow.user_pass}`
+              : latestRow.ip_port
+            const proxies = [proxyStr]
             setIsProcessing(true)
             setRowClassMap({})
             const loadingId = addToast(t('checking'), 'loading')
             let newStatus
+            let newType
 
             try {
               await axiosInstance.post(
@@ -1324,23 +1330,46 @@ export default function ProxyManager({ onBuySuccessRef }) {
                   timeout: 0,
                   responseType: 'text',
                   onDownloadProgress: (e) => {
-                    const text = e.event.target.responseText
-                    const jsonStr = text.slice(6)
-                    const result = JSON.parse(jsonStr)
+                    const text = e.event?.target?.responseText || ''
+                    const lines = text.split('\n')
+                    for (const line of lines) {
+                      if (!line.startsWith('data: ')) continue
+                      const jsonStr = line.slice(6)
+                      if (jsonStr === '{}') continue
+                      try {
+                        const result = JSON.parse(jsonStr)
 
-                    newStatus = result.status === 'Active' ? 'Running' : 'Off'
-                    updateRowBySid(row.sid, () => ({ status: newStatus }))
-                    setRowClassMap({
-                      [row.sid]: 'bg-success-cell',
-                    })
+                        newStatus = result.status === 'Active' ? 'Running' : 'Off'
+                        newType =
+                          result.status === 'Active' ? PROXY_TYPE_MAP[result.type] : latestRow.type
 
-                    // Uncheck the checked row
-                    deselectRows([row])
+                        const updates = {
+                          status: newStatus,
+                          type: newType,
+                        }
+
+                        updateRowBySid(row.sid, () => updates)
+                        setRowClassMap({
+                          [row.sid]: 'bg-success-cell',
+                        })
+
+                        // Uncheck the checked row
+                        deselectRows([row])
+                      } catch {
+                        // skip malformed JSON
+                      }
+                    }
                   },
                 }
               )
 
-              syncToDb([{ ...latestRow, status: newStatus }])
+              if (newStatus) {
+                const updates = {
+                  status: newStatus,
+                  type: newType,
+                }
+                syncToDb([{ ...latestRow, ...updates }])
+              }
 
               if (newStatus === 'Running')
                 addToast(

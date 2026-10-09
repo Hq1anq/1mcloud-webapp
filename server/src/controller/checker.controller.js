@@ -66,7 +66,7 @@ function checkHttp(proxy) {
       let data = "";
       res.on("data", (chunk) => (data += chunk));
       res.on("end", () => {
-        if (res.statusCode === 200 && data.includes("ip=")) {
+        if (res.statusCode >= 200 && res.statusCode < 400 && data.trim().length > 0) {
           resolve("Active");
         } else {
           reject(new Error(`HTTP ${res.statusCode}`));
@@ -98,7 +98,7 @@ function checkSocks5(proxy) {
       res.on("data", (chunk) => (data += chunk));
       res.on("end", () => {
         agent.destroy();
-        if (res.statusCode === 200 && data.includes("ip=")) {
+        if (res.statusCode >= 200 && res.statusCode < 400 && data.trim().length > 0) {
           resolve("Active");
         } else {
           reject(new Error(`SOCKS5 ${res.statusCode}`));
@@ -256,9 +256,11 @@ export async function checkProxies(req, res) {
 
   const proxyType = type.toLowerCase();
 
-  let isClosed = false;
-  req.on("close", () => {
-    isClosed = true;
+  let isAborted = false;
+  res.on("close", () => {
+    if (!res.writableEnded) {
+      isAborted = true;
+    }
   });
 
   // Set up SSE headers
@@ -274,13 +276,13 @@ export async function checkProxies(req, res) {
     ({ raw, proxy }) =>
       () =>
         checkOne(proxy, raw, proxyType).then((result) => {
-          if (!isClosed && !res.writableEnded) {
+          if (!isAborted && !res.writableEnded) {
             res.write(`data: ${JSON.stringify(result)}\n\n`);
           }
         }),
   );
 
-  await limitConcurrency(tasks, MAX_CONCURRENT, () => isClosed);
+  await limitConcurrency(tasks, MAX_CONCURRENT, () => isAborted);
   if (!res.writableEnded) {
     res.end();
   }

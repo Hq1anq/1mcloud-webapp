@@ -47,8 +47,8 @@ export type {
 
 export interface TableProps
   extends StandardTableProps,
-    PaginatedTableProps,
-    VirtualizedTableProps {
+  PaginatedTableProps,
+  VirtualizedTableProps {
   virtualized?: boolean
   pagination?: boolean
 }

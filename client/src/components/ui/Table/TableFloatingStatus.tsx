@@ -24,10 +24,10 @@ export default function TableFloatingStatus({
     <aside
       data-capture-ignore
       aria-live="polite"
-      className='fixed bottom-1 left-1 z-40 flex items-center gap-2 rounded-full border px-2 py-1 select-none shadow-lg backdrop-blur-md transition-all duration-300 bg-surface/80 border-border/70 text-text-primary shadow-black/25 opacity-85 hover:opacity-100'
+      className='fixed bottom-1 left-1/2 z-40 flex items-center gap-2 rounded-full border px-2 py-1 select-none shadow-lg backdrop-blur-md transition-all duration-300 bg-surface/80 border-border/70 text-text-primary shadow-black/25 opacity-85 hover:opacity-100'
     >
       {/* Info labels */}
-      <div className="flex items-center gap-1 text-[9px]">
+      <div className="flex items-center gap-1 text-[9px] sm:text-sm">
         {selectable ? (
           <>
             <span className="whitespace-nowrap">

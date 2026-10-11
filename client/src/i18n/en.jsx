@@ -173,6 +173,7 @@ const en = {
   'table.total': 'Total',
   'table.rows': 'rows',
   'table.clearSelection': 'Clear selection',
+  'table.dragToMove': 'Drag to move (double-click to reset position)',
   'table.firstPage': 'First page',
   'table.previousPage': 'Previous page',
   'table.nextPage': 'Next page',

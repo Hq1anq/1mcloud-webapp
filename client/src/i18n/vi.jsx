@@ -173,6 +173,7 @@ const vi = {
   'table.total': 'Tổng',
   'table.rows': 'dòng',
   'table.clearSelection': 'Bỏ chọn',
+  'table.dragToMove': 'Kéo để di chuyển (nhấp đúp để đặt lại vị trí)',
   'table.firstPage': 'Trang đầu',
   'table.previousPage': 'Trang trước',
   'table.nextPage': 'Trang sau',

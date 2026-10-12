@@ -33,8 +33,8 @@ export const parseProxy = (raw: string): string | null => {
   if (line.includes('@')) {
     // user:pass@ip:port
     const [auth, hostPart] = line.split('@')
-    ;[username, password] = auth.split(':')
-    ;[ip, port] = hostPart.split(':')
+      ;[username, password] = auth.split(':')
+      ;[ip, port] = hostPart.split(':')
   } else {
     const parts = line.split(':')
     if (parts.length === 4) [ip, port, username, password] = parts
@@ -222,7 +222,7 @@ export function filterProxyData(
       filtered = filtered.filter((item) => {
         if (!item.ip_port) return false
         const rawIp = item.ip_port.split(':')[0].trim()
-        return targetIps.some((targetIp) => item.ip_port.includes(targetIp) || rawIp === targetIp)
+        return targetIps.some((targetIp) => rawIp === targetIp)
       })
     }
   }

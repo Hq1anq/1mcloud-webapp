@@ -44,21 +44,19 @@ export default function TableFloatingStatus({
       style={
         position
           ? {
-              left: `${position.x}px`,
-              top: `${position.y}px`,
-              bottom: 'auto',
-              right: 'auto',
-              transform: 'none',
-            }
+            left: `${position.x}px`,
+            top: `${position.y}px`,
+            bottom: 'auto',
+            right: 'auto',
+            transform: 'none',
+          }
           : undefined
       }
-      className={`fixed z-40 flex items-center gap-1.5 sm:gap-2 rounded-full border px-2.5 py-1 select-none shadow-lg backdrop-blur-md bg-surface/85 border-border/70 text-text-primary shadow-black/25 touch-none cursor-grab ${
-        position ? '' : 'bottom-1 left-1/2 -translate-x-1/2'
-      } ${
-        isDragging
+      className={`fixed z-50 flex items-center gap-1.5 sm:gap-2 rounded-full border px-2.5 py-1 select-none shadow-lg backdrop-blur-md bg-surface/85 border-border/70 text-text-primary shadow-black/25 touch-none cursor-grab ${position ? '' : 'bottom-1 left-1/2 -translate-x-1/2'
+        } ${isDragging
           ? 'cursor-grabbing ring-1 ring-primary/40 shadow-xl opacity-100 transition-none'
           : 'opacity-85 hover:opacity-100 transition-[opacity,box-shadow,background-color] duration-200'
-      }`}
+        }`}
     >
       {/* Drag handle grip icon */}
       <div

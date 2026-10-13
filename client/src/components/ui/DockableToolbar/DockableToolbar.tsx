@@ -3,19 +3,28 @@ import type { DockableToolbarProps } from './types'
 import { useDockableToolbar } from './useDockableToolbar'
 import FloatingWidget from './FloatingWidget'
 
+const DropPlaceholder = () => (
+  <div
+    data-dockable-id="__placeholder__"
+    className="min-h-10 min-w-24 grow rounded-lg border-2 border-dashed border-primary/60 bg-primary/10 transition-all duration-150 animate-pulse pointer-events-none"
+  />
+)
+
 export default function DockableToolbar({
   items,
   containerClassName = 'bg-wrapper flex w-full flex-wrap justify-center gap-2 rounded-lg p-4 sm:gap-3',
 }: DockableToolbarProps) {
   const {
-    displayDockedIds,
+    dockedIds,
     floatingMap,
     activeDrag,
     dropIndex,
     isOverContainer,
+    pressingItemId,
     containerRef,
     wasDraggingRef,
     handlePointerDown,
+    handleTouchStart,
   } = useDockableToolbar(items)
 
   const itemMap = useMemo(() => {
@@ -26,6 +35,9 @@ export default function DockableToolbar({
 
   const floatingList = Object.entries(floatingMap)
   const activeItemConfig = activeDrag ? itemMap.get(activeDrag.itemId) : null
+  const activeOverlayProps = activeItemConfig
+    ? (activeItemConfig.render.props as React.HTMLAttributes<HTMLElement>)
+    : null
 
   const handleCaptureClick = (e: React.MouseEvent) => {
     if (wasDraggingRef.current) {
@@ -44,58 +56,51 @@ export default function DockableToolbar({
           : ''
           }`}
       >
-        {(() => {
-          const elements: React.ReactNode[] = []
+        {dockedIds.map((id, idx) => {
+          const itemConfig = itemMap.get(id)
+          if (!itemConfig) return null
 
-          displayDockedIds.forEach((id, idx) => {
-            // Drop placeholder if hovering over this slot
-            if (activeDrag?.hasMoved && isOverContainer && dropIndex === idx) {
-              elements.push(
-                <div
-                  key="__placeholder__"
-                  data-dockable-id="__placeholder__"
-                  className="min-h-10 min-w-24 grow rounded-lg border-2 border-dashed border-primary/60 bg-primary/10 transition-all duration-150 animate-pulse pointer-events-none"
-                />
-              )
-            }
+          const childProps = itemConfig.render.props as React.HTMLAttributes<HTMLElement>
+          const isBeingDragged = activeDrag?.hasMoved && activeDrag.itemId === id
+          const isPressingThis = pressingItemId === id
 
-            const itemConfig = itemMap.get(id)
-            if (!itemConfig) return
-
-            const childProps = itemConfig.render.props as {
-              onPointerDown?: (e: React.PointerEvent<HTMLElement>) => void
-            }
-
-            elements.push(
-              React.cloneElement(itemConfig.render, {
-                key: id,
+          return (
+            <React.Fragment key={id}>
+              {activeDrag?.hasMoved && isOverContainer && dropIndex === idx && (
+                <DropPlaceholder />
+              )}
+              {React.cloneElement(itemConfig.render, {
                 'data-dockable-id': id,
                 onPointerDown: (e: React.PointerEvent<HTMLElement>) => {
                   childProps.onPointerDown?.(e)
-                  handlePointerDown(id, e, 'docked')
+                  if (e.pointerType === 'mouse') {
+                    handlePointerDown(id, e, 'docked')
+                  }
+                },
+                onTouchStart: (e: React.TouchEvent<HTMLElement>) => {
+                  childProps.onTouchStart?.(e)
+                  handleTouchStart(id, e, 'docked')
                 },
                 onClickCapture: handleCaptureClick,
-              } as React.HTMLAttributes<HTMLElement>)
-            )
-          })
+                onContextMenu: (e: React.MouseEvent<HTMLElement>) => {
+                  childProps.onContextMenu?.(e)
+                  e.preventDefault()
+                },
+                className: `${childProps.className || ''} touch-manipulation ${isBeingDragged
+                  ? 'fixed -left-[9999px] -top-[9999px] opacity-0 pointer-events-none'
+                  : isPressingThis
+                    ? 'scale-95 brightness-110 transition-transform duration-200'
+                    : ''
+                  }`,
+              } as React.HTMLAttributes<HTMLElement>)}
+            </React.Fragment>
+          )
+        })}
 
-          // Drop placeholder at the very end
-          if (
-            activeDrag?.hasMoved &&
-            isOverContainer &&
-            dropIndex === displayDockedIds.length
-          ) {
-            elements.push(
-              <div
-                key="__placeholder_end__"
-                data-dockable-id="__placeholder__"
-                className="min-h-10 min-w-24 grow rounded-lg border-2 border-dashed border-primary/60 bg-primary/10 transition-all duration-150 animate-pulse pointer-events-none"
-              />
-            )
-          }
-
-          return elements
-        })()}
+        {/* Drop placeholder at the very end */}
+        {activeDrag?.hasMoved && isOverContainer && dropIndex === dockedIds.length && (
+          <DropPlaceholder />
+        )}
       </div>
 
       {/* Detached Floating Items */}
@@ -109,30 +114,28 @@ export default function DockableToolbar({
             item={itemConfig}
             position={pos}
             onPointerDown={handlePointerDown}
+            onTouchStart={handleTouchStart}
             onClickCapture={handleCaptureClick}
-            isDraggingThis={activeDrag?.hasMoved === true && activeDrag.itemId === id}
+            isDraggingThis={Boolean(activeDrag?.hasMoved && activeDrag.itemId === id)}
+            isPressingThis={pressingItemId === id}
           />
         )
       })}
 
       {/* Active Drag Overlay Following Cursor */}
-      {activeDrag?.hasMoved && activeItemConfig && React.isValidElement(activeItemConfig.render) && (() => {
-        const childProps = activeItemConfig.render.props as {
-          style?: React.CSSProperties
-          className?: string
-        }
-        return React.cloneElement(activeItemConfig.render, {
+      {activeDrag?.hasMoved && activeItemConfig && activeOverlayProps && (
+        React.cloneElement(activeItemConfig.render, {
           'data-capture-ignore': true,
           style: {
-            ...childProps.style,
+            ...activeOverlayProps.style,
             left: `${activeDrag.currentX}px`,
             top: `${activeDrag.currentY}px`,
             width: `${activeDrag.width}px`,
             height: `${activeDrag.height}px`,
           },
-          className: `${childProps.className || ''} fixed z-50 pointer-events-none shadow-2xl opacity-90 scale-75 cursor-grabbing select-none touch-none`,
+          className: `${activeOverlayProps.className || ''} fixed z-50 pointer-events-none shadow-2xl opacity-90 scale-75 cursor-grabbing select-none touch-none`,
         } as React.HTMLAttributes<HTMLElement>)
-      })()}
+      )}
     </>
   )
 }

@@ -9,40 +9,55 @@ interface FloatingWidgetProps {
     e: React.PointerEvent<HTMLElement>,
     source: 'floating'
   ) => void
+  onTouchStart: (
+    itemId: string,
+    e: React.TouchEvent<HTMLElement>,
+    source: 'floating'
+  ) => void
   onClickCapture: (e: React.MouseEvent) => void
   isDraggingThis: boolean
+  isPressingThis: boolean
 }
 
 export default function FloatingWidget({
   item,
   position,
   onPointerDown,
+  onTouchStart,
   onClickCapture,
   isDraggingThis,
+  isPressingThis,
 }: FloatingWidgetProps) {
-  if (isDraggingThis) {
-    return null
-  }
-
-  const childProps = item.render.props as {
-    style?: React.CSSProperties
-    className?: string
-    onPointerDown?: (e: React.PointerEvent<HTMLElement>) => void
-  }
+  const childProps = item.render.props as React.HTMLAttributes<HTMLElement>
 
   return React.cloneElement(item.render, {
     'data-floating-id': item.id,
     'data-capture-ignore': true,
     onPointerDown: (e: React.PointerEvent<HTMLElement>) => {
       childProps.onPointerDown?.(e)
-      onPointerDown(item.id, e, 'floating')
+      if (e.pointerType === 'mouse') {
+        onPointerDown(item.id, e, 'floating')
+      }
+    },
+    onTouchStart: (e: React.TouchEvent<HTMLElement>) => {
+      childProps.onTouchStart?.(e)
+      onTouchStart(item.id, e, 'floating')
     },
     onClickCapture,
+    onContextMenu: (e: React.MouseEvent<HTMLElement>) => {
+      childProps.onContextMenu?.(e)
+      e.preventDefault()
+    },
     style: {
       ...childProps.style,
-      left: `${position.x}px`,
-      top: `${position.y}px`,
+      left: isDraggingThis ? '-9999px' : `${position.x}px`,
+      top: isDraggingThis ? '-9999px' : `${position.y}px`,
     },
-    className: `${childProps.className || ''} fixed z-50 select-none shadow-xl touch-none`,
+    className: `${childProps.className || ''} fixed z-50 select-none shadow-xl touch-manipulation ${isDraggingThis
+      ? 'opacity-0 pointer-events-none'
+      : isPressingThis
+        ? 'scale-95 brightness-110 transition-transform duration-200'
+        : ''
+      }`,
   } as React.HTMLAttributes<HTMLElement>)
 }

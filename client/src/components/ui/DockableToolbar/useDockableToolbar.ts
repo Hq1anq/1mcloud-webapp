@@ -1,7 +1,10 @@
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import type { DockableItemConfig, FloatingPosition, ActiveDragState } from './types'
 
-export function calculateDropIndex(
+const LONG_PRESS_DELAY_MS = 500
+const TOUCH_SCROLL_CANCEL_DISTANCE_PX = 10
+
+function calculateDropIndex(
   container: HTMLElement,
   clientX: number,
   clientY: number
@@ -90,7 +93,7 @@ export function calculateDropIndex(
   return targetRow[targetRow.length - 1].index + 1
 }
 
-export function measureFloatingDimensions(elem: HTMLElement): { width: number; height: number } {
+function measureFloatingDimensions(elem: HTMLElement): { width: number; height: number } {
   const clone = elem.cloneNode(true) as HTMLElement
   clone.style.position = 'fixed'
   clone.style.visibility = 'hidden'
@@ -113,13 +116,28 @@ export function measureFloatingDimensions(elem: HTMLElement): { width: number; h
   }
 }
 
+function isPointInsideContainer(
+  container: HTMLElement,
+  clientX: number,
+  clientY: number,
+  tolerance = 16
+): boolean {
+  const rect = container.getBoundingClientRect()
+  return (
+    clientX >= rect.left - tolerance &&
+    clientX <= rect.right + tolerance &&
+    clientY >= rect.top - tolerance &&
+    clientY <= rect.bottom + tolerance
+  )
+}
+
 export function useDockableToolbar(items: DockableItemConfig[]) {
-  const initialIds = items.map((it) => it.id)
-  const [dockedIds, setDockedIds] = useState<string[]>(initialIds)
+  const [dockedIds, setDockedIds] = useState<string[]>(() => items.map((it) => it.id))
   const [floatingMap, setFloatingMap] = useState<Record<string, FloatingPosition>>({})
   const [activeDrag, setActiveDrag] = useState<ActiveDragState | null>(null)
   const [dropIndex, setDropIndex] = useState<number | null>(null)
   const [isOverContainer, setIsOverContainer] = useState(false)
+  const [pressingItemId, setPressingItemId] = useState<string | null>(null)
 
   const containerRef = useRef<HTMLDivElement | null>(null)
   const wasDraggingRef = useRef(false)
@@ -128,23 +146,33 @@ export function useDockableToolbar(items: DockableItemConfig[]) {
   const dropIndexRef = useRef<number | null>(null)
   dropIndexRef.current = dropIndex
 
-  // Currently rendered docked items (excluding the item being actively dragged)
-  const displayDockedIds = useMemo(() => {
-    if (activeDrag?.hasMoved) {
-      return dockedIds.filter((id) => id !== activeDrag.itemId)
-    }
-    return dockedIds
-  }, [dockedIds, activeDrag?.hasMoved, activeDrag?.itemId])
+  const floatingMapRef = useRef(floatingMap)
+  floatingMapRef.current = floatingMap
 
-  // Keep dockedIds in sync when available items change
+  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const activeTouchCleanupRef = useRef<(() => void) | null>(null)
+
+  const cancelLongPress = useCallback(() => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current)
+      longPressTimerRef.current = null
+    }
+    if (activeTouchCleanupRef.current) {
+      activeTouchCleanupRef.current()
+      activeTouchCleanupRef.current = null
+    }
+    setPressingItemId(null)
+  }, [])
+
+  // Keep dockedIds and floatingMap in sync when available items change
   useEffect(() => {
     const currentValidIds = new Set(items.map((it) => it.id))
 
     setDockedIds((prev) => {
       const filtered = prev.filter((id) => currentValidIds.has(id))
-      // Add any new items that are neither docked nor floating
+      const currentFloating = floatingMapRef.current
       items.forEach((it) => {
-        if (!filtered.includes(it.id) && !floatingMap[it.id]) {
+        if (!filtered.includes(it.id) && !currentFloating[it.id]) {
           filtered.push(it.id)
         }
       })
@@ -165,84 +193,67 @@ export function useDockableToolbar(items: DockableItemConfig[]) {
       })
       return changed ? next : prev
     })
-  }, [items, floatingMap])
+  }, [items])
 
-  // Drag start handler
-  const handlePointerDown = useCallback(
+  // Shared internal starter for dragging
+  const startDrag = useCallback(
     (
       itemId: string,
-      e: React.PointerEvent<HTMLElement>,
-      source: 'docked' | 'floating'
+      source: 'docked' | 'floating',
+      clientX: number,
+      clientY: number,
+      elem: HTMLElement,
+      isImmediateLift: boolean
     ) => {
-      if (e.button !== 0) return
-
-      const target = e.target as HTMLElement | null
-      // Never initiate drag when clicking inside text inputs, textareas, selects, or ignored elements
-      if (target?.closest('input, textarea, select, [data-dock-ignore]')) {
-        return
-      }
-
-      // Find the root element of this item or floating card
-      const elem = (e.currentTarget.closest('[data-dockable-id], [data-floating-id]') ||
-        e.currentTarget) as HTMLElement
-
       const rect = elem.getBoundingClientRect()
       const naturalDim =
         source === 'floating'
           ? { width: rect.width, height: rect.height }
           : measureFloatingDimensions(elem)
 
-      const naturalWidth = naturalDim.width > 0 ? naturalDim.width : rect.width
-      const naturalHeight = naturalDim.height > 0 ? naturalDim.height : rect.height
+      const width = naturalDim.width
+      const height = naturalDim.height
 
-      // Proportional click position within the docked rect
-      const ratioX = rect.width > 0 ? (e.clientX - rect.left) / rect.width : 0.5
-      const ratioY = rect.height > 0 ? (e.clientY - rect.top) / rect.height : 0.5
+      // Proportional click position within the element rect
+      const ratioX = rect.width > 0 ? (clientX - rect.left) / rect.width : 0.5
+      const ratioY = rect.height > 0 ? (clientY - rect.top) / rect.height : 0.5
 
       // Keep pointer comfortably inside the floating element bounds
-      const padX = Math.min(16, naturalWidth / 4)
-      const padY = Math.min(16, naturalHeight / 4)
-      const pointerOffsetX = Math.max(
-        padX,
-        Math.min(naturalWidth - padX, ratioX * naturalWidth)
-      )
-      const pointerOffsetY = Math.max(
-        padY,
-        Math.min(naturalHeight - padY, ratioY * naturalHeight)
-      )
+      const padX = Math.min(16, width / 4)
+      const padY = Math.min(16, height / 4)
+      const pointerOffsetX = Math.max(padX, Math.min(width - padX, ratioX * width))
+      const pointerOffsetY = Math.max(padY, Math.min(height - padY, ratioY * height))
 
-      const startX = e.clientX - pointerOffsetX
-      const startY = e.clientY - pointerOffsetY
+      const startX = clientX - pointerOffsetX
+      const startY = clientY - pointerOffsetY
 
-      wasDraggingRef.current = false
+      wasDraggingRef.current = isImmediateLift
 
       setActiveDrag({
         itemId,
         source,
-        pointerStartX: e.clientX,
-        pointerStartY: e.clientY,
+        pointerStartX: clientX,
+        pointerStartY: clientY,
         elementStartX: startX,
         elementStartY: startY,
         currentX: startX,
         currentY: startY,
-        width: naturalWidth,
-        height: naturalHeight,
-        hasMoved: false,
+        width,
+        height,
+        hasMoved: isImmediateLift,
       })
     },
     []
   )
 
-  // Global window listeners for drag movement & release
-  useEffect(() => {
-    if (!activeDrag) return
-
-    const handlePointerMove = (e: PointerEvent) => {
+  // Drag position updater shared by touch and mouse
+  const updateDrag = useCallback(
+    (clientX: number, clientY: number) => {
       const drag = activeDragRef.current
       if (!drag) return
 
-      const deltaX = e.clientX - drag.pointerStartX
-      const deltaY = e.clientY - drag.pointerStartY
+      const deltaX = clientX - drag.pointerStartX
+      const deltaY = clientY - drag.pointerStartY
       const dist = Math.hypot(deltaX, deltaY)
 
       const hasMoved = drag.hasMoved || dist >= 6
@@ -256,69 +267,48 @@ export function useDockableToolbar(items: DockableItemConfig[]) {
       setActiveDrag((prev) =>
         prev
           ? {
-              ...prev,
-              currentX: nextX,
-              currentY: nextY,
-              hasMoved,
-            }
+            ...prev,
+            currentX: nextX,
+            currentY: nextY,
+            hasMoved,
+          }
           : null
       )
 
       // Collision detection with container
       const container = containerRef.current
       if (container && hasMoved) {
-        const cRect = container.getBoundingClientRect()
-        const tolerance = 16
-        const isInside =
-          e.clientX >= cRect.left - tolerance &&
-          e.clientX <= cRect.right + tolerance &&
-          e.clientY >= cRect.top - tolerance &&
-          e.clientY <= cRect.bottom + tolerance
-
-        if (isInside) {
-          const calculatedIndex = calculateDropIndex(
-            container,
-            e.clientX,
-            e.clientY
-          )
-          setDropIndex(calculatedIndex)
+        if (isPointInsideContainer(container, clientX, clientY)) {
+          setDropIndex(calculateDropIndex(container, clientX, clientY))
           setIsOverContainer(true)
         } else {
           setDropIndex(null)
           setIsOverContainer(false)
         }
       }
-    }
+    },
+    []
+  )
 
-    const handlePointerUp = (e: PointerEvent) => {
+  // Drag finalizer shared by touch and mouse
+  const finalizeDrop = useCallback(
+    (clientX: number, clientY: number) => {
       const drag = activeDragRef.current
       if (!drag) return
 
       if (drag.hasMoved) {
         const container = containerRef.current
-        let droppedInside = false
-        let finalDropIdx: number | null = null
+        const droppedInside = Boolean(
+          container && isPointInsideContainer(container, clientX, clientY)
+        )
 
-        if (container) {
-          const cRect = container.getBoundingClientRect()
-          const tolerance = 16
-          droppedInside =
-            e.clientX >= cRect.left - tolerance &&
-            e.clientX <= cRect.right + tolerance &&
-            e.clientY >= cRect.top - tolerance &&
-            e.clientY <= cRect.bottom + tolerance
+        if (droppedInside && container) {
+          const finalDropIdx =
+            dropIndexRef.current ?? calculateDropIndex(container, clientX, clientY)
 
-          if (droppedInside) {
-            finalDropIdx =
-              dropIndexRef.current !== null
-                ? dropIndexRef.current
-                : calculateDropIndex(container, e.clientX, e.clientY)
-          }
-        }
-
-        if (droppedInside && finalDropIdx !== null) {
           // Re-dock into container
           setFloatingMap((prev) => {
+            if (!prev[drag.itemId]) return prev
             const next = { ...prev }
             delete next[drag.itemId]
             return next
@@ -333,7 +323,9 @@ export function useDockableToolbar(items: DockableItemConfig[]) {
           })
         } else {
           // Detach or keep floating outside
-          setDockedIds((prev) => prev.filter((id) => id !== drag.itemId))
+          setDockedIds((prev) =>
+            prev.includes(drag.itemId) ? prev.filter((id) => id !== drag.itemId) : prev
+          )
 
           const margin = 8
           const clampedX = Math.max(
@@ -350,11 +342,181 @@ export function useDockableToolbar(items: DockableItemConfig[]) {
             [drag.itemId]: { x: clampedX, y: clampedY },
           }))
         }
+
+        setTimeout(() => {
+          wasDraggingRef.current = false
+        }, 100)
+      } else {
+        wasDraggingRef.current = false
       }
 
       setActiveDrag(null)
       setDropIndex(null)
       setIsOverContainer(false)
+    },
+    []
+  )
+
+  // Mobile / Tablet Touch handler
+  const handleTouchStart = useCallback(
+    (
+      itemId: string,
+      e: React.TouchEvent<HTMLElement>,
+      source: 'docked' | 'floating'
+    ) => {
+      const target = e.target as HTMLElement | null
+      // Never initiate drag when touching inside inputs, textareas, selects, or ignored elements
+      if (target?.closest('input, textarea, select, [data-dock-ignore]') || e.touches.length > 1) {
+        return
+      }
+
+      const touch = e.touches[0]
+      const startX = touch.clientX
+      const startY = touch.clientY
+      let lastX = startX
+      let lastY = startY
+
+      const elem = e.currentTarget as HTMLElement
+
+      cancelLongPress()
+      wasDraggingRef.current = false
+
+      let isDragActive = false
+      let isCancelled = false
+      let prevUserSelect = ''
+      let prevTouchAction = ''
+
+      setPressingItemId(itemId)
+
+      const restoreBodyStyles = () => {
+        document.body.style.userSelect = prevUserSelect
+        document.body.style.touchAction = prevTouchAction
+        document.body.style.overflow = ''
+      }
+
+      const cleanupTouch = () => {
+        window.removeEventListener('touchmove', onTouchMove)
+        window.removeEventListener('touchend', onTouchEnd)
+        window.removeEventListener('touchcancel', onTouchCancel)
+        activeTouchCleanupRef.current = null
+      }
+
+      activeTouchCleanupRef.current = cleanupTouch
+
+      const onTouchMove = (ev: TouchEvent) => {
+        if (isCancelled) return
+
+        const currentTouch = ev.touches[0]
+        if (!currentTouch) return
+
+        lastX = currentTouch.clientX
+        lastY = currentTouch.clientY
+
+        // 1. If long-press has NOT triggered yet:
+        if (!isDragActive) {
+          const dist = Math.hypot(lastX - startX, lastY - startY)
+          // If moved beyond threshold before timer -> user is scrolling!
+          if (dist > TOUCH_SCROLL_CANCEL_DISTANCE_PX) {
+            isCancelled = true
+            cancelLongPress()
+            return
+          }
+          return
+        }
+
+        // 2. Long-press IS active -> block browser scrolling completely
+        if (ev.cancelable) {
+          ev.preventDefault()
+        }
+
+        updateDrag(lastX, lastY)
+      }
+
+      const onTouchEnd = (ev: TouchEvent) => {
+        cleanupTouch()
+
+        if (!isDragActive) {
+          cancelLongPress()
+          return
+        }
+
+        restoreBodyStyles()
+
+        const endTouch = ev.changedTouches[0]
+        finalizeDrop(endTouch ? endTouch.clientX : lastX, endTouch ? endTouch.clientY : lastY)
+      }
+
+      const onTouchCancel = () => {
+        cleanupTouch()
+        cancelLongPress()
+        if (isDragActive) {
+          restoreBodyStyles()
+          setActiveDrag(null)
+          setDropIndex(null)
+          setIsOverContainer(false)
+        }
+      }
+
+      // Register non-passive touchmove listener to window at touchstart
+      window.addEventListener('touchmove', onTouchMove, { passive: false })
+      window.addEventListener('touchend', onTouchEnd, { passive: true })
+      window.addEventListener('touchcancel', onTouchCancel, { passive: true })
+
+      longPressTimerRef.current = setTimeout(() => {
+        if (isCancelled) return
+
+        isDragActive = true
+        longPressTimerRef.current = null
+        setPressingItemId(null)
+
+        navigator.vibrate?.(50)
+
+        prevUserSelect = document.body.style.userSelect
+        prevTouchAction = document.body.style.touchAction
+        document.body.style.userSelect = 'none'
+        document.body.style.touchAction = 'none'
+        document.body.style.overflow = 'hidden'
+
+        startDrag(itemId, source, lastX, lastY, elem, true)
+      }, LONG_PRESS_DELAY_MS)
+    },
+    [cancelLongPress, finalizeDrop, startDrag, updateDrag]
+  )
+
+  // Desktop Mouse handler
+  const handlePointerDown = useCallback(
+    (
+      itemId: string,
+      e: React.PointerEvent<HTMLElement>,
+      source: 'docked' | 'floating'
+    ) => {
+      if (e.pointerType !== 'mouse' || e.button !== 0) return
+
+      const target = e.target as HTMLElement | null
+      if (target?.closest('input, textarea, select, [data-dock-ignore]')) {
+        return
+      }
+
+      cancelLongPress()
+      startDrag(itemId, source, e.clientX, e.clientY, e.currentTarget, false)
+    },
+    [cancelLongPress, startDrag]
+  )
+
+  // Desktop Mouse window listeners for drag movement & release
+  useEffect(() => {
+    if (!activeDrag) return
+
+    const handlePointerMove = (e: PointerEvent) => {
+      if (e.pointerType === 'mouse') {
+        updateDrag(e.clientX, e.clientY)
+      }
+    }
+
+    const handlePointerUp = (e: PointerEvent) => {
+      if (e.pointerType === 'mouse') {
+        finalizeDrop(e.clientX, e.clientY)
+      }
     }
 
     const handleBlur = () => {
@@ -374,7 +536,19 @@ export function useDockableToolbar(items: DockableItemConfig[]) {
       window.removeEventListener('pointercancel', handlePointerUp)
       window.removeEventListener('blur', handleBlur)
     }
-  }, [Boolean(activeDrag)])
+  }, [Boolean(activeDrag), finalizeDrop, updateDrag])
+
+  // Clean up timer & touch listener on unmount
+  useEffect(() => {
+    return () => {
+      if (longPressTimerRef.current) {
+        clearTimeout(longPressTimerRef.current)
+      }
+      if (activeTouchCleanupRef.current) {
+        activeTouchCleanupRef.current()
+      }
+    }
+  }, [])
 
   // Keep floating widgets clamped inside viewport if window is resized
   useEffect(() => {
@@ -408,13 +582,14 @@ export function useDockableToolbar(items: DockableItemConfig[]) {
 
   return {
     dockedIds,
-    displayDockedIds,
     floatingMap,
     activeDrag,
     dropIndex,
     isOverContainer,
+    pressingItemId,
     containerRef,
     wasDraggingRef,
     handlePointerDown,
+    handleTouchStart,
   }
 }

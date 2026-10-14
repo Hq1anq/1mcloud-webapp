@@ -5,7 +5,6 @@ import FloatingWidget from './FloatingWidget'
 
 const DropPlaceholder = () => (
   <div
-    data-dockable-id="__placeholder__"
     className="min-h-10 min-w-24 grow rounded-lg border-2 border-dashed border-primary/60 bg-primary/10 transition-all duration-150 animate-pulse pointer-events-none"
   />
 )
@@ -23,6 +22,7 @@ export default function DockableToolbar({
     pressingItemId,
     containerRef,
     wasDraggingRef,
+    registerItemRef,
     handlePointerDown,
     handleTouchStart,
   } = useDockableToolbar(items)
@@ -46,61 +46,83 @@ export default function DockableToolbar({
     }
   }
 
+  const isDraggingDocked = Boolean(activeDrag?.hasMoved && activeDrag.source === 'docked')
+  const otherDockedIds = isDraggingDocked
+    ? dockedIds.filter((id) => id !== activeDrag?.itemId)
+    : dockedIds
+
+  const targetPlaceholderId =
+    activeDrag?.hasMoved && isOverContainer && dropIndex !== null
+      ? otherDockedIds[dropIndex]
+      : null
+
+  const showPlaceholderAtEnd =
+    activeDrag?.hasMoved &&
+    isOverContainer &&
+    dropIndex === otherDockedIds.length
+
+  const renderDockedItem = (itemConfig: (typeof items)[0], id: string) => {
+    const childProps = itemConfig.render.props as React.HTMLAttributes<HTMLElement>
+    const isBeingDragged = activeDrag?.hasMoved && activeDrag.itemId === id
+    const isPressingThis = pressingItemId === id
+
+    return React.cloneElement(itemConfig.render, {
+      key: id,
+      ref: isBeingDragged
+        ? undefined
+        : (node: HTMLElement | null) => registerItemRef(id, node),
+      onPointerDown: (e: React.PointerEvent<HTMLElement>) => {
+        childProps.onPointerDown?.(e)
+        if (e.pointerType === 'mouse') {
+          handlePointerDown(id, e, 'docked')
+        }
+      },
+      onTouchStart: (e: React.TouchEvent<HTMLElement>) => {
+        childProps.onTouchStart?.(e)
+        handleTouchStart(id, e, 'docked')
+      },
+      onClickCapture: handleCaptureClick,
+      onContextMenu: (e: React.MouseEvent<HTMLElement>) => {
+        childProps.onContextMenu?.(e)
+        e.preventDefault()
+      },
+      className: `${childProps.className || ''} touch-manipulation ${
+        isBeingDragged
+          ? 'fixed -left-[9999px] -top-[9999px] opacity-0 pointer-events-none'
+          : isPressingThis
+            ? 'scale-95 brightness-110 transition-transform duration-200'
+            : ''
+      }`,
+    } as React.HTMLAttributes<HTMLElement>)
+  }
+
   return (
     <>
       {/* Main Dock Container */}
       <div
         ref={containerRef}
-        className={`${containerClassName} ${isOverContainer && activeDrag?.hasMoved
-          ? 'ring-2 ring-primary/40 transition-all duration-150'
-          : ''
-          }`}
+        className={`${containerClassName} ${
+          isOverContainer && activeDrag?.hasMoved
+            ? 'ring-2 ring-primary/40 transition-all duration-150'
+            : ''
+        }`}
       >
-        {dockedIds.map((id, idx) => {
+        {dockedIds.map((id) => {
           const itemConfig = itemMap.get(id)
           if (!itemConfig) return null
 
-          const childProps = itemConfig.render.props as React.HTMLAttributes<HTMLElement>
-          const isBeingDragged = activeDrag?.hasMoved && activeDrag.itemId === id
-          const isPressingThis = pressingItemId === id
+          const showPlaceholderBeforeThis = targetPlaceholderId === id
 
           return (
             <React.Fragment key={id}>
-              {activeDrag?.hasMoved && isOverContainer && dropIndex === idx && (
-                <DropPlaceholder />
-              )}
-              {React.cloneElement(itemConfig.render, {
-                'data-dockable-id': id,
-                onPointerDown: (e: React.PointerEvent<HTMLElement>) => {
-                  childProps.onPointerDown?.(e)
-                  if (e.pointerType === 'mouse') {
-                    handlePointerDown(id, e, 'docked')
-                  }
-                },
-                onTouchStart: (e: React.TouchEvent<HTMLElement>) => {
-                  childProps.onTouchStart?.(e)
-                  handleTouchStart(id, e, 'docked')
-                },
-                onClickCapture: handleCaptureClick,
-                onContextMenu: (e: React.MouseEvent<HTMLElement>) => {
-                  childProps.onContextMenu?.(e)
-                  e.preventDefault()
-                },
-                className: `${childProps.className || ''} touch-manipulation ${isBeingDragged
-                  ? 'fixed -left-[9999px] -top-[9999px] opacity-0 pointer-events-none'
-                  : isPressingThis
-                    ? 'scale-95 brightness-110 transition-transform duration-200'
-                    : ''
-                  }`,
-              } as React.HTMLAttributes<HTMLElement>)}
+              {showPlaceholderBeforeThis && <DropPlaceholder />}
+              {renderDockedItem(itemConfig, id)}
             </React.Fragment>
           )
         })}
 
         {/* Drop placeholder at the very end */}
-        {activeDrag?.hasMoved && isOverContainer && dropIndex === dockedIds.length && (
-          <DropPlaceholder />
-        )}
+        {showPlaceholderAtEnd && <DropPlaceholder />}
       </div>
 
       {/* Detached Floating Items */}

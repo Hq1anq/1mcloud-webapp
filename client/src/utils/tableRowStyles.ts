@@ -21,7 +21,6 @@ export function getExpiryBaseColor(expiredStr?: string): string | null {
   if (!expiredStr) return null
 
   const expiry = parseDDMMYYYY(expiredStr)
-  if (!expiry) return null
 
   const today = new Date()
   today.setHours(0, 0, 0, 0)

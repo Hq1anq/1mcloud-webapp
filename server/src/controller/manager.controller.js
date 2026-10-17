@@ -48,6 +48,7 @@ export async function list(req, res) {
     by_status,
     by_time,
     by_created,
+    by_expired,
     proxy,
     keyword,
     by_detail,
@@ -58,8 +59,14 @@ export async function list(req, res) {
   const isProxy = proxy === "true";
   const hasKeyword =
     keyword && typeof keyword === "string" && keyword.trim() !== "";
+  const hasCreatedSort =
+    by_created === "asc" || by_created === "desc";
+  const hasExpiredSort =
+    by_expired === "asc" || by_expired === "desc";
   const hasDetailSort =
     by_detail === "asc" || by_detail === "desc";
+  const hasSort =
+    hasCreatedSort || hasExpiredSort || hasDetailSort;
 
   // Non-blocking background 24-hour auto sync trigger
   if (req.token) {
@@ -73,8 +80,8 @@ export async function list(req, res) {
   }
 
   try {
-    // ── BRANCH 2: SEARCHING OR DETAIL SORT (Database-only across all user records) ──
-    if (hasKeyword || hasDetailSort) {
+    // ── BRANCH 2: SEARCHING OR SORTING (Database-only across all user records) ──
+    if (hasKeyword || hasSort) {
       const userId = await resolveUser(req.token);
       const pool = await getPool();
       let dbRows = [];
@@ -105,11 +112,12 @@ export async function list(req, res) {
         is_auto_renew: !!item.is_auto_renew,
       }));
 
-      // 2. Filter data2 by by_status, by_time, by_created, by_detail, ips, keyword, excluding refunded -> data3
+      // 2. Filter data2 by by_status, by_time, by_created, by_expired, by_detail, ips, keyword, excluding refunded -> data3
       const data3 = applyRecordFilters(data2, {
         by_status,
         by_time,
         by_created,
+        by_expired,
         by_detail,
         ips,
         keyword,

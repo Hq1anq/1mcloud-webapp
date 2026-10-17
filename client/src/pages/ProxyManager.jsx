@@ -10,6 +10,8 @@ import {
   createTextColumn,
   createAuthColumn,
   createDetailColumn,
+  createCreatedColumn,
+  createExpiredColumn,
 } from '../components/ui/Table'
 import ControlButton from '../components/ui/ControlButton'
 import StatusMetricsMeter from '../components/ui/StatusMetricsMeter'
@@ -88,7 +90,14 @@ export default function ProxyManager({ onBuySuccessRef }) {
       limit: Number(pageSize) || 200,
       by_status: '',
       by_time: byTime,
-      by_created: '',
+      by_created:
+        sortConfig.columnKey === 'created' && sortConfig.direction !== 'none'
+          ? sortConfig.direction
+          : '',
+      by_expired:
+        sortConfig.columnKey === 'expired' && sortConfig.direction !== 'none'
+          ? sortConfig.direction
+          : '',
       by_detail:
         sortConfig.columnKey === 'detail' && sortConfig.direction !== 'none'
           ? sortConfig.direction
@@ -1285,8 +1294,8 @@ export default function ProxyManager({ onBuySuccessRef }) {
       createTextColumn({ key: 'ip_port', align: 'left' }),
       createCountryColumn(),
       createTextColumn({ key: 'type', align: 'center' }),
-      createTextColumn({ key: 'created', align: 'center' }),
-      createTextColumn({ key: 'expired', align: 'center' }),
+      createCreatedColumn(),
+      createExpiredColumn(),
       createStatusColumn(),
       createTextColumn({ key: 'note', align: 'left' }),
       createRenewToggleColumn(async (sid, newState) => {

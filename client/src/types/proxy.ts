@@ -31,6 +31,7 @@ export interface ProxyItem {
 export type ProxyStatusFilter = 'running' | 'off' | 'other' | ''
 export type ProxyTimeFilter = 'all' | 'due' | 'expired' | 'using'
 export type ProxyCreatedOrder = 'desc' | 'asc' | ''
+export type ProxyExpiredOrder = 'desc' | 'asc' | ''
 export type ProxyDetailOrder = 'desc' | 'asc' | ''
 
 export interface FetchProxyListParams {
@@ -39,6 +40,7 @@ export interface FetchProxyListParams {
   by_status?: ProxyStatusFilter
   by_time?: ProxyTimeFilter
   by_created?: ProxyCreatedOrder
+  by_expired?: ProxyExpiredOrder
   by_detail?: ProxyDetailOrder
   ips?: string
   keyword?: string

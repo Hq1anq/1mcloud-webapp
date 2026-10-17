@@ -93,13 +93,13 @@ export default function useTableFilter<T extends Record<string, any>>({
   const handleToggleSort = useCallback(
     (columnKey: string) => {
       const isSameColumn = activeSortConfig.columnKey === columnKey
-      let nextDirection: 'none' | 'asc' | 'desc' = 'asc'
+      let nextDirection: 'none' | 'asc' | 'desc' = 'desc'
 
       if (isSameColumn) {
         if (activeSortConfig.direction === 'none') {
-          nextDirection = 'asc'
-        } else if (activeSortConfig.direction === 'asc') {
           nextDirection = 'desc'
+        } else if (activeSortConfig.direction === 'desc') {
+          nextDirection = 'asc'
         } else {
           nextDirection = 'none'
         }

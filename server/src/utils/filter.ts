@@ -21,6 +21,12 @@ export enum CreatedOrder {
   Default = "",
 }
 
+export enum ExpiredOrder {
+  Desc = "desc",
+  Asc = "asc",
+  Default = "",
+}
+
 export enum DetailOrder {
   Desc = "desc",
   Asc = "asc",
@@ -49,6 +55,7 @@ export interface RecordFilterOptions {
   by_status?: StatusFilter;
   by_time?: TimeFilter;
   by_created?: CreatedOrder;
+  by_expired?: ExpiredOrder;
   by_detail?: DetailOrder;
   ips?: string;
   keyword?: string;
@@ -89,6 +96,7 @@ export function applyRecordFilters(
     by_status = StatusFilter.All,
     by_time = TimeFilter.All,
     by_created = CreatedOrder.Default,
+    by_expired = ExpiredOrder.Default,
     by_detail = DetailOrder.Default,
     ips = "",
     keyword = "",
@@ -185,9 +193,10 @@ export function applyRecordFilters(
     ]);
   }
 
-  // 6. Sort by detail (last_action_time) or created date
+  // 6. Sort by detail, created date, or expired date
   const detailOrder = by_detail.trim().toLowerCase();
   const createdOrder = by_created.trim().toLowerCase();
+  const expiredOrder = by_expired.trim().toLowerCase();
 
   if (detailOrder === DetailOrder.Asc) {
     records.sort((a, b) => {
@@ -199,9 +208,9 @@ export function applyRecordFilters(
   } else if (detailOrder === DetailOrder.Desc) {
     records.sort((a, b) => {
       const diff =
-        new Date(a.last_action_time).getTime() -
-        new Date(b.last_action_time).getTime();
-      return diff === 0 ? b.sid - a.sid : -diff;
+        new Date(b.last_action_time).getTime() -
+        new Date(a.last_action_time).getTime();
+      return diff === 0 ? b.sid - a.sid : diff;
     });
   } else if (createdOrder === CreatedOrder.Asc) {
     records.sort((a, b) => {
@@ -209,7 +218,8 @@ export function applyRecordFilters(
       const dateB = parseDateDDMMYYYY(b.created);
       const timeA = dateA ? dateA.getTime() : 0;
       const timeB = dateB ? dateB.getTime() : 0;
-      return timeA - timeB;
+      const diff = timeA - timeB;
+      return diff === 0 ? b.sid - a.sid : diff;
     });
   } else if (createdOrder === CreatedOrder.Desc) {
     records.sort((a, b) => {
@@ -217,7 +227,26 @@ export function applyRecordFilters(
       const dateB = parseDateDDMMYYYY(b.created);
       const timeA = dateA ? dateA.getTime() : 0;
       const timeB = dateB ? dateB.getTime() : 0;
-      return timeB - timeA;
+      const diff = timeB - timeA;
+      return diff === 0 ? b.sid - a.sid : diff;
+    });
+  } else if (expiredOrder === ExpiredOrder.Asc) {
+    records.sort((a, b) => {
+      const dateA = parseDateDDMMYYYY(a.expired);
+      const dateB = parseDateDDMMYYYY(b.expired);
+      const timeA = dateA ? dateA.getTime() : 0;
+      const timeB = dateB ? dateB.getTime() : 0;
+      const diff = timeA - timeB;
+      return diff === 0 ? b.sid - a.sid : diff;
+    });
+  } else if (expiredOrder === ExpiredOrder.Desc) {
+    records.sort((a, b) => {
+      const dateA = parseDateDDMMYYYY(a.expired);
+      const dateB = parseDateDDMMYYYY(b.expired);
+      const timeA = dateA ? dateA.getTime() : 0;
+      const timeB = dateB ? dateB.getTime() : 0;
+      const diff = timeB - timeA;
+      return diff === 0 ? b.sid - a.sid : diff;
     });
   } else {
     records.sort((a, b) => b.sid - a.sid);

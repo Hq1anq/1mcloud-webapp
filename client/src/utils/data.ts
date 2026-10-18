@@ -56,13 +56,10 @@ export function str2date(str: string): Date {
 /**
  * Parse a date string formatted as DD-MM-YYYY and return a Date at midnight.
  */
-export function parseDDMMYYYY(str: string): Date | null {
-  if (!str) return null
+export function parseDDMMYYYY(str: string): Date {
   const parts = str.split('-')
-  if (parts.length !== 3) return null
   const [dd, mm, yyyy] = parts
-  const d = new Date(Number(yyyy), Number(mm) - 1, Number(dd))
-  return isNaN(d.getTime()) ? null : d
+  return new Date(Number(yyyy), Number(mm) - 1, Number(dd))
 }
 
 export function formatInputDate(inputValue: string): string {

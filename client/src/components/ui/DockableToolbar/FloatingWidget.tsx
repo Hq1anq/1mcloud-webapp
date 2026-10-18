@@ -31,7 +31,6 @@ export default function FloatingWidget({
   const childProps = item.render.props as React.HTMLAttributes<HTMLElement>
 
   return React.cloneElement(item.render, {
-    'data-floating-id': item.id,
     'data-capture-ignore': true,
     onPointerDown: (e: React.PointerEvent<HTMLElement>) => {
       childProps.onPointerDown?.(e)

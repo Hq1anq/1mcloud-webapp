@@ -1,5 +1,6 @@
 import React from 'react'
 import { getNationFlag } from './tableFilter.js'
+import { parseDDMMYYYY } from './data.js'
 import RenewToggle from '../components/ui/RenewToggle'
 import { getStatusClasses } from './ui.js'
 import { useTableContext } from '../components/ui/Table/TableContext.js'
@@ -174,6 +175,42 @@ export function createTextColumn<T extends Record<string, any>>({
     filterable,
     renderCell,
     renderHeader,
+  }
+}
+
+export function createCreatedColumn<T extends Record<string, any>>(): ColumnDef<T> {
+  return {
+    key: 'created',
+    align: 'center',
+    filterable: true,
+    sortable: true,
+    sortComparator: (a: T, b: T, direction: 'asc' | 'desc') => {
+      const diff = parseDDMMYYYY(a.created).getTime() - parseDDMMYYYY(b.created).getTime()
+      if (diff === 0) {
+        return b.sid - a.sid
+      }
+      return direction === 'asc' ? diff : -diff
+    },
+    renderHeader: () => <DefaultHeader headerKey="created" />,
+    renderCell: (row) => <span>{row.created}</span>,
+  }
+}
+
+export function createExpiredColumn<T extends Record<string, any>>(): ColumnDef<T> {
+  return {
+    key: 'expired',
+    align: 'center',
+    filterable: true,
+    sortable: true,
+    sortComparator: (a: T, b: T, direction: 'asc' | 'desc') => {
+      const diff = parseDDMMYYYY(a.expired).getTime() - parseDDMMYYYY(b.expired).getTime()
+      if (diff === 0) {
+        return b.sid - a.sid
+      }
+      return direction === 'asc' ? diff : -diff
+    },
+    renderHeader: () => <DefaultHeader headerKey="expired" />,
+    renderCell: (row) => <span>{row.expired}</span>,
   }
 }
 

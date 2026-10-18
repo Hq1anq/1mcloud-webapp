@@ -5,33 +5,46 @@ const LONG_PRESS_DELAY_MS = 500
 const TOUCH_SCROLL_CANCEL_DISTANCE_PX = 10
 
 function calculateDropIndex(
-  container: HTMLElement,
   clientX: number,
-  clientY: number
+  clientY: number,
+  visibleIds: string[],
+  itemRefs: Map<string, HTMLElement>
 ): number {
-  const children = Array.from(container.children) as HTMLElement[]
-  const itemElements = children.filter(
-    (el) => el.dataset.dockableId && el.dataset.dockableId !== '__placeholder__'
-  )
+  if (visibleIds.length === 0) return 0
 
-  if (itemElements.length === 0) return 0
+  const validItems: { index: number; rect: DOMRect }[] = []
+
+  let visualIndex = 0
+  for (const id of visibleIds) {
+    const el = itemRefs.get(id)
+    if (!el) continue
+    const rect = el.getBoundingClientRect()
+    if (rect.width > 0 && rect.height > 0) {
+      validItems.push({ index: visualIndex, rect })
+      visualIndex++
+    }
+  }
+
+  if (validItems.length === 0) return 0
 
   // Group elements into visual rows based on flex layout
   const rows: { index: number; rect: DOMRect }[][] = []
   let currentRow: { index: number; rect: DOMRect }[] = []
 
-  for (let i = 0; i < itemElements.length; i++) {
-    const rect = itemElements[i].getBoundingClientRect()
+  for (const item of validItems) {
     if (currentRow.length === 0) {
-      currentRow.push({ index: i, rect })
+      currentRow.push(item)
     } else {
       const prev = currentRow[currentRow.length - 1]
       // Flex row wrap detection: left edge moved backwards or top is significantly lower
-      if (rect.left < prev.rect.left || rect.top > prev.rect.top + prev.rect.height * 0.6) {
+      if (
+        item.rect.left < prev.rect.left ||
+        item.rect.top > prev.rect.top + prev.rect.height * 0.6
+      ) {
         rows.push(currentRow)
-        currentRow = [{ index: i, rect }]
+        currentRow = [item]
       } else {
-        currentRow.push({ index: i, rect })
+        currentRow.push(item)
       }
     }
   }
@@ -49,7 +62,7 @@ function calculateDropIndex(
   const lastRow = rows[rows.length - 1]
   const lastRowBottom = Math.max(...lastRow.map((it) => it.rect.bottom))
   if (clientY > lastRowBottom + 8) {
-    return itemElements.length
+    return validItems.length
   }
 
   // Find the matching row by vertical range
@@ -149,6 +162,24 @@ export function useDockableToolbar(items: DockableItemConfig[]) {
   const floatingMapRef = useRef(floatingMap)
   floatingMapRef.current = floatingMap
 
+  const itemRefs = useRef<Map<string, HTMLElement>>(new Map())
+  const registerItemRef = useCallback((id: string, node: HTMLElement | null) => {
+    if (node) {
+      itemRefs.current.set(id, node)
+    } else {
+      itemRefs.current.delete(id)
+    }
+  }, [])
+
+  const dockedIdsRef = useRef(dockedIds)
+  dockedIdsRef.current = dockedIds
+
+  const getVisibleDockedIds = useCallback((excludedId?: string) => {
+    return excludedId
+      ? dockedIdsRef.current.filter((id) => id !== excludedId)
+      : dockedIdsRef.current
+  }, [])
+
   const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const activeTouchCleanupRef = useRef<(() => void) | null>(null)
 
@@ -242,8 +273,17 @@ export function useDockableToolbar(items: DockableItemConfig[]) {
         height,
         hasMoved: isImmediateLift,
       })
+
+      if (isImmediateLift) {
+        const container = containerRef.current
+        if (container && isPointInsideContainer(container, clientX, clientY)) {
+          const visibleIds = getVisibleDockedIds(itemId)
+          setDropIndex(calculateDropIndex(clientX, clientY, visibleIds, itemRefs.current))
+          setIsOverContainer(true)
+        }
+      }
     },
-    []
+    [getVisibleDockedIds]
   )
 
   // Drag position updater shared by touch and mouse
@@ -279,7 +319,8 @@ export function useDockableToolbar(items: DockableItemConfig[]) {
       const container = containerRef.current
       if (container && hasMoved) {
         if (isPointInsideContainer(container, clientX, clientY)) {
-          setDropIndex(calculateDropIndex(container, clientX, clientY))
+          const visibleIds = getVisibleDockedIds(drag.source === 'docked' ? drag.itemId : undefined)
+          setDropIndex(calculateDropIndex(clientX, clientY, visibleIds, itemRefs.current))
           setIsOverContainer(true)
         } else {
           setDropIndex(null)
@@ -287,7 +328,7 @@ export function useDockableToolbar(items: DockableItemConfig[]) {
         }
       }
     },
-    []
+    [getVisibleDockedIds]
   )
 
   // Drag finalizer shared by touch and mouse
@@ -303,8 +344,9 @@ export function useDockableToolbar(items: DockableItemConfig[]) {
         )
 
         if (droppedInside && container) {
+          const visibleIds = getVisibleDockedIds(drag.source === 'docked' ? drag.itemId : undefined)
           const finalDropIdx =
-            dropIndexRef.current ?? calculateDropIndex(container, clientX, clientY)
+            dropIndexRef.current ?? calculateDropIndex(clientX, clientY, visibleIds, itemRefs.current)
 
           // Re-dock into container
           setFloatingMap((prev) => {
@@ -589,6 +631,7 @@ export function useDockableToolbar(items: DockableItemConfig[]) {
     pressingItemId,
     containerRef,
     wasDraggingRef,
+    registerItemRef,
     handlePointerDown,
     handleTouchStart,
   }
